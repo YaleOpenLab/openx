@@ -63,18 +63,20 @@ contract SolarProperty {
 
     function removePanelHolder(uint _targetSSIndex) public {
         SolarSystem storage targetSS = solarSystems[_targetSSIndex];
-        require(targetSS.holdingStatus != HoldingStatus.HELD);
-        require(targetSS.currentHolder != msg.sender);
+        require((msg.sender == approver) || (msg.senderc == targetSS.currentHolder));
 
         targetSS.currentHolder = 0; // resetting, not used
         targetSS.holdingStatus = HoldingStatus.AVAILABLE;
     }
 
-    /* TODO this can only be triggered by the device on the panel */
-    /* TODO do this once at the end of each day */
+
     function energyProduced(uint _ssIndex, uint _kWhProduced) public {
         SolarSystem storage producingSS = solarSystems[_ssIndex];
+
+        require(producingSS.currentHolder == msg.sender);
+
         producingSS.unpaidBalance += _kWhProduced*producingSS.pricePerKWH;
+        //TODO issue Swytch token here
     }
 
     /* payment by the currentHolder for the energy consumed */
@@ -86,6 +88,8 @@ contract SolarProperty {
 
     /* transfer of ownership away from currentHolder if fails to pay */
     function repo(uint _ssIndex) public {
+        require(msg.sender == approver);
+
         address overdueHolder = solarSystems[_ssIndex].currentHolder;
         emit Repo(_ssIndex, overdueHolder);
         
