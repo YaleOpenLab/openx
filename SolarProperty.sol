@@ -2,22 +2,25 @@ pragma solidity ^0.4.0;
 contract SolarProperty {
     
     /* declaration of specialized data types */
-    enum HoldingStatus {OWNED, HELD, AVAILABLE}
+    enum HoldingStatus {OWNED, HELD}
     enum PaymentStatus {PAID, OVERDUE}
     
+    struct HolderForSS {
+        uint percentageHeld; // must be maintained that the percentageHeld for all holders sums to 100
+        HoldingStatus holdingStatus;
+        uint lastFullPaymentTimestamp;
+        uint unpaidBalance;
+    }
+
     struct SolarSystem {
         string name;
-        HoldingStatus holdingStatus;
-        address currentHolder;
-        PaymentStatus paymentStatus;
-        uint unpaidBalance;
-
         uint pricePerKWH;
+        mapping(address => HolderForSS) holders; // address of the holder
     }
     
     /* public variables */
     address approver;
-    SolarSystem[] public solarSystems;
+    mapping(address => SolarSystem) public solarSystems;
 
     /* public event on the blockchain, clients notified */
     event AddSolarSystem(string name);
@@ -34,13 +37,20 @@ contract SolarProperty {
     function addSolarSystem(string _name, uint _pricePerKWH) public {
         require(msg.sender == approver);
 
-        SolarSystem memory newSystem = SolarSystem({
+        HolderForSS storage approverHolder = HolderForSS({
+            percentageHeld: 100,
+            holdingStatus: HoldingStatus.HELD,
+            lastFullPaymentTimestamp: now,
+            unpaidBalance: 0
+        })
+
+        mapping(address => HolderForSS) holderMapping;
+        holderMapping[approver] = approverHolder;
+
+        SolarSystem storage newSystem = SolarSystem({
             name: _name,
-            holdingStatus: HoldingStatus.AVAILABLE,
-            currentHolder: approver,
-            paymentStatus: PaymentStatus.PAID,
-            unpaidBalance: 0,
-            pricePerKWH: _pricePerKWH
+            pricePerKWH: _pricePerKWH,
+            holders: holderMapping
         });
 
         solarSystems.push(newSystem);
@@ -48,12 +58,12 @@ contract SolarProperty {
         emit AddSolarSystem(_name);
     }
 
-    /* Transfer ownership of solar system at _targetSSIndex to _to */ 
-    function transferPanelHolder(uint _targetSSIndex, address _to) public {
+    /* Transfer _percentTransfer perent of holding of solar system at _targetSSIndex to _to */ 
+    function transferPanelHolder(uint _percentTransfer, uint _targetSSIndex, address _to) public {
+        require(msg.sender == approver);
+
         SolarSystem storage targetSS = solarSystems[_targetSSIndex];
-        if (msg.sender != approver) {
-            require((targetSS.holdingStatus == HoldingStatus.HELD) && (targetSS.currentHolder == msg.sender));
-        }
+        Holders[] storage holders = targetSS.holders;
 
         targetSS.holdingStatus = HoldingStatus.HELD;
         targetSS.currentHolder = _to;
