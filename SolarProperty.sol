@@ -5,7 +5,7 @@ contract SolarProperty {
     enum HoldingStatus {OWNED, HELD}
     enum PaymentStatus {PAID, OVERDUE}
     
-    struct HolderForSS {
+    struct Holder {
         uint percentageHeld; // must be maintained that the percentageHeld for all holders sums to 100
         HoldingStatus holdingStatus;
         uint lastFullPaymentTimestamp;
@@ -15,7 +15,7 @@ contract SolarProperty {
     struct SolarSystem {
         string name;
         uint pricePerKWH;
-        mapping(address => HolderForSS) holders; // address of the holder
+        Holder[] holders;
     }
     
     /* public variables */
@@ -23,10 +23,10 @@ contract SolarProperty {
     mapping(address => SolarSystem) public solarSystems;
 
     /* public event on the blockchain, clients notified */
-    event AddSolarSystem(string name);
-    event TransferHolder(address holder, uint ssIndex);
-    event Payment(address payer, uint unpaidBalance); // if paid in full, unpaidBalance = 0
-    event Repo(uint ssIndex, address lateHolder); // reposessing unpaid system, hardware can listen for this
+    // event AddSolarSystem(string name);
+    // event AddSSHolding(address holder, uint ssIndex);
+    // event Payment(address payer, uint unpaidBalance); // if paid in full, unpaidBalance = 0
+    // event Repo(uint ssIndex, address lateHolder); // reposessing unpaid system, hardware can listen for this
 
     /* runs at initialization when contract is executed */
     constructor() public {
@@ -37,73 +37,79 @@ contract SolarProperty {
     function addSolarSystem(string _name, uint _pricePerKWH) public {
         require(msg.sender == approver);
 
-        HolderForSS storage approverHolder = HolderForSS({
+        Holder storage approverHolder = Holder({
             percentageHeld: 100,
             holdingStatus: HoldingStatus.HELD,
             lastFullPaymentTimestamp: now,
             unpaidBalance: 0
-        })
-
-        mapping(address => HolderForSS) holderMapping;
-        holderMapping[approver] = approverHolder;
+        });
 
         SolarSystem storage newSystem = SolarSystem({
             name: _name,
-            pricePerKWH: _pricePerKWH,
-            holders: holderMapping
+            pricePerKWH: _pricePerKWH
         });
+        newSystem.holders[approver] = approverHolder;
 
         solarSystems.push(newSystem);
-
-        emit AddSolarSystem(_name);
     }
 
-    /* Transfer _percentTransfer perent of holding of solar system at _targetSSIndex to _to */ 
-    function transferPanelHolder(uint _percentTransfer, uint _targetSSIndex, address _to) public {
-        require(msg.sender == approver);
+    /* Transfer _percentTransfer perent of holding of solar system at _targetSSAddress to _to */ 
+    function addSSHolding(uint _percentTransfer, uint _targetSSAddress, address _to) public {
+        require((msg.sender == approver) || msg.sender == _to);
 
-        SolarSystem storage targetSS = solarSystems[_targetSSIndex];
-        Holders[] storage holders = targetSS.holders;
+        SolarSystem storage targetSS = solarSystems[_targetSSAddress];
+        Holder[] storage holders = targetSS.holders;
+        require(holders[approver].percentageHeld >= _percentTransfer);
 
-        targetSS.holdingStatus = HoldingStatus.HELD;
-        targetSS.currentHolder = _to;
+        holders[approver].percentageHeld -= _percentTransfer;
+        if (holders[_to].holdingStatus == HoldingStatus.HELD) {
+            holders[_to].percentageHeld += _percentTransfer;
+        } else {
+            holders[_to] = Holder({
+                percentageHeld: _percentTransfer,
+                holdingStatus: HoldingStatus.HELD,
+                lastFullPaymentTimestamp: now,
+                unpaidBalance: 0
+            });
+        }
+    }
+
+    function removeSSHolding(uint _percentTransfer, uint _targetSSAddress, address _from) public {
+        require((msg.sender == approver) || (msg.sender == _from));
+
+        SolarSystem storage targetSS = solarSystems[_targetSSAddress];
+        Holder[] storage holders = targetSS.holders;
+        require(holders[_from].percentageHeld >= _percentTransfer);
+
+        holders[_from].percentageHeld -= _percentTransfer;
+        holders[approver].percentageHeld += _percentTransfer;
+    }
+
+
+    // function energyProduced(uint _ssAddress, uint _kWhProduced) public {
+    //     SolarSystem storage producingSS = solarSystems[_ssAddress];
+
+    //     require(producingSS.currentHolder == msg.sender);
+
+    //     producingSS.unpaidBalance += _kWhProduced*producingSS.pricePerKWH;
+    //     //TODO issue Swytch token here
+    // }
+
+    // /* payment by a currnet holder for energy consumed */
+    // function pay(uint _ssAddress) payable public {
+    //     SolarSystem storage targetSS = solarSystems[_ssAddress];
+    //     targetSS.unpaidBalance -= msg.value;
+    //     emit Payment(targetSS.currentHolder, targetSS.unpaidBalance);
+    // }
+
+    // /* transfer of ownership away from currentHolder if fails to pay */
+    // function repo(uint _ssAddress) public {
+    //     require(msg.sender == approver);
+
+    //     address overdueHolder = solarSystems[_ssAddress].currentHolder;
+    //     emit Repo(_ssAddress, overdueHolder);
         
-        emit TransferHolder(_to, _targetSSIndex);
-    }
-
-    function removePanelHolder(uint _targetSSIndex) public {
-        SolarSystem storage targetSS = solarSystems[_targetSSIndex];
-        require((msg.sender == approver) || (msg.senderc == targetSS.currentHolder));
-
-        targetSS.currentHolder = 0; // resetting, not used
-        targetSS.holdingStatus = HoldingStatus.AVAILABLE;
-    }
-
-
-    function energyProduced(uint _ssIndex, uint _kWhProduced) public {
-        SolarSystem storage producingSS = solarSystems[_ssIndex];
-
-        require(producingSS.currentHolder == msg.sender);
-
-        producingSS.unpaidBalance += _kWhProduced*producingSS.pricePerKWH;
-        //TODO issue Swytch token here
-    }
-
-    /* payment by the currentHolder for the energy consumed */
-    function pay(uint _ssIndex) payable public {
-        SolarSystem storage targetSS = solarSystems[_ssIndex];
-        targetSS.unpaidBalance -= msg.value;
-        emit Payment(targetSS.currentHolder, targetSS.unpaidBalance);
-    }
-
-    /* transfer of ownership away from currentHolder if fails to pay */
-    function repo(uint _ssIndex) public {
-        require(msg.sender == approver);
-
-        address overdueHolder = solarSystems[_ssIndex].currentHolder;
-        emit Repo(_ssIndex, overdueHolder);
+    //     removePanelHolder(_ssAddress);
         
-        removePanelHolder(_ssIndex);
-        
-    }
+    // }
 }
