@@ -59,14 +59,13 @@ contract SolarProperty {
         require((msg.sender == approver) || msg.sender == _to);
 
         SolarSystem storage targetSS = solarSystems[_targetSSAddress];
-        mapping(address => Holder) memory holders = targetSS.holders;
-        require(holders[approver].percentageHeld >= _percentTransfer);
+        require(targetSS.holders[approver].percentageHeld >= _percentTransfer);
 
-        holders[approver].percentageHeld -= _percentTransfer;
-        if (holders[_to].holdingStatus == HoldingStatus.HELD) {
-            holders[_to].percentageHeld += _percentTransfer;
+        targetSS.holders[approver].percentageHeld -= _percentTransfer;
+        if (targetSS.holders[_to].holdingStatus == HoldingStatus.HELD) {
+            targetSS.holders[_to].percentageHeld += _percentTransfer;
         } else {
-            holders[_to] = Holder({
+            targetSS.holders[_to] = Holder({
                 percentageHeld: _percentTransfer,
                 holdingStatus: HoldingStatus.HELD,
                 lastFullPaymentTimestamp: now,
@@ -75,15 +74,14 @@ contract SolarProperty {
         }
     }
 
-    function removeSSHolding(uint _percentTransfer, uint _targetSSAddress, address _from) public {
+    function removeSSHolding(uint _percentTransfer, address _targetSSAddress, address _from) public {
         require((msg.sender == approver) || (msg.sender == _from));
 
         SolarSystem storage targetSS = solarSystems[_targetSSAddress];
-        Holder[] storage holders = targetSS.holders;
-        require(holders[_from].percentageHeld >= _percentTransfer);
+        require(targetSS.holders[_from].percentageHeld >= _percentTransfer);
 
-        holders[_from].percentageHeld -= _percentTransfer;
-        holders[approver].percentageHeld += _percentTransfer;
+        targetSS.holders[_from].percentageHeld -= _percentTransfer;
+        targetSS.holders[approver].percentageHeld += _percentTransfer;
     }
 
 
