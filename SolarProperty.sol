@@ -15,7 +15,7 @@ contract SolarProperty {
     struct SolarSystem {
         string name;
         uint pricePerKWH;
-        Holder[] holders;
+        mapping(address => Holder) holders;
     }
     
     /* public variables */
@@ -34,31 +34,32 @@ contract SolarProperty {
     }
 
     
-    function addSolarSystem(string _name, uint _pricePerKWH) public {
+    function addSolarSystem(string _name, uint _pricePerKWH, address _ssAddress) public {
         require(msg.sender == approver);
 
-        Holder storage approverHolder = Holder({
+        Holder memory approverHolder = Holder({
             percentageHeld: 100,
             holdingStatus: HoldingStatus.HELD,
             lastFullPaymentTimestamp: now,
             unpaidBalance: 0
         });
+        
+        SolarSystem memory newSystem;
+        newSystem.name = _name;
+        newSystem.pricePerKWH = _pricePerKWH;
 
-        SolarSystem storage newSystem = SolarSystem({
-            name: _name,
-            pricePerKWH: _pricePerKWH
-        });
-        newSystem.holders[approver] = approverHolder;
-
-        solarSystems.push(newSystem);
+        solarSystems[_ssAddress] = newSystem;
+        
+        // need to access holder in this way for access to storage
+        solarSystems[_ssAddress].holders[approver] = approverHolder; 
     }
 
     /* Transfer _percentTransfer perent of holding of solar system at _targetSSAddress to _to */ 
-    function addSSHolding(uint _percentTransfer, uint _targetSSAddress, address _to) public {
+    function addSSHolding(uint _percentTransfer, address _targetSSAddress, address _to) public {
         require((msg.sender == approver) || msg.sender == _to);
 
         SolarSystem storage targetSS = solarSystems[_targetSSAddress];
-        Holder[] storage holders = targetSS.holders;
+        mapping(address => Holder) memory holders = targetSS.holders;
         require(holders[approver].percentageHeld >= _percentTransfer);
 
         holders[approver].percentageHeld -= _percentTransfer;
