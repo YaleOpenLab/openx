@@ -3,6 +3,15 @@
 void callback(char* topic, byte* payload, unsigned int length);
 
 
+//INCLUDE MQTT LIBRARIES WHEN UPLOADING USE BUILD.PARTICLE
+/**
+ * if want to use IP address,
+ * byte server[] = { XXX,XXX,XXX,XXX };
+ * MQTT client(server, 1883, callback);
+ * want to use domain name,
+ * exp) iot.eclipse.org is Eclipse Open MQTT Broker: https://iot.eclipse.org/getting-started
+ * MQTT client("iot.eclipse.org", 1883, callback);
+ **/
  byte server[] = {127,0,0,1};
  MQTT client("m13.cloudmqtt.com", 12423, callback);
 
@@ -12,9 +21,6 @@ void callback(char* topic, byte* payload, unsigned int length) {
     memcpy(p, payload, length);
     p[length] = NULL;
 
-
-    //LED color changed based on published message under topic "Colorchange"
-    //used to make sure message queueing is working
     if (!strcmp(p, "RED"))
         RGB.color(255, 0, 0);
     else if (!strcmp(p, "GREEN"))
