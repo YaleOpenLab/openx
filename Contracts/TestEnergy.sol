@@ -3,6 +3,7 @@ pragma solidity ^0.4.17;
 //use to test interaction with hardware
 //Pi on board should ping stillLiquid 
 
+
 contract TestEnergy { 
     
     mapping(address => int) lastPayment;

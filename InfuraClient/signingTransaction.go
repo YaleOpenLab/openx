@@ -2,23 +2,23 @@ package main
 
 import (
 	//"bytes"
-	"bufio"
+	//"bufio"
 	"context"
 	"crypto/ecdsa"
-	"encoding/json"
+	//"encoding/json"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/stianeikeland/go-rpio"
+	//	"github.com/stianeikeland/go-rpio"
 	"golang.org/x/crypto/sha3"
 	"io/ioutil"
 	"log"
 	"math/big"
 	"net/http"
-	"os"
+	//"os"
 	"strings"
 )
 
@@ -28,57 +28,66 @@ type Message struct {
 	Result  string `json:"result"`
 }
 
-var (
-	pin = rpio.Pin(15)
-)
+// var (
+// 	pin = rpio.Pin(15)
+// )
 
 func main() {
 
+	//getBalance("0x47201e15b8e4e7d90216132f04ae2a100e6cfcf6")
+	sendRawTransaction("f6c649c0e891b19df822730a0d773a7a54cc4e5dcaebe1a8543591f211e05cb5", "0x47201e15b8e4e7d90216132f04ae2a100e6cfcf6", "setPower(uint8)", "2")
 	//intiailize Pin settings
-	if err := rpio.Open(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	defer rpio.Close()
-	pin.Output()
+	//currently set to relay pin that can switch off entire board
+	// if err := rpio.Open(); err != nil {
+	// 	fmt.Println(err)
+	// 	os.Exit(1)
+	// }
+	// defer rpio.Close()
+	// pin.Output()
 
-	scanner := bufio.NewScanner(os.Stdin)
-	var text string
+	// scanner := bufio.NewScanner(os.Stdin)
+	// var text string
 
-	//let user enter timestamp
-	for text != "q" {
-		fmt.Print("Hit Enter to Request (q to quit) ")
-		scanner.Scan()
-		text := scanner.Text()
-		res := checkIfLiquid(text)
-		fmt.Println(res)
+	// //let user enter timestamp
+	// for text != "q" {
+	// 	fmt.Print("Hit Enter to Request (q to quit) ")
+	// 	scanner.Scan()
+	// 	text := scanner.Text()
+	// 	res := checkIfLiquid(text)
+	// 	fmt.Println(res)
 
-		//decode json
-		m := Message{}
-		err := json.Unmarshal([]byte(res), &m)
+	// 	//decode json
+	// 	m := Message{}
+	// 	err := json.Unmarshal([]byte(res), &m)
 
-		if err != nil {
-			log.Fatal(err)
-		}
+	// 	if err != nil {
+	// 		log.Fatal(err)
+	// 	}
 
-		//fmt.Println(m.Result)
-		//parse return data (currently pulling last 10 digits of hex string)
-		last10 := m.Result[len(m.Result)-10:]
-		hexString := new(big.Int)
-		hexString.SetString(last10, 16)
-		fmt.Println(hexString.Int64())
-		if hexString.Int64() == 1 {
-			fmt.Println("liquid")
-			pin.Low()
-		} else {
-			fmt.Println("notliquid")
-			pin.High()
-		}
-	}
+	// 	//fmt.Println(m.Result)
+	// 	//parse return data (currently pulling last 10 digits of hex string)
+	// 	last10 := m.Result[len(m.Result)-10:]
+	// 	hexString := new(big.Int)
+	// 	hexString.SetString(last10, 16)
+	// 	fmt.Println(hexString.Int64())
+	// 	if hexString.Int64() == 1 {
+	// 		//if account is still liquid then pin is set to open
+	// 		fmt.Println("liquid")
+	// 		pin.Low()
+	// 	} else {
+	// 		//if account is not liquid then pin is set to closed
+	// 		//boar shuts off
+	// 		fmt.Println("notliquid")
+	// 		pin.High()
+	// 	}
+	// }
 }
 
-func getBalance() {
-	jsonData := fmt.Sprintf(`{"jsonrpc":"2.0","method":"eth_getBalance","params":["0x3789d2e02925d9b91f1c00a5c8e5bac33e50c786", "latest"],"id":4}`)
+//eth_getbalance call also free but can be used to check balance of contract/accounts
+//returns amount in wei (10^18 wei = 1 ether) converted to hex
+//example response: {"jsonrpc":"2.0","id":4,"result":"0x38d7ea4c68000"}
+func getBalance(address string) {
+	jsonData := fmt.Sprintf(`{"jsonrpc":"2.0","method":"eth_getBalance","params":["%s", "latest"],"id":4}`, address)
 	response, err := http.Post("https://ropsten.infura.io/gnNuNKvHFmjf9xkJ0StE", "application/json", strings.NewReader(jsonData))
 
 	if err != nil {
@@ -94,6 +103,7 @@ func getBalance() {
 	}
 }
 
+//
 func checkIfLiquid(date string) string {
 	transferFnSignature := []byte("stillLiquid(int256)")
 	hash := sha3.NewLegacyKeccak256()
@@ -111,6 +121,7 @@ func checkIfLiquid(date string) string {
 	data = append(data, paddedAmount...)
 	//fmt.Printf("data: %x\n", data)
 
+	//user jsonrpc to do ethcall
 	jsonData := fmt.Sprintf(` {"jsonrpc":"2.0", "method":"eth_call", "params": [{"from": "0x6ca9a0f319ec632fc21d4a16998f750923a50b32", "to": "0x3789d2e02925d9b91f1c00a5c8e5bac33e50c786","gas": "0x7530", "data": "0x%x"}, "latest"], "id":3}`, data)
 	//params := buff.String()
 	//fmt.Printf("%s\n", jsonData)
@@ -131,7 +142,12 @@ func checkIfLiquid(date string) string {
 
 }
 
-func sendRawTransaction() {
+//Sign and send a raw transaction using the private key of an account
+//The function retrieves the necessary
+//Args (all strings): private key, recipient address, method name, argument amount
+//ex call: sendRawTransaction("f6c649c0e891b19df822730a0d773a7a54cc4e5dcaebe1a8543591f211e05cb5", "0x86a64d840ab2665c137335af9c354f3d57c189d9", "setPower(uint8)", "2")
+//Does not return any data
+func sendRawTransaction(_privateKey string, recipientAddress string, methodName string, argAmount string) {
 	//connect to rinkeby through infura
 	ec, err := ethclient.Dial("https://ropsten.infura.io/")
 	if err != nil {
@@ -141,7 +157,8 @@ func sendRawTransaction() {
 	chainID := big.NewInt(3) //Ropsten
 
 	//private key of sender
-	privateKey, err := crypto.HexToECDSA("f6c649c0e891b19df822730a0d773a7a54cc4e5dcaebe1a8543591f211e05cb5")
+	//TODO: hide key when actual system is implemented
+	privateKey, err := crypto.HexToECDSA(_privateKey)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -163,7 +180,7 @@ func sendRawTransaction() {
 	}
 
 	//get recipient address
-	recipient := common.HexToAddress("0x86a64d840ab2665c137335af9c354f3d57c189d9")
+	recipient := common.HexToAddress(recipientAddress)
 
 	amount := big.NewInt(0) // 0 ether
 	gasLimit := uint64(2000000)
@@ -172,14 +189,14 @@ func sendRawTransaction() {
 		log.Fatal(err)
 	}
 
-	transferFnSignature := []byte("setPower(uint8)")
+	transferFnSignature := []byte(methodName)
 	hash := sha3.NewLegacyKeccak256()
 	hash.Write(transferFnSignature)
 	methodID := hash.Sum(nil)[:4]
 	fmt.Println(hexutil.Encode(methodID)) // 0xa9059cbb
 
 	argumentAmount := new(big.Int)
-	argumentAmount.SetString("2", 10) //
+	argumentAmount.SetString(argAmount, 10) //
 	paddedAmount := common.LeftPadBytes(argumentAmount.Bytes(), 32)
 	fmt.Println(hexutil.Encode(paddedAmount)) // 0x00000000000000000000000000000000000000000000003635c9adc5dea00000
 
