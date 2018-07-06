@@ -2,24 +2,28 @@ package main
 
 import (
 	//"bytes"
-	//"bufio"
+	"bufio"
 	"context"
 	"crypto/ecdsa"
 	//"encoding/json"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
+	//"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	//	"github.com/stianeikeland/go-rpio"
+	"encoding/csv"
+	"encoding/json"
 	"golang.org/x/crypto/sha3"
 	"io/ioutil"
 	"log"
 	"math/big"
 	"net/http"
-	//"os"
+	"os"
+	"strconv"
 	"strings"
+	"time"
 )
 
 type Message struct {
@@ -34,8 +38,21 @@ type Message struct {
 
 func main() {
 
-	//getBalance("0x47201e15b8e4e7d90216132f04ae2a100e6cfcf6")
-	sendRawTransaction("f6c649c0e891b19df822730a0d773a7a54cc4e5dcaebe1a8543591f211e05cb5", "0x47201e15b8e4e7d90216132f04ae2a100e6cfcf6", "setPower(uint8)", "2")
+	//make channels and run go subroutines that return to channel
+	// ch_liquid := make(chan string)
+
+	// //address is set to my metamask account right now
+	go getBalancePeriodically("0x6cA9a0F319eC632fc21d4A16998f750923a50B32")
+
+	// //until program is quit the subroutine will pass data through the channel and the for loop will print
+	// //the results with the timestamp
+	// for {
+
+	// 	checkIfLiquid("1530886047", ch_liquid)
+	// 	liquid := <-ch_liquid
+	// 	fmt.Println(liquid)
+	// }
+
 	//intiailize Pin settings
 	//currently set to relay pin that can switch off entire board
 	// if err := rpio.Open(); err != nil {
@@ -45,66 +62,99 @@ func main() {
 	// defer rpio.Close()
 	// pin.Output()
 
-	// scanner := bufio.NewScanner(os.Stdin)
-	// var text string
+	scanner := bufio.NewScanner(os.Stdin)
+	var text string
 
 	// //let user enter timestamp
-	// for text != "q" {
-	// 	fmt.Print("Hit Enter to Request (q to quit) ")
-	// 	scanner.Scan()
-	// 	text := scanner.Text()
-	// 	res := checkIfLiquid(text)
-	// 	fmt.Println(res)
+	for text != "q" {
+		fmt.Print("Hit Enter to Request (q to quit) ")
+		scanner.Scan()
+		text := scanner.Text()
+		// res := checkIfLiquid(text)
+		fmt.Println(text)
+		if text == "q" {
+			return
+		}
+		sendRawTransaction("f6c649c0e891b19df822730a0d773a7a54cc4e5dcaebe1a8543591f211e05cb5", "0x745c952f804beaedbe5b674c20e2025bb9404dc4", "makePayment(int256)", 100, strconv.FormatInt(time.Now().Unix(), 10))
+		// //decode json
+		// m := Message{}
+		// err := json.Unmarshal([]byte(res), &m)
 
-	// 	//decode json
-	// 	m := Message{}
-	// 	err := json.Unmarshal([]byte(res), &m)
+		// if err != nil {
+		// 	log.Fatal(err)
+		// }
 
-	// 	if err != nil {
-	// 		log.Fatal(err)
-	// 	}
-
-	// 	//fmt.Println(m.Result)
-	// 	//parse return data (currently pulling last 10 digits of hex string)
-	// 	last10 := m.Result[len(m.Result)-10:]
-	// 	hexString := new(big.Int)
-	// 	hexString.SetString(last10, 16)
-	// 	fmt.Println(hexString.Int64())
-	// 	if hexString.Int64() == 1 {
-	// 		//if account is still liquid then pin is set to open
-	// 		fmt.Println("liquid")
-	// 		pin.Low()
-	// 	} else {
-	// 		//if account is not liquid then pin is set to closed
-	// 		//boar shuts off
-	// 		fmt.Println("notliquid")
-	// 		pin.High()
-	// 	}
-	// }
+		// //fmt.Println(m.Result)
+		// //parse return data (currently pulling last 10 digits of hex string)
+		// last10 := m.Result[len(m.Result)-10:]
+		// hexString := new(big.Int)
+		// hexString.SetString(last10, 16)
+		// fmt.Println(hexString.Int64())
+		// if hexString.Int64() == 1 {
+		// 	//if account is still liquid then pin is set to open
+		// 	fmt.Println("liquid")
+		// 	//pin.Low()
+		// } else {
+		// 	//if account is not liquid then pin is set to closed
+		// 	//boar shuts off
+		// 	fmt.Println("notliquid")
+		// 	//pin.High()
+		// }
+	}
 }
 
 //eth_getbalance call also free but can be used to check balance of contract/accounts
 //returns amount in wei (10^18 wei = 1 ether) converted to hex
 //example response: {"jsonrpc":"2.0","id":4,"result":"0x38d7ea4c68000"}
-func getBalance(address string) {
-	jsonData := fmt.Sprintf(`{"jsonrpc":"2.0","method":"eth_getBalance","params":["%s", "latest"],"id":4}`, address)
-	response, err := http.Post("https://ropsten.infura.io/gnNuNKvHFmjf9xkJ0StE", "application/json", strings.NewReader(jsonData))
-
+//will write to csv balance.csv every 5 seconds
+func getBalancePeriodically(address string) {
+	//create file of balances
+	file, err := os.Create("balance.csv")
 	if err != nil {
+		log.Fatal("Cannot create file", err)
+	}
+	defer file.Close()
 
-		fmt.Printf("Request to INFURA failed with an error: %s\n", err)
-		fmt.Println()
+	//create csv writer
+	writer := csv.NewWriter(file)
 
-	} else {
-		data, _ := ioutil.ReadAll(response.Body)
+	for {
+		jsonData := fmt.Sprintf(`{"jsonrpc":"2.0","method":"eth_getBalance","params":["%s", "latest"],"id":4}`, address)
+		response, err := http.Post("https://ropsten.infura.io/gnNuNKvHFmjf9xkJ0StE", "application/json", strings.NewReader(jsonData))
 
-		fmt.Println("INFURA response:")
-		fmt.Println(string(data))
+		if err != nil {
+
+			fmt.Printf("Request to INFURA failed with an error: %s\n", err)
+			fmt.Println()
+
+		} else {
+			var data Message
+			json.NewDecoder(response.Body).Decode(&data)
+			//fmt.Println(data.Result)
+			num, err := strconv.ParseInt(data.Result[2:], 16, 64)
+			if err != nil {
+				fmt.Printf("Error in conversion: %s\n", err)
+			} else {
+				result := strconv.FormatInt(num, 10)
+				t := time.Now()
+				parsedT := t.Format("Mon Jan 2 15:04:05")
+				//fmt.Printf("%s wei @ %s\n", result, parsedT)
+				var data = []string{parsedT, result}
+				//write timestamp,balance to csv
+				writer.Write(data)
+				writer.Flush()
+			}
+			// data, _ := ioutil.ReadAll(response.Body)
+
+			// fmt.Println("INFURA response:")
+			// fmt.Println(string(data))
+		}
+		time.Sleep(5 * time.Second)
 	}
 }
 
 //
-func checkIfLiquid(date string) string {
+func checkIfLiquid(date string, c chan string) {
 	transferFnSignature := []byte("stillLiquid(int256)")
 	hash := sha3.NewLegacyKeccak256()
 	hash.Write(transferFnSignature)
@@ -127,18 +177,14 @@ func checkIfLiquid(date string) string {
 	//fmt.Printf("%s\n", jsonData)
 	response, err := http.Post("https://ropsten.infura.io/gnNuNKvHFmjf9xkJ0StE", "application/json", strings.NewReader(jsonData))
 	if err != nil {
-
-		fmt.Printf("Request to INFURA failed with an error: %s\n", err)
-		fmt.Println()
-
+		log.Fatal("Infura request failed", err)
 	} else {
 		data, _ := ioutil.ReadAll(response.Body)
 
 		fmt.Println("INFURA response:")
-		//fmt.Println(string(data))
-		return string(data)
+		fmt.Println(string(data))
+		c <- string(data)
 	}
-	return ""
 
 }
 
@@ -147,7 +193,7 @@ func checkIfLiquid(date string) string {
 //Args (all strings): private key, recipient address, method name, argument amount
 //ex call: sendRawTransaction("f6c649c0e891b19df822730a0d773a7a54cc4e5dcaebe1a8543591f211e05cb5", "0x86a64d840ab2665c137335af9c354f3d57c189d9", "setPower(uint8)", "2")
 //Does not return any data
-func sendRawTransaction(_privateKey string, recipientAddress string, methodName string, argAmount string) {
+func sendRawTransaction(_privateKey string, recipientAddress string, methodName string, value int64, argAmount string) {
 	//connect to rinkeby through infura
 	ec, err := ethclient.Dial("https://ropsten.infura.io/")
 	if err != nil {
@@ -182,7 +228,7 @@ func sendRawTransaction(_privateKey string, recipientAddress string, methodName 
 	//get recipient address
 	recipient := common.HexToAddress(recipientAddress)
 
-	amount := big.NewInt(0) // 0 ether
+	amount := big.NewInt(value) // 0 ether
 	gasLimit := uint64(2000000)
 	gasPrice, err := ec.SuggestGasPrice(context.Background())
 	if err != nil {
@@ -193,12 +239,12 @@ func sendRawTransaction(_privateKey string, recipientAddress string, methodName 
 	hash := sha3.NewLegacyKeccak256()
 	hash.Write(transferFnSignature)
 	methodID := hash.Sum(nil)[:4]
-	fmt.Println(hexutil.Encode(methodID)) // 0xa9059cbb
+	//fmt.Println(hexutil.Encode(methodID)) // 0xa9059cbb
 
 	argumentAmount := new(big.Int)
 	argumentAmount.SetString(argAmount, 10) //
 	paddedAmount := common.LeftPadBytes(argumentAmount.Bytes(), 32)
-	fmt.Println(hexutil.Encode(paddedAmount)) // 0x00000000000000000000000000000000000000000000003635c9adc5dea00000
+	//fmt.Println(hexutil.Encode(paddedAmount)) // 0x00000000000000000000000000000000000000000000003635c9adc5dea00000
 
 	//TODO: format data to accept inputs from various functions
 	var data []byte
