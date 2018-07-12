@@ -38,20 +38,8 @@ type Message struct {
 
 func main() {
 
-	//make channels and run go subroutines that return to channel
-	// ch_liquid := make(chan string)
-
-	// //address is set to my metamask account right now
+	//address is set to my metamask account right now
 	go getBalancePeriodically("0x6cA9a0F319eC632fc21d4A16998f750923a50B32")
-
-	// //until program is quit the subroutine will pass data through the channel and the for loop will print
-	// //the results with the timestamp
-	// for {
-
-	// 	checkIfLiquid("1530886047", ch_liquid)
-	// 	liquid := <-ch_liquid
-	// 	fmt.Println(liquid)
-	// }
 
 	//intiailize Pin settings
 	//currently set to relay pin that can switch off entire board
@@ -70,36 +58,39 @@ func main() {
 		fmt.Print("Hit Enter to Request (q to quit) ")
 		scanner.Scan()
 		text := scanner.Text()
-		// res := checkIfLiquid(text)
-		fmt.Println(text)
+		res := checkIfLiquid(text)
+		//fmt.Println(text)
 		if text == "q" {
 			return
 		}
-		sendRawTransaction("f6c649c0e891b19df822730a0d773a7a54cc4e5dcaebe1a8543591f211e05cb5", "0x745c952f804beaedbe5b674c20e2025bb9404dc4", "makePayment(int256)", 100, strconv.FormatInt(time.Now().Unix(), 10))
-		// //decode json
-		// m := Message{}
-		// err := json.Unmarshal([]byte(res), &m)
 
-		// if err != nil {
-		// 	log.Fatal(err)
-		// }
+		// //decode json
+		m := Message{}
+		err := json.Unmarshal([]byte(res), &m)
+
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		// //fmt.Println(m.Result)
 		// //parse return data (currently pulling last 10 digits of hex string)
-		// last10 := m.Result[len(m.Result)-10:]
-		// hexString := new(big.Int)
-		// hexString.SetString(last10, 16)
-		// fmt.Println(hexString.Int64())
-		// if hexString.Int64() == 1 {
-		// 	//if account is still liquid then pin is set to open
-		// 	fmt.Println("liquid")
-		// 	//pin.Low()
-		// } else {
-		// 	//if account is not liquid then pin is set to closed
-		// 	//boar shuts off
-		// 	fmt.Println("notliquid")
-		// 	//pin.High()
-		// }
+		last10 := m.Result[len(m.Result)-10:]
+		hexString := new(big.Int)
+		hexString.SetString(last10, 16)
+		//fmt.Println(hexString.Int64())
+		if hexString.Int64() == 1 {
+			//if account is still liquid then pin is set to open
+			fmt.Println("liquid")
+			//sendRawTransaction("f6c649c0e891b19df822730a0d773a7a54cc4e5dcaebe1a8543591f211e05cb5", "0x745c952f804beaedbe5b674c20e2025bb9404dc4", "makePayment(int256)", 100, strconv.FormatInt(time.Now().Unix(), 10))
+			//pin.Low()
+		} else {
+			//if account is not liquid then pin is set to closed
+			//boar shuts off
+			fmt.Println("notliquid")
+			//sendRawTransaction("f6c649c0e891b19df822730a0d773a7a54cc4e5dcaebe1a8543591f211e05cb5", "0x745c952f804beaedbe5b674c20e2025bb9404dc4", "makePayment(int256)", 100, strconv.FormatInt(time.Now().Unix(), 10))
+			sendRawTransaction("f6c649c0e891b19df822730a0d773a7a54cc4e5dcaebe1a8543591f211e05cb5", "0x745c952f804beaedbe5b674c20e2025bb9404dc4", "makePayment(int256)", 100, text)
+			//pin.High()
+		}
 	}
 }
 
@@ -154,7 +145,7 @@ func getBalancePeriodically(address string) {
 }
 
 //
-func checkIfLiquid(date string, c chan string) {
+func checkIfLiquid(date string) string {
 	transferFnSignature := []byte("stillLiquid(int256)")
 	hash := sha3.NewLegacyKeccak256()
 	hash.Write(transferFnSignature)
@@ -172,7 +163,7 @@ func checkIfLiquid(date string, c chan string) {
 	//fmt.Printf("data: %x\n", data)
 
 	//user jsonrpc to do ethcall
-	jsonData := fmt.Sprintf(` {"jsonrpc":"2.0", "method":"eth_call", "params": [{"from": "0x6ca9a0f319ec632fc21d4a16998f750923a50b32", "to": "0x3789d2e02925d9b91f1c00a5c8e5bac33e50c786","gas": "0x7530", "data": "0x%x"}, "latest"], "id":3}`, data)
+	jsonData := fmt.Sprintf(` {"jsonrpc":"2.0", "method":"eth_call", "params": [{"from": "0x6cA9a0F319eC632fc21d4A16998f750923a50B32", "to": "0x745c952f804beaedbe5b674c20e2025bb9404dc4","gas": "0x7530", "data": "0x%x"}, "latest"], "id":3}`, data)
 	//params := buff.String()
 	//fmt.Printf("%s\n", jsonData)
 	response, err := http.Post("https://ropsten.infura.io/gnNuNKvHFmjf9xkJ0StE", "application/json", strings.NewReader(jsonData))
@@ -183,8 +174,10 @@ func checkIfLiquid(date string, c chan string) {
 
 		fmt.Println("INFURA response:")
 		fmt.Println(string(data))
-		c <- string(data)
+		return string(data)
+		//c <- string(data)
 	}
+	return ""
 
 }
 
@@ -246,7 +239,6 @@ func sendRawTransaction(_privateKey string, recipientAddress string, methodName 
 	paddedAmount := common.LeftPadBytes(argumentAmount.Bytes(), 32)
 	//fmt.Println(hexutil.Encode(paddedAmount)) // 0x00000000000000000000000000000000000000000000003635c9adc5dea00000
 
-	//TODO: format data to accept inputs from various functions
 	var data []byte
 	data = append(data, methodID...)
 	data = append(data, paddedAmount...)
@@ -255,12 +247,12 @@ func sendRawTransaction(_privateKey string, recipientAddress string, methodName 
 	// fmt.Printf("amount: %i\n", amount)
 	// fmt.Printf("gasLimit: %s\n", gasLimit)
 	// fmt.Printf("gasPrice: %s\n", gasPrice)
-	// fmt.Printf("data: %s\n", data)
+	fmt.Printf("data: %x\n", data)
 
 	//create raw transaction
 	transaction := types.NewTransaction(nonce, recipient, amount, gasLimit, gasPrice, data)
 
-	//sign transaction for rinkeby network
+	//sign transaction for ropsten network
 	signer := types.NewEIP155Signer(chainID)
 	signedTx, err := types.SignTx(transaction, signer, privateKey)
 	if err != nil {
