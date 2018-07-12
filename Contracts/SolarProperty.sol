@@ -3,7 +3,6 @@ contract SolarProperty {
     
     /* declaration of specialized data types */
     enum HoldingStatus {OWNED, HELD}
-    enum PaymentStatus {PAID, OVERDUE}
     
     struct Holder {
         uint percentageHeld; // must be maintained that the percentageHeld for all holders sums to 100
@@ -14,19 +13,13 @@ contract SolarProperty {
 
     struct SolarSystem {
         string name;
-        uint pricePerKWH;
+        uint pricePerKWH; // add any other properties of the system here
         mapping(address => Holder) holders;
     }
     
     /* public variables */
     address admin;
     mapping(address => SolarSystem) public solarSystems;
-
-    /* public event on the blockchain, clients notified */
-    // event AddSolarSystem(string name);
-    // event AddSSHolding(address holder, uint ssIndex);
-    // event Payment(address payer, uint unpaidBalance); // if paid in full, unpaidBalance = 0
-    // event Repo(uint ssIndex, address lateHolder); // reposessing unpaid system, hardware can listen for this
 
     /* runs at initialization when contract is executed */
     constructor() public {
@@ -54,19 +47,19 @@ contract SolarProperty {
         solarSystems[_ssAddress].holders[admin] = adminHolder; 
     }
 
-    /* Transfer _percentTransfer perent of holding of solar system at _targetSSAddress to _to */ 
-    function addSSHolding(uint _percentTransfer, address _targetSSAddress, address _to) public {
-        require((msg.sender == admin));
+    /* Transfer percentTransfer perent of holding of solar system at targetSSAddress to to */ 
+    function addSSHolding(uint percentTransfer, address targetSSAddress, address to) public {
+        require(msg.sender == admin);
 
-        mapping(address => Holder) targetSSHolders = solarSystems[_targetSSAddress].holders;
-        require(targetSSHolders[admin].percentageHeld >= _percentTransfer);
+        mapping(address => Holder) targetSSHolders = solarSystems[targetSSAddress].holders;
+        require(targetSSHolders[admin].percentageHeld >= percentTransfer);
 
-        targetSSHolders[admin].percentageHeld -= _percentTransfer; //TODO Just changedthis back to usr targetSSHoldrs variable, see if still works
-        if (targetSSHolders[_to].holdingStatus == HoldingStatus.HELD) {
-            targetSSHolders[_to].percentageHeld += _percentTransfer;
+        targetSSHolders[admin].percentageHeld -= percentTransfer;
+        if (targetSSHolders[to].holdingStatus == HoldingStatus.HELD) {
+            targetSSHolders[to].percentageHeld += percentTransfer;
         } else {
-            targetSSHolders[_to] = Holder({
-                percentageHeld: _percentTransfer,
+            targetSSHolders[to] = Holder({
+                percentageHeld: percentTransfer,
                 holdingStatus: HoldingStatus.HELD,
                 lastFullPaymentTimestamp: now,
                 unpaidBalance: 0
@@ -74,30 +67,52 @@ contract SolarProperty {
         }
     }
 
-    function removeSSHolding(uint _percentTransfer, address _targetSSAddress, address _from) public {
-        require((msg.sender == admin) || (msg.sender == _from));
+    function removeSSHolding(uint percentTransfer, address targetSSAddress, address from) public {
+        require((msg.sender == admin) || (msg.sender == from));
 
-        mapping(address => Holder) targetSSHolders = solarSystems[_targetSSAddress].holders;
-        require(targetSSHolders[_from].percentageHeld >= _percentTransfer);
+        mapping(address => Holder) targetSSHolders = solarSystems[targetSSAddress].holders;
+        require(targetSSHolders[from].percentageHeld >= percentTransfer);
 
-        targetSSHolders[_from].percentageHeld -= _percentTransfer;
-        targetSSHolders[admin].percentageHeld += _percentTransfer;
+        targetSSHolders[from].percentageHeld -= percentTransfer;
+        targetSSHolders[admin].percentageHeld += percentTransfer;
+    }
+
+    function grantOwnership(address targetSSAddress, address newOwner) public {
+        require(msg.sender == admin);
+
+        mapping(address => Holder) targetSSHolders = solarSystems[targetSSAddress].holders;
+        targetSSHolders[newOwner].holdingStatus = HoldingStatus.OWNED;
+    }
+
+    function recordEnergyMatchupForConsumer(address ssAddress, uint kWhProduced, address consumer, uint kWhConsumed) public {
+        require(msg.sender == admin);
+
+        Holder storage consumerHolder = solarSystems[ssAddress].holders[consumer];
+        uint energyForConsumer = (kWhProduced * consumerHolder.percentageHeld)/100;
+        if (kWhConsumed >= energyForConsumer) {
+            consumerHolder.unpaidBalance += solarSystems[ssAddress].pricePerKWH * energyForConsumer;
+        } else { // didn't use all of the produced energy
+            consumerHolder.unpaidBalance += solarSystems[ssAddress].pricePerKWH * kWhConsumed;
+        }
+    }
+
+    function makePayment(address ssAddress, address consumer) payable public {
+        require((msg.sender == admin) || (msg.sender == consumer));
+
+        Holder storage consumerHolder = solarSystems[ssAddress].holders[consumer];
+        if (msg.value >= consumerHolder.unpaidBalance) {
+            consumerHolder.lastFullPaymentTimestamp = now;
+            consumerHolder.unpaidBalance = 0;
+        } else {
+            consumerHolder.unpaidBalance -= msg.value; 
+        }
     }
 
 
-    // function energyProduced(uint _ssAddress, uint _kWhProduced) public {
-    //     SolarSystem storage producingSS = solarSystems[_ssAddress];
+    // functions that require no gas, but will check the state of the system
 
-    //     require(producingSS.currentHolder == msg.sender);
-
-    //     producingSS.unpaidBalance += _kWhProduced*producingSS.pricePerKWH;
-    //     //TODO issue Swytch token here
-    // }
-
-    // /* payment by a currnet holder for energy consumed */
-    // function pay(uint _ssAddress) payable public {
-    //     SolarSystem storage targetSS = solarSystems[_ssAddress];
-    //     targetSS.unpaidBalance -= msg.value;
-    // }
+    function isConsumerLiquidForSystem(address ssAddress, address consumer, uint consumerBuffer) view public returns (bool) {
+        return (now - solarSystems[ssAddress].holders[consumer].lastFullPaymentTimestamp) <= consumerBuffer;
+    }
 
 }
