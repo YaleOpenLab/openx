@@ -19,7 +19,7 @@ contract SolarProperty {
     }
     
     /* public variables */
-    address approver;
+    address admin;
     mapping(address => SolarSystem) public solarSystems;
 
     /* public event on the blockchain, clients notified */
@@ -30,14 +30,14 @@ contract SolarProperty {
 
     /* runs at initialization when contract is executed */
     constructor() public {
-        approver = msg.sender;
+        admin = msg.sender;
     }
 
     
     function addSolarSystem(string _name, uint _pricePerKWH, address _ssAddress) public {
-        require(msg.sender == approver);
+        require(msg.sender == admin);
 
-        Holder memory approverHolder = Holder({
+        Holder memory adminHolder = Holder({
             percentageHeld: 100,
             holdingStatus: HoldingStatus.HELD,
             lastFullPaymentTimestamp: now,
@@ -51,21 +51,21 @@ contract SolarProperty {
         solarSystems[_ssAddress] = newSystem;
         
         // need to access holder in this way for access to storage
-        solarSystems[_ssAddress].holders[approver] = approverHolder; 
+        solarSystems[_ssAddress].holders[admin] = adminHolder; 
     }
 
     /* Transfer _percentTransfer perent of holding of solar system at _targetSSAddress to _to */ 
     function addSSHolding(uint _percentTransfer, address _targetSSAddress, address _to) public {
-        require((msg.sender == approver) || msg.sender == _to);
+        require((msg.sender == admin));
 
-        SolarSystem storage targetSS = solarSystems[_targetSSAddress];
-        require(targetSS.holders[approver].percentageHeld >= _percentTransfer);
+        mapping(address => Holder) targetSSHolders = solarSystems[_targetSSAddress].holders;
+        require(targetSSHolders[admin].percentageHeld >= _percentTransfer);
 
-        targetSS.holders[approver].percentageHeld -= _percentTransfer;
-        if (targetSS.holders[_to].holdingStatus == HoldingStatus.HELD) {
-            targetSS.holders[_to].percentageHeld += _percentTransfer;
+        targetSSHolders[admin].percentageHeld -= _percentTransfer; //TODO Just changedthis back to usr targetSSHoldrs variable, see if still works
+        if (targetSSHolders[_to].holdingStatus == HoldingStatus.HELD) {
+            targetSSHolders[_to].percentageHeld += _percentTransfer;
         } else {
-            targetSS.holders[_to] = Holder({
+            targetSSHolders[_to] = Holder({
                 percentageHeld: _percentTransfer,
                 holdingStatus: HoldingStatus.HELD,
                 lastFullPaymentTimestamp: now,
@@ -75,13 +75,13 @@ contract SolarProperty {
     }
 
     function removeSSHolding(uint _percentTransfer, address _targetSSAddress, address _from) public {
-        require((msg.sender == approver) || (msg.sender == _from));
+        require((msg.sender == admin) || (msg.sender == _from));
 
-        SolarSystem storage targetSS = solarSystems[_targetSSAddress];
-        require(targetSS.holders[_from].percentageHeld >= _percentTransfer);
+        mapping(address => Holder) targetSSHolders = solarSystems[_targetSSAddress].holders;
+        require(targetSSHolders[_from].percentageHeld >= _percentTransfer);
 
-        targetSS.holders[_from].percentageHeld -= _percentTransfer;
-        targetSS.holders[approver].percentageHeld += _percentTransfer;
+        targetSSHolders[_from].percentageHeld -= _percentTransfer;
+        targetSSHolders[admin].percentageHeld += _percentTransfer;
     }
 
 
@@ -98,17 +98,6 @@ contract SolarProperty {
     // function pay(uint _ssAddress) payable public {
     //     SolarSystem storage targetSS = solarSystems[_ssAddress];
     //     targetSS.unpaidBalance -= msg.value;
-    //     emit Payment(targetSS.currentHolder, targetSS.unpaidBalance);
     // }
 
-    // /* transfer of ownership away from currentHolder if fails to pay */
-    // function repo(uint _ssAddress) public {
-    //     require(msg.sender == approver);
-
-    //     address overdueHolder = solarSystems[_ssAddress].currentHolder;
-    //     emit Repo(_ssAddress, overdueHolder);
-        
-    //     removePanelHolder(_ssAddress);
-        
-    // }
 }
