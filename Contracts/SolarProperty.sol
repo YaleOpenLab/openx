@@ -26,7 +26,8 @@ contract SolarProperty {
         admin = msg.sender;
     }
 
-    
+    // add a new solar panel to our platform and set its name _name, physical properties (_pricePerKWH), 
+    // and its uniquely identifying address on the chain
     function addSolarSystem(string _name, uint _pricePerKWH, address _ssAddress) public {
         require(msg.sender == admin);
 
@@ -47,7 +48,7 @@ contract SolarProperty {
         solarSystems[_ssAddress].holders[admin] = adminHolder; 
     }
 
-    /* Transfer percentTransfer perent of holding of solar system at targetSSAddress to to */ 
+    // Transfer percentTransfer percent of holding of solar system at targetSSAddress to the user with address 'to'
     function addSSHolding(uint percentTransfer, address targetSSAddress, address to) public {
         require(msg.sender == admin);
 
@@ -67,6 +68,7 @@ contract SolarProperty {
         }
     }
 
+    // Reclaim percentTransfer percent of holding of solar system at targetSSAddress currently held by user with address 'from' 
     function removeSSHolding(uint percentTransfer, address targetSSAddress, address from) public {
         require((msg.sender == admin) || (msg.sender == from));
 
@@ -77,6 +79,7 @@ contract SolarProperty {
         targetSSHolders[admin].percentageHeld += percentTransfer;
     }
 
+    // Grant ownership to newOwner of whatever portion of the solar panel at targetSSAddress they currently hold
     function grantOwnership(address targetSSAddress, address newOwner) public {
         require(msg.sender == admin);
 
@@ -84,6 +87,8 @@ contract SolarProperty {
         targetSSHolders[newOwner].holdingStatus = HoldingStatus.OWNED;
     }
 
+    // Given a solar panel at ssAddress and the kWh produced, and given a consumer and their kWhConsumed, 
+    // update the balance they owe on this solar panel
     function recordEnergyMatchupForConsumer(address ssAddress, uint kWhProduced, address consumer, uint kWhConsumed) public {
         require(msg.sender == admin);
 
@@ -96,6 +101,7 @@ contract SolarProperty {
         }
     }
 
+    // Make a payment from consumer toward any unpaid balance on the panel at ssAddress
     function makePayment(address ssAddress, address consumer) payable public {
         require((msg.sender == admin) || (msg.sender == consumer));
 
@@ -111,6 +117,7 @@ contract SolarProperty {
 
     // functions that require no gas, but will check the state of the system
 
+    // Returns true if consumer has completely paid of any outstanding balance on the panel at ssAddress within their consumerBuffer period
     function isConsumerLiquidForSystem(address ssAddress, address consumer, uint consumerBuffer) view public returns (bool) {
         return (now - solarSystems[ssAddress].holders[consumer].lastFullPaymentTimestamp) <= consumerBuffer;
     }
