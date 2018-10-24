@@ -178,7 +178,6 @@ func checkIfLiquid(date string) string {
 		//c <- string(data)
 	}
 	return ""
-
 }
 
 //Sign and send a raw transaction using the private key of an account
@@ -187,7 +186,7 @@ func checkIfLiquid(date string) string {
 //ex call: sendRawTransaction("f6c649c0e891b19df822730a0d773a7a54cc4e5dcaebe1a8543591f211e05cb5", "0x86a64d840ab2665c137335af9c354f3d57c189d9", "setPower(uint8)", "2")
 //Does not return any data
 func sendRawTransaction(_privateKey string, recipientAddress string, methodName string, value int64, argAmount string) {
-	//connect to rinkeby through infura
+	//connect to ropsten through infura
 	ec, err := ethclient.Dial("https://ropsten.infura.io/")
 	if err != nil {
 		log.Fatal(err)

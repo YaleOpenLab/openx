@@ -8,7 +8,7 @@ contract SolarProperty {
         uint totalValue;
         address consumer;
         uint percentageHeld;
-        uint lastFullPaymentTimestamp;
+        uint lastPaymentTimestamp;
         uint unpaidUsage; // measured in kWh
     }
 
@@ -49,13 +49,13 @@ contract SolarProperty {
         );
     }
     
-    //getter for solar system details
-    function getSolarSystemDetails(uint _ssAddress) view public returns(uint, uint, address, uint){
+    function getSolarSystemDetails(uint _ssAddress) view public returns(uint, uint, address, uint, uint){
         return(
             solarSystems[_ssAddress].panelSize, 
             solarSystems[_ssAddress].totalValue,  
             solarSystems[_ssAddress].consumer,
-            solarSystems[_ssAddress].percentageHeld
+            solarSystems[_ssAddress].percentageHeld,
+            solarSystems[_ssAddress].unpaidUsage
         );
     }
 
@@ -104,7 +104,7 @@ contract SolarProperty {
         newSystem.totalValue = proposedDeployments[_ssAddress].totalValue;
         
         //TODO: must change this because now refers to block timestamp not current time
-        newSystem.lastFullPaymentTimestamp = now;
+        newSystem.lastPaymentTimestamp = now;
         newSystem.unpaidUsage = 0;
         newSystem.percentageHeld = 0;
         newSystem.panelSize = proposedDeployments[_ssAddress].panelSize;
@@ -113,51 +113,38 @@ contract SolarProperty {
         solarSystems[_ssAddress] = newSystem;
     }
 
-    // // Record energy consumed by panel at targetSSAddress by consumer (called by solar panel)
-    // function energyConsumed(address ssAddress, address consumer, uint energyConsumed) {
-    //     require((msg.sender == admin) || (msg.sender == ssAddress));
-
-    //     solarSystems[ssAddress].holders[consumer].unpaidUsage += energyConsumed;
-    // }
+    // Record energy consumed by panel at targetSSAddress by consumer (called by solar panel)
+    function energyConsumed(uint _ssAddress, uint _energyConsumed) public {
+        //TODO: require sent from specific address
+        require((proposedDeployments[_ssAddress].isConfirmedByContractor) && (proposedDeployments[_ssAddress].isConfirmedByConsumer));
+        solarSystems[_ssAddress].unpaidUsage += _energyConsumed;
+        
+    }
     
 
-    // // Make a payment from consumer toward any unpaid balance on the panel at ssAddress
-    // function makePayment(address ssAddress, address consumer, uint amountPaid) public {
-    //     require((msg.sender == admin) || (msg.sender == consumer));
+    // Make a payment from consumer toward any unpaid balance on the panel at ssAddress
+    function makePayment(uint _ssAddress, uint _amountPaid) payable public {
+        require(_amountPaid == msg.value);
 
-    //     uint amountPaidInEnergy = amountPaid/PREPA_PRICE; 
+        uint amountPaidInEnergy = _amountPaid/PREPA_PRICE; 
 
-    //     Holder storage consumerHolder = solarSystems[ssAddress].holders[consumer];
-    //     if (amountPaidInEnergy >= consumerHolder.unpaidUsage) {
-    //         consumerHolder.lastFullPaymentTimestamp = now;
-    //     }
-        
-    //     addSSHolding(amountPaid/solarSystems[ssAddress].totalValue*100, ssAddress, consumer); // transfer over a portion of ownership
-    //     consumerHolder.unpaidUsage -= amountPaidInEnergy; // update the unpaid balance 
-    // }
+        solarSystems[_ssAddress].lastPaymentTimestamp = now;
+        uint percentageChange = getPercent(_amountPaid, solarSystems[_ssAddress].totalValue);
+        solarSystems[_ssAddress].percentageHeld += percentageChange; // transfer over a portion of ownership
+        solarSystems[_ssAddress].unpaidUsage -= amountPaidInEnergy; // update the unpaid balance 
+    }
+    
+    //logic here should should
+    function getPercent(uint part, uint whole) public pure returns(uint percent) {
+        uint numerator = part * 1000;
+        require(numerator > part); // overflow. Should use SafeMath throughout if this was a real implementation. 
+        uint temp = numerator / whole + 5; // proper rounding up
+        return temp / 10;
+    }
 
     // // Transfer percentTransfer percent of holding of solar system at targetSSAddress to the user with address 'to'
-    // function addSSHolding(uint percentTransfer, address targetSSAddress, address to) public {
-    //     require(msg.sender == admin);
-
-    //     mapping(address => Holder) targetSSHolders = solarSystems[targetSSAddress].holders;
-    //     require(targetSSHolders[admin].percentageHeld >= percentTransfer);
-
-    //     if (targetSSHolders[to].holdingStatus == HoldingStatus.HELD) {
-    //         if (targetSSHolders[to].percentageHeld + percentTransfer >= 100) { // fully paid off!
-    //             grantOwnership(targetSSAddress, to);
-    //         } else {
-    //             targetSSHolders[to].percentageHeld += percentTransfer;
-    //             targetSSHolders[admin].percentageHeld -= percentTransfer;
-    //         }
-    //     } else { // this is their first payment towards this solar system
-    //         targetSSHolders[to] = Holder({
-    //             percentageHeld: percentTransfer,
-    //             holdingStatus: HoldingStatus.HELD,
-    //             lastFullPaymentTimestamp: now,
-    //             unpaidUsage: 0
-    //         });
-    //     }
+    // function addSSHolding(uint _percentTransfer, uint _targetSSAddress) private {
+    //     solarSystems[_targetSSAddress].percentageHeld += _percentTransfer;
     // }
 
     // // Reclaim percentTransfer percent of holding of solar system at targetSSAddress currently held by user with address 'from' 

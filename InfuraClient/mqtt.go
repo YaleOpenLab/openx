@@ -4,11 +4,11 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
-	"net/http"
+	// "io/ioutil"
+	// "net/http"
 	"os"
 	"os/signal"
-	"strings"
+	// "strings"
 
 	"github.com/yosssi/gmq/mqtt"
 	"github.com/yosssi/gmq/mqtt/client"
@@ -46,25 +46,39 @@ func main() {
 	err = cli.Subscribe(&client.SubscribeOptions{
 		SubReqs: []*client.SubReq{
 			&client.SubReq{
-				TopicFilter: []byte("testTopic"),
+				TopicFilter: []byte("p2penergy/photon/events"),
 				QoS:         mqtt.QoS0,
 				// Define the processing of the message handler.
 				Handler: func(topicName, message []byte) {
 					fmt.Println(("New Transaction received"))
-
-					jsonData := fmt.Sprintf(`{"jsonrpc":"2.0", "method":"eth_call", "params":[{"to": "0xec67fad6efe7346d18c908275b879d04454a3dd0", "data": "0x6ffa1caa0000000000000000000000000000000000000000000000000000000000000005"}, "latest"], "id":1}`)
-					response, err := http.Post("https://rinkeby.infura.io/gnNuNKvHFmjf9xkJ0StE", "application/json", strings.NewReader(jsonData))
-
-					if err != nil {
-						fmt.Printf("Request to INFURA failed with an error: %s\n", err)
-						fmt.Println()
-					} else {
-						data, _ := ioutil.ReadAll(response.Body)
-
-						fmt.Println("INFURA response:")
-						fmt.Println(string(data))
-						fmt.Println()
-					}
+					fmt.Println(string(message));
+				},
+			},
+			&client.SubReq{
+				TopicFilter: []byte("power1"),
+				QoS:         mqtt.QoS0,
+				// Define the processing of the message handler.
+				Handler: func(topicName, message []byte) {
+					fmt.Println(("New power1 received"))
+					fmt.Println(string(message));
+				},
+			},
+			&client.SubReq{
+				TopicFilter: []byte("power2"),
+				QoS:         mqtt.QoS0,
+				// Define the processing of the message handler.
+				Handler: func(topicName, message []byte) {
+					fmt.Println(("New power2 received"))
+					fmt.Println(string(message));
+				},
+			},
+			&client.SubReq{
+				TopicFilter: []byte("power3"),
+				QoS:         mqtt.QoS0,
+				// Define the processing of the message handler.
+				Handler: func(topicName, message []byte) {
+					fmt.Println(("New power3 received"))
+					fmt.Println(string(message));
 				},
 			},
 		},
