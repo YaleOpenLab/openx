@@ -1,5 +1,7 @@
 # SmartProperty MVP
 
+### Projet Abstract
+
 #### Main Idea 
 Each Microgrid energy producer/component will serve as a “lite client” that has access to/exists as an address on the Ethereum blockchain. This address/client will hold funds and continuously execute contract calls on the solar property contract and observe the returned data. With this data, the client will determine if funds are sufficient to continue providing energy from the connected renewable energy source.
 
