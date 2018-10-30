@@ -199,7 +199,7 @@ contract SolarProperty {
         solarSystems[_ssAddress].unpaidUsage -= amountPaidInEnergy; // update the unpaid balance 
     }
     
-    //logic here should should
+    //logic here should be checked this was pulled from a stackoverflow suggestion to calculate percentage
     function getPercent(uint part, uint whole) public pure returns(uint percent) {
         uint numerator = part * 1000;
         require(numerator > part); // overflow. Should use SafeMath throughout if this was a real implementation. 
