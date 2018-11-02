@@ -52,7 +52,7 @@ contract SolarProperty {
     // Consider its eventual onboarding as separate entity to the solar system but assigned to a solar system to act as a witness that will inform the energy oracle of what its 'seeing'
 
     /// ### TO-DO ###  DEFINE INVESTOR ### eg. Emulate the role of a Neighborly Muni Bond ####
-    /// Set maybe a Struct for investors, which maybe is represented by a single 'investor platfor' eg. Neighborly.
+    /// Set maybe a Struct for investors, which maybe is represented by a single 'investor platform' eg. Neighborly.
     /// Consider bond structure at first with interest rates. Then make compatible for equity crowdfunding and normal crowdfunding.
     
     /* public variables */
@@ -186,6 +186,8 @@ contract SolarProperty {
     // ## TODO ## Define the payment cycle ##
     // Consider making payments every two weeks or every month
 
+    // ## TODO ## Renewable Energy certification 
+
     // // ## MAKE PAYMENTS ##
     // Make a payment from consumer toward any unpaid balance on the panel at ssAddress
     function makePayment(uint _ssAddress, uint _amountPaid) payable public {
@@ -209,7 +211,6 @@ contract SolarProperty {
 
      // ## TODO ## // LEGAL OWNERSHIP ///
      // Come up with a step so that when ownership is fully transfered, there is an automatic report that can change a registry that has legal validity
-
     // // functions that require no gas, but will check the state of the system
 
     // // Returns true if consumer has completely paid of any outstanding balance on the panel at ssAddress within their consumerBuffer period
