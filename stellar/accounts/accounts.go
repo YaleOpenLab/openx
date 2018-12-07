@@ -99,28 +99,23 @@ func (a *Account) SendCoins(destination string, amount string) (int32, string, e
 	return resp.Ledger, resp.Hash, nil
 }
 
-func (a *Account) CreateAsset(destination string) error {
-	// creates and sends an asset to some random string
-	/*
-	My stellar public key and private key are: GDJNUSLK5D4L7UMGXNCDGMFTJSMDHTQVL4UEBIGH5ZOSAYTUEEPMW5ZB SAIUG6J4RZM3QEJCDJYBHSPVYDTDXZIJLMXWLUMZKT66TSIT734FMZKH
-	*/
-	// this creates a new  petrodollar for every publicKey
-	// in the future, this would be a static publicKey since we only want 1 XPD
-	petroDollar := build.CreditAsset("PetroDollar", a.PublicKey)
-	fmt.Println("Petro Dollar code length is: ", petroDollar.Code)
-	// First, the receiving account must trust the asset
+func (a *Account) CreateAsset(assetName string) build.Asset {
+	customAsset := build.CreditAsset(assetName, a.PublicKey)
+	return customAsset
+}
+
+func (a *Account) TrustAsset(asset build.Asset, limit string) error {
 	// TRUST is FROM recipient TO issuer
 	trustTx, err := build.Transaction(
-		build.SourceAccount{"GDJNUSLK5D4L7UMGXNCDGMFTJSMDHTQVL4UEBIGH5ZOSAYTUEEPMW5ZB"},
+		build.SourceAccount{a.PublicKey},
 		build.AutoSequence{SequenceProvider: horizon.DefaultTestNetClient},
 		build.TestNetwork,
-		build.Trust(petroDollar.Code, petroDollar.Issuer, build.Limit("100.25")),
+		build.Trust(asset.Code, asset.Issuer, build.Limit(limit)),
 	)
-
 	if err != nil {
 		return err
 	}
-	trustTxe, err := trustTx.Sign("SAIUG6J4RZM3QEJCDJYBHSPVYDTDXZIJLMXWLUMZKT66TSIT734FMZKH")
+	trustTxe, err := trustTx.Sign(a.Seed)
 	if err != nil {
 		return err
 	}
@@ -128,19 +123,23 @@ func (a *Account) CreateAsset(destination string) error {
 	if err != nil {
 		return err
 	}
-	_, err = horizon.DefaultTestNetClient.SubmitTransaction(trustTxeB64)
+	tx, err := horizon.DefaultTestNetClient.SubmitTransaction(trustTxeB64)
 	if err != nil {
 		return err
 	}
-	// Second, the issuing account actually sends a payment using the asset
+	log.Println("Trusted asset tx: ", tx)
+	return nil
+}
+
+func (a *Account) SendAsset(assetName string, destination string, amount string) (error) {
 	// this transaction is FROM issuer TO recipient
 	paymentTx, err := build.Transaction(
 		build.SourceAccount{a.PublicKey},
 		build.TestNetwork,
 		build.AutoSequence{SequenceProvider: horizon.DefaultTestNetClient},
 		build.Payment(
-			build.Destination{AddressOrSeed: "GDJNUSLK5D4L7UMGXNCDGMFTJSMDHTQVL4UEBIGH5ZOSAYTUEEPMW5ZB"},
-			build.CreditAmount{"PetroDollar", a.PublicKey, "3.34"},
+			build.Destination{AddressOrSeed: destination},
+			build.CreditAmount{assetName, a.PublicKey, amount},
 		),
 	)
 	if err != nil {
@@ -154,10 +153,10 @@ func (a *Account) CreateAsset(destination string) error {
 	if err != nil {
 		return err
 	}
-	tx, err = horizon.DefaultTestNetClient.SubmitTransaction(paymentTxeB64)
+	tx, err := horizon.DefaultTestNetClient.SubmitTransaction(paymentTxeB64)
 	if err != nil {
 		return err
 	}
-	fmt.Println("TX IS: ", tx)
+	fmt.Println("Send asset tx is: ", tx)
 	return nil
 }

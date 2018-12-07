@@ -7,35 +7,52 @@ import (
 )
 
 func main() {
-	var acc accounts.Account
-	err := (&acc).New()
+	var issuer accounts.Account
+	var recipient accounts.Account
+	err := (&issuer).New()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Println("My stellar public key and private key are: ", acc.PublicKey, " ", acc.Seed)
-
-	err = acc.GetCoins()
+	err = (&recipient).New()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = acc.Balance()
+	log.Println("My stellar public key and private key are: ", issuer.PublicKey, " ", issuer.Seed)
+
+	err = issuer.GetCoins() // get coins for issuer
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	destination := "GD4H5KBX6OL5VUBZDOC4DMCZIKGGUB4ZI3TUY4IPXJ4DLOD6BVT6GYSV" // a random address for now
-	amount := "3.33"                                                          // weirdly enough, this is a string instead of uint or something
+	err = recipient.GetCoins() // get coins for recipient
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	confHeight, txHash, err := acc.SendCoins(destination, amount)
+	// err = issuer.Balance()
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	confHeight, txHash, err := issuer.SendCoins(recipient.PublicKey, "3.33") // send some coins from the issuer to the recipient
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	log.Println("Confirmation height is: ", confHeight, " and txHash is: ", txHash)
 
-	err = acc.CreateAsset("GD4H5KBX6OL5VUBZDOC4DMCZIKGGUB4ZI3TUY4IPXJ4DLOD6BVT6GYSV")
+	asset := issuer.CreateAsset("PetroDlr") // create the asset that we want
+
+	trustLimit := "100" // trust only 100 barrels of oil from Petro
+	err = recipient.TrustAsset(asset, trustLimit)
+	if err != nil {
+		log.Println("Trust limit is in the wrong format")
+		log.Fatal(err)
+	}
+
+	err = issuer.SendAsset("PetroDlr", recipient.PublicKey, "3.35")
 	if err != nil {
 		log.Fatal(err)
 	}
