@@ -1,18 +1,13 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"net/http"
 
-	"github.com/stellar/go/build"
-	"github.com/stellar/go/clients/horizon"
-	"github.com/stellar/go/keypair"
-	"github.com/stellar/go/network"
+	accounts "github.com/Varunram/smartPropertyMVP/stellar/accounts"
 )
 
 func main() {
-	var acc Account
+	var acc accounts.Account
 	err := (&acc).New()
 	if err != nil {
 		log.Fatal(err)

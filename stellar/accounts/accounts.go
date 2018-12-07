@@ -1,3 +1,5 @@
+package accounts
+
 import(
   "fmt"
   "log"
