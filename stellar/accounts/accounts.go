@@ -1,22 +1,22 @@
 package accounts
 
-import(
-  "fmt"
-  "log"
-  "net/http"
+import (
+	"fmt"
+	"log"
+	"net/http"
 
-  "github.com/stellar/go/build"
-  "github.com/stellar/go/clients/horizon"
-  "github.com/stellar/go/keypair"
-  "github.com/stellar/go/network"
+	"github.com/stellar/go/build"
+	"github.com/stellar/go/clients/horizon"
+	"github.com/stellar/go/keypair"
+	"github.com/stellar/go/network"
 )
 
 type Account struct {
-	Seed string
+	Seed      string
 	PublicKey string
 }
 
-func (a *Account) New() (error) {
+func (a *Account) New() error {
 	pair, err := keypair.Random()
 	// so key value pairs over here are ed25519 key pairs instead of bitcoin style key pairs
 	// they also seem to sue al lcaps, which I don't know why
@@ -29,7 +29,7 @@ func (a *Account) New() (error) {
 	return nil
 }
 
-func (a *Account) GetCoins() (error) {
+func (a *Account) GetCoins() error {
 	// get some coins from the stellar robot for testing
 	resp, err := http.Get("https://friendbot.stellar.org/?addr=" + a.PublicKey)
 	if err != nil || resp == nil {
@@ -39,7 +39,7 @@ func (a *Account) GetCoins() (error) {
 	return nil
 }
 
-func (a *Account) Balance() (error) {
+func (a *Account) Balance() error {
 
 	account, err := horizon.DefaultTestNetClient.LoadAccount(a.PublicKey)
 	if err != nil {
@@ -97,4 +97,67 @@ func (a *Account) SendCoins(destination string, amount string) (int32, string, e
 	fmt.Println("Ledger:", resp.Ledger)
 	fmt.Println("Hash:", resp.Hash)
 	return resp.Ledger, resp.Hash, nil
+}
+
+func (a *Account) CreateAsset(destination string) error {
+	// creates and sends an asset to some random string
+	/*
+	My stellar public key and private key are: GDJNUSLK5D4L7UMGXNCDGMFTJSMDHTQVL4UEBIGH5ZOSAYTUEEPMW5ZB SAIUG6J4RZM3QEJCDJYBHSPVYDTDXZIJLMXWLUMZKT66TSIT734FMZKH
+	*/
+	// this creates a new  petrodollar for every publicKey
+	// in the future, this would be a static publicKey since we only want 1 XPD
+	petroDollar := build.CreditAsset("PetroDollar", a.PublicKey)
+	fmt.Println("Petro Dollar code length is: ", petroDollar.Code)
+	// First, the receiving account must trust the asset
+	// TRUST is FROM recipient TO issuer
+	trustTx, err := build.Transaction(
+		build.SourceAccount{"GDJNUSLK5D4L7UMGXNCDGMFTJSMDHTQVL4UEBIGH5ZOSAYTUEEPMW5ZB"},
+		build.AutoSequence{SequenceProvider: horizon.DefaultTestNetClient},
+		build.TestNetwork,
+		build.Trust(petroDollar.Code, petroDollar.Issuer, build.Limit("100.25")),
+	)
+
+	if err != nil {
+		return err
+	}
+	trustTxe, err := trustTx.Sign("SAIUG6J4RZM3QEJCDJYBHSPVYDTDXZIJLMXWLUMZKT66TSIT734FMZKH")
+	if err != nil {
+		return err
+	}
+	trustTxeB64, err := trustTxe.Base64()
+	if err != nil {
+		return err
+	}
+	_, err = horizon.DefaultTestNetClient.SubmitTransaction(trustTxeB64)
+	if err != nil {
+		return err
+	}
+	// Second, the issuing account actually sends a payment using the asset
+	// this transaction is FROM issuer TO recipient
+	paymentTx, err := build.Transaction(
+		build.SourceAccount{a.PublicKey},
+		build.TestNetwork,
+		build.AutoSequence{SequenceProvider: horizon.DefaultTestNetClient},
+		build.Payment(
+			build.Destination{AddressOrSeed: "GDJNUSLK5D4L7UMGXNCDGMFTJSMDHTQVL4UEBIGH5ZOSAYTUEEPMW5ZB"},
+			build.CreditAmount{"PetroDollar", a.PublicKey, "3.34"},
+		),
+	)
+	if err != nil {
+		return err
+	}
+	paymentTxe, err := paymentTx.Sign(a.Seed)
+	if err != nil {
+		return err
+	}
+	paymentTxeB64, err := paymentTxe.Base64()
+	if err != nil {
+		return err
+	}
+	tx, err = horizon.DefaultTestNetClient.SubmitTransaction(paymentTxeB64)
+	if err != nil {
+		return err
+	}
+	fmt.Println("TX IS: ", tx)
+	return nil
 }
