@@ -100,8 +100,7 @@ func (a *Account) SendCoins(destination string, amount string) (int32, string, e
 }
 
 func (a *Account) CreateAsset(assetName string) build.Asset {
-	customAsset := build.CreditAsset(assetName, a.PublicKey)
-	return customAsset
+	return build.CreditAsset(assetName, a.PublicKey)
 }
 
 func (a *Account) TrustAsset(asset build.Asset, limit string) error {
@@ -112,26 +111,31 @@ func (a *Account) TrustAsset(asset build.Asset, limit string) error {
 		build.TestNetwork,
 		build.Trust(asset.Code, asset.Issuer, build.Limit(limit)),
 	)
+
 	if err != nil {
 		return err
 	}
+
 	trustTxe, err := trustTx.Sign(a.Seed)
 	if err != nil {
 		return err
 	}
+
 	trustTxeB64, err := trustTxe.Base64()
 	if err != nil {
 		return err
 	}
+
 	tx, err := horizon.DefaultTestNetClient.SubmitTransaction(trustTxeB64)
 	if err != nil {
 		return err
 	}
+
 	log.Println("Trusted asset tx: ", tx)
 	return nil
 }
 
-func (a *Account) SendAsset(assetName string, destination string, amount string) (error) {
+func (a *Account) SendAsset(assetName string, destination string, amount string) error {
 	// this transaction is FROM issuer TO recipient
 	paymentTx, err := build.Transaction(
 		build.SourceAccount{a.PublicKey},
@@ -142,21 +146,26 @@ func (a *Account) SendAsset(assetName string, destination string, amount string)
 			build.CreditAmount{assetName, a.PublicKey, amount},
 		),
 	)
+
 	if err != nil {
 		return err
 	}
+
 	paymentTxe, err := paymentTx.Sign(a.Seed)
 	if err != nil {
 		return err
 	}
+
 	paymentTxeB64, err := paymentTxe.Base64()
 	if err != nil {
 		return err
 	}
+
 	tx, err := horizon.DefaultTestNetClient.SubmitTransaction(paymentTxeB64)
 	if err != nil {
 		return err
 	}
-	fmt.Println("Send asset tx is: ", tx)
+
+	log.Println("Sent asset tx is: ", tx)
 	return nil
 }
