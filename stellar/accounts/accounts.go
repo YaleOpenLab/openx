@@ -16,6 +16,15 @@ type Account struct {
 	PublicKey string
 }
 
+// Setup Account is a handler to setup a new account (issuer / investor / school)
+func SetupAccount(a *Account) Account {
+	err := a.New()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return *a
+}
+
 func (a *Account) New() error {
 	pair, err := keypair.Random()
 	// so key value pairs over here are ed25519 key pairs instead of bitcoin style key pairs
@@ -31,6 +40,7 @@ func (a *Account) New() error {
 
 func (a *Account) GetCoins() error {
 	// get some coins from the stellar robot for testing
+	// gives only a constant amount of stellar, so no need to pass it a coin param
 	resp, err := http.Get("https://friendbot.stellar.org/?addr=" + a.PublicKey)
 	if err != nil || resp == nil {
 		log.Println("ERRORED OUT while calling friendbot, no coins for us")
@@ -131,7 +141,7 @@ func (a *Account) TrustAsset(asset build.Asset, limit string) error {
 		return err
 	}
 
-	log.Println("Trusted asset tx: ", tx)
+	log.Println("Trusted asset tx: ", tx.Hash)
 	return nil
 }
 
