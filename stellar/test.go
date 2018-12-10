@@ -33,15 +33,15 @@ func main() {
 		log.Fatal(err)
 		// this means that we couldn't open the dtabase and we need to do something else
 	}
-	defer db.Close() // we could do db options further down in the control flow
-	//log.Fatal("DB works")
+	defer db.Close()
+	log.Fatal("DB works")
 	_, err = flags.ParseArgs(&opts, os.Args)
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Printf("InvAmount: %d USD, RecYears: %d years, Verbose: %t", opts.InvAmount, opts.RecYears, opts.Verbose)
 	ValidateInputs()
-	// var err error
+
 	issuer := accounts.SetupAccount()
 	investor := accounts.SetupAccount()
 	recipient := accounts.SetupAccount()

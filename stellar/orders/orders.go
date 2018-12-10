@@ -23,6 +23,7 @@ type Order struct {
 	Location    string // where this specific solar panel is located
 	MoneyRaised int    // total money that has been raised until now
 	Metadata    string // any other metadata can be stored here
+	Live        bool   // check to see whether the current order is live or not
 	// Percentage raised is not sotred in the databse since that can be calculated by the UI
 }
 
@@ -72,12 +73,15 @@ func RetrieveOrder(key uint32, db *bolt.DB) (Order, error) {
 		if err != nil {
 			return err
 		}
-		log.Println("Retrieved value", rOrder)
 		return nil
 	})
 	return rOrder, err
 }
-func DeleteOrder(key uint32, db *bolt.DB) (error) {
+
+func DeleteOrder(key uint32, db *bolt.DB) error {
+	// deleting order might be dangerous since that would mess with the retrieveAll
+	// function, have it in here for now, don't do too much with it / fiox retrieve all
+	// to handle this case
 	err := db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("Orders"))
 		err := b.Delete(Uint32toB(key))
@@ -88,4 +92,25 @@ func DeleteOrder(key uint32, db *bolt.DB) (error) {
 		return nil
 	})
 	return err
+}
+
+func RetrieveAll(db *bolt.DB) ([]Order, error) {
+	var arr []Order
+	err := db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("Orders"))
+		i := uint32(1)
+		for ; ; i++ {
+			var rOrder Order
+			x := b.Get(Uint32toB(i))
+			err := json.Unmarshal(x, &rOrder)
+			if err != nil && rOrder.Live == false {
+				// we've reached the end of input, so this is not an error
+				// ideal error would be "unexpected JSON input" or something similar
+				return nil
+			}
+			arr = append(arr, rOrder)
+		}
+		return nil
+	})
+	return arr, err
 }
