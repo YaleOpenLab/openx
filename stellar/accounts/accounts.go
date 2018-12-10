@@ -17,25 +17,26 @@ type Account struct {
 }
 
 // Setup Account is a handler to setup a new account (issuer / investor / school)
-func SetupAccount(a *Account) Account {
-	err := a.New()
+func SetupAccount() Account {
+	a, err := New()
 	if err != nil {
 		log.Fatal(err)
 	}
-	return *a
+	return a
 }
 
-func (a *Account) New() error {
+func New() (Account, error) {
+	var a Account
 	pair, err := keypair.Random()
 	// so key value pairs over here are ed25519 key pairs instead of bitcoin style key pairs
 	// they also seem to sue al lcaps, which I don't know why
 	if err != nil {
-		return err
+		return a, err
 	}
 	log.Println("MY SEED IS: ", pair.Seed())
 	a.Seed = pair.Seed()
 	a.PublicKey = pair.Address()
-	return nil
+	return a, nil
 }
 
 func (a *Account) GetCoins() error {
@@ -176,6 +177,6 @@ func (a *Account) SendAsset(assetName string, destination string, amount string)
 		return err
 	}
 
-	log.Println("Sent asset tx is: ", tx)
+	log.Println("Sent asset tx is: ", tx.Hash)
 	return nil
 }
