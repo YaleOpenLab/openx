@@ -282,7 +282,7 @@ func (a *Account) SendAssetToIssuer(assetName string, issuerPubkey string, amoun
 	return tx.Ledger, tx.Hash, nil
 }
 
-func PriceOracle(assetName string) (string, error) {
+func PriceOracle() (string, error) {
 	// this is where we must call the oracle to check power tariffs and similar
 	// right now, we hardcode this
 	// we must come up wiht a construct in order to get the price data reliably
@@ -302,6 +302,25 @@ func PriceOracle(assetName string) (string, error) {
 	return avgString, nil
 }
 
+func PriceOracleInFloat() (float64) {
+	// this is where we must call the oracle to check power tariffs and similar
+	// right now, we hardcode this
+	// we must come up wiht a construct in order to get the price data reliably
+	// this could either be a website where people report this or  where certified
+	// authorities can update this when needed. Webn scrapign might work, but is
+	// complicated and might cause some issues considering we rely on it.
+	// for now
+	// right now, community consensus look like the price of electricity is
+	// $0.2 per kWH
+	priceOfElectricity := 0.2
+	// since solar is free, they just need to pay this and then in some x time, they
+	// can own the panel
+	// the average energy consumption in puerto rico seems to be 5,657 kWh or about
+	// 471 kWH per household. lets take 600 (20% error margin)
+	averageConsumption := float64(600)
+	return priceOfElectricity*averageConsumption
+}
+
 func (a *Account) Payback(db *bolt.DB, index uint32, assetName string, issuerPubkey string, amount string) error {
 	// this will be called by the recipient
 	oldBalance, err := a.GetAssetBalance(assetName)
@@ -309,7 +328,7 @@ func (a *Account) Payback(db *bolt.DB, index uint32, assetName string, issuerPub
 		log.Fatal(err)
 	}
 
-	PBAmount, err := PriceOracle(assetName)
+	PBAmount, err := PriceOracle()
 	if err != nil {
 		log.Println("Unable to fetch oracle price, exiting")
 		return err

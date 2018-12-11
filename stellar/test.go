@@ -8,6 +8,7 @@ import (
 	accounts "github.com/Varunram/smartPropertyMVP/stellar/accounts"
 	assets "github.com/Varunram/smartPropertyMVP/stellar/assets"
 	orders "github.com/Varunram/smartPropertyMVP/stellar/orders"
+	utils "github.com/Varunram/smartPropertyMVP/stellar/utils"
 	flags "github.com/jessevdk/go-flags"
 )
 
@@ -116,18 +117,6 @@ func main() {
 	// 	log.Fatal(err)
 	// }
 
-	debtAssetBalance, err := recipient.GetAssetBalance(a.DEBAssetCode)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	pbAssetBalance, err := recipient.GetAssetBalance(a.PBAssetCode)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Printf("Debt balance: %s, Payback Balance: %s", debtAssetBalance, pbAssetBalance)
-
 	// now we need to simulate a situation where the recipient pays back a certain
 	// portion of the funds
 	// again, onboarding is omitted here, since that's a bigger problem that we hopefully
@@ -140,13 +129,40 @@ func main() {
 		log.Println(err)
 		log.Fatal(err)
 	}
+	// after this ,we must update the steuff on the server side and send a payback token
+	// to let the user know that he has paid x amoutn of money.
+	// this however, would be the money paid / money that has to be paid per month
+	// in total, this should be payBackPeriod * 12
 
+	paybackAmountF := utils.StringToFloat(paybackAmount)
+	refundS :=  utils.FloatToString(paybackAmountF / accounts.PriceOracleInFloat())
+	// weird conversion stuff, but have to since the amount should be in a string
+
+	blockHeight, txHash, err := issuer.SendAsset(a.PBAssetCode, recipient.PublicKey, refundS)
+	if err != nil {
+		log.Println("Error while sending a payback token, notify help immediately")
+		log.Fatal(err)
+	}
+	log.Println("Sent payback token to recipient", blockHeight, txHash)
 	tOrder, err := orders.RetrieveOrder(a.Index, db)
 	if err != nil {
 		log.Println("Error retrieving from db")
 		log.Fatal(err)
 	}
 	log.Println("Test whether this was updated: ", tOrder)
+
+	debtAssetBalance, err := recipient.GetAssetBalance(a.DEBAssetCode)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	pbAssetBalance, err := recipient.GetAssetBalance(a.PBAssetCode)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Printf("Debt balance: %s, Payback Balance: %s", debtAssetBalance, pbAssetBalance)
+
 	/*
 		confHeight, txHash, err := issuer.SendCoins(recipient.PublicKey, "3.34") // send some coins from the issuer to the recipient
 		if err != nil {

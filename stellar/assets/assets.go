@@ -32,29 +32,20 @@ package assets
 // lets leave validation for later since that requires state validation stuff
 
 import (
-	"encoding/hex"
-	"golang.org/x/crypto/sha3"
 	"log"
-	"strconv"
 
 	"github.com/boltdb/bolt"
 	accounts "github.com/Varunram/smartPropertyMVP/stellar/accounts"
 	orders "github.com/Varunram/smartPropertyMVP/stellar/orders"
+	utils "github.com/Varunram/smartPropertyMVP/stellar/utils"
 )
 
 func AssetID(inputString string) string {
 	// so the assetID right now is a hash of the asset name, concatenated investor public keys and nonces
-	x := SHA3hash(inputString)
+	x := utils.SHA3hash(inputString)
 	return "YOL" + x[64:73] // max length of an asset in stellar is 12
 	// log.Fatal(fmt.Errorf("All good"))
 	// return nil
-}
-
-func SHA3hash(inputString string) string {
-	byteString := sha3.Sum512([]byte(inputString))
-	hexString := hex.EncodeToString(byteString[:])
-	// so now we have a SHA3hash that we can use to assign unique ids to our assets
-	return hexString
 }
 
 func CalculatePayback(balance string, noOfMonths string) error {
@@ -86,9 +77,9 @@ func SetupAsset(db *bolt.DB, issuer *accounts.Account, investor *accounts.Accoun
 	INVAssetName := AssetID("INVTokens_" + assetName) // ie. sha3(INVTokens_School_PuertoRico_1)[64:76]
 	DEBAssetName := AssetID("DEBTokens_" + assetName) // ie. sha3(INVTokens_School_PuertoRico_1)[64:76]
 	PBAssetName := AssetID("PBTokens_" + assetName)
-	iAmt := strconv.Itoa(investedAmount)
-	dAmt := strconv.Itoa(investedAmount*2)
-	pbAmt := strconv.Itoa(noOfYears * 12)
+	iAmt := utils.IntToString(investedAmount)
+	dAmt := utils.IntToString(investedAmount*2)
+	pbAmt := utils.IntToString(noOfYears * 12)
 	log.Printf("Created asset names are %s and %s and amounts are %s and %s", INVAssetName, PBAssetName, iAmt, pbAmt)
 	PBasset := issuer.CreateAsset(PBAssetName)
 	INVasset := issuer.CreateAsset(INVAssetName)
