@@ -5,7 +5,10 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
+	orders "github.com/Varunram/smartPropertyMVP/stellar/orders"
+	"github.com/boltdb/bolt"
 	"github.com/stellar/go/build"
 	clients "github.com/stellar/go/clients/horizon"
 	"github.com/stellar/go/keypair"
@@ -48,7 +51,7 @@ func New() (Account, error) {
 	return a, nil
 }
 
-func (issuer *Account) SetupAccount(recipientPubKey string, amount string) (error){
+func (issuer *Account) SetupAccount(recipientPubKey string, amount string) error {
 	passphrase := network.TestNetworkPassphrase
 	tx, err := build.Transaction(
 		build.SourceAccount{issuer.Seed},
@@ -281,13 +284,25 @@ func (a *Account) SendAssetToIssuer(assetName string, issuerPubkey string, amoun
 
 func PriceOracle(assetName string) (string, error) {
 	// this is where we must call the oracle to check power tariffs and similar
-	// right now, we can hardcode this, but ideally this must call the website
-	// that  is there in the ETH contract, should be easy to do, but hardcode
+	// right now, we hardcode this
+	// we must come up wiht a construct in order to get the price data reliably
+	// this could either be a website where people report this or  where certified
+	// authorities can update this when needed. Webn scrapign might work, but is
+	// complicated and might cause some issues considering we rely on it.
 	// for now
-	return "200", nil
+	// right now, community consensus look like the price of electricity is
+	// $0.2 per kWH
+	priceOfElectricity := 0.2
+	// since solar is free, they just need to pay this and then in some x time, they
+	// can own the panel
+	// the average energy consumption in puerto rico seems to be 5,657 kWh or about
+	// 471 kWH per household. lets take 600 (20% error margin)
+	averageConsumption := float64(600)
+	avgString := fmt.Sprintf("%f", priceOfElectricity*averageConsumption)
+	return avgString, nil
 }
 
-func (a*Account) Payback(assetName string, issuerPubkey string, amount string) (error) {
+func (a *Account) Payback(db *bolt.DB, index uint32, assetName string, issuerPubkey string, amount string) error {
 	// this will be called by the recipient
 	oldBalance, err := a.GetAssetBalance(assetName)
 	if err != nil {
@@ -299,6 +314,8 @@ func (a*Account) Payback(assetName string, issuerPubkey string, amount string) (
 		log.Println("Unable to fetch oracle price, exiting")
 		return err
 	}
+
+	log.Println("Retrieved average price from oracle: ", PBAmount)
 	// the oracke needs to know the assetName so that it can find the other details
 	// about this asset from the db. This should run on the server side and must
 	// be split when we do run client side stuff.
@@ -336,16 +353,26 @@ func (a*Account) Payback(assetName string, issuerPubkey string, amount string) (
 	paidAmount := oldBalanceFloat - newBalanceFloat
 	log.Println("Old Balance: ", oldBalanceFloat, "New Balance: ", newBalanceFloat, "Paid: ", paidAmount, "Req Amount: ", amountFloat)
 
+	// would be nice to take some additional action like sending a notification or
+	// something to investors or to the email address given so that everyone is made
+	// aware of this and there's data transparency
+
 	if paidAmount < amountFloat {
-		log.Println("Amount paid is less than amount required, please pay more")
-		return fmt.Errorf("Amount paid is less than amount required, please pay more")
+		log.Println("Amount paid is less than amount required, balance not updating, please amke sure to cover this next time")
 	} else if paidAmount > amountFloat {
 		log.Println("You've chosen to pay more than what is required for this month. Adjusting payback period accordingly")
-		return nil
 	} else {
 		log.Println("You've paid exactly what is required for this month. Payback period remains as usual")
-		return nil
 	}
-
-	return nil
+	// we need to update the database here
+	givenOrder, err := orders.RetrieveOrder(index, db)
+	if err != nil {
+		log.Println("Given order not found in the database")
+		return err
+	}
+	givenOrder.BalLeft = float64(givenOrder.TotalValue) - paidAmount
+	givenOrder.DateLastPaid = time.Now().Format(time.RFC850)
+	// balLeft must be updated on the server side and can be challenged easily
+	// if there's some discrepancy since the tx's are on the blockchain
+	return orders.InsertOrder(givenOrder, db)
 }

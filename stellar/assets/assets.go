@@ -37,7 +37,9 @@ import (
 	"log"
 	"strconv"
 
+	"github.com/boltdb/bolt"
 	accounts "github.com/Varunram/smartPropertyMVP/stellar/accounts"
+	orders "github.com/Varunram/smartPropertyMVP/stellar/orders"
 )
 
 func AssetID(inputString string) string {
@@ -55,7 +57,16 @@ func SHA3hash(inputString string) string {
 	return hexString
 }
 
-func SetupAssets(issuer *accounts.Account, investor *accounts.Account, recipient *accounts.Account, investedAmount int, noOfYears int) (string, string, string, error) {
+func CalculatePayback(balance string, noOfMonths string) error {
+	// the idea is that we should be able ot pass an assetId to this function
+	// and it must calculate how much time we have left for payback. For this example
+	// until twe do the db stuff, lets pass a few params (although this could be done
+	// separately as well).
+	return nil
+}
+
+func SetupAsset(db *bolt.DB, issuer *accounts.Account, investor *accounts.Account, recipient *accounts.Account, investedAmount int, noOfYears int) (orders.Order, error) {
+	var newOrder orders.Order
 	assetName := AssetID("School_PuertoRico_1")
 	// the reason why we have an int here is to avoid parsing
 	// issues like dealing with random user strings "abc" could also be a valid input
@@ -88,20 +99,20 @@ func SetupAssets(issuer *accounts.Account, investor *accounts.Account, recipient
 
 	txHash, err := investor.TrustAsset(INVasset, string(iAmt))
 	if err != nil {
-		return "", "", "", err
+		return newOrder, err
 	}
 	log.Println("Investor trusted asset: ", INVasset.Code, " tx hash: ", txHash)
 
 	// and the school needs to trust me only for paybackTokens amount of PB tokens
 	txHash, err = recipient.TrustAsset(PBasset, string(pbAmt))
 	if err != nil {
-		return "", "", "", err
+		return newOrder, err
 	}
 	log.Println("Recipient Trusted Payback asset: ", PBasset.Code, " tx hash: ", txHash)
 
 	txHash, err = recipient.TrustAsset(DEBasset, string(dAmt)) // since debt = invested amount
 	if err != nil {
-		return "", "", "", err
+		return newOrder, err
 	}
 	log.Println("Recipient Trusted Debt asset: ", DEBasset.Code, " tx hash: ", txHash)
 
@@ -117,14 +128,21 @@ func SetupAssets(issuer *accounts.Account, investor *accounts.Account, recipient
 	log.Println("Sending INVasset: ", INVAssetName, "for: ", string(iAmt))
 	_, _, err = issuer.SendAsset(INVAssetName, investor.PublicKey, iAmt)
 	if err != nil {
-		return "" ,"", "", err
+		return newOrder, err
 	}
 	log.Println("Sending DEBasset: ", DEBAssetName, "for: ", string(iAmt))
 	_, _, err = issuer.SendAsset(DEBAssetName, recipient.PublicKey, iAmt) // same amount as debt
 	if err != nil {
-		return "" ,"", "", err
+		return newOrder, err
 	}
 
+	newOrder, err = orders.NewOrder(db, "16x20 panels", investedAmount, "Puerto Rico", investedAmount, "This is test data", INVAssetName, DEBAssetName, PBAssetName)
+	if err != nil {
+		log.Println("Error creating a new order. Quitting!")
+		log.Fatal(err)
+	}
+	log.Println("Created new order: ", newOrder)
+
 	// return asset names since we need to track this stuff
-	return INVAssetName, PBAssetName, DEBAssetName, nil
+	return newOrder, nil
 }

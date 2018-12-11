@@ -16,7 +16,7 @@ var opts struct {
 	// is encountered (can be set multiple times, like -vvv)
 	Verbose   []bool `short:"v" long:"verbose" description:"Show verbose debug information"`
 	InvAmount int    `short:"i" description:"Desired investment" required:"true"`
-	RecYears  int    `short:"r" description:"Number of years the recipient wants to repay in" required:"true"`
+	RecYears  int    `short:"r" description:"Number of years the recipient wants to repay in. Can be 3, 5 or 7 years." required:"true"`
 }
 
 func ValidateInputs() {
@@ -31,7 +31,7 @@ func main() {
 	db, err := orders.OpenDB()
 	if err != nil {
 		log.Fatal(err)
-		// this means that we couldn't open the dtabase and we need to do something else
+		// this means that we couldn't open the database and we need to do something else
 	}
 	defer db.Close()
 	_, err = flags.ParseArgs(&opts, os.Args)
@@ -82,12 +82,13 @@ func main() {
 	// And this needs to be st ored in a database somewhere so that we don't lose this
 	// data. Also need cryptographic proofs that this data is what it is, because
 	// there is no concept of state in stellar. Is there a better way?
-	INVAssetName, PBAssetName, DEBAssetName, err := assets.SetupAssets(&issuer, &investor, &recipient, opts.InvAmount, opts.RecYears)
+	a, err := assets.SetupAsset(db, &issuer, &investor, &recipient, opts.InvAmount, opts.RecYears)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Printf("Investor: %s, Payback: %s,  Debt: %s", INVAssetName, PBAssetName, DEBAssetName)
+	// need to insert this into the  database to keep track of this
+
 	// At this point, we have created the assets according to params passed and
 	// now we would want to simulate the situation where people pay the party
 	// in question. This woul;d broadly involve the given steps:
@@ -115,12 +116,12 @@ func main() {
 	// 	log.Fatal(err)
 	// }
 
-	debtAssetBalance, err := recipient.GetAssetBalance(DEBAssetName)
+	debtAssetBalance, err := recipient.GetAssetBalance(a.DEBAssetCode)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	pbAssetBalance, err := recipient.GetAssetBalance(PBAssetName)
+	pbAssetBalance, err := recipient.GetAssetBalance(a.PBAssetCode)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -134,11 +135,18 @@ func main() {
 	// an alternate idea is that they  can buy s tellar and repay, if we choose to
 	// take that route, we must modify some stuff and make things easier.
 	paybackAmount := "210"
-	err = recipient.Payback(DEBAssetName, issuer.PublicKey, paybackAmount)
+	err = recipient.Payback(db, a.Index, a.DEBAssetCode, issuer.PublicKey, paybackAmount)
 	if err != nil {
 		log.Println(err)
 		log.Fatal(err)
 	}
+
+	tOrder, err := orders.RetrieveOrder(a.Index, db)
+	if err != nil {
+		log.Println("Error retrieving from db")
+		log.Fatal(err)
+	}
+	log.Println("Test whether this was updated: ", tOrder)
 	/*
 		confHeight, txHash, err := issuer.SendCoins(recipient.PublicKey, "3.34") // send some coins from the issuer to the recipient
 		if err != nil {

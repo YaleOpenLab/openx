@@ -12,8 +12,9 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"log"
+	"time"
 
-	"github.com/boltdb/bolt" // coreOS fork of boltDB
+	"github.com/boltdb/bolt"
 )
 
 type Order struct {
@@ -27,6 +28,9 @@ type Order struct {
 	INVAssetCode string // once all funds have been raised, we need to set assetCodes
 	DEBAssetCode string // once all funds have been raised, we need to set assetCodes
 	PBAssetCode  string // once all funds have been raised, we need to set assetCodes
+	BalLeft      float64    // denotes the balance left to pay by the party
+	DateInitiated string // date the order was created
+	DateLastPaid string // date the order was last paid
 	// Percentage raised is not stored in the database since that can be calculated by the UI
 }
 
@@ -58,6 +62,38 @@ func OpenDB() (*bolt.DB, error) {
 	return db, nil
 }
 
+func NewOrder(db *bolt.DB, panelSize string, totalValue int, location string, moneyRaised int, metadata string, INVAssetCode string, DEBAssetCode string, PBAssetCode string) (Order, error) {
+	var a Order
+	// need to get a new index since we have a small bug on that
+	allOrders, err := RetrieveAll(db)
+	if err != nil {
+		return a, err
+	}
+
+	if len(allOrders) == 0 {
+		a.Index = 1
+	} else {
+		a.Index = uint32(len(allOrders) + 1)
+	}
+	a.PanelSize = panelSize
+	a.TotalValue = totalValue
+	a.Location = location
+	a.MoneyRaised = moneyRaised
+	a.Metadata = metadata
+	a.Live = true
+	a.INVAssetCode = INVAssetCode
+	a.DEBAssetCode = DEBAssetCode
+	a.PBAssetCode = PBAssetCode
+	a.BalLeft = float64(totalValue)
+	a.DateInitiated = time.Now().Format(time.RFC850)
+	// need to insert this into the database
+	err = InsertOrder(a, db)
+	if err != nil {
+		return a, err
+	}
+	return a, nil
+}
+
 // need locks over insert and retrieve operations since BOLTdb supports only
 // one operation at a time.
 func InsertOrder(order Order, db *bolt.DB) error {
@@ -80,9 +116,12 @@ func InsertOrder(order Order, db *bolt.DB) error {
 func RetrieveOrder(key uint32, db *bolt.DB) (Order, error) {
 	var rOrder Order
 	err := db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte("Orders"))
+		b, err := tx.CreateBucketIfNotExists([]byte("Orders"))
+		if err != nil {
+			return err
+		}
 		x := b.Get(Uint32toB(key))
-		err := json.Unmarshal(x, &rOrder)
+		err = json.Unmarshal(x, &rOrder)
 		if err != nil {
 			return err
 		}
@@ -96,8 +135,11 @@ func DeleteOrder(key uint32, db *bolt.DB) error {
 	// function, have it in here for now, don't do too much with it / fiox retrieve all
 	// to handle this case
 	err := db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte("Orders"))
-		err := b.Delete(Uint32toB(key))
+		b, err := tx.CreateBucketIfNotExists([]byte("Orders"))
+		if err != nil {
+			return err
+		}
+		err = b.Delete(Uint32toB(key))
 		if err != nil {
 			return err
 		}
@@ -109,12 +151,21 @@ func DeleteOrder(key uint32, db *bolt.DB) error {
 
 func RetrieveAll(db *bolt.DB) ([]Order, error) {
 	var arr []Order
-	err := db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte("Orders"))
+	err := db.Update(func(tx *bolt.Tx) error {
+		// this is Update to cover the case where the  bucket doesn't exists and we're
+		// trying to retrieve a list of keys
+		b, err := tx.CreateBucketIfNotExists([]byte("Orders"))
+		if err != nil {
+			return err
+		}
 		i := uint32(1)
 		for ; ; i++ {
 			var rOrder Order
 			x := b.Get(Uint32toB(i))
+			if x == nil {
+				// this is where the key does not exist
+				return nil
+			}
 			err := json.Unmarshal(x, &rOrder)
 			if err != nil && rOrder.Live == false {
 				// we've reached the end of input, so this is not an error
