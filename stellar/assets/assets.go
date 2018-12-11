@@ -43,7 +43,6 @@ import (
 func AssetID(inputString string) string {
 	// so the assetID right now is a hash of the asset name, concatenated investor public keys and nonces
 	x := SHA3hash(inputString)
-	log.Println("LGHTR", len(x), x[64:80])
 	return "YOL" + x[64:73] // max length of an asset in stellar is 12
 	// log.Fatal(fmt.Errorf("All good"))
 	// return nil
@@ -61,7 +60,6 @@ func SetupAssets(issuer *accounts.Account, investor *accounts.Account, recipient
 	// the reason why we have an int here is to avoid parsing
 	// issues like dealing with random user strings "abc" could also be a valid input
 	// if we decide to accept strings as our user input
-
 	convRatio := float64(investedAmount/(noOfYears*12) + 1) // x usd = 1 PB token
 	// the +1 is to offset the ratio to a whole number and make paybacks slightly less
 	// which would mean the investors get paid ~months*1 more, which can be offset in another place
@@ -69,7 +67,7 @@ func SetupAssets(issuer *accounts.Account, investor *accounts.Account, recipient
 	// the school would pay us back in USD tokens however, we use the conversion ratio of usd/234 to calculate payback period
 	// assume the school pays 230 usd this year
 	payBackPeriodLeft := float64(paybackTokens) - 200.0/convRatio
-	log.Printf("Payback Token Ratio for asset class is 1PB: %b USD tokens and payback period is %b", convRatio, payBackPeriodLeft) // +1 to round up
+	log.Println("Payback Token Ratio for asset class is 1PB: ", convRatio, " USD tokens and payback period is ", payBackPeriodLeft) // +1 to round up
 
 	// so now we create payBack and investor tokens for this asset class
 	// the issuer is the platform itself, so people have to trust us (maybe give proofs for this?)
@@ -88,21 +86,24 @@ func SetupAssets(issuer *accounts.Account, investor *accounts.Account, recipient
 	// so I have the assets for this school created
 	// now the investors need to trust me only for investedAmount of INVTokens
 
-	err := investor.TrustAsset(INVasset, string(iAmt))
+	txHash, err := investor.TrustAsset(INVasset, string(iAmt))
 	if err != nil {
 		return "", "", "", err
 	}
+	log.Println("Investor trusted asset: ", INVasset.Code, " tx hash: ", txHash)
 
 	// and the school needs to trust me only for paybackTokens amount of PB tokens
-	err = recipient.TrustAsset(PBasset, string(pbAmt))
+	txHash, err = recipient.TrustAsset(PBasset, string(pbAmt))
 	if err != nil {
 		return "", "", "", err
 	}
+	log.Println("Recipient Trusted Payback asset: ", PBasset.Code, " tx hash: ", txHash)
 
-	err = recipient.TrustAsset(DEBasset, string(dAmt)) // since debt = invested amount
+	txHash, err = recipient.TrustAsset(DEBasset, string(dAmt)) // since debt = invested amount
 	if err != nil {
 		return "", "", "", err
 	}
+	log.Println("Recipient Trusted Debt asset: ", DEBasset.Code, " tx hash: ", txHash)
 
 	// so now the investor has his tokens, send paybackTokens to the school
 	// log.Println("Sending PBasset for: ", string(pbAmt))
@@ -113,12 +114,12 @@ func SetupAssets(issuer *accounts.Account, investor *accounts.Account, recipient
 
 	// so now the investors trust the issued asset and the recipients trust the issued asset.
 	// send the assets over to the investor
-	log.Println("Sending INVasset for: ", string(iAmt))
+	log.Println("Sending INVasset: ", INVAssetName, "for: ", string(iAmt))
 	_, _, err = issuer.SendAsset(INVAssetName, investor.PublicKey, iAmt)
 	if err != nil {
 		return "" ,"", "", err
 	}
-
+	log.Println("Sending DEBasset: ", DEBAssetName, "for: ", string(iAmt))
 	_, _, err = issuer.SendAsset(DEBAssetName, recipient.PublicKey, iAmt) // same amount as debt
 	if err != nil {
 		return "" ,"", "", err

@@ -24,11 +24,18 @@ type Order struct {
 	MoneyRaised  int    // total money that has been raised until now
 	Metadata     string // any other metadata can be stored here
 	Live         bool   // check to see whether the current order is live or not
-	INVAssetCode string // once all fudns have been raised, we need to set assetCodes
-	DEBAssetCode string // once all fudns have been raised, we need to set assetCodes
-	PBAssetCode  string // once all fudns have been raised, we need to set assetCodes
-	// Percentage raised is not sotred in the databse since that can be calculated by the UI
+	INVAssetCode string // once all funds have been raised, we need to set assetCodes
+	DEBAssetCode string // once all funds have been raised, we need to set assetCodes
+	PBAssetCode  string // once all funds have been raised, we need to set assetCodes
+	// Percentage raised is not stored in the database since that can be calculated by the UI
 }
+
+// do we store separate  investor and debt holder pubkeys or do we have a separate
+// struct for investors, debtors and then store common fileds in them and lookup from
+// there when necessary? Having a separate bucket is useful for less code
+// complexity, but having less buckets might be good performance wise. But we do
+// need to call the orders bucket each time and that would require locks and
+// stuff
 
 func Uint32toB(a uint32) []byte {
 	// need to convert int to a byte array for indexing
@@ -41,6 +48,7 @@ func BToUint32(a []byte) uint32 {
 	return binary.LittleEndian.Uint32(a)
 }
 
+// need locks over this to ensure no one's using the db while we are
 func OpenDB() (*bolt.DB, error) {
 	db, err := bolt.Open("yol.db", 0600, nil)
 	if err != nil {
@@ -50,6 +58,8 @@ func OpenDB() (*bolt.DB, error) {
 	return db, nil
 }
 
+// need locks over insert and retrieve operations since BOLTdb supports only
+// one operation at a time.
 func InsertOrder(order Order, db *bolt.DB) error {
 	err := db.Update(func(tx *bolt.Tx) error {
 		b, err := tx.CreateBucketIfNotExists([]byte("Orders")) // the orders bucket contains all our orders

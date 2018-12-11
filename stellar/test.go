@@ -58,21 +58,23 @@ func main() {
 		log.Fatal(err)
 	}
 
+	err = issuer.SetupAccount(recipient.PublicKey, "10")
+	if err != nil {
+		log.Println("Recipient Account not setup")
+		log.Fatal(err)
+	}
+
+	err = issuer.SetupAccount(investor.PublicKey, "10")
+	if err != nil {
+		log.Println("Investor Account not setup")
+		log.Fatal(err)
+	}
+
 	// the problem with this is we generally accept donations in crypto and then
 	// people have to trust this that we don't print stuff out of thin air
 	// instead of using our own coin, we could use stronghold coin (stablecoin on Stellar)
 	// Stellar also has an immediate DEX, but do we use it? ethical stuff while dealing with
 	// funds remiain
-	err = investor.GetCoins() // get coins for recipient
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = recipient.GetCoins() // get coins for recipient
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	// before setting up the assets, we need to refer to the orderbook in order to
 	// get the list of available offers and funding things. For this purpose, we could
 	// build a hash table / a simple dictionary, but I think investors in general
@@ -131,23 +133,12 @@ func main() {
 	// can delegate to other parties
 	// an alternate idea is that they  can buy s tellar and repay, if we choose to
 	// take that route, we must modify some stuff and make things easier.
-/*
-	confHeight, txHash, err := recipient.SendAsset(DEBAssetName, issuer.PublicKey , "200") // send some coins from the issuer to the recipient
+	paybackAmount := "210"
+	err = recipient.Payback(DEBAssetName, issuer.PublicKey, paybackAmount)
 	if err != nil {
+		log.Println(err)
 		log.Fatal(err)
 	}
-
-	log.Println("Sending Debt Token to issuer", confHeight, txHash)
-	// now we need to check the balance to ensure that the amount was actually paid
-	// THis has to be done on the server side, so this might be a good point of
-	// distinction between server and client runnign software.
-
-	newDebtBalance, err := recipient.GetAssetBalance(DEBAssetName)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Printf("Old balance: %s, New Balance: %s", debtAssetBalance, newDebtBalance)
 	/*
 		confHeight, txHash, err := issuer.SendCoins(recipient.PublicKey, "3.34") // send some coins from the issuer to the recipient
 		if err != nil {
