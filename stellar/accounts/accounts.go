@@ -50,18 +50,30 @@ func (a *Account) GetCoins() error {
 	return nil
 }
 
-func (a *Account) Balance() error {
+func (a *Account) GetAssetBalance(assetCode string) (string, error) {
 
 	account, err := horizon.DefaultTestNetClient.LoadAccount(a.PublicKey)
 	if err != nil {
-		return nil
+		return "", nil
 	}
 
 	for _, balance := range account.Balances {
-		log.Println("BALANCE for account: ", a.PublicKey, " is: ", balance)
+		if balance.Asset.Code == assetCode {
+			return balance.Balance, nil
+		}
 	}
 
-	return nil
+	return "", nil
+}
+
+func (a *Account) GetAllBalances() ([]horizon.Balance, error) {
+
+	account, err := horizon.DefaultTestNetClient.LoadAccount(a.PublicKey)
+	if err != nil {
+		return nil, nil
+	}
+
+	return account.Balances, nil
 }
 
 func (a *Account) SendCoins(destination string, amount string) (int32, string, error) {
@@ -111,6 +123,7 @@ func (a *Account) SendCoins(destination string, amount string) (int32, string, e
 }
 
 func (a *Account) CreateAsset(assetName string) build.Asset {
+	// need to set a couple flags here
 	return build.CreditAsset(assetName, a.PublicKey)
 }
 
@@ -146,7 +159,7 @@ func (a *Account) TrustAsset(asset build.Asset, limit string) error {
 	return nil
 }
 
-func (a *Account) SendAsset(assetName string, destination string, amount string) error {
+func (a *Account) SendAsset(assetName string, destination string, amount string) (int32, string, error) {
 	// this transaction is FROM issuer TO recipient
 	paymentTx, err := build.Transaction(
 		build.SourceAccount{a.PublicKey},
@@ -159,24 +172,24 @@ func (a *Account) SendAsset(assetName string, destination string, amount string)
 	)
 
 	if err != nil {
-		return err
+		return -11, "", err
 	}
 
 	paymentTxe, err := paymentTx.Sign(a.Seed)
 	if err != nil {
-		return err
+		return -11, "", err
 	}
 
 	paymentTxeB64, err := paymentTxe.Base64()
 	if err != nil {
-		return err
+		return -11, "", err
 	}
 
 	tx, err := horizon.DefaultTestNetClient.SubmitTransaction(paymentTxeB64)
 	if err != nil {
-		return err
+		return -11, "", err
 	}
 
 	log.Println("Sent asset tx is: ", tx.Hash)
-	return nil
+	return tx.Ledger, tx.Hash, nil
 }

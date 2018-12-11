@@ -56,7 +56,7 @@ func SHA3hash(inputString string) string {
 	return hexString
 }
 
-func SetupAssets(issuer *accounts.Account, investor *accounts.Account, recipient *accounts.Account, investedAmount int, noOfYears int) error {
+func SetupAssets(issuer *accounts.Account, investor *accounts.Account, recipient *accounts.Account, investedAmount int, noOfYears int) (string, string, string, error) {
 	assetName := AssetID("School_PuertoRico_1")
 	// the reason why we have an int here is to avoid parsing
 	// issues like dealing with random user strings "abc" could also be a valid input
@@ -69,47 +69,61 @@ func SetupAssets(issuer *accounts.Account, investor *accounts.Account, recipient
 	// the school would pay us back in USD tokens however, we use the conversion ratio of usd/234 to calculate payback period
 	// assume the school pays 230 usd this year
 	payBackPeriodLeft := float64(paybackTokens) - 200.0/convRatio
-	log.Printf("Payback Token Ratio for asset class is 1PB: %d USD tokens and payback period is %d", convRatio, payBackPeriodLeft) // +1 to round up
+	log.Printf("Payback Token Ratio for asset class is 1PB: %b USD tokens and payback period is %b", convRatio, payBackPeriodLeft) // +1 to round up
 
 	// so now we create payBack and investor tokens for this asset class
 	// the issuer is the platform itself, so people have to trust us (maybe give proofs for this?)
 	// what is the guarantee that I don't issue as many PBTokens as I want? none?
 	INVAssetName := AssetID("INVTokens_" + assetName) // ie. sha3(INVTokens_School_PuertoRico_1)[64:76]
+	DEBAssetName := AssetID("DEBTokens_" + assetName) // ie. sha3(INVTokens_School_PuertoRico_1)[64:76]
 	PBAssetName := AssetID("PBTokens_" + assetName)
 	iAmt := strconv.Itoa(investedAmount)
+	dAmt := strconv.Itoa(investedAmount*2)
 	pbAmt := strconv.Itoa(noOfYears * 12)
 	log.Printf("Created asset names are %s and %s and amounts are %s and %s", INVAssetName, PBAssetName, iAmt, pbAmt)
 	PBasset := issuer.CreateAsset(PBAssetName)
 	INVasset := issuer.CreateAsset(INVAssetName)
+	DEBasset := issuer.CreateAsset(DEBAssetName)
 
 	// so I have the assets for this school created
 	// now the investors need to trust me only for investedAmount of INVTokens
 
 	err := investor.TrustAsset(INVasset, string(iAmt))
 	if err != nil {
-		log.Fatal(err)
+		return "", "", "", err
 	}
 
 	// and the school needs to trust me only for paybackTokens amount of PB tokens
 	err = recipient.TrustAsset(PBasset, string(pbAmt))
 	if err != nil {
-		log.Fatal(err)
+		return "", "", "", err
 	}
 
-	// so now the invesotr has his tokens, send paybackTokens to the school
-	log.Println("Sending PBasset for: ", string(pbAmt))
-	err = issuer.SendAsset(PBAssetName, recipient.PublicKey, pbAmt)
+	err = recipient.TrustAsset(DEBasset, string(dAmt)) // since debt = invested amount
 	if err != nil {
-		log.Fatal(err)
+		return "", "", "", err
 	}
+
+	// so now the investor has his tokens, send paybackTokens to the school
+	// log.Println("Sending PBasset for: ", string(pbAmt))
+	// err = issuer.SendAsset(PBAssetName, recipient.PublicKey, pbAmt)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
 	// so now the investors trust the issued asset and the recipients trust the issued asset.
 	// send the assets over to the investor
 	log.Println("Sending INVasset for: ", string(iAmt))
-	err = issuer.SendAsset(INVAssetName, investor.PublicKey, iAmt)
+	_, _, err = issuer.SendAsset(INVAssetName, investor.PublicKey, iAmt)
 	if err != nil {
-		log.Fatal(err)
+		return "" ,"", "", err
 	}
-	// the assets are with the concerned parties
-	return nil
+
+	_, _, err = issuer.SendAsset(DEBAssetName, recipient.PublicKey, iAmt) // same amount as debt
+	if err != nil {
+		return "" ,"", "", err
+	}
+
+	// return asset names since we need to track this stuff
+	return INVAssetName, PBAssetName, DEBAssetName, nil
 }

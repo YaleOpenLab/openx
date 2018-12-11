@@ -17,13 +17,16 @@ import (
 )
 
 type Order struct {
-	Index       uint32
-	PanelSize   string // size of the given panel, for diplsaying to the user who wants to bid stuff
-	TotalValue  int    // the total money that we need from investors
-	Location    string // where this specific solar panel is located
-	MoneyRaised int    // total money that has been raised until now
-	Metadata    string // any other metadata can be stored here
-	Live        bool   // check to see whether the current order is live or not
+	Index        uint32
+	PanelSize    string // size of the given panel, for diplsaying to the user who wants to bid stuff
+	TotalValue   int    // the total money that we need from investors
+	Location     string // where this specific solar panel is located
+	MoneyRaised  int    // total money that has been raised until now
+	Metadata     string // any other metadata can be stored here
+	Live         bool   // check to see whether the current order is live or not
+	INVAssetCode string // once all fudns have been raised, we need to set assetCodes
+	DEBAssetCode string // once all fudns have been raised, we need to set assetCodes
+	PBAssetCode  string // once all fudns have been raised, we need to set assetCodes
 	// Percentage raised is not sotred in the databse since that can be calculated by the UI
 }
 
