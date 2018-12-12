@@ -5,11 +5,11 @@ import (
 	"log"
 	"os"
 
-	accounts "github.com/Varunram/smartPropertyMVP/stellar/accounts"
-	assets "github.com/Varunram/smartPropertyMVP/stellar/assets"
-	database "github.com/Varunram/smartPropertyMVP/stellar/database"
-	utils "github.com/Varunram/smartPropertyMVP/stellar/utils"
-	rpc "github.com/Varunram/smartPropertyMVP/stellar/rpc"
+	accounts "github.com/YaleOpenLab/smartPropertyMVP/stellar/accounts"
+	assets "github.com/YaleOpenLab/smartPropertyMVP/stellar/assets"
+	database "github.com/YaleOpenLab/smartPropertyMVP/stellar/database"
+	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
+	rpc "github.com/YaleOpenLab/smartPropertyMVP/stellar/rpc"
 	flags "github.com/jessevdk/go-flags"
 )
 

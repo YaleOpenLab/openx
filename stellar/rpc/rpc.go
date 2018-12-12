@@ -6,8 +6,8 @@ import (
 	// "net"
 	// "io/ioutil"
 	"encoding/json"
-	database "github.com/Varunram/smartPropertyMVP/stellar/database"
-	utils "github.com/Varunram/smartPropertyMVP/stellar/utils"
+	database "github.com/YaleOpenLab/smartPropertyMVP/stellar/database"
+	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
 	"net/http"
 	// "net/rpc"
 )

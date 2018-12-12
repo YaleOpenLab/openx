@@ -13,7 +13,7 @@ import (
 	"encoding/json"
 	"log"
 
-	utils "github.com/Varunram/smartPropertyMVP/stellar/utils"
+	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
 	"github.com/boltdb/bolt"
 )
 
