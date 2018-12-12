@@ -18,19 +18,19 @@ import (
 )
 
 type Order struct {
-	Index        uint32
-	PanelSize    string // size of the given panel, for diplsaying to the user who wants to bid stuff
-	TotalValue   int    // the total money that we need from investors
-	Location     string // where this specific solar panel is located
-	MoneyRaised  int    // total money that has been raised until now
-	Metadata     string // any other metadata can be stored here
-	Live         bool   // check to see whether the current order is live or not
-	INVAssetCode string // once all funds have been raised, we need to set assetCodes
-	DEBAssetCode string // once all funds have been raised, we need to set assetCodes
-	PBAssetCode  string // once all funds have been raised, we need to set assetCodes
-	BalLeft      float64    // denotes the balance left to pay by the party
-	DateInitiated string // date the order was created
-	DateLastPaid string // date the order was last paid
+	Index         uint32
+	PanelSize     string  // size of the given panel, for diplsaying to the user who wants to bid stuff
+	TotalValue    int     // the total money that we need from investors
+	Location      string  // where this specific solar panel is located
+	MoneyRaised   int     // total money that has been raised until now
+	Metadata      string  // any other metadata can be stored here
+	Live          bool    // check to see whether the current order is live or not
+	INVAssetCode  string  // once all funds have been raised, we need to set assetCodes
+	DEBAssetCode  string  // once all funds have been raised, we need to set assetCodes
+	PBAssetCode   string  // once all funds have been raised, we need to set assetCodes
+	BalLeft       float64 // denotes the balance left to pay by the party
+	DateInitiated string  // date the order was created
+	DateLastPaid  string  // date the order was last paid
 	// Percentage raised is not stored in the database since that can be calculated by the UI
 }
 

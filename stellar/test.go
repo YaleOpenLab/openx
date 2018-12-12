@@ -9,6 +9,7 @@ import (
 	assets "github.com/Varunram/smartPropertyMVP/stellar/assets"
 	orders "github.com/Varunram/smartPropertyMVP/stellar/orders"
 	utils "github.com/Varunram/smartPropertyMVP/stellar/utils"
+	server "github.com/Varunram/smartPropertyMVP/stellar/server"
 	flags "github.com/jessevdk/go-flags"
 )
 
@@ -29,6 +30,8 @@ func ValidateInputs() {
 }
 
 func main() {
+	var err error
+	server.SetupServer() // this must be towards the end
 	db, err := orders.OpenDB()
 	if err != nil {
 		log.Fatal(err)
@@ -50,9 +53,9 @@ func main() {
 	log.Println("The investor's public key and private key are: ", investor.PublicKey, " ", investor.Seed)
 	log.Println("The recipient's public key and private key are: ", recipient.PublicKey, " ", recipient.Seed)
 
-	// everyone should have coins to setup trustlines. Testnet doe not allow for sending
-	// coins to account that have no balance - BUG?
-	// anyways, stellar has a fat testnet wallet, so no worries
+	// everyone should have coins to setup trustlines.
+	// anyways, stellar has a fat testnet wallet, so no worry that this might
+	// get depleted
 
 	err = issuer.GetCoins() // get coins for issuer
 	if err != nil {
@@ -80,38 +83,17 @@ func main() {
 	// get the list of available offers and funding things. For this purpose, we could
 	// build a hash table / a simple dictionary, but I think investors in general
 	// would like more info, so a simple map should be enough.
-	// And this needs to be st ored in a database somewhere so that we don't lose this
+	// And this needs to be stored in a database somewhere so that we don't lose this
 	// data. Also need cryptographic proofs that this data is what it is, because
 	// there is no concept of state in stellar. Is there a better way?
 	a, err := assets.SetupAsset(db, &issuer, &investor, &recipient, opts.InvAmount, opts.RecYears)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	// need to insert this into the  database to keep track of this
-
-	// At this point, we have created the assets according to params passed and
-	// now we would want to simulate the situation where people pay the party
-	// in question. This woul;d broadly involve the given steps:
-	// 1. Pay the ISSUER in USD tokens (since we assume USDtoken is equivalent to USD in question)
-	// the extended question though is if we omit the PBToken directly, but that would mean
-	// we have no record of the agreed period on the blockchain. Kind of weird, but since there
-	// is no state, we have  to adopt this.
-	// so the user transfers x USD tokens back to the issuer and then once the transaction
-	// is confirmed (which should be relatively fast in Stellar due to its quorum)
-	// we call the balance API to see whether we've trnasferred the assets. If our balance
-	// in the token increases by x amount, we convert the amount to payback tokens
-	// and then transfer the payback tokens to the recipient OR we could transfer the payback
-	// tokens from client to contract, but that would mean they could sign arbitrary amounts
-	// since they hold the seed. Hence we should transfer the payback tokens to the recipient
-	// to show progress in ownership.
-	// In short,
-	// the recipient pays in USD tokens and receives pyaback tokens as return
+	// In short, the recipient pays in DEBtokens and receives PBtokens in return
 
 	// this checks for balance, would come into use later on to check if we sent
 	// the right amomunt of money to the user
-
-	// this gets the balance of all the coins belonging to a specific account
 	// balances, err := recipient.GetAllBalances()
 	// if err != nil {
 	// 	log.Fatal(err)
@@ -119,10 +101,18 @@ func main() {
 
 	// now we need to simulate a situation where the recipient pays back a certain
 	// portion of the funds
-	// again, onboarding is omitted here, since that's a bigger problem that we hopefully
-	// can delegate to other parties
-	// an alternate idea is that they  can buy s tellar and repay, if we choose to
-	// take that route, we must modify some stuff and make things easier.
+	// onboarding is omitted here, that's a bigger problem that we hopefully
+	// can delegate to other parties like Neighborly
+	// an alternate idea is that they can buy stellar and repay, if we choose to
+	// take that route, we must use a coin on stellar as an anchor to receive this token.
+	// in this way, we need to check native balance and then use the anchor
+	// right now don't do that, but should do in future to solicit donations from
+	// the community, who would be generally dealing in XLM (and not DEBtoken)
+
+	// another idea is that you could speculate on DEBtoken by having a market
+	// for it, that would reuqire to relax the flags a bit. Right now, we don't
+	// use an authorization flag, but we should since we don't want alternate markets
+	// to develop. If we do, don't set the flag
 	paybackAmount := "210"
 	err = recipient.Payback(db, a.Index, a.DEBAssetCode, issuer.PublicKey, paybackAmount)
 	if err != nil {
@@ -135,9 +125,8 @@ func main() {
 	// in total, this should be payBackPeriod * 12
 
 	paybackAmountF := utils.StringToFloat(paybackAmount)
-	refundS :=  utils.FloatToString(paybackAmountF / accounts.PriceOracleInFloat())
+	refundS := utils.FloatToString(paybackAmountF / accounts.PriceOracleInFloat())
 	// weird conversion stuff, but have to since the amount should be in a string
-
 	blockHeight, txHash, err := issuer.SendAsset(a.PBAssetCode, recipient.PublicKey, refundS)
 	if err != nil {
 		log.Println("Error while sending a payback token, notify help immediately")

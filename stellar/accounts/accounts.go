@@ -53,6 +53,11 @@ func New() (Account, error) {
 
 func (issuer *Account) SetupAccount(recipientPubKey string, amount string) error {
 	passphrase := network.TestNetworkPassphrase
+	// we need to set a couple flags here to make sure that the issuer can't
+	// withdraw the asset, the whole "trustless" thing. Also, this is verifiable
+	// and that's nice (you could just read the flags)
+	// weird part is that I can't seem to figure out how to set these flags,
+	// so leaving this until the end
 	tx, err := build.Transaction(
 		build.SourceAccount{issuer.Seed},
 		build.AutoSequence{DefaultTestNetClient},
@@ -60,6 +65,8 @@ func (issuer *Account) SetupAccount(recipientPubKey string, amount string) error
 		build.CreateAccount(
 			build.Destination{recipientPubKey},
 			build.NativeAmount{amount},
+			// build.SetAuthRequired(),
+			// build.SetAuthImmutable(),
 		),
 	)
 	if err != nil {
@@ -322,7 +329,21 @@ func PriceOracleInFloat() (float64) {
 }
 
 func (a *Account) Payback(db *bolt.DB, index uint32, assetName string, issuerPubkey string, amount string) error {
-	// this will be called by the recipient
+	// At this point, we have created the assets according to params passed and
+	// now we would want to simulate the situation where people pay the party
+	// in question. This woul;d broadly involve the given steps:
+	// 1. Pay the ISSUER in DEBtokens
+	// the extended question though is if we omit the PBToken directly, but that would mean
+	// we have no record of the agreed period on the blockchain
+	// so the user transfers x DEB tokens back to the issuer and then once the transaction
+	// is confirmed (which should be relatively fast in Stellar due to its quorum)
+	// we call the balance API to see whether we've transferred the assets. If teh server's
+	// balance in DEBtoken increases by x amount, we pay the user back in PBTokens
+	// relative to how much the recipient has paid us. We could transfer it from the user,
+	// but that would mean they could sign arbitrary amounts
+	// since they hold the seed. Hence we should transfer the payback tokens from the server
+	// to the recipient to show progress in ownership (UI and backend)
+	// Payback will be called by the recipient
 	oldBalance, err := a.GetAssetBalance(assetName)
 	if err != nil {
 		log.Fatal(err)
