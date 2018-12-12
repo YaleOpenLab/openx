@@ -1,0 +1,9 @@
+# Apparently this file is needed, don't know why, but created nevertheless.
+[[CURRENCIES]]
+code="XPD"
+issuer="" # fill in public key once final
+display_decimals=7
+name="petro dollar"
+desc="1 petrodollar token entitles you to a barrel of oil"
+conditions="The supply of oil is limited, so rush to grab your petro dollars!"
+image="https://upload.wikimedia.org/wikipedia/commons/b/b2/Petro_%28cryptocurrency%29_logo.png"
