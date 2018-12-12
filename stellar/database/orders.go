@@ -1,6 +1,6 @@
-package orders
+package database
 
-// the orders package maintains read / write operations to the orderbook
+// the db package maintains read / write operations to the orderbook
 // we need an orderbook because there is no state on Stellar which makes it
 // difficult for us to store this on the blockchain. Do we need to publish
 // the orders / proof of these orders to the blockchain? We do need to
@@ -12,8 +12,8 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"log"
-	"time"
 
+	utils "github.com/Varunram/smartPropertyMVP/stellar/utils"
 	"github.com/boltdb/bolt"
 )
 
@@ -34,6 +34,7 @@ type Order struct {
 	// Percentage raised is not stored in the database since that can be calculated by the UI
 }
 
+var OrdersBucket = []byte("Orders")
 // do we store separate  investor and debt holder pubkeys or do we have a separate
 // struct for investors, debtors and then store common fileds in them and lookup from
 // there when necessary? Having a separate bucket is useful for less code
@@ -85,7 +86,7 @@ func NewOrder(db *bolt.DB, panelSize string, totalValue int, location string, mo
 	a.DEBAssetCode = DEBAssetCode
 	a.PBAssetCode = PBAssetCode
 	a.BalLeft = float64(totalValue)
-	a.DateInitiated = time.Now().Format(time.RFC850)
+	a.DateInitiated = utils.Timestamp()
 	// need to insert this into the database
 	err = InsertOrder(a, db)
 	if err != nil {
@@ -98,7 +99,7 @@ func NewOrder(db *bolt.DB, panelSize string, totalValue int, location string, mo
 // one operation at a time.
 func InsertOrder(order Order, db *bolt.DB) error {
 	err := db.Update(func(tx *bolt.Tx) error {
-		b, err := tx.CreateBucketIfNotExists([]byte("Orders")) // the orders bucket contains all our orders
+		b, err := tx.CreateBucketIfNotExists(OrdersBucket) // the orders bucket contains all our orders
 		if err != nil {
 			log.Fatal(err)
 			return err
@@ -116,7 +117,7 @@ func InsertOrder(order Order, db *bolt.DB) error {
 func RetrieveOrder(key uint32, db *bolt.DB) (Order, error) {
 	var rOrder Order
 	err := db.Update(func(tx *bolt.Tx) error {
-		b, err := tx.CreateBucketIfNotExists([]byte("Orders"))
+		b, err := tx.CreateBucketIfNotExists(OrdersBucket)
 		if err != nil {
 			return err
 		}
@@ -135,7 +136,7 @@ func DeleteOrder(key uint32, db *bolt.DB) error {
 	// function, have it in here for now, don't do too much with it / fiox retrieve all
 	// to handle this case
 	err := db.Update(func(tx *bolt.Tx) error {
-		b, err := tx.CreateBucketIfNotExists([]byte("Orders"))
+		b, err := tx.CreateBucketIfNotExists(OrdersBucket)
 		if err != nil {
 			return err
 		}
@@ -154,7 +155,7 @@ func RetrieveAll(db *bolt.DB) ([]Order, error) {
 	err := db.Update(func(tx *bolt.Tx) error {
 		// this is Update to cover the case where the  bucket doesn't exists and we're
 		// trying to retrieve a list of keys
-		b, err := tx.CreateBucketIfNotExists([]byte("Orders"))
+		b, err := tx.CreateBucketIfNotExists(OrdersBucket)
 		if err != nil {
 			return err
 		}
@@ -177,4 +178,61 @@ func RetrieveAll(db *bolt.DB) ([]Order, error) {
 		return nil
 	})
 	return arr, err
+}
+
+func RetrieveAllWithoutDB() ([]Order, error) {
+	var arr []Order
+	db, err := OpenDB()
+	if err != nil {
+		return arr, err
+	}
+	defer db.Close()
+	err = db.Update(func(tx *bolt.Tx) error {
+		// this is Update to cover the case where the  bucket doesn't exists and we're
+		// trying to retrieve a list of keys
+		b, err := tx.CreateBucketIfNotExists(OrdersBucket)
+		if err != nil {
+			return err
+		}
+		i := uint32(1)
+		for ; ; i++ {
+			var rOrder Order
+			x := b.Get(Uint32toB(i))
+			if x == nil {
+				// this is where the key does not exist
+				return nil
+			}
+			err := json.Unmarshal(x, &rOrder)
+			if err != nil && rOrder.Live == false {
+				// we've reached the end of input, so this is not an error
+				// ideal error would be "unexpected JSON input" or something similar
+				return nil
+			}
+			arr = append(arr, rOrder)
+		}
+		return nil
+	})
+	return arr, err
+}
+
+func RetrieveOrderRPC(key uint32) (Order, error) {
+	var rOrder Order
+	db, err := OpenDB()
+	if err != nil {
+		return rOrder, err
+	}
+	defer db.Close()
+	err = db.Update(func(tx *bolt.Tx) error {
+		b, err := tx.CreateBucketIfNotExists(OrdersBucket)
+		if err != nil {
+			return err
+		}
+		x := b.Get(Uint32toB(key))
+		err = json.Unmarshal(x, &rOrder)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	return rOrder, err
 }

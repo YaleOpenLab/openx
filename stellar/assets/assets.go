@@ -36,7 +36,7 @@ import (
 
 	"github.com/boltdb/bolt"
 	accounts "github.com/Varunram/smartPropertyMVP/stellar/accounts"
-	orders "github.com/Varunram/smartPropertyMVP/stellar/orders"
+	database "github.com/Varunram/smartPropertyMVP/stellar/database"
 	utils "github.com/Varunram/smartPropertyMVP/stellar/utils"
 )
 
@@ -56,8 +56,8 @@ func CalculatePayback(balance string, noOfMonths string) error {
 	return nil
 }
 
-func SetupAsset(db *bolt.DB, issuer *accounts.Account, investor *accounts.Account, recipient *accounts.Account, investedAmount int, noOfYears int) (orders.Order, error) {
-	var newOrder orders.Order
+func SetupAsset(db *bolt.DB, issuer *accounts.Account, investor *accounts.Account, recipient *accounts.Account, investedAmount int, noOfYears int) (database.Order, error) {
+	var newOrder database.Order
 	assetName := AssetID("School_PuertoRico_1")
 	// the reason why we have an int here is to avoid parsing
 	// issues like dealing with random user strings "abc" could also be a valid input
@@ -127,7 +127,7 @@ func SetupAsset(db *bolt.DB, issuer *accounts.Account, investor *accounts.Accoun
 		return newOrder, err
 	}
 
-	newOrder, err = orders.NewOrder(db, "16x20 panels", investedAmount, "Puerto Rico", investedAmount, "This is test data", INVAssetName, DEBAssetName, PBAssetName)
+	newOrder, err = database.NewOrder(db, "16x20 panels", investedAmount, "Puerto Rico", investedAmount, "This is test data", INVAssetName, DEBAssetName, PBAssetName)
 	if err != nil {
 		log.Println("Error creating a new order. Quitting!")
 		log.Fatal(err)

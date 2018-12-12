@@ -7,9 +7,9 @@ import (
 
 	accounts "github.com/Varunram/smartPropertyMVP/stellar/accounts"
 	assets "github.com/Varunram/smartPropertyMVP/stellar/assets"
-	orders "github.com/Varunram/smartPropertyMVP/stellar/orders"
+	database "github.com/Varunram/smartPropertyMVP/stellar/database"
 	utils "github.com/Varunram/smartPropertyMVP/stellar/utils"
-	server "github.com/Varunram/smartPropertyMVP/stellar/server"
+	rpc "github.com/Varunram/smartPropertyMVP/stellar/rpc"
 	flags "github.com/jessevdk/go-flags"
 )
 
@@ -31,8 +31,8 @@ func ValidateInputs() {
 
 func main() {
 	var err error
-	server.SetupServer() // this must be towards the end
-	db, err := orders.OpenDB()
+	rpc.StartServer() // this must be towards the end
+	db, err := database.OpenDB()
 	if err != nil {
 		log.Fatal(err)
 		// this means that we couldn't open the database and we need to do something else
@@ -133,7 +133,7 @@ func main() {
 		log.Fatal(err)
 	}
 	log.Println("Sent payback token to recipient", blockHeight, txHash)
-	tOrder, err := orders.RetrieveOrder(a.Index, db)
+	tOrder, err := database.RetrieveOrder(a.Index, db)
 	if err != nil {
 		log.Println("Error retrieving from db")
 		log.Fatal(err)

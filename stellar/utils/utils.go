@@ -6,15 +6,40 @@ import (
 	"encoding/hex"
 	"fmt"
 	"strconv"
+	"time"
 
 	"golang.org/x/crypto/sha3"
 )
+
+
+func StoI(a string) int {
+	temp, _ := strconv.Atoi(a)
+	// ignore error sicne we assume that we'll call this in the right place
+	return temp
+}
+
+func Timestamp() string {
+	return time.Now().Format(time.RFC850)
+}
 
 func Uint32toB(a uint32) []byte {
 	// need to convert int to a byte array for indexing
 	temp := make([]byte, 4)
 	binary.LittleEndian.PutUint32(temp, a)
 	return temp
+}
+
+func Uint32toS(a uint32) string {
+	// convert uint32 to int and then int to string
+	aInt := int(a)
+	aStr := strconv.Itoa(aInt)
+	return aStr
+}
+
+func StoUint32(a string) uint32 {
+	// convert string to int
+	aInt, _ := strconv.Atoi(a)
+	return uint32(aInt)
 }
 
 func BToUint32(a []byte) uint32 {

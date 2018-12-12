@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	orders "github.com/Varunram/smartPropertyMVP/stellar/orders"
+	database "github.com/Varunram/smartPropertyMVP/stellar/database"
 	"github.com/boltdb/bolt"
 	"github.com/stellar/go/build"
 	clients "github.com/stellar/go/clients/horizon"
@@ -405,7 +405,7 @@ func (a *Account) Payback(db *bolt.DB, index uint32, assetName string, issuerPub
 		log.Println("You've paid exactly what is required for this month. Payback period remains as usual")
 	}
 	// we need to update the database here
-	givenOrder, err := orders.RetrieveOrder(index, db)
+	givenOrder, err := database.RetrieveOrder(index, db)
 	if err != nil {
 		log.Println("Given order not found in the database")
 		return err
@@ -414,5 +414,5 @@ func (a *Account) Payback(db *bolt.DB, index uint32, assetName string, issuerPub
 	givenOrder.DateLastPaid = time.Now().Format(time.RFC850)
 	// balLeft must be updated on the server side and can be challenged easily
 	// if there's some discrepancy since the tx's are on the blockchain
-	return orders.InsertOrder(givenOrder, db)
+	return database.InsertOrder(givenOrder, db)
 }
