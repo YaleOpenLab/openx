@@ -17,9 +17,11 @@ import (
 var opts struct {
 	// Slice of bool will append 'true' each time the option
 	// is encountered (can be set multiple times, like -vvv)
+	// TOOD: define default values for each and then use them if not passed
 	Verbose   []bool `short:"v" long:"verbose" description:"Show verbose debug information"`
 	InvAmount int    `short:"i" description:"Desired investment" required:"true"`
 	RecYears  int    `short:"r" description:"Number of years the recipient wants to repay in. Can be 3, 5 or 7 years." required:"true"`
+	Port      string `short:p description:"The port on which the server runs on"`
 }
 
 func ValidateInputs() {
@@ -32,25 +34,7 @@ func ValidateInputs() {
 
 func main() {
 	var err error
-	rpc.StartServer() // this must be towards the end
-	// uname, pwhash, name, pkgen (whether user wants to generate stuff serverside)
-	inv, err := database.NewInvestor("user1", "abc", "cool", true)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println("Inserting investor into database", inv)
-	err = database.InsertInvestor(inv)
-	if err != nil {
-		log.Fatal(err)
-	}
-	// check for password hash here, given the username
-	a1, err := database.SearchForPassword("b921f75437050f0f7d2caba6303d165309614d524e3d7e6bccf313f39d113468d30e1e2ac01f91f6c9b66c083d393f49b3177345311849edb026bb86ee624be0")
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println("Retrieved A", a1)
-	log.Fatal("exiting")
-	log.Fatal("COOL STUFF")
+	rpc.StartServer("8080") // this must be towards the end, passing hte pport manually, but this should be specified in the CLI
 	// open and close the db only for testing
 	db, err := database.OpenDB()
 	if err != nil {

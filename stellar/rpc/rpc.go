@@ -22,6 +22,10 @@ type PingResponse struct {
 	Status string
 }
 
+type StatusResponse struct {
+	Status int
+}
+
 func WriteToHandler(w http.ResponseWriter, jsonString []byte) {
 	w.Header().Add("Access-Control-Allow-Origin", "localhost")
 	w.Header().Add("Access-Control-Allow-Methods", "GET")
@@ -224,18 +228,21 @@ func insertOrder() {
 		}
 
 		log.Println("Prepared Order:", prepOrder)
-	})
-}
+		err = database.InsertOrderRPC(prepOrder)
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+		var rt StatusResponse
+		rt.Status = 200
+		rtJson, err := json.Marshal(rt)
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+		WriteToHandler(w, rtJson)
 
-func setupBasicHandlers() {
-	setupDefaultHandler()
-	setupPingHandler()
-}
-// setupOrderRPCs sets up all the RPC calls related to orders that might be used
-func setupOrderRPCs() {
-	getOpenOrders()
-	getOrder()
-	insertOrder()
+	})
 }
 
 func parseInvestor(r *http.Request) (database.Investor, error) {
@@ -312,6 +319,19 @@ func insertInvestor() {
 		}
 
 		log.Println("Prepared Investor:", prepInvestor)
+		err = database.InsertInvestor(prepInvestor)
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+		var rt StatusResponse
+		rt.Status = 200
+		rtJson, err := json.Marshal(rt)
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+		WriteToHandler(w, rtJson)
 	})
 }
 
@@ -335,7 +355,7 @@ func investorPassword() {
 			return
 		}
 
-		prepInvestor, err = database.SearchForPassword(r.URL.Query()["LoginPassword"][0])
+		prepInvestor, err = database.SearchForInvestorPassword(r.URL.Query()["LoginPassword"][0])
 		if err != nil {
 			errorHandler(w, r, http.StatusNotFound)
 			return
@@ -350,7 +370,7 @@ func investorPassword() {
 	})
 }
 
-func getAllinvestors() {
+func getAllInvestors() {
 	http.HandleFunc("/investor/all", func(w http.ResponseWriter, r *http.Request) {
 		checkOrigin(w, r)
 		checkGet(w, r)
@@ -369,25 +389,198 @@ func getAllinvestors() {
 	})
 }
 
+func parseRecipient(r *http.Request) (database.Recipient, error) {
+	// Index uint32 auto
+	// Name string required
+	// PublicKey string required
+	// Seed string required
+	// FirstSignedUp string auto timestamp
+	// DebtAssets []string don't set
+	// PaybackAssets []string don't set
+	// LoginUserName string required
+	// LoginPassword string required
+
+	var prepRecipient database.Recipient
+	err := r.ParseForm()
+	if err != nil {
+		return prepRecipient, err
+	}
+
+	allInvestors, err := database.RetrieveAllRecipients()
+	if err != nil {
+		return prepRecipient, err
+	}
+
+	prepRecipient.Index = uint32(len(allInvestors) + 1)
+
+	if r.FormValue("Name") != "" {
+		prepRecipient.Name = r.FormValue("Name")
+	} else {
+		return prepRecipient, fmt.Errorf("No Name")
+	}
+
+	// we need to generate a seed and pk pair
+	pair, err := keypair.Random()
+	if err != nil {
+		return prepRecipient, fmt.Errorf("Error while generating keypair")
+	}
+	prepRecipient.PublicKey = pair.Address()
+	prepRecipient.Seed = pair.Seed()
+	prepRecipient.FirstSignedUp = utils.Timestamp()
+
+	if r.FormValue("LoginUserName") != "" {
+		prepRecipient.LoginUserName = r.FormValue("LoginUserName")
+	} else {
+		// no username, error out
+		return prepRecipient, fmt.Errorf("No LoginUserName")
+	}
+
+	if r.FormValue("LoginPassword") != "" {
+		prepRecipient.LoginPassword = r.FormValue("LoginPassword")
+	} else {
+		// no password, error out
+		return prepRecipient, fmt.Errorf("No LoginPassword")
+	}
+
+	log.Println("Prepared recipient: ", prepRecipient)
+	return prepRecipient, nil
+}
+
+func getAllRecipient() {
+	http.HandleFunc("/recipient/all", func(w http.ResponseWriter, r *http.Request) {
+		checkOrigin(w, r)
+		checkGet(w, r)
+		recipients, err := database.RetrieveAllRecipients()
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+		log.Println("Retrieved all recipients: ", recipients)
+		recipientJson, err := json.Marshal(recipients)
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+		WriteToHandler(w, recipientJson)
+	})
+}
+
+func insertRecipient() {
+	// this should be a post method since you want to accept an order and then insert
+	// that into the database
+	http.HandleFunc("/recipient/insert", func(w http.ResponseWriter, r *http.Request) {
+		checkOrigin(w, r)
+		checkPost(w, r)
+		var prepRecipient database.Recipient
+		prepRecipient, err := parseRecipient(r)
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		log.Println("Prepared Recipient:", prepRecipient)
+		err = database.InsertRecipient(prepRecipient)
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+		var rt StatusResponse
+		rt.Status = 200
+		rtJson, err := json.Marshal(rt)
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+		WriteToHandler(w, rtJson)
+	})
+}
+
+func recipientPassword() {
+	http.HandleFunc("/recipient/password", func(w http.ResponseWriter, r *http.Request) {
+		checkOrigin(w, r)
+		checkGet(w, r)
+		var prepRecipient database.Recipient
+		// need to pass the pwhash param here
+		if r.URL.Query() == nil || r.URL.Query()["LoginPassword"] == nil || len(r.URL.Query()["LoginPassword"][0]) != 128 { // sha 512 length
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+		param := r.URL.Query()["LoginPassword"][0]
+		log.Println("The pwhash is: ", param)
+		// this is something like /investor/password?hash
+		// so we need to remove the /investor/password part
+		err := r.ParseForm()
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		prepRecipient, err = database.SearchForRecipientPassword(r.URL.Query()["LoginPassword"][0])
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+		log.Println("Prepared Recipient:", prepRecipient)
+		investorJson, err := json.Marshal(prepRecipient)
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+		WriteToHandler(w, investorJson)
+	})
+}
+
+// collect all hadnlers in one place so that we can aseemble them easily
+// there are some repeating RPCs that we would like to avoid and maybe there's some
+// nice way to group them together
+// setupOrderRPCs sets up all the RPC calls related to orders that might be used
+func setupOrderRPCs() {
+	getOpenOrders()
+	getOrder()
+	insertOrder()
+}
+
+// setupInvestorRPCs sets up all RPCs related to the investor
 func setupInvestorRPCs() {
 	insertInvestor()
 	investorPassword()
-	getAllinvestors()
 	// do we want an rpc that returns all investors for use in the backend?
 	// right now adding it in but we can reomve this later if this is a feature that is not desired
+	// TODO: add RPC to get a single investor from this list based on the index
+	// a bigger question is do we index by number after all?
+	// see TODO at investors.go for arguments for and against this
+	getAllInvestors()
 }
 
-func StartServer() {
-	// this runs on the server side ie the server with the frontend.
-	// having to define specific endpoints for this because this
-	// is the system that would be used by the backend, so has to be secure.
+// setupBasicHandlerssets up two hadnler functions that can be used to serve a default
+// 404 response when we either error out or received input is incorrect.  This is not
+// exactly ideal, because we don't expcet the RPC to be exposed and would like some more
+// errors when we handle it on the frontend, but this makes for more a bit more
+// secure Frontedn implementation which doesn't leak any information to the frontend
+func setupBasicHandlers() {
+	setupDefaultHandler()
+	setupPingHandler()
+}
 
-	// the idea is that we have a unique handler to each of these routes, which will
-	// then return the appropriate data to be used by the frontend
+// setupRecipientRPCs sets up all RPCs related to the recipient. Most are similar
+// to the investor RPCs, so maybe there's some nice way we can group them together
+// to avoid code duplication
+func setupRecipientRPCs() {
+	getAllRecipient()
+	insertRecipient()
+	recipientPassword()
+}
+
+// StartServer runs on the server side ie the server with the frontend.
+// having to define specific endpoints for this because this
+// is the system that would be used by the backend, so has to be built secure.
+func StartServer(port string) {
+	// we have a couple sub handlers for each main handler. these handlers
+	// call the relevant internal endpoints and return a status / data.
 	// we also have to process data from the pi itself, and that should have its own
 	// functions somewhere else that can be accessed by the rpc.
 
-	// also, this is assumed to run on localhost and hence has no autnetication mehcanism.
+	// also, this is assumed to run on localhost and hence has no authentication mehcanism.
 	// in the case we want to expose the API, we must add some stuff that secures this.
 	// right now, its just the CORS header, since we want to allwo all localhost processes
 	// to access the API
@@ -397,6 +590,11 @@ func StartServer() {
 	// setup order related RPCs
 	setupInvestorRPCs()
 	// setup investor related RPCs
+	setupRecipientRPCs()
+	// setup recipient related RPCs
 	// TODO: need to add recipient related RPCs
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	portString := ":" + port // weird construction, but this should work
+	// a potential improvement will be to add an authentication level like macaroons
+	// so that we can serve over an authenticated channel.
+	log.Fatal(http.ListenAndServe(portString, nil))
 }

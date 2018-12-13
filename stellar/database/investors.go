@@ -20,7 +20,7 @@ import (
 // people who invest in the schools
 type Investor struct {
 	Index uint32
-	// defauult index, gets us easy s tats on how many  people are there and stuff,
+	// defauult index, gets us easy stats on how many people are there and stuff,
 	// don't want to omit this
 	Name string
 	// display Name, different from UserName
@@ -87,7 +87,7 @@ func NewInvestor(uname string, pwhash string, Name string, pkgen bool) (Investor
 	// don't set InvestedAssets
 	a.LoginUserName = uname
 	a.LoginPassword = pwhash
-	// now we have a new investore, take this and then send this off to be stored in the database
+	// now we have a new investor, take this and then send this off to be stored in the database
 	return a, nil
 }
 
@@ -164,7 +164,7 @@ func RetrieveAllInvestors() ([]Investor, error) {
 	return arr, err
 }
 
-func RetrieveInvestor() (Investor, error) {
+func RetrieveInvestor(key uint32) (Investor, error) {
 	var inv Investor
 	db, err := OpenDB()
 	if err != nil {
@@ -176,7 +176,7 @@ func RetrieveInvestor() (Investor, error) {
 		if err != nil {
 			return err
 		}
-		x := b.Get(utils.Uint32toB(12))
+		x := b.Get(utils.Uint32toB(key))
 		if x == nil {
 			return nil
 		}
@@ -185,7 +185,7 @@ func RetrieveInvestor() (Investor, error) {
 	return inv, nil
 }
 
-func SearchForPassword(pwhash string) (Investor, error) {
+func SearchForInvestorPassword(pwhash string) (Investor, error) {
 	var inv Investor
 	// this is very ugly, but the only way it works right now (see TODO earlier)
 	db, err := OpenDB()

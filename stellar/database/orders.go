@@ -236,3 +236,28 @@ func RetrieveOrderRPC(key uint32) (Order, error) {
 	})
 	return rOrder, err
 }
+
+// InsertOrder inserts a passed order into the given database
+// TODO: need locks over insert and retrieve operations since BOLTdb supports only
+// one operation at a time.
+func InsertOrderRPC(order Order) error {
+	db, err := OpenDB()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	err = db.Update(func(tx *bolt.Tx) error {
+		b, err := tx.CreateBucketIfNotExists(OrdersBucket) // the orders bucket contains all our orders
+		if err != nil {
+			log.Fatal(err)
+			return err
+		}
+		encoded, err := json.Marshal(order)
+		if err != nil {
+			log.Println("Failed to encode this data into json")
+			return err
+		}
+		return b.Put([]byte(utils.Uint32toB(order.Index)), encoded)
+	})
+	return err
+}
