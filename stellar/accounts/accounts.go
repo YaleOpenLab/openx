@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	database "github.com/Varunram/smartPropertyMVP/stellar/database"
+	database "github.com/YaleOpenLab/smartPropertyMVP/stellar/database"
 	"github.com/boltdb/bolt"
 	"github.com/stellar/go/build"
 	clients "github.com/stellar/go/clients/horizon"

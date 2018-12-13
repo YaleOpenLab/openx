@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 
 	"github.com/stellar/go/keypair"
-	utils "github.com/Varunram/smartPropertyMVP/stellar/utils"
+	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
 	"github.com/boltdb/bolt"
 )
 

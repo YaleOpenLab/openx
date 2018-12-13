@@ -35,9 +35,9 @@ import (
 	"log"
 
 	"github.com/boltdb/bolt"
-	accounts "github.com/Varunram/smartPropertyMVP/stellar/accounts"
-	database "github.com/Varunram/smartPropertyMVP/stellar/database"
-	utils "github.com/Varunram/smartPropertyMVP/stellar/utils"
+	accounts "github.com/YaleOpenLab/smartPropertyMVP/stellar/accounts"
+	database "github.com/YaleOpenLab/smartPropertyMVP/stellar/database"
+	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
 )
 
 func AssetID(inputString string) string {
