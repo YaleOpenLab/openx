@@ -53,7 +53,7 @@ func OpenDB() (*bolt.DB, error) {
 func NewOrder(db *bolt.DB, panelSize string, totalValue int, location string, moneyRaised int, metadata string, INVAssetCode string, DEBAssetCode string, PBAssetCode string) (Order, error) {
 	var a Order
 	// need to get a new index since we have a small bug on that
-	allOrders, err := RetrieveAll(db)
+	allOrders, err := RetrieveAllOrders(db)
 	if err != nil {
 		return a, err
 	}
@@ -127,7 +127,7 @@ func RetrieveOrder(key uint32, db *bolt.DB) (Order, error) {
 // the order
 // TODO: make delete not mess up with indices, which it currently does
 func DeleteOrder(key uint32, db *bolt.DB) error {
-	// deleting order might be dangerous since that would mess with the retrieveAll
+	// deleting order might be dangerous since that would mess with the RetrieveAllOrders
 	// function, have it in here for now, don't do too much with it / fiox retrieve all
 	// to handle this case
 	err := db.Update(func(tx *bolt.Tx) error {
@@ -145,8 +145,8 @@ func DeleteOrder(key uint32, db *bolt.DB) error {
 	return err
 }
 
-// RetrieveAll retrieves all orders from the given database
-func RetrieveAll(db *bolt.DB) ([]Order, error) {
+// RetrieveAllOrders retrieves all orders from the given database
+func RetrieveAllOrders(db *bolt.DB) ([]Order, error) {
 	var arr []Order
 	err := db.Update(func(tx *bolt.Tx) error {
 		// this is Update to cover the case where the  bucket doesn't exists and we're
@@ -176,9 +176,9 @@ func RetrieveAll(db *bolt.DB) ([]Order, error) {
 	return arr, err
 }
 
-// RetrieveAllWithoutDB retrieves all orders from the default database (for use only
+// RetrieveAllOrdersWithoutDB retrieves all orders from the default database (for use only
 // by frontend RPCs which want to query us)
-func RetrieveAllWithoutDB() ([]Order, error) {
+func RetrieveAllOrdersWithoutDB() ([]Order, error) {
 	var arr []Order
 	db, err := OpenDB()
 	if err != nil {

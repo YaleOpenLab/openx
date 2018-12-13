@@ -33,12 +33,30 @@ func ValidateInputs() {
 func main() {
 	var err error
 	rpc.StartServer() // this must be towards the end
+	// uname, pwhash, name, pkgen (whether user wants to generate stuff serverside)
+	inv, err := database.NewInvestor("user1", "abc", "cool", true)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("Inserting investor into database", inv)
+	err = database.InsertInvestor(inv)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// check for password hash here, given the username
+	a1, err := database.SearchForPassword("b921f75437050f0f7d2caba6303d165309614d524e3d7e6bccf313f39d113468d30e1e2ac01f91f6c9b66c083d393f49b3177345311849edb026bb86ee624be0")
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("Retrieved A", a1)
+	log.Fatal("exiting")
+	log.Fatal("COOL STUFF")
+	// open and close the db only for testing
 	db, err := database.OpenDB()
 	if err != nil {
 		log.Fatal(err)
 		// this means that we couldn't open the database and we need to do something else
 	}
-	defer db.Close()
 	_, err = flags.ParseArgs(&opts, os.Args)
 	if err != nil {
 		log.Fatal(err)
