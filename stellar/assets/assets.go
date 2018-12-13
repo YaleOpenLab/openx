@@ -1,35 +1,42 @@
+// package assets contains asset related functions like calculating AssetID and
+// sets up DEBTokens, PBTokens and INVTokens for a specific order that it has been
+// passed
+// the entities in the system are described in the README file and this part
+// will explain how the PBTokens, INVTokens and DEBTokens work.
+// 1. INVToken - An INVToken is issued by the issuer for every USD that the investor
+// has invested in the contract. This peg needs to be ensured maybe in protocol
+// with stablecoins on Stellar or we need to provide an easy onboarding scheme
+// for users into the crypto worls using other means. The inevestor receives
+// INVTokens as proof of investment but profit return mechanism is not taken into
+// account here, since htat needs clear definition on how much investors get each
+// period for inevesting in the project. TODO: INVTokens should be set with an
+// immutable flag so that the isuser can't renege on issuing this assets at any
+// future time
+// 2. DEBToken - for each INVToken (and indirectly, USD invested in the project),
+// we issue a DEBToken to the recipient of the assets so that they can pay us back.
+// DEBTokens are also lunked with PBTokens and they should be immutable as well,
+// so that the issuer can not change the amount of debt at any point in the future.
+// 3. PBToken - each PBToken denoted a month of appropriate payback. A month's worth
+// of payback is decided by the recipient, who decides the payback period of the
+// given assets at the time of creation. PBTokens are non-fungible, it means
+// that one order's payback token is not worth the same as the other order's PBToken.
+// the other two tokens are fungible - each INVToken is worth +1USD and each DEBToken
+// is worth -1 USD and can be trnasferred to other peers willing to take profit / debt
+// on behalf of the above entities. SInce PBToken is not fungible, the flag
+// authorization_required needs to be set and a party without a trustline with
+// the issuer can not trade in this asset (and ideally, the issuer will not accept
+// trustlines in this new asset)
+// Supported payback periods right now are
+// A. 3 YEARS = 36 PBTokens
+// B. 5 YEARS = 60 PBTokens
+// C. 7 YEARS = 84 PBTokens
+// The hard part is ensuring that the assets are pegged to the USD in a stable way.
+// we could ensure the peg ourselves by accepting USD off chain, but that's not provable
+// on chain and the investor has to trust the issuer with that. Also, in this case,
+// anonymous investors wouldn't be able to invest, which is something that would be
+// nice to have
+// TODO: Add flags to assets, onboarding, multiple investors and more
 package assets
-
-// so we create two entities here = issuer and recipient
-// the issuer is us, wewant to give out solar panel contracts and we issue assets
-// there should be n investors, who will be investing in this contract and we can
-// define a preset amount in dollars based on the value of the bond.
-// the recipient which is the school has to first agree on a time bound period
-// of payback, absed on which another asset (payBack Asset) is issued and this
-// will automatically update based on the payments amde by the school.
-
-// for eg, take ABC School to which we assign a bond of 14000 USD with 10 investors
-// the first step would be to issue an asset which is wort 1:1 with the dollar
-// (or use dollars itself, have to see how this works out) So now we have 14000
-// INV_schoolname_capacity tokens which are possessed by investors as proof that they invested in this specific asset.
-// now that we have 14000 INV tokens created, we need to create  the payback tokens
-// for the case of this example, lets assume that there are 3 options:
-// A. 3 YEARS = 36 mo
-// B. 5 YEARS = 60 mo
-// C. 7 YEARS = 84 mo
-// now we need to create a peg for INV token based on the years the school chooses.
-// Lets assume that the school chooses 5 years. We need to peg the PB (payback) token
-// like 14000 USD : 60 PB which means 233.333 USD = 1 PB token
-// now here, we round this up for ease of granularity, so this would be 234 USD a month.
-// The schoole could now choose to payback 1 PB a month, which would mean it gains ownership in exactly
-// 5 years, it could also pay faster, which would mean that they own the asset earlier
-// years / months reamining is simply the balance in payback tokens (50.42 PB for eg)
-// and we can use this to display users how much time they have remaining to own the asset
-
-// In net, we have to create 2 assets:
-// 1. Investor Token UNIQUE to each bond
-// 2. Payback Token UNIQUE to each bond
-// lets leave validation for later since that requires state validation stuff
 
 import (
 	"log"
@@ -40,6 +47,11 @@ import (
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
 )
 
+// AssetID assigns a unique assetID to each asset. We assume that there won't be more
+// than 68719476736 (16^9) assets that are created at any point, so we're good.
+// the total AssetID must be less than 12 characters in length, so we take the first
+// three for a human readable identifier and then the last 9 are random hex characaters
+// passed through SHA3
 func AssetID(inputString string) string {
 	// so the assetID right now is a hash of the asset name, concatenated investor public keys and nonces
 	x := utils.SHA3hash(inputString)
@@ -48,6 +60,8 @@ func AssetID(inputString string) string {
 	// return nil
 }
 
+// CalculatePayback is a TODO function that should simply some up the PBToken
+// balance and then return them to the frontend UI for a nice display
 func CalculatePayback(balance string, noOfMonths string) error {
 	// the idea is that we should be able ot pass an assetId to this function
 	// and it must calculate how much time we have left for payback. For this example
@@ -56,6 +70,7 @@ func CalculatePayback(balance string, noOfMonths string) error {
 	return nil
 }
 
+// SetupAsset sets up assets based on a given order
 func SetupAsset(db *bolt.DB, issuer *accounts.Account, investor *accounts.Account, recipient *accounts.Account, investedAmount int, noOfYears int) (database.Order, error) {
 	var newOrder database.Order
 	assetName := AssetID("School_PuertoRico_1")

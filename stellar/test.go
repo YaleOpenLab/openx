@@ -1,5 +1,6 @@
 package main
 
+// test.go runs the PoC stellar implementation calling various functions
 import (
 	"fmt"
 	"log"
@@ -8,8 +9,8 @@ import (
 	accounts "github.com/YaleOpenLab/smartPropertyMVP/stellar/accounts"
 	assets "github.com/YaleOpenLab/smartPropertyMVP/stellar/assets"
 	database "github.com/YaleOpenLab/smartPropertyMVP/stellar/database"
-	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
 	rpc "github.com/YaleOpenLab/smartPropertyMVP/stellar/rpc"
+	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
 	flags "github.com/jessevdk/go-flags"
 )
 

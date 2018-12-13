@@ -1,6 +1,6 @@
 package database
 
-// this should actually be in the databse package, but since this needs the
+// contains the WIP Investor struct which will be st ored in a separate bucket
 import (
 	"log"
 	"encoding/json"

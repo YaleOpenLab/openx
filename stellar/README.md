@@ -20,3 +20,13 @@ These three entities interact use the three tokens detailed below:
   - Each time the ISSUER receives DEBTokens, the ISSUER confirms the transaction and sends back PBTokens as `paid_amount / expected_paid_amount` eg you pay 210 towards an expected amount of 120. You get paid back 1.75 PBTokens.
 
 Any disparity / failure on the ISSUER's part can be argued with, since the transactions are on chain. The PBToken simplifies this, since one doesn't need to go back in history and calculate how much a given school has paid a person. Percentage paid is simply `PBToken_balance / PBToken_total`.
+
+# Running the code in this repo
+
+In order to be able to run this, you need to have the latest version of go installed. [Here](https://medium.com/@patdhlk/how-to-install-go-1-9-1-on-ubuntu-16-04-ee64c073cd79) is a quick tutorial on how to get go installed on a Linux / macOS machine.
+
+Once you have go installed, you need to get the packages in this repo. This can be done using `go get -v ./...`
+
+Then you need to build the stellar package `go build` and then run the executable like `./stellar`.
+
+The CLI options supported currently are `-i` for investing amount and `-r` for payback years (3/5/7 years are supported right now)
