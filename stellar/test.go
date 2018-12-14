@@ -1,5 +1,6 @@
 package main
 
+// test.go runs the PoC stellar implementation calling various functions
 import (
 	"fmt"
 	"log"
@@ -8,17 +9,19 @@ import (
 	accounts "github.com/YaleOpenLab/smartPropertyMVP/stellar/accounts"
 	assets "github.com/YaleOpenLab/smartPropertyMVP/stellar/assets"
 	database "github.com/YaleOpenLab/smartPropertyMVP/stellar/database"
-	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
 	rpc "github.com/YaleOpenLab/smartPropertyMVP/stellar/rpc"
+	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
 	flags "github.com/jessevdk/go-flags"
 )
 
 var opts struct {
 	// Slice of bool will append 'true' each time the option
 	// is encountered (can be set multiple times, like -vvv)
+	// TOOD: define default values for each and then use them if not passed
 	Verbose   []bool `short:"v" long:"verbose" description:"Show verbose debug information"`
 	InvAmount int    `short:"i" description:"Desired investment" required:"true"`
 	RecYears  int    `short:"r" description:"Number of years the recipient wants to repay in. Can be 3, 5 or 7 years." required:"true"`
+	Port      string `short:p description:"The port on which the server runs on"`
 }
 
 func ValidateInputs() {
@@ -31,13 +34,13 @@ func ValidateInputs() {
 
 func main() {
 	var err error
-	rpc.StartServer() // this must be towards the end
+	rpc.StartServer("8080") // this must be towards the end, passing hte pport manually, but this should be specified in the CLI
+	// open and close the db only for testing
 	db, err := database.OpenDB()
 	if err != nil {
 		log.Fatal(err)
 		// this means that we couldn't open the database and we need to do something else
 	}
-	defer db.Close()
 	_, err = flags.ParseArgs(&opts, os.Args)
 	if err != nil {
 		log.Fatal(err)

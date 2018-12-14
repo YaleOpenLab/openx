@@ -1,5 +1,6 @@
 package utils
 
+// utils contains utility functions that are needed commonly in packages
 import (
 	//"log"
 	"encoding/binary"
