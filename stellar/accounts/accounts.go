@@ -52,7 +52,7 @@ func New() (Account, error) {
 	if err != nil {
 		return a, err
 	}
-	log.Println("MY SEED IS: ", pair.Seed())
+	// log.Println("MY SEED IS: ", pair.Seed())
 	a.Seed = pair.Seed()
 	a.PublicKey = pair.Address()
 	return a, nil

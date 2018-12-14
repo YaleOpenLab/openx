@@ -71,16 +71,16 @@ func CalculatePayback(balance string, noOfMonths string) error {
 }
 
 // SetupAsset sets up assets based on a given order
-func SetupAsset(db *bolt.DB, issuer *accounts.Account, investor *accounts.Account, recipient *accounts.Account, investedAmount int, noOfYears int) (database.Order, error) {
+func SetupAsset(db *bolt.DB, issuer *accounts.Account, investor *accounts.Account, recipient *accounts.Account, uOrder database.Order) (database.Order, error) {
 	var newOrder database.Order
 	assetName := AssetID("School_PuertoRico_1")
 	// the reason why we have an int here is to avoid parsing
 	// issues like dealing with random user strings "abc" could also be a valid input
 	// if we decide to accept strings as our user input
-	convRatio := float64(investedAmount/(noOfYears*12) + 1) // x usd = 1 PB token
+	convRatio := float64(uOrder.TotalValue/(uOrder.Years*12) + 1) // x usd = 1 PB token
 	// the +1 is to offset the ratio to a whole number and make paybacks slightly less
 	// which would mean the investors get paid ~months*1 more, which can be offset in another place
-	paybackTokens := noOfYears * 12 // float to have granularity of sorts
+	paybackTokens := uOrder.Years * 12 // float to have granularity of sorts
 	// the school would pay us back in USD tokens however, we use the conversion ratio of usd/234 to calculate payback period
 	// assume the school pays 230 usd this year
 	payBackPeriodLeft := float64(paybackTokens) - 200.0/convRatio
@@ -92,16 +92,16 @@ func SetupAsset(db *bolt.DB, issuer *accounts.Account, investor *accounts.Accoun
 	INVAssetName := AssetID("INVTokens_" + assetName) // ie. sha3(INVTokens_School_PuertoRico_1)[64:76]
 	DEBAssetName := AssetID("DEBTokens_" + assetName) // ie. sha3(INVTokens_School_PuertoRico_1)[64:76]
 	PBAssetName := AssetID("PBTokens_" + assetName)
-	iAmt := utils.IntToString(investedAmount)
-	dAmt := utils.IntToString(investedAmount*2)
-	pbAmt := utils.IntToString(noOfYears * 12)
+	iAmt := utils.IntToString(uOrder.TotalValue)
+	dAmt := utils.IntToString(uOrder.TotalValue*2)
+	pbAmt := utils.IntToString(uOrder.Years * 12)
 	log.Printf("Created asset names are %s and %s and amounts are %s and %s", INVAssetName, PBAssetName, iAmt, pbAmt)
 	PBasset := issuer.CreateAsset(PBAssetName)
 	INVasset := issuer.CreateAsset(INVAssetName)
 	DEBasset := issuer.CreateAsset(DEBAssetName)
 
 	// so I have the assets for this school created
-	// now the investors need to trust me only for investedAmount of INVTokens
+	// now the investors need to trust me only for uOrder.TotalValue of INVTokens
 
 	txHash, err := investor.TrustAsset(INVasset, string(iAmt))
 	if err != nil {
@@ -142,13 +142,11 @@ func SetupAsset(db *bolt.DB, issuer *accounts.Account, investor *accounts.Accoun
 		return newOrder, err
 	}
 
-	newOrder, err = database.NewOrder(db, "16x20 panels", investedAmount, "Puerto Rico", investedAmount, "This is test data", INVAssetName, DEBAssetName, PBAssetName)
-	if err != nil {
-		log.Println("Error creating a new order. Quitting!")
-		log.Fatal(err)
-	}
-	log.Println("Created new order: ", newOrder)
-
-	// return asset names since we need to track this stuff
-	return newOrder, nil
+	uOrder.Live = true
+	uOrder.INVAssetCode = INVAssetName
+	uOrder.DEBAssetCode = DEBAssetName
+	uOrder.PBAssetCode = PBAssetName
+	uOrder.BalLeft = float64(uOrder.TotalValue)
+	err = database.InsertOrder(uOrder, db)
+	return uOrder, err
 }

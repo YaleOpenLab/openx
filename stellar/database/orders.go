@@ -8,8 +8,8 @@ package database
 
 // what do we need to store?
 import (
-	// "fmt"
 	"encoding/json"
+	"fmt"
 	"log"
 
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
@@ -24,6 +24,7 @@ type Order struct {
 	TotalValue    int     // the total money that we need from investors
 	Location      string  // where this specific solar panel is located
 	MoneyRaised   int     // total money that has been raised until now
+	Years         int     // number of years the recipient has chosen to opt for
 	Metadata      string  // any other metadata can be stored here
 	Live          bool    // check to see whether the current order is live or not
 	INVAssetCode  string  // once all funds have been raised, we need to set assetCodes
@@ -260,4 +261,107 @@ func InsertOrderRPC(order Order) error {
 		return b.Put([]byte(utils.Uint32toB(order.Index)), encoded)
 	})
 	return err
+}
+
+// PrettyPrintOrder pretty prints orders
+func PrettyPrintOrders(orders []Order) {
+	for _, order := range orders {
+		fmt.Println("    ORDER NUMBER: ", order.Index)
+		fmt.Println("          Panel Size: ", order.PanelSize)
+		fmt.Println("          Total Value: ", order.TotalValue)
+		fmt.Println("          Location: ", order.Location)
+		fmt.Println("          Money Raised: ", order.MoneyRaised)
+		fmt.Println("          Metadata: ", order.Metadata)
+		fmt.Println("          Years: ", order.Years)
+		if order.Live {
+			fmt.Println("          Investor Asset Code: ", order.INVAssetCode)
+			fmt.Println("          Debt Asset Code: ", order.DEBAssetCode)
+			fmt.Println("          Payback Asset Code: ", order.PBAssetCode)
+			fmt.Println("          Balance Left: ", order.BalLeft)
+		}
+		fmt.Println("          Date Initiated: ", order.DateInitiated)
+		if order.Live {
+			fmt.Println("          Date Last Paid: ", order.DateLastPaid)
+		}
+	}
+}
+
+// PrettyPrintOrder pretty prints orders
+func PrettyPrintOrder(order Order) {
+	fmt.Println("    ORDER NUMBER: ", order.Index)
+	fmt.Println("          Panel Size: ", order.PanelSize)
+	fmt.Println("          Total Value: ", order.TotalValue)
+	fmt.Println("          Location: ", order.Location)
+	fmt.Println("          Money Raised: ", order.MoneyRaised)
+	fmt.Println("          Metadata: ", order.Metadata)
+	fmt.Println("          Years: ", order.Years)
+	if order.Live {
+		fmt.Println("          Investor Asset Code: ", order.INVAssetCode)
+		fmt.Println("          Debt Asset Code: ", order.DEBAssetCode)
+		fmt.Println("          Payback Asset Code: ", order.PBAssetCode)
+		fmt.Println("          Balance Left: ", order.BalLeft)
+	}
+	fmt.Println("          Date Initiated: ", order.DateInitiated)
+	if order.Live {
+		fmt.Println("          Date Last Paid: ", order.DateLastPaid)
+	}
+}
+
+func InsertDummyData(db *bolt.DB) error {
+	var order1 Order
+	var err error
+
+	order1.Index = 1
+	order1.PanelSize = "100 1000 sq.ft homes each with their own private spaces for luxury"
+	order1.TotalValue = 14000
+	order1.Location = "India Basin, San Francisco"
+	order1.MoneyRaised = 0
+	order1.Metadata = "India Basin is an upcoming creative project based in San Francisco that seeks to invite innovators from all around to participate"
+	order1.Live = false
+	order1.INVAssetCode = ""
+	order1.DEBAssetCode = ""
+	order1.PBAssetCode = ""
+	order1.DateInitiated = utils.Timestamp()
+	order1.Years = 3
+	err = InsertOrder(order1, db)
+	if err != nil {
+		return fmt.Errorf("Error inserting order into db")
+	}
+
+	order1.Index = 2
+	order1.PanelSize = "180 1200 sq.ft homes in a high rise building 0.1mi from Kendall Square"
+	order1.TotalValue = 30000
+	order1.Location = "Kendall Square, Boston"
+	order1.MoneyRaised = 0
+	order1.Metadata = "Kendall Square is set in the heart of Cambridge and is a popular startup IT hub"
+	order1.Live = false
+	order1.INVAssetCode = ""
+	order1.DEBAssetCode = ""
+	order1.PBAssetCode = ""
+	order1.DateInitiated = utils.Timestamp()
+	order1.Years = 5
+
+	err = InsertOrder(order1, db)
+	if err != nil {
+		return fmt.Errorf("Error inserting order into db")
+	}
+
+	order1.Index = 3
+	order1.PanelSize = "260 1500 sq.ft homes set in a medieval cathedral style construction"
+	order1.TotalValue = 40000
+	order1.Location = "Trafalgar Square, London"
+	order1.MoneyRaised = 0
+	order1.Metadata = "Trafalgar Square is set in the heart of London's financial district, with big banks all over"
+	order1.Live = false
+	order1.INVAssetCode = ""
+	order1.DEBAssetCode = ""
+	order1.PBAssetCode = ""
+	order1.DateInitiated = utils.Timestamp()
+	order1.Years = 7
+
+	err = InsertOrder(order1, db)
+	if err != nil {
+		return fmt.Errorf("Error inserting order into db")
+	}
+	return nil
 }

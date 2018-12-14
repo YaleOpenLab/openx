@@ -212,7 +212,6 @@ func SearchForInvestorPassword(pwhash string) (Investor, error) {
 			}
 			// we have the investor class, check password
 			if rInvestor.LoginPassword == pwhash {
-				log.Println("FOUDN INVESOTR")
 				inv = rInvestor
 			}
 		}
