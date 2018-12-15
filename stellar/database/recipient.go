@@ -79,6 +79,31 @@ func NewRecipient(uname string, pwhash string, Name string) (Recipient, error) {
 	return a, nil
 }
 
+func NewRecipientWithoutSeed(uname string, pwhash string, Name string) (Recipient, error) {
+	// this should be called initially since the recipient's seed is created only
+	// if someone decides to ivnest in the order
+	var a Recipient
+
+	allRecipients, err := RetrieveAllRecipients()
+	if err != nil {
+		return a, err
+	}
+
+	// the ugly indexing thing again, need to think of something better here
+	if len(allRecipients) == 0 {
+		a.Index = 1
+	} else {
+		a.Index = uint32(len(allRecipients) + 1)
+	}
+
+	a.Name = Name
+	a.FirstSignedUp = utils.Timestamp()
+	a.LoginUserName = uname
+	a.LoginPassword = pwhash
+	// now we have a new Recipient, take this and then send this off to be stored in the database
+	return a, nil
+}
+
 // all operations are mostly similar to that of the Recipient class
 // TODO: merge where possible by adding an extra bucket param
 func InsertRecipient(a Recipient) error {
@@ -196,11 +221,56 @@ func SearchForRecipientPassword(pwhash string) (Recipient, error) {
 			}
 			// we have the investor class, check password
 			if rRecipient.LoginPassword == pwhash {
-				log.Println("FOUDN INVESOTR")
 				inv = rRecipient
 			}
 		}
 		return fmt.Errorf("Not Found")
 	})
 	return inv, err
+}
+
+func SearchForRecipientName(name string) (Recipient, error) {
+	var inv Recipient
+	// this is very ugly, but the only way it works right now (see TODO earlier)
+	db, err := OpenDB()
+	if err != nil {
+		return inv, err
+	}
+	defer db.Close()
+
+	err = db.Update(func(tx *bolt.Tx) error {
+		b, err := tx.CreateBucketIfNotExists(RecipientBucket)
+		if err != nil {
+			return err
+		}
+		i := uint32(1)
+		for ; ; i++ {
+			var rRecipient Recipient
+			x := b.Get(utils.Uint32toB(i))
+			if x == nil {
+				return nil
+			}
+			err := json.Unmarshal(x, &rRecipient)
+			if err != nil {
+				return nil
+			}
+			// we have the investor class, check password
+			if rRecipient.Name == name {
+				inv = rRecipient
+			}
+		}
+		return fmt.Errorf("Not Found")
+	})
+	return inv, err
+}
+
+// PrettyPrintRecipient pretty prints recipients
+func PrettyPrintRecipient(recipient Recipient) {
+	fmt.Println("    WELCOME BACK ", recipient.Name)
+	fmt.Println("          Your Public Key is: ", recipient.PublicKey)
+	fmt.Println("          Your Seed is: ", recipient.Seed)
+	fmt.Println("          Your Debt Assets are: ", recipient.DebtAssets)
+	fmt.Println("          Your Payback Assets are: ", recipient.PaybackAssets)
+	fmt.Println("          Your Username is: ", recipient.LoginUserName)
+	fmt.Println("          Your Password hash is: ", recipient.LoginPassword)
 }

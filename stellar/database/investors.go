@@ -80,7 +80,7 @@ func NewInvestor(uname string, pwhash string, Name string, pkgen bool) (Investor
 		a.Seed = pair.Seed()
 		a.PublicKey = pair.Address()
 		// display this seed but DON'T store this. Store this for now sicne we're just testing
-		log.Println("This seed will be deleted from our servers. Note it down and please don't forget", a.Seed)
+		//log.Println("This seed will be deleted from our servers. Note it down and please don't forget", a.Seed)
 	}
 	a.AmountInvested = float64(0)
 	a.FirstSignedUp = utils.Timestamp()
@@ -106,7 +106,7 @@ func InsertInvestor(a Investor) error {
 	err = db.Update(func(tx *bolt.Tx) error {
 		b, err := tx.CreateBucketIfNotExists(InvestorBucket) // the orders bucket contains all our orders
 		if err != nil {
-			log.Fatal(err)
+			log.Println("Failed to create bucket")
 			return err
 		}
 		encoded, err := json.Marshal(a)
@@ -218,4 +218,43 @@ func SearchForInvestorPassword(pwhash string) (Investor, error) {
 		return fmt.Errorf("Not Found")
 	})
 	return inv, err
+}
+
+func SearchForInvestorPasswordWithDb(pwhash string, db *bolt.DB) (Investor, error) {
+	var inv Investor
+	err := db.Update(func(tx *bolt.Tx) error {
+		b, err := tx.CreateBucketIfNotExists(InvestorBucket)
+		if err != nil {
+			return err
+		}
+		i := uint32(1)
+		for ; ; i++ {
+			var rInvestor Investor
+			x := b.Get(utils.Uint32toB(i))
+			if x == nil {
+				return nil
+			}
+			err := json.Unmarshal(x, &rInvestor)
+			if err != nil {
+				return nil
+			}
+			// we have the investor class, check password
+			if rInvestor.LoginPassword == pwhash {
+				inv = rInvestor
+			}
+		}
+		return fmt.Errorf("Not Found")
+	})
+	return inv, err
+}
+
+// PrettyPrintInvestor pretty prints investors
+func PrettyPrintInvestor(investor Investor) {
+	fmt.Println("    WELCOME BACK ", investor.Name)
+	fmt.Println("          Your Public Key is: ", investor.PublicKey)
+	fmt.Println("          Your Seed is: ", investor.Seed)
+	fmt.Println("          You have Invested: ", investor.AmountInvested)
+	fmt.Println("          Your Invested Assets are: ", investor.InvestedAssets)
+	fmt.Println("          Your Username is: ", investor.LoginUserName)
+	fmt.Println("          Your Password hash is: ", investor.LoginPassword)
 }

@@ -41,7 +41,6 @@ package assets
 import (
 	"log"
 
-	"github.com/boltdb/bolt"
 	accounts "github.com/YaleOpenLab/smartPropertyMVP/stellar/accounts"
 	database "github.com/YaleOpenLab/smartPropertyMVP/stellar/database"
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
@@ -71,8 +70,9 @@ func CalculatePayback(balance string, noOfMonths string) error {
 }
 
 // SetupAsset sets up assets based on a given order
-func SetupAsset(db *bolt.DB, issuer *accounts.Account, investor *accounts.Account, recipient *accounts.Account, uOrder database.Order) (database.Order, error) {
+func SetupAsset(issuer *accounts.Account, investor *accounts.Account, recipient *accounts.Account, uOrder database.Order) (database.Order, error) {
 	var newOrder database.Order
+	var err error
 	assetName := AssetID("School_PuertoRico_1")
 	// the reason why we have an int here is to avoid parsing
 	// issues like dealing with random user strings "abc" could also be a valid input
@@ -147,6 +147,6 @@ func SetupAsset(db *bolt.DB, issuer *accounts.Account, investor *accounts.Accoun
 	uOrder.DEBAssetCode = DEBAssetName
 	uOrder.PBAssetCode = PBAssetName
 	uOrder.BalLeft = float64(uOrder.TotalValue)
-	err = database.InsertOrder(uOrder, db)
+	err = database.InsertOrderRPC(uOrder)
 	return uOrder, err
 }

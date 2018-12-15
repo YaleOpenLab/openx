@@ -33,6 +33,8 @@ type Order struct {
 	BalLeft       float64 // denotes the balance left to pay by the party
 	DateInitiated string  // date the order was created
 	DateLastPaid  string  // date the order was last paid
+	RecipientName string  // name of the recipient in order to assign the given assets
+	// TODO: have an investor and recipient relation here
 	// Percentage raised is not stored in the database since that can be calculated by the UI
 }
 
@@ -307,9 +309,10 @@ func PrettyPrintOrder(order Order) {
 	}
 }
 
-func InsertDummyData(db *bolt.DB) error {
-	var order1 Order
+func InsertDummyData() error {
 	var err error
+	// populate database with dumym data
+	var order1 Order
 
 	order1.Index = 1
 	order1.PanelSize = "100 1000 sq.ft homes each with their own private spaces for luxury"
@@ -323,7 +326,8 @@ func InsertDummyData(db *bolt.DB) error {
 	order1.PBAssetCode = ""
 	order1.DateInitiated = utils.Timestamp()
 	order1.Years = 3
-	err = InsertOrder(order1, db)
+	order1.RecipientName = "Martin" // this is not the username of the recipient
+	err = InsertOrderRPC(order1)
 	if err != nil {
 		return fmt.Errorf("Error inserting order into db")
 	}
@@ -340,8 +344,9 @@ func InsertDummyData(db *bolt.DB) error {
 	order1.PBAssetCode = ""
 	order1.DateInitiated = utils.Timestamp()
 	order1.Years = 5
+	order1.RecipientName = "Martin" // this is not the username of the recipient
 
-	err = InsertOrder(order1, db)
+	err = InsertOrderRPC(order1)
 	if err != nil {
 		return fmt.Errorf("Error inserting order into db")
 	}
@@ -358,10 +363,45 @@ func InsertDummyData(db *bolt.DB) error {
 	order1.PBAssetCode = ""
 	order1.DateInitiated = utils.Timestamp()
 	order1.Years = 7
+	order1.RecipientName = "Martin" // this is not the username of the recipient
 
-	err = InsertOrder(order1, db)
+	err = InsertOrderRPC(order1)
 	if err != nil {
 		return fmt.Errorf("Error inserting order into db")
+	}
+
+	var inv Investor
+	allInvs, err := RetrieveAllInvestors()
+	if err != nil {
+		log.Fatal(err)
+	}
+	if len(allInvs) == 0 {
+		inv.Index = 1
+		inv.LoginUserName = "john"
+		inv.LoginPassword = "e9a75486736a550af4fea861e2378305c4a555a05094dee1dca2f68afea49cc3a50e8de6ea131ea521311f4d6fb054a146e8282f8e35ff2e6368c1a62e909716"
+		inv.Name = "John"
+		err = InsertInvestor(inv)
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else if len(allInvs) == 1 {
+		// don't do anything
+	}
+
+	allRecs, err := RetrieveAllRecipients()
+	if err != nil {
+		log.Fatal(err)
+	}
+	if len(allRecs) == 0 {
+		var rec Recipient
+		rec.Index = 1
+		rec.LoginUserName = "martin"
+		rec.LoginPassword = "e9a75486736a550af4fea861e2378305c4a555a05094dee1dca2f68afea49cc3a50e8de6ea131ea521311f4d6fb054a146e8282f8e35ff2e6368c1a62e909716"
+		rec.Name = "Martin"
+		err = InsertRecipient(rec)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 	return nil
 }
