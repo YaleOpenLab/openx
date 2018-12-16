@@ -44,6 +44,12 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Separate TODO list based on demo specifics
+	// 1. Add support for multiple participants in the system - right now, the PoC
+	// assumes a single investor and it is essential to have multiple investors for
+	// a good demo
+	// 2. Add support for recipients paying back tokens within the CLI UI (we can
+	// already payback using relevant functions, but that's not much useful UI wise)
 	// For the demo, we must have multiple things that are in line
 	// 1. An interface to view the number of orders that are in the orderbook
 	// 2. An interface to view all the assets owned by a particular investor
