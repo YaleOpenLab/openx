@@ -39,114 +39,187 @@
 package assets
 
 import (
+	"fmt"
 	"log"
+	"strconv"
 
-	accounts "github.com/YaleOpenLab/smartPropertyMVP/stellar/accounts"
 	database "github.com/YaleOpenLab/smartPropertyMVP/stellar/database"
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
+	"github.com/stellar/go/build"
 )
 
-// AssetID assigns a unique assetID to each asset. We assume that there won't be more
-// than 68719476736 (16^9) assets that are created at any point, so we're good.
-// the total AssetID must be less than 12 characters in length, so we take the first
-// three for a human readable identifier and then the last 9 are random hex characaters
-// passed through SHA3
-func AssetID(inputString string) string {
-	// so the assetID right now is a hash of the asset name, concatenated investor public keys and nonces
-	x := utils.SHA3hash(inputString)
-	return "YOL" + x[64:73] // max length of an asset in stellar is 12
-	// log.Fatal(fmt.Errorf("All good"))
-	// return nil
+func CreateAsset(assetName string, PublicKey string) build.Asset {
+	// need to set a couple flags here
+	return build.CreditAsset(assetName, PublicKey)
 }
 
-// CalculatePayback is a TODO function that should simply some up the PBToken
-// balance and then return them to the frontend UI for a nice display
-func CalculatePayback(balance string, noOfMonths string) error {
-	// the idea is that we should be able ot pass an assetId to this function
-	// and it must calculate how much time we have left for payback. For this example
-	// until twe do the db stuff, lets pass a few params (although this could be done
-	// separately as well).
-	return nil
-}
+func TrustAsset(asset build.Asset, limit string, PublicKey string, Seed string) (string, error) {
+	// TRUST is FROM recipient TO issuer
+	trustTx, err := build.Transaction(
+		build.SourceAccount{PublicKey},
+		build.AutoSequence{SequenceProvider: utils.DefaultTestNetClient},
+		build.TestNetwork,
+		build.Trust(asset.Code, asset.Issuer, build.Limit(limit)),
+	)
 
-// SetupAsset sets up assets based on a given order
-func SetupAsset(issuer *accounts.Account, investor *accounts.Account, recipient *accounts.Account, uOrder database.Order) (database.Order, error) {
-	var newOrder database.Order
-	var err error
-	assetName := AssetID("School_PuertoRico_1")
-	// the reason why we have an int here is to avoid parsing
-	// issues like dealing with random user strings "abc" could also be a valid input
-	// if we decide to accept strings as our user input
-	convRatio := float64(uOrder.TotalValue/(uOrder.Years*12) + 1) // x usd = 1 PB token
-	// the +1 is to offset the ratio to a whole number and make paybacks slightly less
-	// which would mean the investors get paid ~months*1 more, which can be offset in another place
-	paybackTokens := uOrder.Years * 12 // float to have granularity of sorts
-	// the school would pay us back in USD tokens however, we use the conversion ratio of usd/234 to calculate payback period
-	// assume the school pays 230 usd this year
-	payBackPeriodLeft := float64(paybackTokens) - 200.0/convRatio
-	log.Println("Payback Token Ratio for asset class is 1PB: ", convRatio, " USD tokens and payback period is ", payBackPeriodLeft) // +1 to round up
-
-	// so now we create payBack and investor tokens for this asset class
-	// the issuer is the platform itself, so people have to trust us (maybe give proofs for this?)
-	// what is the guarantee that I don't issue as many PBTokens as I want? none?
-	INVAssetName := AssetID("INVTokens_" + assetName) // ie. sha3(INVTokens_School_PuertoRico_1)[64:76]
-	DEBAssetName := AssetID("DEBTokens_" + assetName) // ie. sha3(INVTokens_School_PuertoRico_1)[64:76]
-	PBAssetName := AssetID("PBTokens_" + assetName)
-	iAmt := utils.IntToString(uOrder.TotalValue)
-	dAmt := utils.IntToString(uOrder.TotalValue*2)
-	pbAmt := utils.IntToString(uOrder.Years * 12)
-	log.Printf("Created asset names are %s and %s and amounts are %s and %s", INVAssetName, PBAssetName, iAmt, pbAmt)
-	PBasset := issuer.CreateAsset(PBAssetName)
-	INVasset := issuer.CreateAsset(INVAssetName)
-	DEBasset := issuer.CreateAsset(DEBAssetName)
-
-	// so I have the assets for this school created
-	// now the investors need to trust me only for uOrder.TotalValue of INVTokens
-
-	txHash, err := investor.TrustAsset(INVasset, string(iAmt))
 	if err != nil {
-		return newOrder, err
+		return "", err
+	}
+
+	trustTxe, err := trustTx.Sign(Seed)
+	if err != nil {
+		return "", err
+	}
+
+	trustTxeB64, err := trustTxe.Base64()
+	if err != nil {
+		return "", err
+	}
+
+	tx, err := utils.DefaultTestNetClient.SubmitTransaction(trustTxeB64)
+	if err != nil {
+		return "", err
+	}
+
+	log.Println("Trusted asset tx: ", tx.Hash)
+	return tx.Hash, nil
+}
+
+// SendAsset transfers _amount_ number of assets from the caller to the destination
+// and returns an error if the destination doesn't have a trustline with the issuer
+// This method is called by the issuer of the asset
+func SendAssetFromIssuer(assetName string, destination string, amount string, Seed string, PublicKey string) (int32, string, error) {
+	// this transaction is FROM issuer TO recipient
+	paymentTx, err := build.Transaction(
+		build.SourceAccount{PublicKey},
+		build.TestNetwork,
+		build.AutoSequence{SequenceProvider: utils.DefaultTestNetClient},
+		build.Payment(
+			build.Destination{AddressOrSeed: destination},
+			build.CreditAmount{assetName, PublicKey, amount},
+			build.MemoText{"Sending Solar Asset"}, // can put whatever we want here
+			// CreditAmount identifies the asset by asset Code and issuer pubkey
+		),
+	)
+
+	if err != nil {
+		return -1, "", err
+	}
+
+	paymentTxe, err := paymentTx.Sign(Seed)
+	if err != nil {
+		return -1, "", err
+	}
+
+	paymentTxeB64, err := paymentTxe.Base64()
+	if err != nil {
+		return -1, "", err
+	}
+
+	tx, err := utils.DefaultTestNetClient.SubmitTransaction(paymentTxeB64)
+	if err != nil {
+		return -1, "", err
+	}
+
+	return tx.Ledger, tx.Hash, nil
+}
+
+// the above function is for when a single investor decides to take up the entire
+// order, we need a new function that would involve multiple investors who can
+// invest partially in an order. This would mean that we split the above function
+// into three components: Send INVTokens to investor, update the money field for
+// the order and then if the order is full, send the required amount of PBTokens
+// to the recipient
+
+func InvestInOrder(issuer *database.Platform, investor *database.Investor, recipient *database.Recipient, investmentAmountS string, uOrder database.Order) (database.Order, error) {
+	var partOrder database.Order
+	var err error
+
+	// invest only in integer values as of now, TODO: change to float
+	investmentAmount := utils.StoI(investmentAmountS)
+	//  check if investment amount is greater than or equal to the order requirements
+	amtLeft := uOrder.TotalValue - uOrder.MoneyRaised
+	if investmentAmount > amtLeft {
+		fmt.Println("User is trying to invest more thna what is needed, print and exit")
+		return partOrder, fmt.Errorf("User is trying to invest more thna what is needed, print and exit")
+	}
+
+	// user has decided to invest in a part of the order (don't know if full yet)
+	// so if there has been no token codes assigned yet, we need to create them and
+	// assign them here
+	// you can retrieve these anywhere since the metadata will mostt likely be unique
+	assetName := AssetID(uOrder.Metadata)
+	if uOrder.INVAssetCode == "" {
+		// this person is the first investor, set the investor token name
+		INVAssetCode := AssetID("INVTokens_" + assetName)
+		uOrder.INVAssetCode = INVAssetCode              // set the investeor code
+		_ = CreateAsset(INVAssetCode, issuer.PublicKey) // create the asset itself, since it would not have bene created earlier
+	}
+	var INVasset build.Asset
+	INVasset.Code = uOrder.INVAssetCode
+	INVasset.Issuer = issuer.PublicKey
+	// INVAsset is not a native token, so don't set that
+	// now we need to send the investor the INVAssets as proof of investment
+	txHash, err := TrustAsset(INVasset, investmentAmountS, investor.PublicKey, investor.Seed)
+	if err != nil {
+		return uOrder, err
 	}
 	log.Println("Investor trusted asset: ", INVasset.Code, " tx hash: ", txHash)
-
-	// and the school needs to trust me only for paybackTokens amount of PB tokens
-	txHash, err = recipient.TrustAsset(PBasset, string(pbAmt))
+	log.Println("Sending INVasset: ", INVasset.Code, "for: ", investmentAmount)
+	_, txHash, err = SendAssetFromIssuer(INVasset.Code, investor.PublicKey, strconv.Itoa(investmentAmount), issuer.Seed, issuer.PublicKey)
 	if err != nil {
-		return newOrder, err
+		return uOrder, err
 	}
-	log.Println("Recipient Trusted Payback asset: ", PBasset.Code, " tx hash: ", txHash)
-
-	txHash, err = recipient.TrustAsset(DEBasset, string(dAmt)) // since debt = invested amount
+	log.Printf("Sent INVAsset %s to investor %s with txhash %s", INVasset.Code, investor.PublicKey, txHash)
+	// investor asset sent, update uOrder's BalLeft
+	uOrder.MoneyRaised += investmentAmount
+	fmt.Println("Updating investor to handle invested amounts and assets")
+	investor.AmountInvested += float64(uOrder.TotalValue) // we assume a single investor here
+	investor.InvestedAssets = append(investor.InvestedAssets, uOrder)
+	err = database.InsertInvestor(*investor) // save investor creds now that we're done
 	if err != nil {
-		return newOrder, err
+		return uOrder, err
 	}
-	log.Println("Recipient Trusted Debt asset: ", DEBasset.Code, " tx hash: ", txHash)
+	fmt.Println("Updated investor database")
+	if uOrder.MoneyRaised == uOrder.TotalValue {
+		// this order covers up the amount nedeed for the order, so set the DEBAssetCode
+		// and PBAssetCodes, generate them and give to the recipient
+		DEBAssetCode := AssetID("DEBTokens_" + assetName)
+		PBAssetCode := AssetID("PBTokens_" + assetName)
+		DEBasset := CreateAsset(DEBAssetCode, issuer.PublicKey)
+		PBasset := CreateAsset(PBAssetCode, issuer.PublicKey)
+		// and the school needs to trust me only for paybackTokens amount of PB tokens
+		pbAmt := utils.IntToString(uOrder.Years * 12)
+		txHash, err = TrustAsset(PBasset, pbAmt, recipient.PublicKey, recipient.Seed)
+		if err != nil {
+			return uOrder, err
+		}
+		log.Println("Recipient Trusted Payback asset: ", PBasset.Code, " tx hash: ", txHash)
 
-	// so now the investor has his tokens, send paybackTokens to the school
-	// log.Println("Sending PBasset for: ", string(pbAmt))
-	// err = issuer.SendAsset(PBAssetName, recipient.PublicKey, pbAmt)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// so now the investors trust the issued asset and the recipients trust the issued asset.
-	// send the assets over to the investor
-	log.Println("Sending INVasset: ", INVAssetName, "for: ", string(iAmt))
-	_, _, err = issuer.SendAsset(INVAssetName, investor.PublicKey, iAmt)
-	if err != nil {
-		return newOrder, err
+		txHash, err = TrustAsset(DEBasset, strconv.Itoa(uOrder.TotalValue), recipient.PublicKey, recipient.Seed) // since debt = invested amount
+		if err != nil {
+			return uOrder, err
+		}
+		log.Println("Recipient Trusted Debt asset: ", DEBasset.Code, " tx hash: ", txHash)
+		log.Println("Sending DEBasset: ", DEBAssetCode)
+		_, txHash, err = SendAssetFromIssuer(DEBAssetCode, recipient.PublicKey, strconv.Itoa(uOrder.TotalValue), issuer.Seed, issuer.PublicKey) // same amount as debt
+		if err != nil {
+			return uOrder, err
+		}
+		log.Printf("Sent DEBasset to recipient %s with txhash %s", recipient.PublicKey, txHash)
+		uOrder.Live = true
+		uOrder.DEBAssetCode = DEBAssetCode
+		uOrder.PBAssetCode = PBAssetCode
+		uOrder.BalLeft = float64(uOrder.TotalValue)
+		recipient.ReceivedOrders = append(recipient.ReceivedOrders, uOrder)
+		// only here does the recipient part change, so update it only here
+		err = database.InsertRecipient(*recipient)
+		if err != nil {
+			return uOrder, err
+		}
+		fmt.Println("Updated recipient bucket")
 	}
-	log.Println("Sending DEBasset: ", DEBAssetName, "for: ", string(iAmt))
-	_, _, err = issuer.SendAsset(DEBAssetName, recipient.PublicKey, iAmt) // same amount as debt
-	if err != nil {
-		return newOrder, err
-	}
-
-	uOrder.Live = true
-	uOrder.INVAssetCode = INVAssetName
-	uOrder.DEBAssetCode = DEBAssetName
-	uOrder.PBAssetCode = PBAssetName
-	uOrder.BalLeft = float64(uOrder.TotalValue)
-	err = database.InsertOrderRPC(uOrder)
+	// update the order finally now that we have updated other databases
+	err = database.InsertOrder(uOrder)
 	return uOrder, err
 }

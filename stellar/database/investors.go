@@ -7,49 +7,9 @@ import (
 	"log"
 
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
+	xlm "github.com/YaleOpenLab/smartPropertyMVP/stellar/xlm"
 	"github.com/boltdb/bolt"
-	"github.com/stellar/go/keypair"
 )
-
-// the investor s truct contains all the investor details such as
-// public key, seed (if account is created on the website) and ot her stuff which
-// is yet to be decided
-
-// ALl investors will be referenced by their public key, name is optional (maybe necessary?)
-// we need to stil ldecide on identity and stuff and how much we want to track
-// people who invest in the schools
-type Investor struct {
-	Index uint32
-	// defauult index, gets us easy stats on how many people are there and stuff,
-	// don't want to omit this
-	Name string
-	// display Name, different from UserName
-	PublicKey string
-	// the PublicKey used to identify you on the platform. We could still reference
-	// people by name, but we needn't since we have the pk anyway.
-	Seed string
-	// optional, this is if the user created his account on our website
-	// should be shown once and deleted permanently
-	// add a notice like "WE DO NOT SAVE YOUR SEED" on the UI side
-	AmountInvested float64
-	// total amount, would be nice to track to contact them,
-	// give them some kind of medals or something
-	FirstSignedUp string
-	// auto generated timestamp
-	InvestedAssets []Order
-	// array of asset codes this user has invested in
-	// also I think we need a username + password for logging on to the platform itself
-	// linking it here for now
-	LoginUserName string
-	// the thing you use to login to the platform
-	LoginPassword string
-	// LoginPassword is different from the seed you get if you choose
-	// to open your account on the website. This is becasue even if you lose the
-	// login password, you needn't worry too much about losing your funds, sicne you have
-	// your seed and can send them to another address immediately.
-}
-
-var InvestorBucket = []byte("Investors")
 
 func NewInvestor(uname string, pwhash string, Name string, pkgen bool) (Investor, error) {
 	// call this after the user has failled in username and password. Store hashed password
@@ -72,15 +32,10 @@ func NewInvestor(uname string, pwhash string, Name string, pkgen bool) (Investor
 	// except maybe for quick stats
 	a.Name = Name
 	if pkgen {
-		// generate a pk and seed pair and store it
-		pair, err := keypair.Random()
+		a.PublicKey, a.Seed, err = xlm.GetKeyPair()
 		if err != nil {
 			return a, err
 		}
-		a.Seed = pair.Seed()
-		a.PublicKey = pair.Address()
-		// display this seed but DON'T store this. Store this for now sicne we're just testing
-		//log.Println("This seed will be deleted from our servers. Note it down and please don't forget", a.Seed)
 	}
 	a.AmountInvested = float64(0)
 	a.FirstSignedUp = utils.Timestamp()
@@ -104,11 +59,7 @@ func InsertInvestor(a Investor) error {
 	}
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
-		b, err := tx.CreateBucketIfNotExists(InvestorBucket) // the orders bucket contains all our orders
-		if err != nil {
-			log.Println("Failed to create bucket")
-			return err
-		}
+		b := tx.Bucket(InvestorBucket)
 		encoded, err := json.Marshal(a)
 		if err != nil {
 			log.Println("Failed to encode this data into json")
@@ -138,10 +89,7 @@ func RetrieveAllInvestors() ([]Investor, error) {
 	err = db.Update(func(tx *bolt.Tx) error {
 		// this is Update to cover the case where the  bucket doesn't exists and we're
 		// trying to retrieve a list of keys
-		b, err := tx.CreateBucketIfNotExists(InvestorBucket)
-		if err != nil {
-			return err
-		}
+		b := tx.Bucket(InvestorBucket)
 		i := uint32(1)
 		for ; ; i++ {
 			var rInvestor Investor
@@ -172,10 +120,7 @@ func RetrieveInvestor(key uint32) (Investor, error) {
 	}
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
-		b, err := tx.CreateBucketIfNotExists(InvestorBucket)
-		if err != nil {
-			return err
-		}
+		b := tx.Bucket(InvestorBucket)
 		x := b.Get(utils.Uint32toB(key))
 		if x == nil {
 			return nil
@@ -185,20 +130,15 @@ func RetrieveInvestor(key uint32) (Investor, error) {
 	return inv, nil
 }
 
-func SearchForInvestorPassword(pwhash string) (Investor, error) {
+func SearchForInvestor(name string) (Investor, error) {
 	var inv Investor
-	// this is very ugly, but the only way it works right now (see TODO earlier)
 	db, err := OpenDB()
 	if err != nil {
 		return inv, err
 	}
 	defer db.Close()
-
 	err = db.Update(func(tx *bolt.Tx) error {
-		b, err := tx.CreateBucketIfNotExists(InvestorBucket)
-		if err != nil {
-			return err
-		}
+		b := tx.Bucket(InvestorBucket)
 		i := uint32(1)
 		for ; ; i++ {
 			var rInvestor Investor
@@ -210,51 +150,12 @@ func SearchForInvestorPassword(pwhash string) (Investor, error) {
 			if err != nil {
 				return nil
 			}
-			// we have the investor class, check password
-			if rInvestor.LoginPassword == pwhash {
+			// we have the investor class, check names
+			if rInvestor.LoginUserName == name {
 				inv = rInvestor
 			}
 		}
 		return fmt.Errorf("Not Found")
 	})
 	return inv, err
-}
-
-func SearchForInvestorPasswordWithDb(pwhash string, db *bolt.DB) (Investor, error) {
-	var inv Investor
-	err := db.Update(func(tx *bolt.Tx) error {
-		b, err := tx.CreateBucketIfNotExists(InvestorBucket)
-		if err != nil {
-			return err
-		}
-		i := uint32(1)
-		for ; ; i++ {
-			var rInvestor Investor
-			x := b.Get(utils.Uint32toB(i))
-			if x == nil {
-				return nil
-			}
-			err := json.Unmarshal(x, &rInvestor)
-			if err != nil {
-				return nil
-			}
-			// we have the investor class, check password
-			if rInvestor.LoginPassword == pwhash {
-				inv = rInvestor
-			}
-		}
-		return fmt.Errorf("Not Found")
-	})
-	return inv, err
-}
-
-// PrettyPrintInvestor pretty prints investors
-func PrettyPrintInvestor(investor Investor) {
-	fmt.Println("    WELCOME BACK ", investor.Name)
-	fmt.Println("          Your Public Key is: ", investor.PublicKey)
-	fmt.Println("          Your Seed is: ", investor.Seed)
-	fmt.Println("          You have Invested: ", investor.AmountInvested)
-	fmt.Println("          Your Invested Assets are: ", investor.InvestedAssets)
-	fmt.Println("          Your Username is: ", investor.LoginUserName)
-	fmt.Println("          Your Password hash is: ", investor.LoginPassword)
 }

@@ -7,14 +7,16 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"syscall"
 	"time"
 
-	accounts "github.com/YaleOpenLab/smartPropertyMVP/stellar/accounts"
 	assets "github.com/YaleOpenLab/smartPropertyMVP/stellar/assets"
 	database "github.com/YaleOpenLab/smartPropertyMVP/stellar/database"
 	rpc "github.com/YaleOpenLab/smartPropertyMVP/stellar/rpc"
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
+	xlm "github.com/YaleOpenLab/smartPropertyMVP/stellar/xlm"
 	flags "github.com/jessevdk/go-flags"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 var opts struct {
@@ -44,12 +46,44 @@ func main() {
 		log.Fatal(err)
 	}
 
+	temp, err := database.NewPlatform()
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("TEMNP: ", temp)
+	err = database.InsertPlatform(temp)
+	if err != nil {
+		log.Fatal(err)
+	}
+	arrs, err := database.RetrievePlatform()
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("ALL PLATFORMS: ", arrs)
+	log.Fatal("")
 	// Separate TODO list based on demo specifics
 	// 1. Add support for multiple participants in the system - right now, the PoC
 	// assumes a single investor and it is essential to have multiple investors for
 	// a good demo
 	// 2. Add support for recipients paying back tokens within the CLI UI (we can
 	// already payback using relevant functions, but that's not much useful UI wise)
+	// Need to create a stablecoin library that can be imported with ease and that
+	// serves USD assets similar to trueusd or similar things on mainnet
+	// need to spin up a local stellar node and test if thigns run fine if we just
+	// change the API mapping
+	// need to create different entities and create db mappings for them.
+	// need to update collections to directly hold orders, similar to the investor
+	// class that we have already
+	// need to implement the contract stuff as described earlier, so that people
+	// can advertise bids, get paid for it, etc.
+	// move current number of years metric to a separate package since that is
+	// more suitable for a model like affordable housing.
+	// look into what kind of data we get from the pi and checkout pi specific code
+	// to see if we can get something from there.
+	// Reduce code redundancy in the database code a bit since we have lots of|
+	// repeating functions that can be done away with.
+	// remove the raw passworwd based search and replace it with a user based search,
+	// should be a single line fix ideally.
 	// For the demo, we must have multiple things that are in line
 	// 1. An interface to view the number of orders that are in the orderbook
 	// 2. An interface to view all the assets owned by a particular investor
@@ -117,21 +151,19 @@ func main() {
 	}
 	invLoginUserName := scanner.Text() // read user input regarding which option
 	fmt.Println("---ENTER YOUR PASSWORD---")
-	scanner.Scan()
-	if scanner.Err() != nil {
-		fmt.Println("Couldn't read user input")
-	}
-	invLoginPassword := utils.SHA3hash(scanner.Text())
+	bytePassword, err := terminal.ReadPassword(int(syscall.Stdin))
+	tempString := string(bytePassword)
+	invLoginPassword := utils.SHA3hash(tempString)
 	log.Println("INV PASSWORD IS: ", invLoginPassword, invLoginUserName)
 	// check for ibool vs rbool here
 	if rbool {
 		// handle the recipient case here because its simpler
-		dbRecipient, err := database.SearchForRecipientPassword(invLoginPassword)
+		recipient, err := database.SearchForRecipient(invLoginUserName)
 		if err != nil {
 			log.Fatal("had trouble retrieving the password")
 		}
-		if dbRecipient.LoginUserName != invLoginUserName { // should rework to check the password, this is just a temp hack
-			log.Fatal("UserNames don't match: ", dbRecipient.LoginUserName, invLoginUserName, dbRecipient)
+		if recipient.LoginPassword != invLoginPassword { // should rework to check the password, this is just a temp hack
+			log.Fatal("Passwords don't match")
 		}
 		// at this point, we have verified the recipient
 		// have a for loop here with various options
@@ -154,7 +186,7 @@ func main() {
 			case 1:
 				break
 			case 2:
-				database.PrettyPrintRecipient(dbRecipient)
+				database.PrettyPrintRecipient(recipient)
 				break
 			case 3:
 				// need to test this one out
@@ -170,11 +202,11 @@ func main() {
 				break
 			}
 		}
-		database.PrettyPrintRecipient(dbRecipient)
+		database.PrettyPrintRecipient(recipient)
 		return
 	}
 
-	allOrders1, err := database.RetrieveAllOrdersWithoutDB()
+	allOrders1, err := database.RetrieveAllOrders()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -184,14 +216,13 @@ func main() {
 		log.Fatal(err)
 	}
 	log.Println("ALLIVN", allInvestors)
-	dbInvestor, err := database.SearchForInvestorPassword(invLoginPassword)
+	investor, err := database.SearchForInvestor(invLoginUserName)
 	if err != nil {
-		log.Fatal("had trouble retrieving the password")
+		log.Fatal("had trouble retrieving user from db")
 	}
 
-	if dbInvestor.LoginUserName != invLoginUserName { // should rework to check the password, this is just a temp hack
-		log.Println("INV USERNAME: ", invLoginUserName, "DB USERNAME: ", dbInvestor.LoginUserName)
-		log.Fatal("Investor username doesn't match", dbInvestor.LoginUserName, invLoginUserName)
+	if investor.LoginPassword != invLoginPassword { // should rework to check the password, this is just a temp hack
+		log.Fatal("Passwords don't match")
 	}
 
 	for {
@@ -227,14 +258,14 @@ func main() {
 		case 1:
 			fmt.Println("------------LIST OF ALL AVAILABLE ASSETS------------")
 			time.Sleep(1 * time.Second) // change this to 5 or something for the pause
-			allOrders, err := database.RetrieveAllOrdersWithoutDB()
+			allOrders, err := database.RetrieveAllOrders()
 			if err != nil {
 				log.Println("Error retrieving all orders from the database")
 			}
 			database.PrettyPrintOrders(allOrders)
 			break
 		case 2:
-			database.PrettyPrintInvestor(dbInvestor)
+			database.PrettyPrintInvestor(investor)
 			break
 		case 3:
 			fmt.Println("----WHICH ASSET DO YOU WANT TO INVEST IN? (ENTER NUMBER WITHOUT SPACES)----")
@@ -250,90 +281,72 @@ func main() {
 			}
 			// now the user has decided to invest in the asset with index uInput
 			// we need to retrieve the order and ask for confirmation
-			uOrder, err := database.RetrieveOrderRPC(uint32(uInput))
+			uOrder, err := database.RetrieveOrder(uint32(uInput))
 			if err != nil {
 				log.Fatal("Order with specified index not found in the database")
 			}
 			database.PrettyPrintOrder(uOrder)
+			fmt.Println(" HOW MUCH DO YOU WANT TO INVEST?")
+			scanner.Scan()
+			investedAmountS := scanner.Text()
+			_, err = strconv.Atoi(investedAmountS)
+			if err != nil {
+				fmt.Println("AMOUNT INVESTED IS NOT AN INTEGER, EXITING!")
+				break
+			}
 			fmt.Println(" DO YOU WANT TO CONFIRM THIS ORDER? (PRESS N IF YOU DON'T WANT TO)")
 			scanner.Scan()
 			if scanner.Text() == "N" || scanner.Text() == "n" {
 				fmt.Println("YOU HAVE DECIDED TO CANCEL THIS ORDER")
 				break
 			}
-			// now we need to setup the dummy assets, setup a receiver as well to whom we send
-			// the debt tokens and stuff
-			// we also need to store the resulting assets in the respective arrays and then
-			// display final investor status
 			// setup issuer account
-			issuer := accounts.SetupAccount()
-			// we assume a centralized investor account
-			investor := accounts.SetupAccount()
-			dbInvestor.Seed = investor.Seed
-			dbInvestor.PublicKey = investor.PublicKey
-			// create a recipient fro the school
-			recipient := accounts.SetupAccount()
-			// everyone should have coins to setup trustlines.
-			// anyways, stellar has a fat testnet wallet, so no worry that this might
-			// get depleted
-			err = issuer.GetCoins() // get coins for issuer
+			platform, err := database.NewPlatform()
 			if err != nil {
 				log.Fatal(err)
 			}
-
-			err = issuer.SetupAccount(recipient.PublicKey, "10")
+			log.Println("TEMNP: ", platform)
+			err = database.InsertPlatform(platform)
 			if err != nil {
-				log.Println("Recipient Account not setup")
+				log.Fatal(err)
+			}
+			// when I am creating an account, I will have a PublicKey and Seed, so
+			// don't need them   here
+			// from here on, we only need investor
+			// check whether the investor has XLM already
+			balances, err := xlm.GetXLMBalance(investor.PublicKey)
+			log.Println(balances)
+			log.Fatal(err)
+			_, _, err = xlm.SendXLM(investor.PublicKey, "10", platform.Seed)
+			if err != nil {
+				log.Println("Investor Account doesn't have funds")
 				log.Fatal(err)
 			}
 
-			err = issuer.SetupAccount(investor.PublicKey, "10")
+			// get the recipient from the database
+			recipient, err := database.SearchForRecipient(uOrder.RecipientName) // our recipient of assets
 			if err != nil {
-				log.Println("Investor Account not setup")
+				log.Fatal(err)
+			}
+			// from here on, reference recipient
+			// TODO: if the account is already setup, it needs to have funds by itself
+			_, _, err = xlm.SendXLM(recipient.PublicKey, "10", platform.Seed)
+			if err != nil {
+				log.Println("Recipient Account doesn't have funds")
 				log.Fatal(err)
 			}
 
-			log.Println("The issuer's public key and private key are: ", issuer.PublicKey, " ", issuer.Seed)
+			log.Println("The issuer's public key and private key are: ", platform.PublicKey, " ", platform.Seed)
 			log.Println("The investor's public key and private key are: ", investor.PublicKey, " ", investor.Seed)
 			log.Println("The recipient's public key and private key are: ", recipient.PublicKey, " ", recipient.Seed)
 
 			// so now we have three entities setup, so we create the assets and invest in them
-			cOrder, err := assets.SetupAsset(&issuer, &investor, &recipient, uOrder) // assume payback period is 5
+			cOrder, err := assets.InvestInOrder(&platform, &investor, &recipient, investedAmountS, uOrder) // assume payback period is 5
 			if err != nil {
 				log.Fatal(err)
 			}
-			fmt.Println("YOUR ORDER HAS BEEN CONFIRMED")
-			// need to close db before this
+			fmt.Println("YOUR ORDER HAS BEEN CONFIRMED: ")
 			database.PrettyPrintOrder(cOrder)
-			// now at this point, we need to assign the specific DEBToken to the recipient
-			// we need the recipient's name in the order itself
-			// so we can find the recipient while searching through the database
-			dbRecipient, err := database.SearchForRecipientName(cOrder.RecipientName) // our recipient of assets
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			fmt.Println("Updating investor to handle invested amounts and assets")
-			dbInvestor.AmountInvested += float64(cOrder.TotalValue) // we assume a single investor here
-			dbInvestor.InvestedAssets = append(dbInvestor.InvestedAssets, cOrder)
-			// now update the database with the investor
-			err = database.InsertInvestor(dbInvestor)
-			if err != nil {
-				log.Fatal(err)
-			}
-			fmt.Println("Updated investor database")
-			dbRecipient.Seed = recipient.Seed
-			dbRecipient.PublicKey = recipient.PublicKey
-			dbRecipient.DebtAssets = append(dbRecipient.DebtAssets, cOrder.DEBAssetCode)
-			dbRecipient.PaybackAssets = append(dbRecipient.PaybackAssets, cOrder.PBAssetCode)
-
-			err = database.InsertRecipient(dbRecipient)
-			if err != nil {
-				log.Fatal(err)
-			}
-			fmt.Println("Updated recipient bucket")
-
-			// also update investor's invested assets
 			fmt.Println("PLEASE CHECK A BLOCKHAIN EXPLORER TO CONFIRM BALANCES TO CONFIRM: ")
 			fmt.Println("https://testnet.steexp.com/account/" + investor.PublicKey + "#balances")
 			break
@@ -408,7 +421,7 @@ func main() {
 		// in total, this should be payBackPeriod * 12
 
 		paybackAmountF := utils.StringToFloat(paybackAmount)
-		refundS := utils.FloatToString(paybackAmountF / accounts.PriceOracleInFloat())
+		refundS := utils.FloatToString(paybackAmountF / xlm.PriceOracleInFloat())
 		// weird conversion stuff, but have to since the amount should be in a string
 		blockHeight, txHash, err := issuer.SendAsset(a.PBAssetCode, recipient.PublicKey, refundS)
 		if err != nil {

@@ -10,39 +10,6 @@ import (
 	"github.com/stellar/go/keypair"
 )
 
-type Recipient struct {
-	Index uint32
-	// defauult index, gets us easy stats on how many people are there and stuff,
-	// don't want to omit this
-	Name string
-	// Name of the primary stakeholder involved (principal trustee of school, for eg.)
-	PublicKey string
-	// PublicKey denotes the public key of the recipient
-	Seed string
-	// do we make seed optional like that for the Recipient? Couple things to consider
-	// here: if the recipient loses the publickey, it can nver send DEBTokens back
-	// to the issuer, so it would be as if it reneged on the deal. Do we count on
-	// technically less sound people to hold their public keys safely? I suggest
-	// this would be  difficult in practice, so maybe enforce that they need to hold|
-	// their accounts on the platform?
-	FirstSignedUp string
-	// auto generated timestamp
-	DebtAssets []string
-	// DebtAssets denotes the list of all DEBTokens that the recipient possesses
-	// this is an array since a single recipient could technically still have multiple
-	// projects under its wing which Recipients can invest in.
-	PaybackAssets []string
-	// Payback Assets denotes the status of all assets that the recipient has received
-	// this could be used to easily display payback progress, calculate ratings
-	// for a specific school and so on.
-	LoginUserName string
-	// the thing you use to login to the platform
-	LoginPassword string
-	// password, which is separate from the generated seed.
-}
-
-var RecipientBucket = []byte("Recipients")
-
 func TestFn() {
 	log.Println("Endpoint called! Cool!")
 	return
@@ -113,11 +80,7 @@ func InsertRecipient(a Recipient) error {
 	}
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
-		b, err := tx.CreateBucketIfNotExists(RecipientBucket) // the orders bucket contains all our orders
-		if err != nil {
-			log.Fatal(err)
-			return err
-		}
+		b := tx.Bucket(RecipientBucket)
 		encoded, err := json.Marshal(a)
 		if err != nil {
 			log.Println("Failed to encode this data into json")
@@ -147,10 +110,7 @@ func RetrieveAllRecipients() ([]Recipient, error) {
 	err = db.Update(func(tx *bolt.Tx) error {
 		// this is Update to cover the case where the  bucket doesn't exists and we're
 		// trying to retrieve a list of keys
-		b, err := tx.CreateBucketIfNotExists(RecipientBucket)
-		if err != nil {
-			return err
-		}
+		b := tx.Bucket(RecipientBucket)
 		i := uint32(1)
 		for ; ; i++ {
 			var rRecipient Recipient
@@ -181,10 +141,7 @@ func RetrieveRecipient(key uint32) (Recipient, error) {
 	}
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
-		b, err := tx.CreateBucketIfNotExists(RecipientBucket)
-		if err != nil {
-			return err
-		}
+		b := tx.Bucket(RecipientBucket)
 		x := b.Get(utils.Uint32toB(key))
 		if x == nil {
 			return nil
@@ -194,7 +151,7 @@ func RetrieveRecipient(key uint32) (Recipient, error) {
 	return inv, nil
 }
 
-func SearchForRecipientPassword(pwhash string) (Recipient, error) {
+func SearchForRecipient(name string) (Recipient, error) {
 	var inv Recipient
 	// this is very ugly, but the only way it works right now (see TODO earlier)
 	db, err := OpenDB()
@@ -204,45 +161,7 @@ func SearchForRecipientPassword(pwhash string) (Recipient, error) {
 	defer db.Close()
 
 	err = db.Update(func(tx *bolt.Tx) error {
-		b, err := tx.CreateBucketIfNotExists(RecipientBucket)
-		if err != nil {
-			return err
-		}
-		i := uint32(1)
-		for ; ; i++ {
-			var rRecipient Recipient
-			x := b.Get(utils.Uint32toB(i))
-			if x == nil {
-				return nil
-			}
-			err := json.Unmarshal(x, &rRecipient)
-			if err != nil {
-				return nil
-			}
-			// we have the investor class, check password
-			if rRecipient.LoginPassword == pwhash {
-				inv = rRecipient
-			}
-		}
-		return fmt.Errorf("Not Found")
-	})
-	return inv, err
-}
-
-func SearchForRecipientName(name string) (Recipient, error) {
-	var inv Recipient
-	// this is very ugly, but the only way it works right now (see TODO earlier)
-	db, err := OpenDB()
-	if err != nil {
-		return inv, err
-	}
-	defer db.Close()
-
-	err = db.Update(func(tx *bolt.Tx) error {
-		b, err := tx.CreateBucketIfNotExists(RecipientBucket)
-		if err != nil {
-			return err
-		}
+		b := tx.Bucket(RecipientBucket)
 		i := uint32(1)
 		for ; ; i++ {
 			var rRecipient Recipient
@@ -262,15 +181,4 @@ func SearchForRecipientName(name string) (Recipient, error) {
 		return fmt.Errorf("Not Found")
 	})
 	return inv, err
-}
-
-// PrettyPrintRecipient pretty prints recipients
-func PrettyPrintRecipient(recipient Recipient) {
-	fmt.Println("    WELCOME BACK ", recipient.Name)
-	fmt.Println("          Your Public Key is: ", recipient.PublicKey)
-	fmt.Println("          Your Seed is: ", recipient.Seed)
-	fmt.Println("          Your Debt Assets are: ", recipient.DebtAssets)
-	fmt.Println("          Your Payback Assets are: ", recipient.PaybackAssets)
-	fmt.Println("          Your Username is: ", recipient.LoginUserName)
-	fmt.Println("          Your Password hash is: ", recipient.LoginPassword)
 }
