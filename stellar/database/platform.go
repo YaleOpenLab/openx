@@ -19,12 +19,14 @@ import (
 // in this case, we could give the seed to a lawyer who can enforce the platform's
 // behaviour in case of any dispute.
 type Platform struct {
+	// TODO: theoretically, we don't need this structure at all, since we can get the pubkey
+	// anytime we want, so remove it
 	Index uint32
 	// ideally there should only be one platform
-	Seed string
-	// the seed of the platform, hold carefully
 	PublicKey string
 	// the publickey of the platform
+	// the seed isn't stored in the database for bovious reasons, so the only way
+	// to access the seed would be through helper functions
 	DateInitiated string
 	// date when the platform was created
 	DateRestored string
@@ -47,12 +49,12 @@ func EncryptAndStoreSeed(seed string, password string) {
 
 func NewPlatform() (Platform, error) {
 	var nPlatform Platform
+	var nPlatformSeed string // init eparately since we don't store this
 	var err error
 	nPlatform.Index = uint32(1) // only one platform, so this is fine
-	nPlatform.Seed, nPlatform.PublicKey, err = xlm.GetKeyPair()
-	log.Printf("\nTHE PLATFORM SEED IS: %s\nAND YOUR PUBLIC KEY IS: %s\nKEEP IT SUPER SAFE OR YOU MIGHT NOT HAVE ACCESS TO THESE FUNDS AGAIN \n", nPlatform.Seed, nPlatform.PublicKey)
+	nPlatformSeed, nPlatform.PublicKey, err = xlm.GetKeyPair()
+	log.Printf("\nTHE PLATFORM SEED IS: %s\nAND YOUR PUBLIC KEY IS: %s\nKEEP IT SUPER SAFE OR YOU MIGHT NOT HAVE ACCESS TO THESE FUNDS AGAIN \n", nPlatformSeed, nPlatform.PublicKey)
 	// don't store raw seed in the db, store sha strings
-	nPlatform.Seed = utils.SHA3hash(nPlatform.Seed)
 	nPlatform.PublicKey = nPlatform.PublicKey
 	if err != nil {
 		return nPlatform, err
@@ -62,20 +64,29 @@ func NewPlatform() (Platform, error) {
 	bytePassword, err := terminal.ReadPassword(int(syscall.Stdin))
 	password := string(bytePassword)
 	fmt.Println() // needed to separate user input
-	EncryptAndStoreSeed(nPlatform.Seed, password)
+	EncryptAndStoreSeed(nPlatformSeed, password) // store the seed in a secure location
 	err = xlm.GetXLM(nPlatform.PublicKey)
 	return nPlatform, err
+}
+
+func GetSeedFromEncryptedSeed(encrypted string, password string) (string) {
+	// this is the helper function that will be used to get the seed from the file
+	// for use in various parts
+	// encrypted is a path to a file, not the ciphertext itself
+	return string(aes.DecryptFile(encrypted, password))
 }
 
 func RestorePlatformFromSeed(seed string) (Platform, error) {
 	// this restores the platform from the seed, we will have another function
 	// to deal with restoring from the file
+	// this is in cases where some person has forgotten the puiblickey of the platform
 	var rPlatform Platform
+	var rPlatformSeed string
 	keyp, err := keypair.Parse(seed)
 	if err != nil {
 		return rPlatform, err
 	} else {
-		rPlatform.Seed = seed
+		rPlatformSeed = seed
 		rPlatform.PublicKey = keyp.Address()
 		rPlatform.DateInitiated = utils.Timestamp()
 	}
@@ -84,12 +95,12 @@ func RestorePlatformFromSeed(seed string) (Platform, error) {
 	password := string(bytePassword)
 	fmt.Println()
 	log.Printf("restored platform public key %s from seed", rPlatform.PublicKey)
-	EncryptAndStoreSeed(rPlatform.Seed, password)
+	EncryptAndStoreSeed(rPlatformSeed, password)
 	return rPlatform, err
 }
 
-func RestorePlatformFromFile(path string, password string) {
-	log.Println("YOUR SEED IS: ", string(aes.DecryptFile(path, password)))
+func RestorePlatformFromFile(path string, password string) (Platform, error){
+	return RestorePlatformFromSeed(string(aes.DecryptFile(path, password)))
 }
 
 func InsertPlatform(a Platform) error {

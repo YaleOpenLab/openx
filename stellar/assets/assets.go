@@ -45,6 +45,7 @@ import (
 
 	database "github.com/YaleOpenLab/smartPropertyMVP/stellar/database"
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
+	xlm "github.com/YaleOpenLab/smartPropertyMVP/stellar/xlm"
 	"github.com/stellar/go/build"
 )
 
@@ -97,7 +98,8 @@ func SendAssetFromIssuer(assetName string, destination string, amount string, Se
 		build.Payment(
 			build.Destination{AddressOrSeed: destination},
 			build.CreditAmount{assetName, PublicKey, amount},
-			build.MemoText{"Sending Solar Asset"}, // can put whatever we want here
+			// build.MemoText{"Sending Solar Asset"}, // apparently we
+			// can put whatever we want here, but it doesn't work
 			// CreditAmount identifies the asset by asset Code and issuer pubkey
 		),
 	)
@@ -131,7 +133,7 @@ func SendAssetFromIssuer(assetName string, destination string, amount string, Se
 // the order and then if the order is full, send the required amount of PBTokens
 // to the recipient
 
-func InvestInOrder(issuer *database.Platform, investor *database.Investor, recipient *database.Recipient, investmentAmountS string, uOrder database.Order) (database.Order, error) {
+func InvestInOrder(issuer *database.Platform, issuerSeed string, investor *database.Investor, recipient *database.Recipient, investmentAmountS string, uOrder database.Order) (database.Order, error) {
 	var partOrder database.Order
 	var err error
 
@@ -155,26 +157,34 @@ func InvestInOrder(issuer *database.Platform, investor *database.Investor, recip
 		uOrder.INVAssetCode = INVAssetCode              // set the investeor code
 		_ = CreateAsset(INVAssetCode, issuer.PublicKey) // create the asset itself, since it would not have bene created earlier
 	}
-	var INVasset build.Asset
-	INVasset.Code = uOrder.INVAssetCode
-	INVasset.Issuer = issuer.PublicKey
+	// we should check here whether the investor has enough USDTokens in order to be
+	// able to ivnest in the asset
+	err = xlm.GetUSDTokenBalance(investor.PublicKey, investmentAmountS)
+	if err != nil {
+		log.Println("Investor has less balance than what is required to ivnest in this asset")
+		return uOrder, err
+	}
+	var INVAsset build.Asset
+	INVAsset.Code = uOrder.INVAssetCode
+	INVAsset.Issuer = issuer.PublicKey
 	// INVAsset is not a native token, so don't set that
 	// now we need to send the investor the INVAssets as proof of investment
-	txHash, err := TrustAsset(INVasset, investmentAmountS, investor.PublicKey, investor.Seed)
+	txHash, err := TrustAsset(INVAsset, utils.IntToString(uOrder.TotalValue), investor.PublicKey, investor.Seed)
+	// trust upto the total value of the asset
 	if err != nil {
 		return uOrder, err
 	}
-	log.Println("Investor trusted asset: ", INVasset.Code, " tx hash: ", txHash)
-	log.Println("Sending INVasset: ", INVasset.Code, "for: ", investmentAmount)
-	_, txHash, err = SendAssetFromIssuer(INVasset.Code, investor.PublicKey, strconv.Itoa(investmentAmount), issuer.Seed, issuer.PublicKey)
+	log.Println("Investor trusted asset: ", INVAsset.Code, " tx hash: ", txHash)
+	log.Println("Sending INVAsset: ", INVAsset.Code, "for: ", investmentAmount)
+	_, txHash, err = SendAssetFromIssuer(INVAsset.Code, investor.PublicKey, strconv.Itoa(investmentAmount), issuerSeed, issuer.PublicKey)
 	if err != nil {
 		return uOrder, err
 	}
-	log.Printf("Sent INVAsset %s to investor %s with txhash %s", INVasset.Code, investor.PublicKey, txHash)
+	log.Printf("Sent INVAsset %s to investor %s with txhash %s", INVAsset.Code, investor.PublicKey, txHash)
 	// investor asset sent, update uOrder's BalLeft
 	uOrder.MoneyRaised += investmentAmount
 	fmt.Println("Updating investor to handle invested amounts and assets")
-	investor.AmountInvested += float64(uOrder.TotalValue) // we assume a single investor here
+	investor.AmountInvested += float64(investmentAmount)
 	investor.InvestedAssets = append(investor.InvestedAssets, uOrder)
 	err = database.InsertInvestor(*investor) // save investor creds now that we're done
 	if err != nil {
@@ -202,7 +212,7 @@ func InvestInOrder(issuer *database.Platform, investor *database.Investor, recip
 		}
 		log.Println("Recipient Trusted Debt asset: ", DEBasset.Code, " tx hash: ", txHash)
 		log.Println("Sending DEBasset: ", DEBAssetCode)
-		_, txHash, err = SendAssetFromIssuer(DEBAssetCode, recipient.PublicKey, strconv.Itoa(uOrder.TotalValue), issuer.Seed, issuer.PublicKey) // same amount as debt
+		_, txHash, err = SendAssetFromIssuer(DEBAssetCode, recipient.PublicKey, strconv.Itoa(uOrder.TotalValue), issuerSeed, issuer.PublicKey) // same amount as debt
 		if err != nil {
 			return uOrder, err
 		}

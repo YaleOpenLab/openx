@@ -46,21 +46,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	temp, err := database.NewPlatform()
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println("TEMNP: ", temp)
-	err = database.InsertPlatform(temp)
-	if err != nil {
-		log.Fatal(err)
-	}
-	arrs, err := database.RetrievePlatform()
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println("ALL PLATFORMS: ", arrs)
-	log.Fatal("")
 	// Separate TODO list based on demo specifics
 	// 1. Add support for multiple participants in the system - right now, the PoC
 	// assumes a single investor and it is essential to have multiple investors for
@@ -300,27 +285,80 @@ func main() {
 				fmt.Println("YOU HAVE DECIDED TO CANCEL THIS ORDER")
 				break
 			}
-			// setup issuer account
-			platform, err := database.NewPlatform()
+			// setup issuer account if the platform doesn't  already exist
+			test, err := database.RetrievePlatform()
 			if err != nil {
 				log.Fatal(err)
 			}
-			log.Println("TEMNP: ", platform)
-			err = database.InsertPlatform(platform)
+			if len(test.PublicKey) == 0 {
+				// weird way to test, but still
+				// this is the first time we're initializing a platform
+				log.Println("Creating a new platform")
+				platform, err := database.NewPlatform()
+				if err != nil {
+					log.Fatal(err)
+				}
+				// insert this into the database
+				err = database.InsertPlatform(platform)
+				if err != nil {
+					log.Fatal(err)
+				}
+			} else {
+				log.Println("Platform already exists, using existing one")
+			}
+			platform, err := database.RetrievePlatform()
 			if err != nil {
 				log.Fatal(err)
 			}
+			// now here, we must decrypt the seed before using it in other places
+			platformSeed := database.GetSeedFromEncryptedSeed("seed.hex", "password")
+			// TODO: right now, using a dummy password, should ask for a password
+			// and then use it
 			// when I am creating an account, I will have a PublicKey and Seed, so
-			// don't need them   here
+			// don't need them here
 			// from here on, we only need investor
 			// check whether the investor has XLM already
-			balances, err := xlm.GetXLMBalance(investor.PublicKey)
-			log.Println(balances)
-			log.Fatal(err)
-			_, _, err = xlm.SendXLM(investor.PublicKey, "10", platform.Seed)
-			if err != nil {
-				log.Println("Investor Account doesn't have funds")
-				log.Fatal(err)
+			balance, err := xlm.GetXLMBalance(platform.PublicKey)
+			// balance is in string, convert to int
+			balanceI := utils.StringToFloat(balance)
+			log.Println("Platform's balance is: ", balanceI)
+			if balanceI < 21 { // 1 to account for fees
+				// get coins if balance is this low
+				log.Println("Refilling platform balance")
+				err := xlm.GetXLM(platform.PublicKey)
+				// TODO: in future, need to refill platform sufficiently well and interact
+				// with a cold wallet that we have previously set
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+
+			balance, err = xlm.GetXLMBalance(platform.PublicKey)
+			log.Println("Platform balance updated is: ", balance)
+			log.Printf("Platform seed is: %s and platform's publicKey is %s", platformSeed, platform.PublicKey)
+			log.Println("Investor's publickey is: ", investor.PublicKey)
+			balance, err = xlm.GetXLMBalance(investor.PublicKey)
+			log.Println("Investor balance is: ", balance)
+			if balance == "" {
+				// means we need to setup an account first
+				// Generating a keypair on stellar doesn't mean that you can send funds to it
+				// you need to call the CreateAccount method in order to be able to send funds
+				// to it
+				_, _, err = xlm.SendXLMCreateAccount(investor.PublicKey, "10", platformSeed)
+				if err != nil {
+					log.Println("Investor Account doesn't have funds")
+					log.Fatal(err)
+				}
+			}
+			// balance is in string, convert to float
+			balance, err = xlm.GetXLMBalance(investor.PublicKey)
+			balanceI = utils.StringToFloat(balance)
+			if balanceI < 3 { // to setup trustlines
+				_, _, err = xlm.SendXLM(investor.PublicKey, "10", platformSeed)
+				if err != nil {
+					log.Println("Investor Account doesn't have funds")
+					log.Fatal(err)
+				}
 			}
 
 			// get the recipient from the database
@@ -329,19 +367,34 @@ func main() {
 				log.Fatal(err)
 			}
 			// from here on, reference recipient
-			// TODO: if the account is already setup, it needs to have funds by itself
-			_, _, err = xlm.SendXLM(recipient.PublicKey, "10", platform.Seed)
-			if err != nil {
-				log.Println("Recipient Account doesn't have funds")
-				log.Fatal(err)
+			balance, err = xlm.GetXLMBalance(recipient.PublicKey)
+			if balance == "" {
+				// means we need to setup an account first
+				// Generating a keypair on stellar doesn't mean that you can send funds to it
+				// you need to call the CreateAccount method in order to be able to send funds
+				// to it
+				_, _, err = xlm.SendXLMCreateAccount(recipient.PublicKey, "10", platformSeed)
+				if err != nil {
+					log.Println("Investor Account doesn't have funds")
+					log.Fatal(err)
+				}
 			}
-
-			log.Println("The issuer's public key and private key are: ", platform.PublicKey, " ", platform.Seed)
+			balance, err = xlm.GetXLMBalance(recipient.PublicKey)
+			// balance is in string, convert to float
+			balanceI = utils.StringToFloat(balance)
+			if balanceI < 3 { // to setup trustlines
+				_, _, err = xlm.SendXLM(recipient.PublicKey, "10", platformSeed)
+				if err != nil {
+					log.Println("Recipient Account doesn't have funds")
+					log.Fatal(err)
+				}
+			}
+			log.Println("The issuer's public key and private key are: ", platform.PublicKey, " ", platformSeed)
 			log.Println("The investor's public key and private key are: ", investor.PublicKey, " ", investor.Seed)
 			log.Println("The recipient's public key and private key are: ", recipient.PublicKey, " ", recipient.Seed)
 
 			// so now we have three entities setup, so we create the assets and invest in them
-			cOrder, err := assets.InvestInOrder(&platform, &investor, &recipient, investedAmountS, uOrder) // assume payback period is 5
+			cOrder, err := assets.InvestInOrder(&platform, platformSeed, &investor, &recipient, investedAmountS, uOrder) // assume payback period is 5
 			if err != nil {
 				log.Fatal(err)
 			}
