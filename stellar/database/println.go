@@ -28,6 +28,8 @@ func PrettyPrintOrders(orders []Order) {
 		if order.Live {
 			fmt.Println("          Date Last Paid: ", order.DateLastPaid)
 		}
+		fmt.Println("          Recipient: ", order.OrderRecipient)
+		fmt.Println("          Investors: ", order.OrderInvestors)
 	}
 }
 
@@ -50,6 +52,8 @@ func PrettyPrintOrder(order Order) {
 	if order.Live {
 		fmt.Println("          Date Last Paid: ", order.DateLastPaid)
 	}
+	fmt.Println("          Recipient: ", order.OrderRecipient)
+	fmt.Println("          Investors: ", order.OrderInvestors)
 }
 
 func InsertDummyData() error {
@@ -57,6 +61,30 @@ func InsertDummyData() error {
 	// populate database with dumym data
 	var order1 Order
 
+	var rec Recipient
+	allRecs, err := RetrieveAllRecipients()
+	if err != nil {
+		log.Fatal(err)
+	}
+	if len(allRecs) == 0 {
+		rec.Index = 1
+		rec.LoginUserName = "martin"
+		rec.LoginPassword = "e9a75486736a550af4fea861e2378305c4a555a05094dee1dca2f68afea49cc3a50e8de6ea131ea521311f4d6fb054a146e8282f8e35ff2e6368c1a62e909716"
+		rec.Name = "Martin"
+		rec.Seed, rec.PublicKey, err = xlm.GetKeyPair()
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = InsertRecipient(rec)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	rec, err = SearchForRecipient("martin") // search by username
+	if err != nil {
+		log.Fatal("Couldn't setup test poulation")
+	}
 	order1.Index = 1
 	order1.PanelSize = "100 1000 sq.ft homes each with their own private spaces for luxury"
 	order1.TotalValue = 14000
@@ -69,7 +97,7 @@ func InsertDummyData() error {
 	order1.PBAssetCode = ""
 	order1.DateInitiated = utils.Timestamp()
 	order1.Years = 3
-	order1.RecipientName = "Martin" // this is not the username of the recipient
+	order1.OrderRecipient = rec
 	err = InsertOrder(order1)
 	if err != nil {
 		return fmt.Errorf("Error inserting order into db")
@@ -87,7 +115,7 @@ func InsertDummyData() error {
 	order1.PBAssetCode = ""
 	order1.DateInitiated = utils.Timestamp()
 	order1.Years = 5
-	order1.RecipientName = "Martin" // this is not the username of the recipient
+	order1.OrderRecipient = rec
 
 	err = InsertOrder(order1)
 	if err != nil {
@@ -106,7 +134,7 @@ func InsertDummyData() error {
 	order1.PBAssetCode = ""
 	order1.DateInitiated = utils.Timestamp()
 	order1.Years = 7
-	order1.RecipientName = "Martin" // this is not the username of the recipient
+	order1.OrderRecipient = rec
 
 	err = InsertOrder(order1)
 	if err != nil {
@@ -135,25 +163,6 @@ func InsertDummyData() error {
 		// don't do anything
 	}
 
-	allRecs, err := RetrieveAllRecipients()
-	if err != nil {
-		log.Fatal(err)
-	}
-	if len(allRecs) == 0 {
-		var rec Recipient
-		rec.Index = 1
-		rec.LoginUserName = "martin"
-		rec.LoginPassword = "e9a75486736a550af4fea861e2378305c4a555a05094dee1dca2f68afea49cc3a50e8de6ea131ea521311f4d6fb054a146e8282f8e35ff2e6368c1a62e909716"
-		rec.Name = "Martin"
-		rec.Seed, rec.PublicKey, err = xlm.GetKeyPair()
-		if err != nil {
-			log.Fatal(err)
-		}
-		err = InsertRecipient(rec)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
 	return nil
 }
 

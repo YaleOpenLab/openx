@@ -17,7 +17,10 @@ type Order struct {
 	BalLeft       float64 // denotes the balance left to pay by the party
 	DateInitiated string  // date the order was created
 	DateLastPaid  string  // date the order was last paid
-	RecipientName string  // name of the recipient in order to assign the given assets
+	// instead of just holding the recipient's name here, we can hold the recipient
+	OrderRecipient Recipient
+	// also have an array of investors to keep track of who invested in these projects
+	OrderInvestors []Investor
 	// TODO: have an investor and recipient relation here
 	// Percentage raised is not stored in the database since that can be calculated by the UI
 }

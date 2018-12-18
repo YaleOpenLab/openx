@@ -222,7 +222,12 @@ func InvestInOrder(issuer *database.Platform, issuerSeed string, investor *datab
 		uOrder.PBAssetCode = PBAssetCode
 		uOrder.BalLeft = float64(uOrder.TotalValue)
 		recipient.ReceivedOrders = append(recipient.ReceivedOrders, uOrder)
+		uOrder.OrderRecipient = *recipient // need to udpate uOrder each time recipient is mutated
 		// only here does the recipient part change, so update it only here
+		err = database.DeleteRecipient(recipient.Index)
+		if err != nil {
+			return uOrder, err
+		}
 		err = database.InsertRecipient(*recipient)
 		if err != nil {
 			return uOrder, err

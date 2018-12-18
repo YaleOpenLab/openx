@@ -65,10 +65,6 @@ func main() {
 	// more suitable for a model like affordable housing.
 	// look into what kind of data we get from the pi and checkout pi specific code
 	// to see if we can get something from there.
-	// Reduce code redundancy in the database code a bit since we have lots of|
-	// repeating functions that can be done away with.
-	// remove the raw passworwd based search and replace it with a user based search,
-	// should be a single line fix ideally.
 	// For the demo, we must have multiple things that are in line
 	// 1. An interface to view the number of orders that are in the orderbook
 	// 2. An interface to view all the assets owned by a particular investor
@@ -139,15 +135,16 @@ func main() {
 	bytePassword, err := terminal.ReadPassword(int(syscall.Stdin))
 	tempString := string(bytePassword)
 	invLoginPassword := utils.SHA3hash(tempString)
-	log.Println("INV PASSWORD IS: ", invLoginPassword, invLoginUserName)
 	// check for ibool vs rbool here
 	if rbool {
 		// handle the recipient case here because its simpler
 		recipient, err := database.SearchForRecipient(invLoginUserName)
 		if err != nil {
-			log.Fatal("had trouble retrieving the password")
+			log.Fatal("had trouble retrieving the username")
 		}
+		log.Println("RECIPIENT IS: ", recipient)
 		if recipient.LoginPassword != invLoginPassword { // should rework to check the password, this is just a temp hack
+			log.Printf("INGLOGIN: %s, LOGINP: %s", invLoginPassword, recipient.LoginPassword)
 			log.Fatal("Passwords don't match")
 		}
 		// at this point, we have verified the recipient
@@ -338,7 +335,6 @@ func main() {
 			log.Printf("Platform seed is: %s and platform's publicKey is %s", platformSeed, platform.PublicKey)
 			log.Println("Investor's publickey is: ", investor.PublicKey)
 			balance, err = xlm.GetXLMBalance(investor.PublicKey)
-			log.Println("Investor balance is: ", balance)
 			if balance == "" {
 				// means we need to setup an account first
 				// Generating a keypair on stellar doesn't mean that you can send funds to it
@@ -353,6 +349,7 @@ func main() {
 			// balance is in string, convert to float
 			balance, err = xlm.GetXLMBalance(investor.PublicKey)
 			balanceI = utils.StringToFloat(balance)
+			log.Println("Investor balance is: ", balanceI)
 			if balanceI < 3 { // to setup trustlines
 				_, _, err = xlm.SendXLM(investor.PublicKey, "10", platformSeed)
 				if err != nil {
@@ -361,11 +358,7 @@ func main() {
 				}
 			}
 
-			// get the recipient from the database
-			recipient, err := database.SearchForRecipient(uOrder.RecipientName) // our recipient of assets
-			if err != nil {
-				log.Fatal(err)
-			}
+			recipient := uOrder.OrderRecipient
 			// from here on, reference recipient
 			balance, err = xlm.GetXLMBalance(recipient.PublicKey)
 			if balance == "" {
@@ -375,13 +368,14 @@ func main() {
 				// to it
 				_, _, err = xlm.SendXLMCreateAccount(recipient.PublicKey, "10", platformSeed)
 				if err != nil {
-					log.Println("Investor Account doesn't have funds")
+					log.Println("Recipient Account doesn't have funds")
 					log.Fatal(err)
 				}
 			}
 			balance, err = xlm.GetXLMBalance(recipient.PublicKey)
 			// balance is in string, convert to float
 			balanceI = utils.StringToFloat(balance)
+			log.Println("Recipient balance is: ", balanceI)
 			if balanceI < 3 { // to setup trustlines
 				_, _, err = xlm.SendXLM(recipient.PublicKey, "10", platformSeed)
 				if err != nil {

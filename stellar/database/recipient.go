@@ -174,11 +174,32 @@ func SearchForRecipient(name string) (Recipient, error) {
 				return nil
 			}
 			// we have the investor class, check password
-			if rRecipient.Name == name {
+			if rRecipient.LoginUserName == name {
 				inv = rRecipient
 			}
 		}
 		return fmt.Errorf("Not Found")
 	})
 	return inv, err
+}
+
+func DeleteRecipient(key uint32) error {
+	// deleting order might be dangerous since that would mess with the RetrieveAllOrders
+	// function, have it in here for now, don't do too much with it / fiox retrieve all
+	// to handle this case
+	db, err := OpenDB()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	err = db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket(RecipientBucket)
+		err := b.Delete(utils.Uint32toB(key))
+		if err != nil {
+			return err
+		}
+		log.Println("Deleted recipient with key: ", key)
+		return nil
+	})
+	return err
 }
