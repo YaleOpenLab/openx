@@ -1,6 +1,7 @@
 package database
 
 import (
+	"fmt"
 	"log"
 
 	oracle "github.com/YaleOpenLab/smartPropertyMVP/stellar/oracle"
@@ -105,25 +106,40 @@ func (a *Recipient) SendAssetToIssuer(assetName string, issuerPubkey string, amo
 // that it sent and if not, raises the dispute since the forward DEBToken payment
 // is on chain and resolves the dispute itself using existing off chain legal frameworks
 // (issued bonds, agreements, etc)
-func (a *Recipient) Payback(index uint32, assetName string, issuerPubkey string, amount string) error {
-
-	oldBalance, err := xlm.GetAssetBalance(assetName, a.PublicKey)
+// TODO: pass order here
+func (a *Recipient) Payback(uOrder Order, assetName string, issuerPubkey string, amount string) error {
+	// once we have the stablecoin here, we can remove the assetName
+	balance, err := xlm.GetAssetBalance(a.PublicKey, "STABLEUSD")
+	// checks for the stablecoin asset
 	if err != nil {
+		log.Println("YOU HAVE NO STABLECOIN BALANCE, PLEASE REFILL ACCOUNT")
+		return fmt.Errorf("YOU HAVE NO STABLECOIN BALANCE, PLEASE REFILL ACCOUNT")
+	}
+
+	oldBalance, err := xlm.GetAssetBalance(a.PublicKey, assetName)
+	if err != nil {
+		log.Println("Don't have the debt asset in posession")
 		log.Fatal(err)
 	}
 
-	PBAmount, err := oracle.PriceOracle()
+	if utils.StringToFloat(oldBalance) > utils.StringToFloat(balance) {
+		log.Println("YOU CAN'T SEND AN AMOUNT MORE THAN WHAT YOU HAVE")
+		return fmt.Errorf("YOU CAN'T SEND AN AMOUNT MORE THAN WHAT YOU HAVE")
+	}
+	// check balance in DEBAssetCode anmd
+	monthlyBill, err := oracle.MonthlyBill()
 	if err != nil {
 		log.Println("Unable to fetch oracle price, exiting")
 		return err
 	}
 
-	log.Println("Retrieved average price from oracle: ", PBAmount)
+	log.Println("Retrieved average price from oracle: ", monthlyBill)
 	// the oracke needs to know the assetName so that it can find the other details
 	// about this asset from the db. This should run on the server side and must
 	// be split when we do run client side stuff.
 	// hardcode for now, need to add the oracle here so that we
 	// can do this dynamically
+	// send amount worth DEBTokens back to issuer
 	confHeight, txHash, err := a.SendAssetToIssuer(assetName, issuerPubkey, amount)
 	if err != nil {
 		log.Println(err)
@@ -132,38 +148,54 @@ func (a *Recipient) Payback(index uint32, assetName string, issuerPubkey string,
 
 	log.Println("Paid debt amount: ", amount, " back to issuer, tx hash: ", txHash, " ", confHeight)
 	log.Println("Checking balance to see if our account was debited")
-	newBalance, err := xlm.GetAssetBalance(assetName, a.PublicKey)
+	newBalance, err := xlm.GetAssetBalance(a.PublicKey, assetName)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	newBalanceFloat := utils.FtoS(newBalance)
 	oldBalanceFloat := utils.FtoS(oldBalance)
-	amountFloat := utils.FtoS(PBAmount)
+	mBillFloat := utils.FtoS(monthlyBill)
 
 	paidAmount := oldBalanceFloat - newBalanceFloat
-	log.Println("Old Balance: ", oldBalanceFloat, "New Balance: ", newBalanceFloat, "Paid: ", paidAmount, "Req Amount: ", amountFloat)
+	log.Println("Old Balance: ", oldBalanceFloat, "New Balance: ", newBalanceFloat, "Paid: ", paidAmount, "Bill Amount: ", mBillFloat)
 
 	// would be nice to take some additional action like sending a notification or
 	// something to investors or to the email address given so that everyone is made
 	// aware of this and there's data transparency
 
-	if paidAmount < amountFloat {
+	if paidAmount < mBillFloat {
 		log.Println("Amount paid is less than amount required, balance not updating, please amke sure to cover this next time")
-	} else if paidAmount > amountFloat {
+	} else if paidAmount > mBillFloat {
 		log.Println("You've chosen to pay more than what is required for this month. Adjusting payback period accordingly")
 	} else {
 		log.Println("You've paid exactly what is required for this month. Payback period remains as usual")
 	}
 	// we need to update the database here
-	givenOrder, err := RetrieveOrder(index)
-	if err != nil {
-		log.Println("Given order not found in the database")
-		return err
+	// no need to retrieve this order again because we have it already
+	uOrder.BalLeft = float64(uOrder.TotalValue) - paidAmount
+	uOrder.DateLastPaid = utils.Timestamp()
+	if uOrder.BalLeft == 0 {
+		log.Println("YOU HAVE PAID OFF THIS ASSET, TRANSFERING OWNERSHIP OF ASSET TO YOU")
+		// don't delete the asset from the received assets list, we still need it so
+		// that we c an look back and find out hwo many assets this particular
+		// enttiy has been invested in, have a leaderboard kind of thing, etc.
+		uOrder.PaidOff = true
+		// we should call neighbourly or some ohter partner here to transfer assets
+		// using the bond they provide us with
+		// the nice part here is that the recipient can not pay off more than what is
+		// invested because the trustline will not allow such an incident to happen
 	}
-	givenOrder.BalLeft = float64(givenOrder.TotalValue) - paidAmount
-	givenOrder.DateLastPaid = utils.Timestamp()
 	// balLeft must be updated on the server side and can be challenged easily
 	// if there's some discrepancy since the tx's are on the blockchain
-	return InsertOrder(givenOrder)
+	return InsertOrder(uOrder)
+}
+
+func (a *Recipient) UpdateOrderSlice(order Order) {
+	for _, mem := range a.ReceivedOrders {
+		if mem.DEBAssetCode == order.DEBAssetCode {
+			// rewrite the thing in memory that we have
+			mem = order
+		}
+	}
 }

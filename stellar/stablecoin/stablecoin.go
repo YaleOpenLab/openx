@@ -26,6 +26,8 @@ import (
 // for easy reference. Most functions would be similar to the one in assets.go,
 // but need to be tailored to suit our requirements
 
+// StableIssuer defines the structure for storing the publickey of the platform
+// in the database
 type StableIssuer struct {
 	Index     uint32
 	Seed      string
@@ -39,11 +41,14 @@ var Issuer StableIssuer
 // STABLECOIN SEED IS: SDEG3MRXNFXSZVSPBVIT3TJXVXTEALMMWZMPNXHH4RFL2QGCALJVJSY2 and STABLECOIN PUBLICKEY IS GBAACP6UUXZAB5ZAYAHWEYLNKORWB36WVBZBXWNPFXQTDY2AIQFM6D7Y
 var StableBucket = []byte("Stablecoins")
 
+// CreateStableCoin creates a stablecoin STABLEUSD assigned to the Issuer struct
 func CreateStableCoin() build.Asset {
 	// need to set a couple flags here
 	return build.CreditAsset(StableUSD.Code, Issuer.PublicKey)
 }
 
+// We use a different databse here becasue when we clean yol.db, we don't want to
+// generate a new stablecoin (which in theory should be pegged to the USD)
 func OpenDB() (*bolt.DB, error) {
 	db, err := bolt.Open("sbc.db", 0600, nil)
 	if err != nil {
@@ -60,6 +65,8 @@ func OpenDB() (*bolt.DB, error) {
 	return db, err
 }
 
+// InsertIssuer inserts the publicKey of the platform into the stablecoin db so that
+// we can use it in other places
 func InsertIssuer(a StableIssuer) error {
 	db, err := OpenDB()
 	if err != nil {
@@ -79,6 +86,9 @@ func InsertIssuer(a StableIssuer) error {
 	return err
 }
 
+// CheckStableIssuer checks whether we already have a stablecoin pubkey in the
+// database and if so, errors out, since we don't want people voerwriting the
+// stablecoin
 func CheckStableIssuer() error {
 	var rIssuer StableIssuer
 	db, err := OpenDB()
@@ -110,6 +120,7 @@ func CheckStableIssuer() error {
 	return nil
 }
 
+// RetrieveStableIssuer retreives the publickey of the platform from the database
 func RetrieveStableIssuer() (StableIssuer, error) {
 	// retrieves the platforms (more like the publickey)
 	var rIssuer StableIssuer
@@ -136,6 +147,10 @@ func RetrieveStableIssuer() (StableIssuer, error) {
 	return rIssuer, err
 }
 
+// SetVals is a helper function to set default values and have the seed in RAM
+// so that we can use it in other packages wihtout writing to database.
+// TODO: there are some classes of attacks that can read from RAM, is there
+// some way to mitigate this wihtout retrieving the key each time?
 func SetVals(PublicKey string, Seed string) {
 	StableUSD.Code = "STABLEUSD"
 	StableUSD.Issuer = PublicKey
@@ -143,6 +158,8 @@ func SetVals(PublicKey string, Seed string) {
 	Issuer.Seed = Seed
 }
 
+// InitStableCoin sets up a stablecoin that can be used to server STABLEUSD
+// on the stellar testnet
 func InitStableCoin() error {
 	var x StableIssuer
 	var err error
@@ -182,17 +199,19 @@ func InitStableCoin() error {
 	return nil
 }
 
-// so now the above functions setup the stablecoin and create an asset. We ideally
-// need a go routine that constantly listens for payments to this address (in XLM)
-// and then hands out a fixed sum of 5USD per XLM deposited to the address which
-// deposited the XLM
+// ListenForPayments listens for payments to the stablecoin account and once it
+// gets the transaction hash from the rmeote API, calculates how much USD it owes
+// for the amount deposited and then transfers the StableUSD asset to the payee
+// Prices are retrieved from an oracle.
 func ListenForPayments() {
 	// this will be started as a goroutine
 	// address := Issuer.PublicKey
-	const address = "GBAACP6UUXZAB5ZAYAHWEYLNKORWB36WVBZBXWNPFXQTDY2AIQFM6D7Y"
+	const address = "GCJ7UN44GL3DDS2WV6SV6GQTBRD4AVJASIBSYQUZMLMXDV4DLLBNT3EK"
 	// this thing above has to be hardcoded because stellar's APi wants it like so
-	// stupid stuff, but we need to go ahead with it
-	ctx := context.Background() // start as a goroutine
+	// stupid stuff, but we need to go ahead with it. IN reality, this shouldn't
+	// be much of a problem since we expect that the platform's seed will be
+	// remembered
+	ctx := context.Background() // start in the background context
 	cursor := horizon.Cursor("now")
 	fmt.Println("Waiting for a payment...")
 	err := utils.DefaultTestNetClient.StreamPayments(ctx, address, &cursor, func(payment horizon.Payment) {
@@ -238,6 +257,7 @@ func ListenForPayments() {
 	})
 
 	if err != nil {
-		panic(err)
+		// we shouldn't ideally fatal here, but do since we're testing out stuff
+		log.Fatal(err)
 	}
 }

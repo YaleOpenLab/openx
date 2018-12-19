@@ -8,13 +8,12 @@ import (
 	"os"
 	"strconv"
 	"syscall"
-	"time"
 
 	assets "github.com/YaleOpenLab/smartPropertyMVP/stellar/assets"
 	database "github.com/YaleOpenLab/smartPropertyMVP/stellar/database"
 	rpc "github.com/YaleOpenLab/smartPropertyMVP/stellar/rpc"
-	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
 	stablecoin "github.com/YaleOpenLab/smartPropertyMVP/stellar/stablecoin"
+	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
 	xlm "github.com/YaleOpenLab/smartPropertyMVP/stellar/xlm"
 	flags "github.com/jessevdk/go-flags"
 	"golang.org/x/crypto/ssh/terminal"
@@ -47,15 +46,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Separate TODO list based on demo specifics
 	// 1. Add support for multiple participants in the system - right now, the PoC
 	// assumes a single investor and it is essential to have multiple investors for
 	// a good demo
-	// 2. Add support for recipients paying back tokens within the CLI UI (we can
-	// already payback using relevant functions, but that's not much useful UI wise)
-	// Need to create a stablecoin library that can be imported with ease and that
-	// serves USD assets similar to trueusd or similar things on mainnet
-	// need to spin up a local stellar node and test if thigns run fine if we just
+	// need to spin up a local stellar node and test if things run fine if we just
 	// change the API mapping
 	// need to create different entities and create db mappings for them.
 	// need to update collections to directly hold orders, similar to the investor
@@ -66,25 +60,52 @@ func main() {
 	// more suitable for a model like affordable housing.
 	// look into what kind of data we get from the pi and checkout pi specific code
 	// to see if we can get something from there.
-	// For the demo, we must have multiple things that are in line
-	// 1. An interface to view the number of orders that are in the orderbook
-	// 2. An interface to view all the assets owned by a particular investor
-	// 3. An option to invest in a prticular option, guided by the CLI
-	// Available orders: <display avilable orders here>
-	// Choose which order to invest in: (don't have amount initially since we assume
-	// that the investor is investing the whole of the amount required by the given order)
-	// after investment, it should display the INVAsset's code, the hash of the asset
-	// sending transaction and a confirmation that the investor has invested. Then it must display
-	// something like <View invested Assets> which the person can click on to see
-	// what he has invested in and there,  it must show the INVAsset and INVAmount
-
-	// so we first need to display all invested assets
-	// and maybe print something Stellar Housing Assets interface
-	// clear db later, have this in for now
 
 	fmt.Println("------------STELLAR HOUSE INVESTMENT CLI INTERFACE------------")
 	ValidateInputs()
 
+	// setup issuer account if the platform doesn't  already exist
+	// check whether the platform exists
+	test, err := database.RetrievePlatform()
+	if err != nil {
+		log.Fatal(err)
+	}
+	if len(test.PublicKey) == 0 {
+		// weird way to test, but still
+		// this is the first time we're initializing a platform
+		log.Println("Creating a new platform")
+		platform, err := database.NewPlatform()
+		if err != nil {
+			log.Fatal(err)
+		}
+		// insert this into the database
+		err = database.InsertPlatform(platform)
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		log.Println("Platform already exists, using existing one")
+	}
+	platform, err := database.RetrievePlatform()
+	if err != nil {
+		log.Fatal(err)
+	}
+	// ask for the platform's password
+	// now here, we must decrypt the seed before using it in other places
+	fmt.Printf("%s: ", "ENTER PASSWORD TO UNLOCK THE PLATFORM")
+	bytePassword, err := terminal.ReadPassword(int(syscall.Stdin))
+	fmt.Println()
+	psPassword := string(bytePassword)
+	platformSeed := database.GetSeedFromEncryptedSeed("seed.hex", psPassword)
+	// init stablecoin stuff
+	err = stablecoin.InitStableCoin()
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println(stablecoin.StableUSD)
+	go stablecoin.ListenForPayments()
+	// don't have an error catching thing because if this fails, the platform should
+	// not initialize
 	// insert an investor with the relevant details
 	// add dummy investor and recipient data for the demo
 	// uname: john, password: password
@@ -110,13 +131,108 @@ func main() {
 	// need to ask for user role as well here, to know whether the user is an investor
 	// or recipient so that we can show both sides
 	// Open the database
-	err = database.InsertDummyData()
+	allOrders, err := database.RetrieveAllOrders()
 	if err != nil {
-		log.Fatal(err)
+		log.Println("Error retrieving all orders from the database")
 	}
 
-	fmt.Println("---ARE YOU AN INVESTOR (I) OR RECIPIENT (R)? ---")
+	if len(allOrders) == 0 {
+		err = database.InsertDummyData()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+	// After this, ask what the user wants to do - there are roughly three options:
+	// 1. Create a new investor account
+	// 2. Create a new recipient account
+	// 3. Login (Are you an investor / recipient)
+	fmt.Println("------WHAT DO YOU WANT TO DO?------")
+	fmt.Println("1. CREATE A NEW INVESTOR ACCOUNT")
+	fmt.Println("2. CREATE A NEW RECIPIENT ACCOUNT")
+	fmt.Println("deafult: ALREADY HAVE AN ACCOUNT")
 	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Scan()
+	if scanner.Err() != nil {
+		fmt.Println("Couldn't read user input")
+		return
+	}
+	switch scanner.Text() {
+	case "1":
+		log.Println("You have chosen to create a new investor account, welcome")
+		log.Println("ENTER YOUR REAL NAME")
+		scanner.Scan()
+		if scanner.Err() != nil {
+			fmt.Println("Couldn't read user input")
+			break
+		}
+		invName := scanner.Text()
+
+		log.Println("ENTER YOUR USERNAME")
+		scanner.Scan()
+		if scanner.Err() != nil {
+			fmt.Println("Couldn't read user input")
+			break
+		}
+		invLoginUserName := scanner.Text()
+
+		log.Println("ENTER DESIRED PASSWORD, YOU WILL NOT BE ASKED TO CONFIRM THIS")
+		bytePassword, err = terminal.ReadPassword(int(syscall.Stdin))
+		fmt.Println()
+		tempString := string(bytePassword)
+		invLoginPassword := utils.SHA3hash(tempString)
+
+		inv, err := database.NewInvestor(invLoginUserName, invLoginPassword, invName, true)
+		if err != nil {
+			log.Println("FAILED TO SETUP ACCOUNT, TRY AGAIN")
+			break
+		}
+		err = database.InsertInvestor(inv)
+		if err != nil {
+			log.Println("FAILED TO SETUP ACCOUNT, TRY AGAIN")
+			break
+		}
+		// need to send fudns to this guy so that he can setup trustlines
+		break
+	case "2":
+		log.Println("You have chosen to create a new recipient account, welcome")
+		log.Println("ENTER YOUR REAL NAME")
+		scanner.Scan()
+		if scanner.Err() != nil {
+			fmt.Println("Couldn't read user input")
+			break
+		}
+		invName := scanner.Text()
+
+		log.Println("ENTER YOUR USERNAME")
+		scanner.Scan()
+		if scanner.Err() != nil {
+			fmt.Println("Couldn't read user input")
+			break
+		}
+		invLoginUserName := scanner.Text()
+
+		log.Println("ENTER DESIRED PASSWORD, YOU WILL NOT BE ASKED TO CONFIRM THIS")
+		bytePassword, err = terminal.ReadPassword(int(syscall.Stdin))
+		fmt.Println()
+		tempString := string(bytePassword)
+		invLoginPassword := utils.SHA3hash(tempString)
+
+		inv, err := database.NewRecipient(invLoginUserName, invLoginPassword, invName)
+		if err != nil {
+			log.Println("FAILED TO SETUP ACCOUNT, TRY AGAIN")
+			break
+		}
+		err = database.InsertRecipient(inv)
+		if err != nil {
+			log.Println("FAILED TO SETUP ACCOUNT, TRY AGAIN")
+			break
+		}
+		break
+	default:
+		// don't add the entire file as a switch case because it would be ugly. we can
+		// fall through, shouldn't be an issue
+	}
+	fmt.Println("---ARE YOU AN INVESTOR (I) OR RECIPIENT (R)? ---")
 	scanner.Scan()
 	rbool := false
 	if scanner.Text() == "I" || scanner.Text() == "i" {
@@ -124,16 +240,20 @@ func main() {
 	} else if scanner.Text() == "R" || scanner.Text() == "r" {
 		fmt.Println("WELCOME BACK RECIPIENT")
 		rbool = true
+	} else {
+		log.Fatal("INVALID INPUT, EXITING!")
 	}
 	// ask for username and password combo here
-	fmt.Println("---ENTER YOUR USERNAME---")
+	fmt.Printf("%s", "ENTER YOUR USERNAME: ")
 	scanner.Scan()
 	if scanner.Err() != nil {
 		fmt.Println("Couldn't read user input")
+		return
 	}
 	invLoginUserName := scanner.Text() // read user input regarding which option
-	fmt.Println("---ENTER YOUR PASSWORD---")
-	bytePassword, err := terminal.ReadPassword(int(syscall.Stdin))
+	fmt.Printf("%s", "ENTER YOUR PASSWORD: ")
+	bytePassword, err = terminal.ReadPassword(int(syscall.Stdin))
+	fmt.Println()
 	tempString := string(bytePassword)
 	invLoginPassword := utils.SHA3hash(tempString)
 	// check for ibool vs rbool here
@@ -153,13 +273,15 @@ func main() {
 		for {
 			fmt.Println("------------RECIPIENT INTERFACE------------")
 			fmt.Println("----CHOOSE ONE OF THE FOLLOWING OPTIONS----")
-			fmt.Println("  1. Display all Received Assets")
+			fmt.Println("  1. Display all Open Assets")
 			fmt.Println("  2. Display my Profile")
 			fmt.Println("  3. Payback towards an Asset")
-			fmt.Println("  4. Exit")
+			fmt.Println("  4. Exchange XLM for USD")
+			fmt.Println("  default: Exit")
 			scanner.Scan()
 			if scanner.Err() != nil {
 				fmt.Println("Couldn't read user input")
+				break
 			}
 			menuInput, err := strconv.Atoi(scanner.Text())
 			if err != nil {
@@ -167,14 +289,111 @@ func main() {
 			}
 			switch menuInput {
 			case 1:
+				fmt.Println("------------LIST OF ALL AVAILABLE ASSETS------------")
+				allOrders, err := database.RetrieveAllOrders()
+				if err != nil {
+					log.Println("Error retrieving all orders from the database")
+				}
+				database.PrettyPrintOrders(allOrders)
 				break
 			case 2:
 				database.PrettyPrintRecipient(recipient)
 				break
 			case 3:
-				// need to test this one out
+				// regarding payback, we need to first check if the STABLEUSD asset
+				// is present on our account. If yes, we assume that it is 1:1 with USD
+				// and then we need to pay the same balance in DEBTokens.
+				// one could transfer the STRONGUSD token directly as well but we wouldn't
+				// have a proof of token ownership / receipt
+				// TODO: This does not account for the XLM/USD exchange and a recipient
+				// can payback infinitely for now
+				database.PrettyPrintPBOrders(recipient.ReceivedOrders)
+				fmt.Println("WHICH ORDER DO YOU WANT TO PAY BACK TOWARDS? (ENTER ORDER NUMBER)")
+				scanner.Scan()
+				if scanner.Err() != nil {
+					fmt.Println("Couldn't read user input")
+					break
+				}
+				// user input must be an integer, else quit
+				orderNumber, err := strconv.Atoi(scanner.Text())
+				if err != nil {
+					log.Println("INPUT NOT AN INTEGER, TRY AGAIN")
+					continue
+				}
+				// check if we can get the roder using the order number that we have here
+				rtOrder, err := database.RetrieveOrder(uint32(orderNumber))
+				if err != nil {
+					log.Println("Couldn't retrieve order, try again!")
+					continue
+				}
+				// so we can retrieve the order using the order Index, nice
+				database.PrettyPrintPBOrder(rtOrder)
+				fmt.Println("HOW MUCH DO YOU WANT TO PAYBACK?")
+				scanner.Scan()
+				if scanner.Err() != nil {
+					fmt.Println("Couldn't read user input")
+					break
+				}
+				// user input must be an integer, else quit
+				pbAmountS := scanner.Text()
+				_, err = strconv.Atoi(pbAmountS) // TODO: assumes whole numbers
+				if err != nil {
+					log.Println("PAYBACK AMOUNT NOT AN INTEGER, TRY AGAIN")
+					continue
+				}
+				fmt.Printf(" DO YOU WANT TO CONFIRM THAT YOU WANT TO PAYBACK %s TOWARDS THIS ORDER? (PRESS N IF YOU DON'T WANT TO)\n", pbAmountS)
+				scanner.Scan()
+				if scanner.Text() == "N" || scanner.Text() == "n" {
+					fmt.Println("YOU HAVE DECIDED TO CANCEL THIS ORDER")
+					break
+				}
+				fmt.Printf("PAYING BACK %s TOWARDS ORDER NUMBER: %d\n", pbAmountS, rtOrder.Index) // use the rtOrder here instead of using orderNumber from long ago
+				// now we need to call back the payback function to payback the asset
+				// TODO: need to check if the recipient has the required USDTokens.
+				// Here, we will simply payback the DEBTokens that was sent to us earlier
+				if rtOrder.DEBAssetCode == "" {
+					log.Fatal("Asset not found")
+				}
+				err = recipient.Payback(rtOrder, rtOrder.DEBAssetCode, platform.PublicKey, pbAmountS)
+				// TODO: right now, the payback asset directly sends back, change
+				if err != nil {
+					log.Println("PAYBACK TX FAILED, PLEASE TRY AGAIN!")
+					break
+				}
+				fmt.Println("UPDATED ORDER: ")
+				// check if we can get the roder using the order number that we have here
+				rtOrder, err = database.RetrieveOrder(uint32(orderNumber))
+				if err != nil {
+					log.Println("Couldn't retrieve updated order, check again!")
+					continue
+				}
+				// we should update the local slice to keep track of the changes here
+				recipient.UpdateOrderSlice(rtOrder)
+				// so we can retrieve the order using the order Index, nice
+				database.PrettyPrintOrder(rtOrder)
+				// print the order in a nice way
 				break
 			case 4:
+				log.Println("Enter the amount you want to convert into STABLEUSD")
+				scanner.Scan()
+				convAmount := scanner.Text()
+				if utils.StringToFloat(convAmount) == 0 {
+					log.Println("Amount entered is not a float, quitting")
+					break
+				}
+				hash, err := assets.TrustAsset(stablecoin.StableUSD, "1000000000", recipient.PublicKey, recipient.Seed)
+				if err != nil {
+					log.Fatal(err)
+				}
+				log.Println("tx hash for trusting stableUSD: ", hash)
+				// now send coins across and see if our tracker detects it
+				_, hash, err = xlm.SendXLM(stablecoin.Issuer.PublicKey, convAmount, recipient.Seed)
+				if err != nil {
+					log.Fatal(err)
+				}
+				log.Println("tx hash for sent xlm: ", hash, "pubkey: ", recipient.PublicKey)
+				break
+			default:
 				// check whether he wants to go back to the display all screen again
 				fmt.Println("DO YOU REALLY WANT TO EXIT? (PRESS Y TO CONFIRM)")
 				scanner.Scan()
@@ -189,16 +408,6 @@ func main() {
 		return
 	}
 
-	allOrders1, err := database.RetrieveAllOrders()
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println("ALL ORDERS", allOrders1)
-	allInvestors, err := database.RetrieveAllInvestors()
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println("ALLIVN", allInvestors)
 	investor, err := database.SearchForInvestor(invLoginUserName)
 	if err != nil {
 		log.Fatal("had trouble retrieving user from db")
@@ -234,6 +443,7 @@ func main() {
 		scanner.Scan()
 		if scanner.Err() != nil {
 			fmt.Println("Couldn't read user input")
+			break
 		}
 		menuInput, err := strconv.Atoi(scanner.Text())
 		if err != nil {
@@ -242,7 +452,6 @@ func main() {
 		switch menuInput {
 		case 1:
 			fmt.Println("------------LIST OF ALL AVAILABLE ASSETS------------")
-			time.Sleep(1 * time.Second) // change this to 5 or something for the pause
 			allOrders, err := database.RetrieveAllOrders()
 			if err != nil {
 				log.Println("Error retrieving all orders from the database")
@@ -257,6 +466,7 @@ func main() {
 			scanner.Scan()
 			if scanner.Err() != nil {
 				fmt.Println("Couldn't read user input")
+				break
 			}
 			// they want to choose
 			// also check whether received user input is an integer
@@ -285,38 +495,8 @@ func main() {
 				fmt.Println("YOU HAVE DECIDED TO CANCEL THIS ORDER")
 				break
 			}
-			// setup issuer account if the platform doesn't  already exist
-			test, err := database.RetrievePlatform()
-			if err != nil {
-				log.Fatal(err)
-			}
-			if len(test.PublicKey) == 0 {
-				// weird way to test, but still
-				// this is the first time we're initializing a platform
-				log.Println("Creating a new platform")
-				platform, err := database.NewPlatform()
-				if err != nil {
-					log.Fatal(err)
-				}
-				// insert this into the database
-				err = database.InsertPlatform(platform)
-				if err != nil {
-					log.Fatal(err)
-				}
-			} else {
-				log.Println("Platform already exists, using existing one")
-			}
-			platform, err := database.RetrievePlatform()
-			if err != nil {
-				log.Fatal(err)
-			}
-			// now here, we must decrypt the seed before using it in other places
-			platformSeed := database.GetSeedFromEncryptedSeed("seed.hex", "password")
-			// TODO: right now, using a dummy password, should ask for a password
-			// and then use it
 			// when I am creating an account, I will have a PublicKey and Seed, so
 			// don't need them here
-			// from here on, we only need investor
 			// check whether the investor has XLM already
 			balance, err := xlm.GetXLMBalance(platform.PublicKey)
 			// balance is in string, convert to int
@@ -343,6 +523,7 @@ func main() {
 				// Generating a keypair on stellar doesn't mean that you can send funds to it
 				// you need to call the CreateAccount method in order to be able to send funds
 				// to it
+				log.Println("Investor balance empty, refilling!")
 				_, _, err = xlm.SendXLMCreateAccount(investor.PublicKey, "10", platformSeed)
 				if err != nil {
 					log.Println("Investor Account doesn't have funds")
@@ -390,6 +571,7 @@ func main() {
 			log.Println("The investor's public key and private key are: ", investor.PublicKey, " ", investor.Seed)
 			log.Println("The recipient's public key and private key are: ", recipient.PublicKey, " ", recipient.Seed)
 
+			log.Println(&platform, platformSeed, &investor, &recipient, investedAmountS, uOrder)
 			// so now we have three entities setup, so we create the assets and invest in them
 			cOrder, err := assets.InvestInOrder(&platform, platformSeed, &investor, &recipient, investedAmountS, uOrder) // assume payback period is 5
 			if err != nil {
@@ -411,7 +593,7 @@ func main() {
 		case 5:
 			// this should be expanded in the future to make use of the inbuilt DEX
 			// on stellar (checkout stellarterm)
-			log.Println("Enter the amount you want to convert into XLM")
+			log.Println("Enter the amount you want to convert into STABLEUSD")
 			// this would also mean that you need to check whether we have the balance
 			// here and then proceed further
 			scanner.Scan()
@@ -420,37 +602,31 @@ func main() {
 				log.Println("Amount entered is not a float, quitting")
 				break
 			}
-			err = stablecoin.InitStableCoin()
-			if err != nil {
-				log.Fatal(err)
-			}
-			log.Println(stablecoin.StableUSD)
-			go stablecoin.ListenForPayments()
 			// pay this stablecoin account to test
 			/*
-			reuse this to write unit tests
-			privkey, pubkey, err := xlm.GetKeyPair()
-			if err != nil {
-				log.Fatal(err)
-			}
-			log.Println("created a new pirvkey, pubkrey pair", privkey, pubkey)
-			// setup this account for testing
-			err = xlm.GetXLM(pubkey)
-			if err != nil {
-				log.Fatal(err)
-			}
-			// first trust the stablecoin issuer
+				reuse this to write unit tests
+				privkey, pubkey, err := xlm.GetKeyPair()
+				if err != nil {
+					log.Fatal(err)
+				}
+				log.Println("created a new pirvkey, pubkrey pair", privkey, pubkey)
+				// setup this account for testing
+				err = xlm.GetXLM(pubkey)
+				if err != nil {
+					log.Fatal(err)
+				}
+				// first trust the stablecoin issuer
 			*/
 			// maybe don't trust asset again when you've trusted it already? check if that's
 			// possible and save on the tx fee for a single transaction
 			hash, err := assets.TrustAsset(stablecoin.StableUSD, "10000", investor.PublicKey, investor.Seed)
-			if err != nil{
+			if err != nil {
 				log.Fatal(err)
 			}
 			log.Println("tx hash for trusting stableUSD: ", hash)
 			// now send coins across and see if our tracker detects it
 			_, hash, err = xlm.SendXLM(stablecoin.Issuer.PublicKey, convAmount, investor.Seed)
-			if err != nil{
+			if err != nil {
 				log.Fatal(err)
 			}
 
@@ -471,110 +647,6 @@ func main() {
 	// we now have the order the user wants to confirm, pretty print this order
 	log.Fatal("All good")
 	// start the rpc server
+	rpc.StartServer("8080") // run this in order to check whether the go routine is running
 	rpc.StartServer(opts.Port) // this must be towards the end
-	/*
-		// open and close the db only for testing
-		// in later cases, use the RPC directly
-		log.Printf("InvAmount: %d USD, RecYears: %d years, Verbose: %t", opts.InvAmount, opts.RecYears, opts.Verbose)
-
-		// the problem with this is we generally accept donations in crypto and then
-		// people have to trust this that we don't print stuff out of thin air
-		// instead of using our own coin, we could use stronghold coin (stablecoin on Stellar)
-		// Stellar also has an immediate DEX, but do we use it? ethical stuff while dealing with
-		// funds remiain
-		// before setting up the assets, we need to refer to the orderbook in order to
-		// get the list of available offers and funding things. For this purpose, we could
-		// build a hash table / a simple dictionary, but I think investors in general
-		// would like more info, so a simple map should be enough.
-		// And this needs to be stored in a database somewhere so that we don't lose this
-		// data. Also need cryptographic proofs that this data is what it is, because
-		// there is no concept of state in stellar. Is there a better way?
-		a, err := assets.SetupAsset(db, &issuer, &investor, &recipient, uOrder)
-		if err != nil {
-			log.Fatal(err)
-		}
-		// In short, the recipient pays in DEBtokens and receives PBtokens in return
-
-		// this checks for balance, would come into use later on to check if we sent
-		// the right amomunt of money to the user
-		// balances, err := recipient.GetAllBalances()
-		// if err != nil {
-		// 	log.Fatal(err)
-		// }
-
-		// now we need to simulate a situation where the recipient pays back a certain
-		// portion of the funds
-		// onboarding is omitted here, that's a bigger problem that we hopefully
-		// can delegate to other parties like Neighborly
-		// an alternate idea is that they can buy stellar and repay, if we choose to
-		// take that route, we must use a coin on stellar as an anchor to receive this token.
-		// in this way, we need to check native balance and then use the anchor
-		// right now don't do that, but should do in future to solicit donations from
-		// the community, who would be generally dealing in XLM (and not DEBtoken)
-
-		// another idea is that you could speculate on DEBtoken by having a market
-		// for it, that would reuqire to relax the flags a bit. Right now, we don't
-		// use an authorization flag, but we should since we don't want alternate markets
-		// to develop. If we do, don't set the flag
-		paybackAmount := "210"
-		err = recipient.Payback(db, a.Index, a.DEBAssetCode, issuer.PublicKey, paybackAmount)
-		if err != nil {
-			log.Println(err)
-			log.Fatal(err)
-		}
-		// after this ,we must update the steuff on the server side and send a payback token
-		// to let the user know that he has paid x amoutn of money.
-		// this however, would be the money paid / money that has to be paid per month
-		// in total, this should be payBackPeriod * 12
-
-		paybackAmountF := utils.StringToFloat(paybackAmount)
-		refundS := utils.FloatToString(paybackAmountF / xlm.PriceOracleInFloat())
-		// weird conversion stuff, but have to since the amount should be in a string
-		blockHeight, txHash, err := issuer.SendAsset(a.PBAssetCode, recipient.PublicKey, refundS)
-		if err != nil {
-			log.Println("Error while sending a payback token, notify help immediately")
-			log.Fatal(err)
-		}
-		log.Println("Sent payback token to recipient", blockHeight, txHash)
-		tOrder, err := database.RetrieveOrder(a.Index, db)
-		if err != nil {
-			log.Println("Error retrieving from db")
-			log.Fatal(err)
-		}
-		log.Println("Test whether this was updated: ", tOrder)
-
-		debtAssetBalance, err := recipient.GetAssetBalance(a.DEBAssetCode)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		pbAssetBalance, err := recipient.GetAssetBalance(a.PBAssetCode)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		log.Printf("Debt balance: %s, Payback Balance: %s", debtAssetBalance, pbAssetBalance)
-
-		/*
-			confHeight, txHash, err := issuer.SendCoins(recipient.PublicKey, "3.34") // send some coins from the issuer to the recipient
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			log.Println("Confirmation height is: ", confHeight, " and txHash is: ", txHash)
-
-			asset := issuer.CreateAsset(assetName) // create the asset that we want
-
-			trustLimit := "100" // trust only 100 barrels of oil from Petro
-			err = recipient.TrustAsset(asset, trustLimit)
-			if err != nil {
-				log.Println("Trust limit is in the wrong format")
-				log.Fatal(err)
-			}
-
-			err = issuer.SendAsset(assetName, recipient.PublicKey, "3.34")
-			if err != nil {
-				log.Fatal(err)
-			}
-	*/
 }

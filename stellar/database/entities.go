@@ -11,6 +11,7 @@ type Order struct {
 	Years         int     // number of years the recipient has chosen to opt for
 	Metadata      string  // any other metadata can be stored here
 	Live          bool    // check to see whether the current order is live or not
+	PaidOff       bool    // whether the asset has been paidoff by the recipient
 	INVAssetCode  string  // once all funds have been raised, we need to set assetCodes
 	DEBAssetCode  string  // once all funds have been raised, we need to set assetCodes
 	PBAssetCode   string  // once all funds have been raised, we need to set assetCodes

@@ -32,7 +32,7 @@ func NewInvestor(uname string, pwhash string, Name string, pkgen bool) (Investor
 	// except maybe for quick stats
 	a.Name = Name
 	if pkgen {
-		a.PublicKey, a.Seed, err = xlm.GetKeyPair()
+		a.Seed, a.PublicKey, err = xlm.GetKeyPair()
 		if err != nil {
 			return a, err
 		}

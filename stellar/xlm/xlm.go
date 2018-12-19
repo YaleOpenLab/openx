@@ -55,11 +55,12 @@ func GetXLMBalance(PublicKey string) (string, error) {
 // and then runs through the balances to get the balance of a specific account
 func GetAssetBalance(PublicKey string, assetCode string) (string, error) {
 
+	log.Println("in GETASSETBALANCE", assetCode, PublicKey)
 	account, err := utils.DefaultTestNetClient.LoadAccount(PublicKey)
 	if err != nil {
 		return "", err
 	}
-
+	log.Println("in GETASSETBALANCE", assetCode, PublicKey)
 	for _, balance := range account.Balances {
 		if balance.Asset.Code == assetCode {
 			return balance.Balance, nil
