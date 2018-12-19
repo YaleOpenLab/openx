@@ -6,12 +6,23 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
+	"net/http"
 	"strconv"
 	"time"
 
+	clients "github.com/stellar/go/clients/horizon"
 	"golang.org/x/crypto/sha3"
 )
 
+var DefaultTestNetClient = &clients.Client{
+	URL:  "https://horizon-testnet.stellar.org",
+	HTTP: http.DefaultClient,
+}
+
+func FtoS(a string) float64 {
+	float, _ := strconv.ParseFloat(a, 32) // 32 bit floats
+	return float
+}
 
 func StoI(a string) int {
 	temp, _ := strconv.Atoi(a)

@@ -10,39 +10,6 @@ import (
 	"github.com/stellar/go/keypair"
 )
 
-type Recipient struct {
-	Index uint32
-	// defauult index, gets us easy stats on how many people are there and stuff,
-	// don't want to omit this
-	Name string
-	// Name of the primary stakeholder involved (principal trustee of school, for eg.)
-	PublicKey string
-	// PublicKey denotes the public key of the recipient
-	Seed string
-	// do we make seed optional like that for the Recipient? Couple things to consider
-	// here: if the recipient loses the publickey, it can nver send DEBTokens back
-	// to the issuer, so it would be as if it reneged on the deal. Do we count on
-	// technically less sound people to hold their public keys safely? I suggest
-	// this would be  difficult in practice, so maybe enforce that they need to hold|
-	// their accounts on the platform?
-	FirstSignedUp string
-	// auto generated timestamp
-	DebtAssets []string
-	// DebtAssets denotes the list of all DEBTokens that the recipient possesses
-	// this is an array since a single recipient could technically still have multiple
-	// projects under its wing which Recipients can invest in.
-	PaybackAssets []string
-	// Payback Assets denotes the status of all assets that the recipient has received
-	// this could be used to easily display payback progress, calculate ratings
-	// for a specific school and so on.
-	LoginUserName string
-	// the thing you use to login to the platform
-	LoginPassword string
-	// password, which is separate from the generated seed.
-}
-
-var RecipientBucket = []byte("Recipients")
-
 func TestFn() {
 	log.Println("Endpoint called! Cool!")
 	return
@@ -79,6 +46,31 @@ func NewRecipient(uname string, pwhash string, Name string) (Recipient, error) {
 	return a, nil
 }
 
+func NewRecipientWithoutSeed(uname string, pwhash string, Name string) (Recipient, error) {
+	// this should be called initially since the recipient's seed is created only
+	// if someone decides to ivnest in the order
+	var a Recipient
+
+	allRecipients, err := RetrieveAllRecipients()
+	if err != nil {
+		return a, err
+	}
+
+	// the ugly indexing thing again, need to think of something better here
+	if len(allRecipients) == 0 {
+		a.Index = 1
+	} else {
+		a.Index = uint32(len(allRecipients) + 1)
+	}
+
+	a.Name = Name
+	a.FirstSignedUp = utils.Timestamp()
+	a.LoginUserName = uname
+	a.LoginPassword = pwhash
+	// now we have a new Recipient, take this and then send this off to be stored in the database
+	return a, nil
+}
+
 // all operations are mostly similar to that of the Recipient class
 // TODO: merge where possible by adding an extra bucket param
 func InsertRecipient(a Recipient) error {
@@ -88,11 +80,7 @@ func InsertRecipient(a Recipient) error {
 	}
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
-		b, err := tx.CreateBucketIfNotExists(RecipientBucket) // the orders bucket contains all our orders
-		if err != nil {
-			log.Fatal(err)
-			return err
-		}
+		b := tx.Bucket(RecipientBucket)
 		encoded, err := json.Marshal(a)
 		if err != nil {
 			log.Println("Failed to encode this data into json")
@@ -122,10 +110,7 @@ func RetrieveAllRecipients() ([]Recipient, error) {
 	err = db.Update(func(tx *bolt.Tx) error {
 		// this is Update to cover the case where the  bucket doesn't exists and we're
 		// trying to retrieve a list of keys
-		b, err := tx.CreateBucketIfNotExists(RecipientBucket)
-		if err != nil {
-			return err
-		}
+		b := tx.Bucket(RecipientBucket)
 		i := uint32(1)
 		for ; ; i++ {
 			var rRecipient Recipient
@@ -156,10 +141,7 @@ func RetrieveRecipient(key uint32) (Recipient, error) {
 	}
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
-		b, err := tx.CreateBucketIfNotExists(RecipientBucket)
-		if err != nil {
-			return err
-		}
+		b := tx.Bucket(RecipientBucket)
 		x := b.Get(utils.Uint32toB(key))
 		if x == nil {
 			return nil
@@ -169,7 +151,7 @@ func RetrieveRecipient(key uint32) (Recipient, error) {
 	return inv, nil
 }
 
-func SearchForRecipientPassword(pwhash string) (Recipient, error) {
+func SearchForRecipient(name string) (Recipient, error) {
 	var inv Recipient
 	// this is very ugly, but the only way it works right now (see TODO earlier)
 	db, err := OpenDB()
@@ -179,10 +161,7 @@ func SearchForRecipientPassword(pwhash string) (Recipient, error) {
 	defer db.Close()
 
 	err = db.Update(func(tx *bolt.Tx) error {
-		b, err := tx.CreateBucketIfNotExists(RecipientBucket)
-		if err != nil {
-			return err
-		}
+		b := tx.Bucket(RecipientBucket)
 		i := uint32(1)
 		for ; ; i++ {
 			var rRecipient Recipient
@@ -195,12 +174,32 @@ func SearchForRecipientPassword(pwhash string) (Recipient, error) {
 				return nil
 			}
 			// we have the investor class, check password
-			if rRecipient.LoginPassword == pwhash {
-				log.Println("FOUDN INVESOTR")
+			if rRecipient.LoginUserName == name {
 				inv = rRecipient
 			}
 		}
 		return fmt.Errorf("Not Found")
 	})
 	return inv, err
+}
+
+func DeleteRecipient(key uint32) error {
+	// deleting order might be dangerous since that would mess with the RetrieveAllOrders
+	// function, have it in here for now, don't do too much with it / fiox retrieve all
+	// to handle this case
+	db, err := OpenDB()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	err = db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket(RecipientBucket)
+		err := b.Delete(utils.Uint32toB(key))
+		if err != nil {
+			return err
+		}
+		log.Println("Deleted recipient with key: ", key)
+		return nil
+	})
+	return err
 }

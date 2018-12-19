@@ -108,7 +108,7 @@ func getOpenOrders() {
 		// while making this call, the rpc should not be aware of the db we are using
 		// and stuff. So we need to have another route that would open the existing
 		// db, without asking for one
-		allOrders, err := database.RetrieveAllOrdersWithoutDB()
+		allOrders, err := database.RetrieveAllOrders()
 		if err != nil {
 			errorHandler(w, r, http.StatusNotFound)
 			return
@@ -135,7 +135,7 @@ func getOrder() {
 		// the rpc accepts the key as uint32 though, so string -> uint32
 
 		uKey := utils.StoUint32(keyS)
-		order, err := database.RetrieveOrderRPC(uKey)
+		order, err := database.RetrieveOrder(uKey)
 		if err != nil {
 			errorHandler(w, r, http.StatusNotFound)
 			return
@@ -175,7 +175,7 @@ func parseOrder(r *http.Request) (database.Order, error) {
 	}
 	// if we're inserting this in, we need to get the next index number
 	// so that we can set this without causing some weird bugs
-	allOrders, err := database.RetrieveAllOrdersWithoutDB()
+	allOrders, err := database.RetrieveAllOrders()
 	if err != nil {
 		return prepOrder, fmt.Errorf("Error in assigning index")
 	}
@@ -228,7 +228,7 @@ func insertOrder() {
 		}
 
 		log.Println("Prepared Order:", prepOrder)
-		err = database.InsertOrderRPC(prepOrder)
+		err = database.InsertOrder(prepOrder)
 		if err != nil {
 			errorHandler(w, r, http.StatusNotFound)
 			return
@@ -336,16 +336,16 @@ func insertInvestor() {
 }
 
 func investorPassword() {
-	http.HandleFunc("/investor/password", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/investor/name", func(w http.ResponseWriter, r *http.Request) {
 		checkOrigin(w, r)
 		checkGet(w, r)
 		var prepInvestor database.Investor
 		// need to pass the pwhash param here
-		if r.URL.Query() == nil || r.URL.Query()["LoginPassword"] == nil || len(r.URL.Query()["LoginPassword"][0]) != 128 { // sha 512 length
+		if r.URL.Query() == nil || r.URL.Query()["LoginUserName"] == nil || len(r.URL.Query()["LoginUserName"][0]) != 128 { // sha 512 length
 			errorHandler(w, r, http.StatusNotFound)
 			return
 		}
-		param := r.URL.Query()["LoginPassword"][0]
+		param := r.URL.Query()["LoginUserName"][0]
 		log.Println("The pwhash is: ", param)
 		// this is something like /investor/password?hash
 		// so we need to remove the /investor/password part
@@ -355,7 +355,7 @@ func investorPassword() {
 			return
 		}
 
-		prepInvestor, err = database.SearchForInvestorPassword(r.URL.Query()["LoginPassword"][0])
+		prepInvestor, err = database.SearchForInvestor(r.URL.Query()["LoginUserName"][0])
 		if err != nil {
 			errorHandler(w, r, http.StatusNotFound)
 			return
@@ -501,11 +501,11 @@ func recipientPassword() {
 		checkGet(w, r)
 		var prepRecipient database.Recipient
 		// need to pass the pwhash param here
-		if r.URL.Query() == nil || r.URL.Query()["LoginPassword"] == nil || len(r.URL.Query()["LoginPassword"][0]) != 128 { // sha 512 length
+		if r.URL.Query() == nil || r.URL.Query()["LoginUserName"] == nil || len(r.URL.Query()["LoginUserName"][0]) != 128 { // sha 512 length
 			errorHandler(w, r, http.StatusNotFound)
 			return
 		}
-		param := r.URL.Query()["LoginPassword"][0]
+		param := r.URL.Query()["LoginUserName"][0]
 		log.Println("The pwhash is: ", param)
 		// this is something like /investor/password?hash
 		// so we need to remove the /investor/password part
@@ -515,7 +515,7 @@ func recipientPassword() {
 			return
 		}
 
-		prepRecipient, err = database.SearchForRecipientPassword(r.URL.Query()["LoginPassword"][0])
+		prepRecipient, err = database.SearchForRecipient(r.URL.Query()["LoginUserName"][0])
 		if err != nil {
 			errorHandler(w, r, http.StatusNotFound)
 			return
