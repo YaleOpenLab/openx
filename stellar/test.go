@@ -14,6 +14,7 @@ import (
 	database "github.com/YaleOpenLab/smartPropertyMVP/stellar/database"
 	rpc "github.com/YaleOpenLab/smartPropertyMVP/stellar/rpc"
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
+	stablecoin "github.com/YaleOpenLab/smartPropertyMVP/stellar/stablecoin"
 	xlm "github.com/YaleOpenLab/smartPropertyMVP/stellar/xlm"
 	flags "github.com/jessevdk/go-flags"
 	"golang.org/x/crypto/ssh/terminal"
@@ -227,7 +228,9 @@ func main() {
 		fmt.Println("  1. Display all Open Assets")
 		fmt.Println("  2. Display my Profile")
 		fmt.Println("  3. Invest in an Asset")
-		fmt.Println("  4. Exit")
+		fmt.Println("  4. Display All Balances")
+		fmt.Println("  5. Exchange XLM for USD")
+		fmt.Println("  default: Exit")
 		scanner.Scan()
 		if scanner.Err() != nil {
 			fmt.Println("Couldn't read user input")
@@ -398,6 +401,63 @@ func main() {
 			fmt.Println("https://testnet.steexp.com/account/" + investor.PublicKey + "#balances")
 			break
 		case 4:
+			balances, err := xlm.GetAllBalances(investor.PublicKey)
+			if err != nil {
+				log.Fatal(err)
+			}
+			// need to pr etty print this, experiment out with stuff
+			xlm.PrettyPrintBalances(balances)
+			break
+		case 5:
+			// this should be expanded in the future to make use of the inbuilt DEX
+			// on stellar (checkout stellarterm)
+			log.Println("Enter the amount you want to convert into XLM")
+			// this would also mean that you need to check whether we have the balance
+			// here and then proceed further
+			scanner.Scan()
+			convAmount := scanner.Text()
+			if utils.StringToFloat(convAmount) == 0 {
+				log.Println("Amount entered is not a float, quitting")
+				break
+			}
+			err = stablecoin.InitStableCoin()
+			if err != nil {
+				log.Fatal(err)
+			}
+			log.Println(stablecoin.StableUSD)
+			go stablecoin.ListenForPayments()
+			// pay this stablecoin account to test
+			/*
+			reuse this to write unit tests
+			privkey, pubkey, err := xlm.GetKeyPair()
+			if err != nil {
+				log.Fatal(err)
+			}
+			log.Println("created a new pirvkey, pubkrey pair", privkey, pubkey)
+			// setup this account for testing
+			err = xlm.GetXLM(pubkey)
+			if err != nil {
+				log.Fatal(err)
+			}
+			// first trust the stablecoin issuer
+			*/
+			// maybe don't trust asset again when you've trusted it already? check if that's
+			// possible and save on the tx fee for a single transaction
+			hash, err := assets.TrustAsset(stablecoin.StableUSD, "10000", investor.PublicKey, investor.Seed)
+			if err != nil{
+				log.Fatal(err)
+			}
+			log.Println("tx hash for trusting stableUSD: ", hash)
+			// now send coins across and see if our tracker detects it
+			_, hash, err = xlm.SendXLM(stablecoin.Issuer.PublicKey, convAmount, investor.Seed)
+			if err != nil{
+				log.Fatal(err)
+			}
+
+			log.Println("tx hash for sent xlm: ", hash, "pubkey: ", investor.PublicKey)
+			rpc.StartServer("8080") // run this in order to check whether the go routine is running
+			break
+		default:
 			// check whether he wants to go back to the display all screen again
 			fmt.Println("DO YOU REALLY WANT TO EXIT? (PRESS Y TO CONFIRM)")
 			scanner.Scan()

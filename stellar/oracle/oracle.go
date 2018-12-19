@@ -31,3 +31,10 @@ func PriceOracleInFloat() float64 {
 	averageConsumption := float64(600)
 	return priceOfElectricity * averageConsumption
 }
+
+func ExchangeXLMforUSD (amount string) float64 {
+	// defines the rate for 1 usd = x XLM. Currently hardcoded to 10
+	amountF := utils.StringToFloat(amount)
+	exchangeRate := 0.1 // hardcode for now, can query cmc apis later
+	return amountF * exchangeRate
+}

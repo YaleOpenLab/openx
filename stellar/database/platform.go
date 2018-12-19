@@ -14,7 +14,7 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
-// TODO: this strucutre assumes  one platform for all assets, do we have a
+// TODO: this strucutre assumes one platform for all assets, do we have a
 // master st ruct which houses all these platforms for additional seed security?
 // in this case, we could give the seed to a lawyer who can enforce the platform's
 // behaviour in case of any dispute.
@@ -25,8 +25,8 @@ type Platform struct {
 	// ideally there should only be one platform
 	PublicKey string
 	// the publickey of the platform
-	// the seed isn't stored in the database for bovious reasons, so the only way
-	// to access the seed would be through helper functions
+	// the seed isn't stored in the database, so the only way
+	// to access the seed would be through GetSeedFromEncryptedSeed
 	DateInitiated string
 	// date when the platform was created
 	DateRestored string
@@ -34,11 +34,13 @@ type Platform struct {
 	// did happen
 	// We could have a multisig like scheme for hte platform between various
 	// stakeholders to restore confidence that the platform is doing the right thing
+	// as well, need to implement it the right way
 }
 
 func EncryptAndStoreSeed(seed string, password string) {
-	// this encrypts and stores the seed in a file. need to either remember the seed
-	// or have the file at hand.
+	// handler to store the seed over at seed.hex
+	// person either needs to store this file and remember the password or has to
+	// remember the seed in order to access the platform again
 	aes.EncryptFile("seed.hex", []byte(seed), password)
 	if seed != string(aes.DecryptFile("seed.hex", password)) {
 		// somethign wrong wiht encryption, exit
@@ -48,17 +50,14 @@ func EncryptAndStoreSeed(seed string, password string) {
 }
 
 func NewPlatform() (Platform, error) {
+	// this function is used to generate a new keypair which will be assigned to
+	// the platform
 	var nPlatform Platform
 	var nPlatformSeed string // init eparately since we don't store this
 	var err error
 	nPlatform.Index = uint32(1) // only one platform, so this is fine
 	nPlatformSeed, nPlatform.PublicKey, err = xlm.GetKeyPair()
 	log.Printf("\nTHE PLATFORM SEED IS: %s\nAND YOUR PUBLIC KEY IS: %s\nKEEP IT SUPER SAFE OR YOU MIGHT NOT HAVE ACCESS TO THESE FUNDS AGAIN \n", nPlatformSeed, nPlatform.PublicKey)
-	// don't store raw seed in the db, store sha strings
-	nPlatform.PublicKey = nPlatform.PublicKey
-	if err != nil {
-		return nPlatform, err
-	}
 	nPlatform.DateInitiated = utils.Timestamp()
 	fmt.Println("Enter a password to encrypt your platform's master seed. Please store this in a very safe place. This prompt will not ask to confirm your password")
 	bytePassword, err := terminal.ReadPassword(int(syscall.Stdin))
@@ -70,32 +69,28 @@ func NewPlatform() (Platform, error) {
 }
 
 func GetSeedFromEncryptedSeed(encrypted string, password string) (string) {
-	// this is the helper function that will be used to get the seed from the file
-	// for use in various parts
-	// encrypted is a path to a file, not the ciphertext itself
+	// this function must be used for any handling within the code written here
 	return string(aes.DecryptFile(encrypted, password))
 }
 
 func RestorePlatformFromSeed(seed string) (Platform, error) {
-	// this restores the platform from the seed, we will have another function
-	// to deal with restoring from the file
-	// this is in cases where some person has forgotten the puiblickey of the platform
+	// this function should be used when the platform admin remembers the seed but
+	// does not possess the  encrypted file. The seed is what's needed to access
+	// the account, so we don't restrict access
 	var rPlatform Platform
-	var rPlatformSeed string
 	keyp, err := keypair.Parse(seed)
 	if err != nil {
 		return rPlatform, err
 	} else {
-		rPlatformSeed = seed
 		rPlatform.PublicKey = keyp.Address()
-		rPlatform.DateInitiated = utils.Timestamp()
+		rPlatform.DateRestored = utils.Timestamp()
 	}
 	fmt.Println("Enter a password to encrypt your platform's master seed. Please store this in a very safe place. This prompt will not ask to confirm your password")
 	bytePassword, err := terminal.ReadPassword(int(syscall.Stdin))
 	password := string(bytePassword)
 	fmt.Println()
+	EncryptAndStoreSeed(seed, password)
 	log.Printf("restored platform public key %s from seed", rPlatform.PublicKey)
-	EncryptAndStoreSeed(rPlatformSeed, password)
 	return rPlatform, err
 }
 
@@ -104,6 +99,7 @@ func RestorePlatformFromFile(path string, password string) (Platform, error){
 }
 
 func InsertPlatform(a Platform) error {
+	// inserts the PublicKey into the database to keep track of the PublicKey
 	db, err := OpenDB()
 	if err != nil {
 		return err
@@ -122,6 +118,7 @@ func InsertPlatform(a Platform) error {
 }
 
 func RetrievePlatform() (Platform, error) {
+	// retrieves the platforms (more like the publickey)
 	var rPlatform Platform
 	db, err := OpenDB()
 	if err != nil {
