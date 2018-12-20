@@ -46,6 +46,34 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// uname string, pwhash string, Name string, Address string, Description string
+	tContractor, err := database.NewContractor("uname", "pwhash", "Name", "Address", "Description")
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = database.InsertContractor(tContractor)
+	if err != nil {
+		log.Fatal(err)
+	}
+	/*
+	allContractors, err := database.RetrieveAllContractors()
+	if err != nil {
+		log.Fatal(err)
+	}
+	rContractor, err := database.RetrieveContractor(uint32(1))
+	if err != nil {
+		log.Fatal(err)
+	}
+	*/
+	sContractor, err := database.SearchForContractor("uname")
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("ALL CONTRACTORS: ", sContractor)
+	log.Fatal("")
+	// TODO: how much do we pay the investor? how does it work
+	// Do we sell the REC created from the solar panels only to the investor? If so,
+	// isn't that enough to propel investment in the solar contract itself?
 	// TODO: need a server to run a public stellar node to test out stuff
 	// things to consider:
 	// while an investor signs up on our platform, do we send them 10 XLM free?

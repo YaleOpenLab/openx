@@ -109,6 +109,10 @@ type Contractor struct {
 	Address string
 	// the registered address of the above company
 	Description string
+	// Does the contractor need to have a seed and a publickey?
+	// we assume that it does in this case and proceed.
+	Seed string
+	PublicKey string
 	// information on company credentials, their experience
 	Image string
 	// image can be company logo, founder selfie
@@ -156,6 +160,7 @@ type Contractor struct {
 	// What kind of proof do we want from the company? KYC?
 	// maybe we could have a photo op like exchanges do these days, with the owner
 	// holding up his drivers' license or similar
+	FirstSignedUp string
 }
 
 // how does a contract evolve into an order? or do we make contracts orders?
@@ -198,4 +203,10 @@ type Contract struct {
 	// a contract belongs to a Contractor, so there is no need for a reverse mapping
 	// from the Contract to the Contractor
 	// TODO: What stuff goes in here?
+	// since there is no state trie or similar in stellar, we need to hash the contract
+	// parameters and then reference it. This will be immutable and can't be changed
+	// this could also be a role taken up by the legal oracle. Also need to ask
+	// neighbourly and swytch regarding this. Maybe we need a bridge from stellar to
+	// ethereum to interface with the ERC721 or maybe we coul have an oracle that
+	// does this for us.
 }

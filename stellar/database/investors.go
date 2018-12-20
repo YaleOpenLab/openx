@@ -48,7 +48,8 @@ func NewInvestor(uname string, pwhash string, Name string, pkgen bool) (Investor
 
 func CheckPassword(pwHash string) (bool, error) {
 	// frontend should serve sha3(password) to us, we compare that and what's stored
-	// in the database to s ee if they match
+	// in the database to see if they match
+	// TODO: this is currently done by the UI, should move it in here
 	return true, nil
 }
 
