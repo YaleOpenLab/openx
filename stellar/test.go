@@ -46,9 +46,14 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// 1. Add support for multiple participants in the system - right now, the PoC
-	// assumes a single investor and it is essential to have multiple investors for
-	// a good demo
+	// TODO: need a server to run a public stellar node to test out stuff
+	// things to consider:
+	// while an investor signs up on our platform, do we send them 10 XLM free?
+	// do we charge investors to be on our platform? if not, we shouldn't ideally
+	// be sending them free XLM. also, should the platform have some function for
+	// withdrawing XLM? if so, we'll become an exchange of sorts and have some
+	// legal stuff there. If not, we'll just be a custodian and would not have
+	// too much to consider on our side
 	// need to spin up a local stellar node and test if things run fine if we just
 	// change the API mapping
 	// need to create different entities and create db mappings for them.

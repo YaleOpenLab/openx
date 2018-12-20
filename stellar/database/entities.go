@@ -2,6 +2,12 @@ package database
 
 // Order is what is advertised on the frontend where investors can choose what
 // projects to invest in.
+// the idea of an Order should be constructed by ourselves based on some preset
+// parameters. It should hold a contractor, developers, guarantor, originator
+// along with the fields already defined. The other fields should be displayed
+// on the frontend.
+// Another interesting and needed TODO is separating the privkey / pubkey logic
+// a bit more and makign it more wallet like
 type Order struct {
 	Index         uint32  // an Index to keep quick track of how many orders exist
 	PanelSize     string  // size of the given panel, for diplsaying to the user who wants to bid stuff
@@ -89,4 +95,107 @@ type Investor struct {
 	// to open your account on the website. This is becasue even if you lose the
 	// login password, you needn't worry too much about losing your funds, sicne you have
 	// your seed and can send them to another address immediately.
+}
+
+// the contractor super struct comprises of various entities within it. Its a
+// super class because combining them results in less duplication of code
+// TODO: in some ways, the Name, LoginUserName and LoginPassword fields can be
+// devolved into a separate User struct, that would result in less duplication as
+// well
+type Contractor struct {
+	Index uint32
+	Name string
+	// the name of the contractor / company that is contracting
+	Address string
+	// the registered address of the above company
+	Description string
+	// information on company credentials, their experience
+	Image string
+	// image can be company logo, founder selfie
+	LoginUserName string
+	LoginPassword string
+	// hash of the password in reality
+	IsContractor bool
+	// A contractor is party who proposes a specific some of money towards a
+	// particular project. This is the actual amount that the investors invest in.
+	// This ideally must include the developer fee within it, so that investors
+	// don't have to invest in two things. It would also make sense because the contractors
+	// sometimes would hire developers themselves.
+	IsGuarantor bool
+	// A guarantor is somebody who can assure investors that the school will get paid
+	// on time. This authority should be trusted and either should be vetted by the law
+	// or have a multisig paying out to the investors beyond a certain timeline if they
+	// don't get paid by the school. This way, the guarantor can be anonymous, like the
+	// nice Pineapple Fund guy. THis can also be an insurance company, who is willing to
+	// guarantee for specific school and the school can pay him out of chain / have
+	// that as fee within the contract the originator
+	IsDeveloper bool
+	// A developer is someone who installs the required equipment (Raspberry Pi,
+	// network adapters, anti tamper installations and similar) In the initial
+	// orders, this will be us, since we'd be installign the pi ourselves, but in
+	// the future, we expect third party developers / companies to do this for us
+	// and act in a decentralized fashion. This money can either be paid out of chain
+	// in fiat or can be a portion of the funds the investors chooses to invest in.
+	// a contractor may also employ developers by himself, so this entity is not
+	// strictly necessary.
+	IsOriginator bool
+	// An Originator is an entity that will start a project and get a fixed fee for
+	// rendering its service. An Originator's role is not restricted, the originator
+	// can also be the developer, contractor or guarantor. The originator should take
+	// the responsibility of auditing the requirements of the project - panel size,
+	// location, number of panels needed, etc. He then should ideally be able to fill
+	// out some kind of form on the website so that the originator's proposal is live
+	// and shown to potential investors. The originators get paid only when the order
+	// is live, else they can just spam, without any actual investment
+	PastContracts []Contract
+	// list of all the contracts that the contractor has won in the past
+	PresentContracts []Contract
+	// list of all contracts that the contractor is presently undertaking1
+	PastFeedback []Feedback
+	// feedback received on the contractor from parites involved in the past
+	// What kind of proof do we want from the company? KYC?
+	// maybe we could have a photo op like exchanges do these days, with the owner
+	// holding up his drivers' license or similar
+}
+
+// how does a contract evolve into an order? or do we make contracts orders?
+// but we want people to be able to bid on contracts, so is it better having both
+// as a single entity? ask during call and confirm so that we can do stuff. Maybe
+// the "Order" struct that we use now can be a child struct of the Contract struct
+
+type Feedback struct {
+	Content string
+	// the content of the feedback, good / bad
+	// maybe we could have a  rating system baked in? a star based rating system?
+	// would be nice, idk
+	From Contractor
+	// who gave the feedback?
+	To Contractor
+	// regarding whom is this feedback about
+	Date string
+	// time at which this feedback was written
+	RelatedContract []Contract
+	// the contract regarding which this feedback is directed at
+}
+
+// ### TO- DO ###  TENDER PROCESS & REQUEST FOR PROPOSALS ###
+// Once an Originator initiates a propoed solar System and Deployment, it needs to be put out for a RFP (Request for Proposal) from contractors/solar developers.
+// The call for RFP should receive an engineering proposal (i.e. not an engineering blueprint level but a general system architecture level), a quote for materials and labor, a deployment plan.
+// Note: The tender, review and selection process needs to be flexible to cater for different project modalities (eg. a Public tender vs. a private project)
+
+// ## TODO ## PROCESS OF PRE-VERIFICATION BEFORE IT GETS CONFIRMED //
+// Consider payment before setting the system live.
+
+// CONFIRMATION
+// agreement between contractor, participant, and investor
+// Adds the actual numbers and variables, details to the struct proposed Deployments
+
+// the proposal part desribed above is a collection of Contracts from different persons.
+// we aren't defining the Contract part for each entity because that would casue repetition.
+// Instead, a single Contract struct can be used as an engineering proposal, as a quote,
+// etc.
+type Contract struct {
+	// a contract belongs to a Contractor, so there is no need for a reverse mapping
+	// from the Contract to the Contractor
+	// TODO: What stuff goes in here?
 }
