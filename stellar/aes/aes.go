@@ -6,6 +6,7 @@ import (
 	"crypto/rand"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
@@ -16,11 +17,13 @@ func Encrypt(data []byte, passphrase string) []byte {
 	block, _ := aes.NewCipher(key)
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
-		panic(err.Error())
+		log.Println("Failed to initialize a new AES GCM while encrypting")
+		log.Fatal(err.Error())
 	}
 	nonce := make([]byte, gcm.NonceSize())
 	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
-		panic(err.Error())
+		log.Println("Error while reading gcm bytes")
+		log.Fatal(err.Error())
 	}
 	ciphertext := gcm.Seal(nonce, nonce, data, nil)
 	return ciphertext
@@ -30,17 +33,20 @@ func Decrypt(data []byte, passphrase string) []byte {
 	key := []byte(utils.SHA3hash(passphrase)[96:128]) // last 32 characters in hash
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		panic(err.Error())
+		log.Println("Error while initializing cipher decryption")
+		log.Fatal(err.Error())
 	}
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
-		panic(err.Error())
+		log.Println("Failed to initialize a new AES GCM while decrypting")
+		log.Fatal(err.Error())
 	}
 	nonceSize := gcm.NonceSize()
 	nonce, ciphertext := data[:nonceSize], data[nonceSize:]
 	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
-		panic(err.Error())
+		log.Println("Failed to open gcm while decrypting")
+		log.Fatal(err.Error())
 	}
 	return plaintext
 }

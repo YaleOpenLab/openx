@@ -2,6 +2,7 @@ package rpc
 
 // the rpc package contains functions related to the server which will be interacting
 // with the frontend. Not expanding on this too much since this will be changing quite often
+// TODO: update RPC package in line with recent changes on master
 import (
 	"fmt"
 	"log"

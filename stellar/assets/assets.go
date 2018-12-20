@@ -199,14 +199,15 @@ func InvestInOrder(issuer *database.Platform, issuerSeed string, investor *datab
 		DEBasset := CreateAsset(DEBAssetCode, issuer.PublicKey)
 		PBasset := CreateAsset(PBAssetCode, issuer.PublicKey)
 		// and the school needs to trust me only for paybackTokens amount of PB tokens
-		pbAmt := utils.IntToString(uOrder.Years * 12)
-		txHash, err = TrustAsset(PBasset, pbAmt, recipient.PublicKey, recipient.Seed)
+		pbAmtTrust := utils.IntToString(uOrder.Years * 24)
+		txHash, err = TrustAsset(PBasset, pbAmtTrust, recipient.PublicKey, recipient.Seed)
 		if err != nil {
 			return uOrder, err
 		}
 		log.Println("Recipient Trusted Payback asset: ", PBasset.Code, " tx hash: ", txHash)
 
-		txHash, err = TrustAsset(DEBasset, strconv.Itoa(uOrder.TotalValue), recipient.PublicKey, recipient.Seed) // since debt = invested amount
+		txHash, err = TrustAsset(DEBasset, strconv.Itoa(uOrder.TotalValue * 2), recipient.PublicKey, recipient.Seed) // since debt = invested amount
+		// *2 is for sending the amount back
 		if err != nil {
 			return uOrder, err
 		}
@@ -224,6 +225,12 @@ func InvestInOrder(issuer *database.Platform, issuerSeed string, investor *datab
 		recipient.ReceivedOrders = append(recipient.ReceivedOrders, uOrder)
 		uOrder.OrderRecipient = *recipient // need to udpate uOrder each time recipient is mutated
 		// only here does the recipient part change, so update it only here
+		// TODO: keep note of who all invested in this asset (even though it should be
+		// easy to get that from the blockchain)
+		log.Println("UORDER BEFORE DB: ", uOrder.DEBAssetCode)
+		if uOrder.DEBAssetCode == "" {
+			log.Fatal("DOnt work")
+		}
 		err = database.DeleteRecipient(recipient.Index)
 		if err != nil {
 			return uOrder, err
@@ -232,7 +239,18 @@ func InvestInOrder(issuer *database.Platform, issuerSeed string, investor *datab
 		if err != nil {
 			return uOrder, err
 		}
+		err = database.DeleteOrder(uOrder.Index)
+		if err != nil {
+			log.Println("Couldn't delete order")
+			return uOrder, err
+		}
+		err = database.InsertOrder(uOrder)
+		if err != nil {
+			log.Println("Couldn't insert order")
+			return uOrder, err
+		}
 		fmt.Println("Updated recipient bucket")
+		return uOrder, nil
 	}
 	// update the order finally now that we have updated other databases
 	err = database.InsertOrder(uOrder)

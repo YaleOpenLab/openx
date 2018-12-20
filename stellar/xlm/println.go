@@ -1,5 +1,7 @@
 package xlm
 
+// println.go pretty prints the balances retrieved by calling the stellar testnet
+// API
 import (
 	"fmt"
 

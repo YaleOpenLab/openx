@@ -18,16 +18,16 @@ func PrettyPrintOrders(orders []Order) {
 		fmt.Println("          Money Raised: ", order.MoneyRaised)
 		fmt.Println("          Metadata: ", order.Metadata)
 		fmt.Println("          Years: ", order.Years)
-		if order.Live {
-			fmt.Println("          Investor Asset Code: ", order.INVAssetCode)
-			fmt.Println("          Debt Asset Code: ", order.DEBAssetCode)
-			fmt.Println("          Payback Asset Code: ", order.PBAssetCode)
-			fmt.Println("          Balance Left: ", order.BalLeft)
-		}
+		// if order.Live {
+		fmt.Println("          Investor Asset Code: ", order.INVAssetCode)
+		fmt.Println("          Debt Asset Code: ", order.DEBAssetCode)
+		fmt.Println("          Payback Asset Code: ", order.PBAssetCode)
+		fmt.Println("          Balance Left: ", order.BalLeft)
+		// }
 		fmt.Println("          Date Initiated: ", order.DateInitiated)
-		if order.Live {
-			fmt.Println("          Date Last Paid: ", order.DateLastPaid)
-		}
+		// if order.Live {
+		fmt.Println("          Date Last Paid: ", order.DateLastPaid)
+		// }
 		fmt.Println("          Recipient: ", order.OrderRecipient)
 		fmt.Println("          Investors: ", order.OrderInvestors)
 	}
@@ -42,16 +42,16 @@ func PrettyPrintOrder(order Order) {
 	fmt.Println("          Money Raised: ", order.MoneyRaised)
 	fmt.Println("          Metadata: ", order.Metadata)
 	fmt.Println("          Years: ", order.Years)
-	if order.Live {
-		fmt.Println("          Investor Asset Code: ", order.INVAssetCode)
-		fmt.Println("          Debt Asset Code: ", order.DEBAssetCode)
-		fmt.Println("          Payback Asset Code: ", order.PBAssetCode)
-		fmt.Println("          Balance Left: ", order.BalLeft)
-	}
+	// if order.Live {
+	fmt.Println("          Investor Asset Code: ", order.INVAssetCode)
+	fmt.Println("          Debt Asset Code: ", order.DEBAssetCode)
+	fmt.Println("          Payback Asset Code: ", order.PBAssetCode)
+	fmt.Println("          Balance Left: ", order.BalLeft)
+	// }
 	fmt.Println("          Date Initiated: ", order.DateInitiated)
-	if order.Live {
-		fmt.Println("          Date Last Paid: ", order.DateLastPaid)
-	}
+	// if order.Live {
+	fmt.Println("          Date Last Paid: ", order.DateLastPaid)
+	// }
 	fmt.Println("          Recipient: ", order.OrderRecipient)
 	fmt.Println("          Investors: ", order.OrderInvestors)
 }
@@ -185,4 +185,49 @@ func PrettyPrintRecipient(recipient Recipient) {
 	fmt.Println("          Your Received Assets are: ", recipient.ReceivedOrders)
 	fmt.Println("          Your Username is: ", recipient.LoginUserName)
 	fmt.Println("          Your Password hash is: ", recipient.LoginPassword)
+}
+
+// PrettyPrintOrder pretty prints orders
+func PrettyPrintPBOrders(orders []Order) {
+	for _, order := range orders {
+		if !order.PaidOff {
+			fmt.Println("    ORDER NUMBER: ", order.Index)
+			fmt.Println("          Panel Size: ", order.PanelSize)
+			fmt.Println("          Total Value: ", order.TotalValue)
+			fmt.Println("          Location: ", order.Location)
+			fmt.Println("          Money Raised: ", order.MoneyRaised)
+			fmt.Println("          Metadata: ", order.Metadata)
+			fmt.Println("          Years: ", order.Years)
+			fmt.Println("          Investor Asset Code: ", order.INVAssetCode)
+			fmt.Println("          Debt Asset Code: ", order.DEBAssetCode)
+			fmt.Println("          Payback Asset Code: ", order.PBAssetCode)
+			fmt.Println("          Balance Left: ", order.BalLeft)
+			fmt.Println("          Date Initiated: ", order.DateInitiated)
+			fmt.Println("          Date Last Paid: ", order.DateLastPaid)
+			fmt.Println("          Investors: ", order.OrderInvestors)
+		}
+	}
+}
+
+// PrettyPrintOrder pretty prints orders
+func PrettyPrintPBOrder(order Order) {
+	fmt.Println("    ORDER NUMBER: ", order.Index)
+	fmt.Println("          Panel Size: ", order.PanelSize)
+	fmt.Println("          Total Value: ", order.TotalValue)
+	fmt.Println("          Location: ", order.Location)
+	fmt.Println("          Money Raised: ", order.MoneyRaised)
+	fmt.Println("          Metadata: ", order.Metadata)
+	fmt.Println("          Years: ", order.Years)
+	fmt.Println("          Investor Asset Code: ", order.INVAssetCode)
+	fmt.Println("          Debt Asset Code: ", order.DEBAssetCode)
+	fmt.Println("          Payback Asset Code: ", order.PBAssetCode)
+	fmt.Println("          Balance Left: ", order.BalLeft)
+	fmt.Println("          Date Initiated: ", order.DateInitiated)
+	fmt.Println("          Date Last Paid: ", order.DateLastPaid)
+}
+
+func PrintDEB(orders []Order) {
+	for _, order := range orders {
+		fmt.Println("          Debt Asset Code: ", order.DEBAssetCode)
+	}
 }
