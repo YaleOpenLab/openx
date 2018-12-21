@@ -6,10 +6,11 @@
 // 1. INVToken - An INVToken is issued by the issuer for every USD that the investor
 // has invested in the contract. This peg needs to be ensured maybe in protocol
 // with stablecoins on Stellar or we need to provide an easy onboarding scheme
-// for users into the crypto worls using other means. The inevestor receives
+// for users into the crypto world using other means. The investor receives
 // INVTokens as proof of investment but profit return mechanism is not taken into
 // account here, since htat needs clear definition on how much investors get each
-// period for inevesting in the project. TODO: INVTokens should be set with an
+// period for investing in the project.
+// TODO: INVTokens should be set with an
 // immutable flag so that the isuser can't renege on issuing this assets at any
 // future time
 // 2. DEBToken - for each INVToken (and indirectly, USD invested in the project),
@@ -35,7 +36,7 @@
 // on chain and the investor has to trust the issuer with that. Also, in this case,
 // anonymous investors wouldn't be able to invest, which is something that would be
 // nice to have
-// TODO: Add flags to assets, onboarding, multiple investors and more
+// TODO: Add flags to assets, onboarding
 package assets
 
 import (
@@ -49,11 +50,15 @@ import (
 	"github.com/stellar/go/build"
 )
 
+// CreateAsset creates a new asset belonging to the public key referenced above
 func CreateAsset(assetName string, PublicKey string) build.Asset {
 	// need to set a couple flags here
 	return build.CreditAsset(assetName, PublicKey)
 }
 
+// TrustAsset trusts a specific asset issued by a particular public key and signs
+// a transaction with a preset limit on how much it is willing to trsut that issuer's
+// asset for
 func TrustAsset(asset build.Asset, limit string, PublicKey string, Seed string) (string, error) {
 	// TRUST is FROM recipient TO issuer
 	trustTx, err := build.Transaction(
@@ -126,13 +131,11 @@ func SendAssetFromIssuer(assetName string, destination string, amount string, Se
 	return tx.Ledger, tx.Hash, nil
 }
 
-// the above function is for when a single investor decides to take up the entire
-// order, we need a new function that would involve multiple investors who can
-// invest partially in an order. This would mean that we split the above function
-// into three components: Send INVTokens to investor, update the money field for
-// the order and then if the order is full, send the required amount of PBTokens
-// to the recipient
-
+ // InvestInOrder invests in a particular oder issued by _issuer_ wtih seed _issuerSeed_
+ // the _investor_ decides to invest _investmentAmountS_ amount of USD Tokens in
+ // a particular _uOrder_. If the invested amount makes the money raised equal to
+ // the total value of the _uOrder_, we issue the PBTokens and DEBTokens to the
+ // _recipient_
 func InvestInOrder(issuer *database.Platform, issuerSeed string, investor *database.Investor, recipient *database.Recipient, investmentAmountS string, uOrder database.Order) (database.Order, error) {
 	var partOrder database.Order
 	var err error

@@ -12,7 +12,28 @@
 Observations:
  - Might be difficult to get banks as anchors since there seem to be only 4 popular ones around
 
+## Discussion in Call 2:
+1. Figure out how to incorporate investor USD into a stablecoin on Stellar
+2. Discuss with Neighborly regarding their platform's integration into the whole data flow
+  - Neighbourly could read the pi data either from the commitment made by Swytch's ERC 721 token on chain or they could read the data from Atonomi's MQTT data stream di rectly
+3. Discuss integrating swytch into our process workflow
+  - Test out swytch's staging platform, checkout their API endpoints
+  - we can either listen to the mqtt service directly or read the ERC 721 details on chain
+
 ## TODOs copied from the Ethereum Smart Contract
+
+### TODO TENDER PROCESS & REQUEST FOR PROPOSALS ###
+Once an Originator initiates a proposed solar System and Deployment, it needs to be put out for a RFP (Request for Proposal) from contractors/solar developers.
+The call for RFP should receive an engineering proposal (i.e. not an engineering blueprint level but a general system architecture level), a quote for materials and labor, a deployment plan.
+
+Note: The tender, review and selection process needs to be flexible to cater for different project modalities (eg. a Public tender vs. a private project)
+
+### TODO PROCESS OF PRE-VERIFICATION BEFORE IT GETS CONFIRMED
+Consider payment before setting the system live.
+
+CONFIRMATION
+agreement between contractor, participant, and investor
+Adds the actual numbers and variables, details to the struct proposed Deployments
 
 ### TODO SOLAR ENGINEERING DOCUMENTS
 The developers must present the blueprints of the proposed work before working on it. These must be stored in IPFS and hashed to the contract.

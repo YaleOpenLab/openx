@@ -1,5 +1,7 @@
 package oracle
-
+//  oracle defines oracle related functions
+// right now, most are jsut placehlders, but in the future, they should call
+// remote APIs and act as oracles
 import (
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
 )

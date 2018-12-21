@@ -1,5 +1,7 @@
 package database
 
+// entities defines a list of all the entities involved in the system like
+// investor, recipient, order, etc
 // Order is what is advertised on the frontend where investors can choose what
 // projects to invest in.
 // the idea of an Order should be constructed by ourselves based on some preset
@@ -182,18 +184,6 @@ type Feedback struct {
 	RelatedContract []Contract
 	// the contract regarding which this feedback is directed at
 }
-
-// ### TO- DO ###  TENDER PROCESS & REQUEST FOR PROPOSALS ###
-// Once an Originator initiates a propoed solar System and Deployment, it needs to be put out for a RFP (Request for Proposal) from contractors/solar developers.
-// The call for RFP should receive an engineering proposal (i.e. not an engineering blueprint level but a general system architecture level), a quote for materials and labor, a deployment plan.
-// Note: The tender, review and selection process needs to be flexible to cater for different project modalities (eg. a Public tender vs. a private project)
-
-// ## TODO ## PROCESS OF PRE-VERIFICATION BEFORE IT GETS CONFIRMED //
-// Consider payment before setting the system live.
-
-// CONFIRMATION
-// agreement between contractor, participant, and investor
-// Adds the actual numbers and variables, details to the struct proposed Deployments
 
 // the proposal part desribed above is a collection of Contracts from different persons.
 // we aren't defining the Contract part for each entity because that would casue repetition.

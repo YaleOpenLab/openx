@@ -11,6 +11,12 @@ import (
 	"github.com/boltdb/bolt"
 )
 
+// NewInvestor creates a new investor object when passed the username, password hash,
+// name and an option to generate the seed and publicKey. This is done because if
+// we decide to allow anonymous investors to invest on our platform, we can easily
+// insert their pbulickey into the system and hten have hanlders for them signing
+// transactions
+// TODO: add anonymous investor signing handlers
 func NewInvestor(uname string, pwhash string, Name string, pkgen bool) (Investor, error) {
 	// call this after the user has failled in username and password. Store hashed password
 	// in the database
@@ -46,13 +52,7 @@ func NewInvestor(uname string, pwhash string, Name string, pkgen bool) (Investor
 	return a, nil
 }
 
-func CheckPassword(pwHash string) (bool, error) {
-	// frontend should serve sha3(password) to us, we compare that and what's stored
-	// in the database to see if they match
-	// TODO: this is currently done by the UI, should move it in here
-	return true, nil
-}
-
+// InsertInvestor inserts a passed Investor object into the database
 func InsertInvestor(a Investor) error {
 	db, err := OpenDB()
 	if err != nil {
@@ -79,6 +79,7 @@ func InsertInvestor(a Investor) error {
 	return err
 }
 
+// RetrieveAllInvestors gets a list of all investor in the database
 func RetrieveAllInvestors() ([]Investor, error) {
 	var arr []Investor
 	db, err := OpenDB()
@@ -113,6 +114,7 @@ func RetrieveAllInvestors() ([]Investor, error) {
 	return arr, err
 }
 
+// RetrieveInvestor retrieves a particular investor indexed by key from the database
 func RetrieveInvestor(key uint32) (Investor, error) {
 	var inv Investor
 	db, err := OpenDB()
@@ -131,6 +133,8 @@ func RetrieveInvestor(key uint32) (Investor, error) {
 	return inv, nil
 }
 
+// SearchForInvestor searches for an investor when passed the investor's name.
+// This is useful for checking the user's password while logging in
 func SearchForInvestor(name string) (Investor, error) {
 	var inv Investor
 	db, err := OpenDB()
@@ -160,3 +164,8 @@ func SearchForInvestor(name string) (Investor, error) {
 	})
 	return inv, err
 }
+
+// TODO: migrate the password checking logic here and we can simply have
+// something like ValidateUser()
+// Also, have a new user class implemented which can be borrowed by all
+// subsequent classes

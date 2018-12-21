@@ -6,6 +6,7 @@ import (
 	"github.com/boltdb/bolt"
 )
 
+// defines the name of the buckets that we interact with.
 var OrdersBucket = []byte("Orders")
 var InvestorBucket = []byte("Investors")
 var RecipientBucket = []byte("Recipients")
