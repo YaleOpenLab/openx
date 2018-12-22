@@ -1,5 +1,7 @@
 package database
 
+// entities defines a list of all the entities involved in the system like
+// investor, recipient, order, etc
 // Order is what is advertised on the frontend where investors can choose what
 // projects to invest in.
 // the idea of an Order should be constructed by ourselves based on some preset
@@ -109,6 +111,10 @@ type Contractor struct {
 	Address string
 	// the registered address of the above company
 	Description string
+	// Does the contractor need to have a seed and a publickey?
+	// we assume that it does in this case and proceed.
+	Seed string
+	PublicKey string
 	// information on company credentials, their experience
 	Image string
 	// image can be company logo, founder selfie
@@ -156,6 +162,7 @@ type Contractor struct {
 	// What kind of proof do we want from the company? KYC?
 	// maybe we could have a photo op like exchanges do these days, with the owner
 	// holding up his drivers' license or similar
+	FirstSignedUp string
 }
 
 // how does a contract evolve into an order? or do we make contracts orders?
@@ -178,18 +185,6 @@ type Feedback struct {
 	// the contract regarding which this feedback is directed at
 }
 
-// ### TO- DO ###  TENDER PROCESS & REQUEST FOR PROPOSALS ###
-// Once an Originator initiates a propoed solar System and Deployment, it needs to be put out for a RFP (Request for Proposal) from contractors/solar developers.
-// The call for RFP should receive an engineering proposal (i.e. not an engineering blueprint level but a general system architecture level), a quote for materials and labor, a deployment plan.
-// Note: The tender, review and selection process needs to be flexible to cater for different project modalities (eg. a Public tender vs. a private project)
-
-// ## TODO ## PROCESS OF PRE-VERIFICATION BEFORE IT GETS CONFIRMED //
-// Consider payment before setting the system live.
-
-// CONFIRMATION
-// agreement between contractor, participant, and investor
-// Adds the actual numbers and variables, details to the struct proposed Deployments
-
 // the proposal part desribed above is a collection of Contracts from different persons.
 // we aren't defining the Contract part for each entity because that would casue repetition.
 // Instead, a single Contract struct can be used as an engineering proposal, as a quote,
@@ -198,4 +193,10 @@ type Contract struct {
 	// a contract belongs to a Contractor, so there is no need for a reverse mapping
 	// from the Contract to the Contractor
 	// TODO: What stuff goes in here?
+	// since there is no state trie or similar in stellar, we need to hash the contract
+	// parameters and then reference it. This will be immutable and can't be changed
+	// this could also be a role taken up by the legal oracle. Also need to ask
+	// neighbourly and swytch regarding this. Maybe we need a bridge from stellar to
+	// ethereum to interface with the ERC721 or maybe we coul have an oracle that
+	// does this for us.
 }

@@ -1,5 +1,14 @@
 package stablecoin
+// the idea of this stablecoin package is to issue a stablecoin on stellar testnet
+// so that we can test the function of something similar on mainnet. The stablecoin
+// provider should be stored in a different database becuase we will not be migrating
+// this.
 
+// The idea is to issue a single USD token for every USD t hat we receive on our
+// account, this should be automated and we must not have any kind of user interaction that is in
+// place here. We also need a stablecoin Code, which we shall call as "STABLEUSD"
+// for easy reference. Most functions would be similar to the one in assets.go,
+// but need to be tailored to suit our requirements
 import (
 	"context"
 	"encoding/json"
@@ -14,17 +23,6 @@ import (
 	"github.com/stellar/go/build"
 	"github.com/stellar/go/clients/horizon"
 )
-
-// the idea of this stablecoin package is to issue a stablecoin on stellar testnet
-// so that we can test the function of something similar on mainnet. The stablecoin
-// provider should be stored in a different database becuase we will not be migrating
-// this.
-
-// The idea is to issue a single USD token for every USD t hat we receive on our
-// account, this should be automated and we must not have any kind of user interaction that is in
-//  place here. We also need a stablecoin Code, which we shall call as "STABLEUSD"
-// for easy reference. Most functions would be similar to the one in assets.go,
-// but need to be tailored to suit our requirements
 
 // StableIssuer defines the structure for storing the publickey of the platform
 // in the database

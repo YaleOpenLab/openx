@@ -1,5 +1,6 @@
 package database
-
+// recipient.go defines all recipient related functions that are not defined on
+// the struct itself.
 import (
 	"encoding/json"
 	"fmt"

@@ -46,6 +46,9 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// TODO: how much do we pay the investor? how does it work
+	// Do we sell the REC created from the solar panels only to the investor? If so,
+	// isn't that enough to propel investment in the solar contract itself?
 	// TODO: need a server to run a public stellar node to test out stuff
 	// things to consider:
 	// while an investor signs up on our platform, do we send them 10 XLM free?

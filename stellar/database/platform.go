@@ -37,6 +37,8 @@ type Platform struct {
 	// as well, need to implement it the right way
 }
 
+// EncryptAndStoreSeed encrypts and stores the seed of the platform in a file
+// named seed.hex at the root directory
 func EncryptAndStoreSeed(seed string, password string) {
 	// handler to store the seed over at seed.hex
 	// person either needs to store this file and remember the password or has to
@@ -49,6 +51,7 @@ func EncryptAndStoreSeed(seed string, password string) {
 	fmt.Println("Successfully encrypted your seed as seed.hex")
 }
 
+// NewPlatform creates a new platform and returns the platform struct
 func NewPlatform() (Platform, error) {
 	// this function is used to generate a new keypair which will be assigned to
 	// the platform
@@ -68,11 +71,14 @@ func NewPlatform() (Platform, error) {
 	return nPlatform, err
 }
 
+// GetSeedFromEncryptedSeed gets the unencrypted seed from the encrypted file
+// stored on disk with the help of the password.
 func GetSeedFromEncryptedSeed(encrypted string, password string) (string) {
 	// this function must be used for any handling within the code written here
 	return string(aes.DecryptFile(encrypted, password))
 }
 
+// RestorePlatformFromSeed restores the platform struct when passed the seed
 func RestorePlatformFromSeed(seed string) (Platform, error) {
 	// this function should be used when the platform admin remembers the seed but
 	// does not possess the  encrypted file. The seed is what's needed to access
@@ -94,10 +100,12 @@ func RestorePlatformFromSeed(seed string) (Platform, error) {
 	return rPlatform, err
 }
 
+// RestorePlatformFromFile restores the platfrom struct directly from the file
 func RestorePlatformFromFile(path string, password string) (Platform, error){
 	return RestorePlatformFromSeed(string(aes.DecryptFile(path, password)))
 }
 
+// InsertPlatform inserts a passed platform object into the database
 func InsertPlatform(a Platform) error {
 	// inserts the PublicKey into the database to keep track of the PublicKey
 	db, err := OpenDB()
@@ -117,6 +125,7 @@ func InsertPlatform(a Platform) error {
 	return err
 }
 
+// RetrievePlatform retrieves the platform stored in the database
 func RetrievePlatform() (Platform, error) {
 	// retrieves the platforms (more like the publickey)
 	var rPlatform Platform

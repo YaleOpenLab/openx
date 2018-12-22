@@ -1,7 +1,6 @@
+package xlm
 // the xlm package is a package that interacts with the stellar testnet
 // API and fetches testnet coins for the user
-package xlm
-
 import (
 	"fmt"
 	"log"

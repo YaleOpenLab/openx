@@ -1,5 +1,7 @@
 package database
 
+// methods.go defines a list of all methods defined on the entities in entities.go
+// this would avoid us going to each file to see the methods defined on them
 import (
 	"fmt"
 	"log"
@@ -10,8 +12,6 @@ import (
 	"github.com/stellar/go/build"
 )
 
-// handle all methods on entities here isntead of  having them over at their specific
-// files in order to avoid searching where the methods are
 // TrustAsset creates a trustline from the caller towards the specific asset
 // and asset issuer with a _limit_ set on the maximum amount of tokens that can be sent
 // through the trust channel. Each trustline costs 0.5XLM.
@@ -48,7 +48,6 @@ func (a *Investor) TrustAsset(asset build.Asset, limit string) (string, error) {
 }
 
 // SendAssetToIssuer sends back assets fromn an asset holder to the issuer of the asset.
-// This method is called by the receiver of assets.
 func (a *Recipient) SendAssetToIssuer(assetName string, issuerPubkey string, amount string) (int32, string, error) {
 	// SendAssetToIssuer is FROM recipient / investor to issuer
 	paymentTx, err := build.Transaction(
@@ -106,7 +105,6 @@ func (a *Recipient) SendAssetToIssuer(assetName string, issuerPubkey string, amo
 // that it sent and if not, raises the dispute since the forward DEBToken payment
 // is on chain and resolves the dispute itself using existing off chain legal frameworks
 // (issued bonds, agreements, etc)
-// TODO: pass order here
 func (a *Recipient) Payback(uOrder Order, assetName string, issuerPubkey string, amount string) error {
 	// once we have the stablecoin here, we can remove the assetName
 	balance, err := xlm.GetAssetBalance(a.PublicKey, "STABLEUSD")

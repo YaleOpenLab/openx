@@ -6,10 +6,12 @@ import (
 	"github.com/boltdb/bolt"
 )
 
+// defines the name of the buckets that we interact with.
 var OrdersBucket = []byte("Orders")
 var InvestorBucket = []byte("Investors")
 var RecipientBucket = []byte("Recipients")
 var PlatformBucket = []byte("Platforms")
+var ContractorBucket = []byte("Contractors")
 
 // TODO: need locks over this to ensure no one's using the db while we are
 func OpenDB() (*bolt.DB, error) {
@@ -32,6 +34,10 @@ func OpenDB() (*bolt.DB, error) {
 			return err
 		}
 		_, err = tx.CreateBucketIfNotExists(PlatformBucket) // the orders bucket contains all our orders
+		if err != nil {
+			return err
+		}
+		_, err = tx.CreateBucketIfNotExists(ContractorBucket) // the orders bucket contains all our orders
 		if err != nil {
 			return err
 		}

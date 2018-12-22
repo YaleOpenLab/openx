@@ -1,5 +1,5 @@
 package aes
-
+// the aes package implements AES-256 GCM encryption and decrpytion functions
 import (
 	"crypto/aes"
 	"crypto/cipher"
@@ -12,6 +12,7 @@ import (
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
 )
 
+// Encrypt encrypts a given data stream with a given passphrase
 func Encrypt(data []byte, passphrase string) []byte {
 	key := []byte(utils.SHA3hash(passphrase)[96:128]) // last 32 characters in hash
 	block, _ := aes.NewCipher(key)
@@ -29,6 +30,7 @@ func Encrypt(data []byte, passphrase string) []byte {
 	return ciphertext
 }
 
+// Decrypt decrypts a given data stream with a given passphrase
 func Decrypt(data []byte, passphrase string) []byte {
 	key := []byte(utils.SHA3hash(passphrase)[96:128]) // last 32 characters in hash
 	block, err := aes.NewCipher(key)
@@ -51,27 +53,15 @@ func Decrypt(data []byte, passphrase string) []byte {
 	return plaintext
 }
 
+// EncryptFile encrypts a given file with the given passphrase
 func EncryptFile(filename string, data []byte, passphrase string) {
 	f, _ := os.Create(filename)
 	defer f.Close()
 	f.Write(Encrypt(data, passphrase))
 }
 
+// DecryptFile encrypts a given file with the given passphrase
 func DecryptFile(filename string, passphrase string) []byte {
 	data, _ := ioutil.ReadFile(filename)
 	return Decrypt(data, passphrase)
 }
-
-/*
-func Test() {
-	password := "Cool"
-	ciphertext := Encrypt([]byte("Hello World"), password)
-	fmt.Printf("Encrypted: %x\n", ciphertext)
-	plaintext := Decrypt(ciphertext, password)
-	fmt.Printf("Decrypted: %s\n", plaintext)
-
-	password2 := "cooler"
-	EncryptFile("sample.txt", []byte("Hello World"), password2)
-	DecryptFile("sample.txt", password2)
-}
-*/
