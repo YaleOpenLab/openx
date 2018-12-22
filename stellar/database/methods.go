@@ -18,7 +18,7 @@ import (
 func (a *Investor) TrustAsset(asset build.Asset, limit string) (string, error) {
 	// TRUST is FROM recipient TO issuer
 	trustTx, err := build.Transaction(
-		build.SourceAccount{a.PublicKey},
+		build.SourceAccount{a.U.PublicKey},
 		build.AutoSequence{SequenceProvider: utils.DefaultTestNetClient},
 		build.TestNetwork,
 		build.Trust(asset.Code, asset.Issuer, build.Limit(limit)),
@@ -28,7 +28,7 @@ func (a *Investor) TrustAsset(asset build.Asset, limit string) (string, error) {
 		return "", err
 	}
 
-	trustTxe, err := trustTx.Sign(a.Seed)
+	trustTxe, err := trustTx.Sign(a.U.Seed)
 	if err != nil {
 		return "", err
 	}
@@ -51,7 +51,7 @@ func (a *Investor) TrustAsset(asset build.Asset, limit string) (string, error) {
 func (a *Recipient) SendAssetToIssuer(assetName string, issuerPubkey string, amount string) (int32, string, error) {
 	// SendAssetToIssuer is FROM recipient / investor to issuer
 	paymentTx, err := build.Transaction(
-		build.SourceAccount{a.PublicKey},
+		build.SourceAccount{a.U.PublicKey},
 		build.TestNetwork,
 		build.AutoSequence{SequenceProvider: utils.DefaultTestNetClient},
 		build.Payment(
@@ -64,7 +64,7 @@ func (a *Recipient) SendAssetToIssuer(assetName string, issuerPubkey string, amo
 		return -11, "", err
 	}
 
-	paymentTxe, err := paymentTx.Sign(a.Seed)
+	paymentTxe, err := paymentTx.Sign(a.U.Seed)
 	if err != nil {
 		return -11, "", err
 	}
@@ -107,14 +107,14 @@ func (a *Recipient) SendAssetToIssuer(assetName string, issuerPubkey string, amo
 // (issued bonds, agreements, etc)
 func (a *Recipient) Payback(uOrder Order, assetName string, issuerPubkey string, amount string) error {
 	// once we have the stablecoin here, we can remove the assetName
-	balance, err := xlm.GetAssetBalance(a.PublicKey, "STABLEUSD")
+	balance, err := xlm.GetAssetBalance(a.U.PublicKey, "STABLEUSD")
 	// checks for the stablecoin asset
 	if err != nil {
 		log.Println("YOU HAVE NO STABLECOIN BALANCE, PLEASE REFILL ACCOUNT")
 		return fmt.Errorf("YOU HAVE NO STABLECOIN BALANCE, PLEASE REFILL ACCOUNT")
 	}
 
-	oldBalance, err := xlm.GetAssetBalance(a.PublicKey, assetName)
+	oldBalance, err := xlm.GetAssetBalance(a.U.PublicKey, assetName)
 	if err != nil {
 		log.Println("Don't have the debt asset in posession")
 		log.Fatal(err)
@@ -146,7 +146,7 @@ func (a *Recipient) Payback(uOrder Order, assetName string, issuerPubkey string,
 
 	log.Println("Paid debt amount: ", amount, " back to issuer, tx hash: ", txHash, " ", confHeight)
 	log.Println("Checking balance to see if our account was debited")
-	newBalance, err := xlm.GetAssetBalance(a.PublicKey, assetName)
+	newBalance, err := xlm.GetAssetBalance(a.U.PublicKey, assetName)
 	if err != nil {
 		log.Fatal(err)
 	}

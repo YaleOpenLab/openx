@@ -34,14 +34,12 @@ type Order struct {
 	// Percentage raised is not stored in the database since that can be calculated by the UI
 }
 
-type Recipient struct {
+// the user structure  houses all entities that are of type "User". This contains
+// commonly used functions so that we need not repeat the ssame thing for every instance.
+type User struct {
 	Index uint32
-	// defauult index, gets us easy stats on how many people are there and stuff,
+	// default index, gets us easy stats on how many people are there and stuff,
 	// don't want to omit this
-	Name string
-	// Name of the primary stakeholder involved (principal trustee of school, for eg.)
-	PublicKey string
-	// PublicKey denotes the public key of the recipient
 	Seed string
 	// Seed is the equivalent of a private key in stellar (stellar doesn't expose private keys)
 	// do we make seed optional like that for the Recipient? Couple things to consider
@@ -50,18 +48,27 @@ type Recipient struct {
 	// technically less sound people to hold their public keys safely? I suggest
 	// this would be  difficult in practice, so maybe enforce that they need to hold|
 	// their account on the platform?
-	FirstSignedUp string
-	// auto generated timestamp
-	ReceivedOrders []Order
-	// ReceivedOrders denotes the orders that have been received by the recipient
-	// instead of storing the PaybackAssets and the DebtAssets, we store this
+	Name string
+	// Name of the primary stakeholder involved (principal trustee of school, for eg.)
+	PublicKey string
+	// PublicKey denotes the public key of the recipient
 	LoginUserName string
 	// the thing you use to login to the platform
 	LoginPassword string
 	// password, which is separate from the generated seed.
+	FirstSignedUp string
+	// auto generated timestamp
 }
 
-// the investor s truct contains all the investor details such as
+type Recipient struct {
+	ReceivedOrders []Order
+	// ReceivedOrders denotes the orders that have been received by the recipient
+	// instead of storing the PaybackAssets and the DebtAssets, we store this
+	U User
+	// user related functions are called as an instance directly
+}
+
+// the investor struct contains all the investor details such as
 // public key, seed (if account is created on the website) and ot her stuff which
 // is yet to be decided
 
@@ -69,34 +76,15 @@ type Recipient struct {
 // we need to stil ldecide on identity and stuff and how much we want to track
 // people who invest in the schools
 type Investor struct {
-	Index uint32
-	// defauult index, gets us easy stats on how many people are there and stuff,
-	// don't want to omit this
-	Name string
-	// display Name, different from UserName
-	PublicKey string
-	// the PublicKey used to identify you on the platform. We could still reference
-	// people by name, but we needn't since we have the pk anyway.
-	Seed string
-	// optional, this is if the user created his account on our website
-	// should be shown once and deleted permanently
-	// add a notice like "WE DO NOT SAVE YOUR SEED" on the UI side
 	AmountInvested float64
 	// total amount, would be nice to track to contact them,
 	// give them some kind of medals or something
-	FirstSignedUp string
-	// auto generated timestamp
 	InvestedAssets []Order
 	// array of asset codes this user has invested in
 	// also I think we need a username + password for logging on to the platform itself
 	// linking it here for now
-	LoginUserName string
-	// the thing you use to login to the platform
-	LoginPassword string
-	// LoginPassword is different from the seed you get if you choose
-	// to open your account on the website. This is becasue even if you lose the
-	// login password, you needn't worry too much about losing your funds, sicne you have
-	// your seed and can send them to another address immediately.
+	U User
+	// user related functions are called as an instance directly
 }
 
 // the contractor super struct comprises of various entities within it. Its a
@@ -105,21 +93,17 @@ type Investor struct {
 // devolved into a separate User struct, that would result in less duplication as
 // well
 type Contractor struct {
-	Index uint32
-	Name string
+	// User defines common params such as name, seed, publickey
+	U User
 	// the name of the contractor / company that is contracting
 	Address string
 	// the registered address of the above company
 	Description string
 	// Does the contractor need to have a seed and a publickey?
 	// we assume that it does in this case and proceed.
-	Seed string
-	PublicKey string
 	// information on company credentials, their experience
 	Image string
 	// image can be company logo, founder selfie
-	LoginUserName string
-	LoginPassword string
 	// hash of the password in reality
 	IsContractor bool
 	// A contractor is party who proposes a specific some of money towards a
@@ -162,7 +146,6 @@ type Contractor struct {
 	// What kind of proof do we want from the company? KYC?
 	// maybe we could have a photo op like exchanges do these days, with the owner
 	// holding up his drivers' license or similar
-	FirstSignedUp string
 }
 
 // how does a contract evolve into an order? or do we make contracts orders?

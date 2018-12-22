@@ -162,7 +162,7 @@ func InvestInOrder(issuer *database.Platform, issuerSeed string, investor *datab
 	}
 	// we should check here whether the investor has enough USDTokens in order to be
 	// able to ivnest in the asset
-	err = xlm.GetUSDTokenBalance(investor.PublicKey, investmentAmountS)
+	err = xlm.GetUSDTokenBalance(investor.U.PublicKey, investmentAmountS)
 	if err != nil {
 		log.Println("Investor has less balance than what is required to ivnest in this asset")
 		return uOrder, err
@@ -172,18 +172,18 @@ func InvestInOrder(issuer *database.Platform, issuerSeed string, investor *datab
 	INVAsset.Issuer = issuer.PublicKey
 	// INVAsset is not a native token, so don't set that
 	// now we need to send the investor the INVAssets as proof of investment
-	txHash, err := TrustAsset(INVAsset, utils.IntToString(uOrder.TotalValue), investor.PublicKey, investor.Seed)
+	txHash, err := TrustAsset(INVAsset, utils.IntToString(uOrder.TotalValue), investor.U.PublicKey, investor.U.Seed)
 	// trust upto the total value of the asset
 	if err != nil {
 		return uOrder, err
 	}
 	log.Println("Investor trusted asset: ", INVAsset.Code, " tx hash: ", txHash)
 	log.Println("Sending INVAsset: ", INVAsset.Code, "for: ", investmentAmount)
-	_, txHash, err = SendAssetFromIssuer(INVAsset.Code, investor.PublicKey, strconv.Itoa(investmentAmount), issuerSeed, issuer.PublicKey)
+	_, txHash, err = SendAssetFromIssuer(INVAsset.Code, investor.U.PublicKey, strconv.Itoa(investmentAmount), issuerSeed, issuer.PublicKey)
 	if err != nil {
 		return uOrder, err
 	}
-	log.Printf("Sent INVAsset %s to investor %s with txhash %s", INVAsset.Code, investor.PublicKey, txHash)
+	log.Printf("Sent INVAsset %s to investor %s with txhash %s", INVAsset.Code, investor.U.PublicKey, txHash)
 	// investor asset sent, update uOrder's BalLeft
 	uOrder.MoneyRaised += investmentAmount
 	fmt.Println("Updating investor to handle invested amounts and assets")
@@ -203,24 +203,24 @@ func InvestInOrder(issuer *database.Platform, issuerSeed string, investor *datab
 		PBasset := CreateAsset(PBAssetCode, issuer.PublicKey)
 		// and the school needs to trust me only for paybackTokens amount of PB tokens
 		pbAmtTrust := utils.IntToString(uOrder.Years * 24)
-		txHash, err = TrustAsset(PBasset, pbAmtTrust, recipient.PublicKey, recipient.Seed)
+		txHash, err = TrustAsset(PBasset, pbAmtTrust, recipient.U.PublicKey, recipient.U.Seed)
 		if err != nil {
 			return uOrder, err
 		}
 		log.Println("Recipient Trusted Payback asset: ", PBasset.Code, " tx hash: ", txHash)
 
-		txHash, err = TrustAsset(DEBasset, strconv.Itoa(uOrder.TotalValue * 2), recipient.PublicKey, recipient.Seed) // since debt = invested amount
+		txHash, err = TrustAsset(DEBasset, strconv.Itoa(uOrder.TotalValue * 2), recipient.U.PublicKey, recipient.U.Seed) // since debt = invested amount
 		// *2 is for sending the amount back
 		if err != nil {
 			return uOrder, err
 		}
 		log.Println("Recipient Trusted Debt asset: ", DEBasset.Code, " tx hash: ", txHash)
 		log.Println("Sending DEBasset: ", DEBAssetCode)
-		_, txHash, err = SendAssetFromIssuer(DEBAssetCode, recipient.PublicKey, strconv.Itoa(uOrder.TotalValue), issuerSeed, issuer.PublicKey) // same amount as debt
+		_, txHash, err = SendAssetFromIssuer(DEBAssetCode, recipient.U.PublicKey, strconv.Itoa(uOrder.TotalValue), issuerSeed, issuer.PublicKey) // same amount as debt
 		if err != nil {
 			return uOrder, err
 		}
-		log.Printf("Sent DEBasset to recipient %s with txhash %s", recipient.PublicKey, txHash)
+		log.Printf("Sent DEBasset to recipient %s with txhash %s", recipient.U.PublicKey, txHash)
 		uOrder.Live = true
 		uOrder.DEBAssetCode = DEBAssetCode
 		uOrder.PBAssetCode = PBAssetCode
@@ -234,17 +234,8 @@ func InvestInOrder(issuer *database.Platform, issuerSeed string, investor *datab
 		if uOrder.DEBAssetCode == "" {
 			log.Fatal("DOnt work")
 		}
-		err = database.DeleteRecipient(recipient.Index)
-		if err != nil {
-			return uOrder, err
-		}
 		err = database.InsertRecipient(*recipient)
 		if err != nil {
-			return uOrder, err
-		}
-		err = database.DeleteOrder(uOrder.Index)
-		if err != nil {
-			log.Println("Couldn't delete order")
 			return uOrder, err
 		}
 		err = database.InsertOrder(uOrder)

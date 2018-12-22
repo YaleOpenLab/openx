@@ -269,23 +269,23 @@ func parseInvestor(r *http.Request) (database.Investor, error) {
 	if err != nil {
 		return prepInvestor, err
 	}
-	prepInvestor.Index = uint32(len(allInvestors) + 1)
+	prepInvestor.U.Index = uint32(len(allInvestors) + 1)
 	if r.FormValue("LoginUserName") != "" {
-		prepInvestor.LoginUserName = r.FormValue("LoginUserName")
+		prepInvestor.U.LoginUserName = r.FormValue("LoginUserName")
 	} else {
 		// no username, error out
 		return prepInvestor, fmt.Errorf("No LoginUserName")
 	}
 
 	if r.FormValue("LoginPassword") != "" {
-		prepInvestor.LoginPassword = r.FormValue("LoginPassword")
+		prepInvestor.U.LoginPassword = r.FormValue("LoginPassword")
 	} else {
 		// no password, error out
 		return prepInvestor, fmt.Errorf("No LoginPassword")
 	}
 
 	if r.FormValue("Name") != "" {
-		prepInvestor.Name = r.FormValue("Name")
+		prepInvestor.U.Name = r.FormValue("Name")
 	} else {
 		return prepInvestor, fmt.Errorf("No Name")
 	}
@@ -296,12 +296,12 @@ func parseInvestor(r *http.Request) (database.Investor, error) {
 		if err != nil {
 			return prepInvestor, fmt.Errorf("Error while generating keypair")
 		}
-		prepInvestor.Seed = pair.Seed()
-		prepInvestor.PublicKey = pair.Address()
+		prepInvestor.U.Seed = pair.Seed()
+		prepInvestor.U.PublicKey = pair.Address()
 	}
 
 	prepInvestor.AmountInvested = float64(0)
-	prepInvestor.FirstSignedUp = utils.Timestamp()
+	prepInvestor.U.FirstSignedUp = utils.Timestamp()
 	log.Println("Prepared investor: ", prepInvestor)
 	return prepInvestor, nil
 }
@@ -356,7 +356,7 @@ func investorPassword() {
 			return
 		}
 
-		prepInvestor, err = database.SearchForInvestor(r.URL.Query()["LoginUserName"][0])
+		prepInvestor, err = database.ValidateInvestor(r.URL.Query()["LoginUserName"][0], "password") // TODO: Change this
 		if err != nil {
 			errorHandler(w, r, http.StatusNotFound)
 			return
@@ -412,10 +412,10 @@ func parseRecipient(r *http.Request) (database.Recipient, error) {
 		return prepRecipient, err
 	}
 
-	prepRecipient.Index = uint32(len(allInvestors) + 1)
+	prepRecipient.U.Index = uint32(len(allInvestors) + 1)
 
 	if r.FormValue("Name") != "" {
-		prepRecipient.Name = r.FormValue("Name")
+		prepRecipient.U.Name = r.FormValue("Name")
 	} else {
 		return prepRecipient, fmt.Errorf("No Name")
 	}
@@ -425,19 +425,19 @@ func parseRecipient(r *http.Request) (database.Recipient, error) {
 	if err != nil {
 		return prepRecipient, fmt.Errorf("Error while generating keypair")
 	}
-	prepRecipient.PublicKey = pair.Address()
-	prepRecipient.Seed = pair.Seed()
-	prepRecipient.FirstSignedUp = utils.Timestamp()
+	prepRecipient.U.PublicKey = pair.Address()
+	prepRecipient.U.Seed = pair.Seed()
+	prepRecipient.U.FirstSignedUp = utils.Timestamp()
 
 	if r.FormValue("LoginUserName") != "" {
-		prepRecipient.LoginUserName = r.FormValue("LoginUserName")
+		prepRecipient.U.LoginUserName = r.FormValue("LoginUserName")
 	} else {
 		// no username, error out
 		return prepRecipient, fmt.Errorf("No LoginUserName")
 	}
 
 	if r.FormValue("LoginPassword") != "" {
-		prepRecipient.LoginPassword = r.FormValue("LoginPassword")
+		prepRecipient.U.LoginPassword = r.FormValue("LoginPassword")
 	} else {
 		// no password, error out
 		return prepRecipient, fmt.Errorf("No LoginPassword")
@@ -516,7 +516,7 @@ func recipientPassword() {
 			return
 		}
 
-		prepRecipient, err = database.SearchForRecipient(r.URL.Query()["LoginUserName"][0])
+		prepRecipient, err = database.ValidateRecipient(r.URL.Query()["LoginUserName"][0], "password") // TODO: change this
 		if err != nil {
 			errorHandler(w, r, http.StatusNotFound)
 			return

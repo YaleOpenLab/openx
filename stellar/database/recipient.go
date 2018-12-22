@@ -8,7 +8,6 @@ import (
 
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
 	"github.com/boltdb/bolt"
-	"github.com/stellar/go/keypair"
 )
 
 func TestFn() {
@@ -16,59 +15,13 @@ func TestFn() {
 	return
 }
 
-func NewRecipient(uname string, pwhash string, Name string) (Recipient, error) {
+func NewRecipient(uname string, pwd string, Name string) (Recipient, error) {
 	var a Recipient
-
-	allRecipients, err := RetrieveAllRecipients()
+	var err error
+	a.U, err = NewUser(uname, pwd, Name)
 	if err != nil {
 		return a, err
 	}
-
-	// the ugly indexing thing again, need to think of something better here
-	if len(allRecipients) == 0 {
-		a.Index = 1
-	} else {
-		a.Index = uint32(len(allRecipients) + 1)
-	}
-
-	// generate a pk and seed pair and store it
-	pair, err := keypair.Random()
-	if err != nil {
-		return a, err
-	}
-	a.Name = Name
-	a.PublicKey = pair.Address()
-	a.Seed = pair.Seed()
-	a.FirstSignedUp = utils.Timestamp()
-	a.LoginUserName = uname
-	a.LoginPassword = pwhash
-	// now we have a new Recipient, take this and then send this off to be stored in the database
-	log.Println("Created Recipient: ", a)
-	return a, nil
-}
-
-func NewRecipientWithoutSeed(uname string, pwhash string, Name string) (Recipient, error) {
-	// this should be called initially since the recipient's seed is created only
-	// if someone decides to ivnest in the order
-	var a Recipient
-
-	allRecipients, err := RetrieveAllRecipients()
-	if err != nil {
-		return a, err
-	}
-
-	// the ugly indexing thing again, need to think of something better here
-	if len(allRecipients) == 0 {
-		a.Index = 1
-	} else {
-		a.Index = uint32(len(allRecipients) + 1)
-	}
-
-	a.Name = Name
-	a.FirstSignedUp = utils.Timestamp()
-	a.LoginUserName = uname
-	a.LoginPassword = pwhash
-	// now we have a new Recipient, take this and then send this off to be stored in the database
 	return a, nil
 }
 
@@ -87,7 +40,7 @@ func InsertRecipient(a Recipient) error {
 			log.Println("Failed to encode this data into json")
 			return err
 		}
-		return b.Put([]byte(utils.Uint32toB(a.Index)), encoded)
+		return b.Put([]byte(utils.Uint32toB(a.U.Index)), encoded)
 		// but why do we index based on Index?
 		// this is because we do want to enumerate through all Recipients, which can not be done
 		// in a name based construction. But this makes search ahrder, since now you
@@ -100,8 +53,14 @@ func InsertRecipient(a Recipient) error {
 	return err
 }
 
+// RetrieveAllRecipients gets a list of all Recipient in the database
 func RetrieveAllRecipients() ([]Recipient, error) {
 	var arr []Recipient
+	temp, err := RetrieveAllUsers()
+	if err != nil {
+		return arr, err
+	}
+	limit := uint32(len(temp) + 1)
 	db, err := OpenDB()
 	if err != nil {
 		return arr, err
@@ -113,12 +72,12 @@ func RetrieveAllRecipients() ([]Recipient, error) {
 		// trying to retrieve a list of keys
 		b := tx.Bucket(RecipientBucket)
 		i := uint32(1)
-		for ; ; i++ {
+		for ; i < limit; i++ {
 			var rRecipient Recipient
 			x := b.Get(utils.Uint32toB(i))
 			if x == nil {
 				// this is where the key does not exist
-				return nil
+				continue
 			}
 			err := json.Unmarshal(x, &rRecipient)
 			//if err != nil && rRecipient.Live == false {
@@ -152,9 +111,13 @@ func RetrieveRecipient(key uint32) (Recipient, error) {
 	return inv, nil
 }
 
-func SearchForRecipient(name string) (Recipient, error) {
+func ValidateRecipient(name string, pwd string) (Recipient, error) {
 	var inv Recipient
-	// this is very ugly, but the only way it works right now (see TODO earlier)
+	temp, err := RetrieveAllUsers()
+	if err != nil {
+		return inv, err
+	}
+	limit := uint32(len(temp) + 1)
 	db, err := OpenDB()
 	if err != nil {
 		return inv, err
@@ -164,18 +127,19 @@ func SearchForRecipient(name string) (Recipient, error) {
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(RecipientBucket)
 		i := uint32(1)
-		for ; ; i++ {
+		for ; i < limit ; i++ {
 			var rRecipient Recipient
 			x := b.Get(utils.Uint32toB(i))
 			if x == nil {
-				return nil
+				// the given key may be an investor
+				continue
 			}
 			err := json.Unmarshal(x, &rRecipient)
 			if err != nil {
 				return nil
 			}
-			// we have the investor class, check password
-			if rRecipient.LoginUserName == name {
+			// we have the Recipient class, check password
+			if rRecipient.U.LoginUserName == name && pwd == rRecipient.U.LoginPassword {
 				inv = rRecipient
 			}
 		}
@@ -184,7 +148,9 @@ func SearchForRecipient(name string) (Recipient, error) {
 	return inv, err
 }
 
-func DeleteRecipient(key uint32) error {
+
+// DeleteKeyFromBucket deletes a given key from the bucket _bucketName
+func DeleteKeyFromBucket(key uint32, bucketName []byte) error {
 	// deleting order might be dangerous since that would mess with the RetrieveAllOrders
 	// function, have it in here for now, don't do too much with it / fiox retrieve all
 	// to handle this case

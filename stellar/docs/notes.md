@@ -20,6 +20,10 @@ Observations:
   - Test out swytch's staging platform, checkout their API endpoints
   - we can either listen to the mqtt service directly or read the ERC 721 details on chain
 
+## Discussion in Call 3:
+1. Modify some parts of the contract so that we use a bigger structure named User which can be imported where needed.
+2. Change naming scheme of some parts to be more user friendly.
+
 ## TODOs copied from the Ethereum Smart Contract
 
 ### TODO TENDER PROCESS & REQUEST FOR PROPOSALS ###

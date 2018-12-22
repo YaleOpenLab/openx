@@ -6,7 +6,6 @@ import (
 	"log"
 
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
-	xlm "github.com/YaleOpenLab/smartPropertyMVP/stellar/xlm"
 )
 
 // PrettyPrintOrder pretty prints orders
@@ -68,23 +67,17 @@ func InsertDummyData() error {
 		log.Fatal(err)
 	}
 	if len(allRecs) == 0 {
-		rec.Index = 1
-		rec.LoginUserName = "martin"
-		rec.LoginPassword = "e9a75486736a550af4fea861e2378305c4a555a05094dee1dca2f68afea49cc3a50e8de6ea131ea521311f4d6fb054a146e8282f8e35ff2e6368c1a62e909716"
-		rec.Name = "Martin"
-		rec.Seed, rec.PublicKey, err = xlm.GetKeyPair()
-		if err != nil {
-			log.Fatal(err)
-		}
+		var err error
+		rec.U, err = NewUser("martin", "password", "Martin")
 		err = InsertRecipient(rec)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 
-	rec, err = SearchForRecipient("martin") // search by username
+	rec, err = ValidateRecipient("martin", "password") // search by username
 	if err != nil {
-		log.Fatal("Couldn't setup test poulation")
+		log.Fatal("Couldn't setup dummy data")
 	}
 	order1.Index = 1
 	order1.PanelSize = "100 1000 sq.ft homes each with their own private spaces for luxury"
@@ -148,11 +141,8 @@ func InsertDummyData() error {
 		log.Fatal(err)
 	}
 	if len(allInvs) == 0 {
-		inv.Index = 1
-		inv.LoginUserName = "john"
-		inv.LoginPassword = "e9a75486736a550af4fea861e2378305c4a555a05094dee1dca2f68afea49cc3a50e8de6ea131ea521311f4d6fb054a146e8282f8e35ff2e6368c1a62e909716"
-		inv.Name = "John"
-		inv.Seed, inv.PublicKey, err = xlm.GetKeyPair()
+		var err error
+		inv.U, err = NewUser("john", "password", "John")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -160,32 +150,29 @@ func InsertDummyData() error {
 		if err != nil {
 			log.Fatal(err)
 		}
-	} else if len(allInvs) == 1 {
-		// don't do anything
 	}
-
 	return nil
 }
 
 // PrettyPrintInvestor pretty prints investors
 func PrettyPrintInvestor(investor Investor) {
-	fmt.Println("    WELCOME BACK ", investor.Name)
-	fmt.Println("          Your Public Key is: ", investor.PublicKey)
-	fmt.Println("          Your Seed is: ", investor.Seed)
+	fmt.Println("    WELCOME BACK ", investor.U.Name)
+	fmt.Println("          Your Public Key is: ", investor.U.PublicKey)
+	fmt.Println("          Your Seed is: ", investor.U.Seed)
 	fmt.Println("          You have Invested: ", investor.AmountInvested)
 	fmt.Println("          Your Invested Assets are: ", investor.InvestedAssets)
-	fmt.Println("          Your Username is: ", investor.LoginUserName)
-	fmt.Println("          Your Password hash is: ", investor.LoginPassword)
+	fmt.Println("          Your Username is: ", investor.U.LoginUserName)
+	fmt.Println("          Your Password hash is: ", investor.U.LoginPassword)
 }
 
 // PrettyPrintRecipient pretty prints recipients
 func PrettyPrintRecipient(recipient Recipient) {
-	fmt.Println("    WELCOME BACK ", recipient.Name)
-	fmt.Println("          Your Public Key is: ", recipient.PublicKey)
-	fmt.Println("          Your Seed is: ", recipient.Seed)
+	fmt.Println("    WELCOME BACK ", recipient.U.Name)
+	fmt.Println("          Your Public Key is: ", recipient.U.PublicKey)
+	fmt.Println("          Your Seed is: ", recipient.U.Seed)
 	fmt.Println("          Your Received Assets are: ", recipient.ReceivedOrders)
-	fmt.Println("          Your Username is: ", recipient.LoginUserName)
-	fmt.Println("          Your Password hash is: ", recipient.LoginPassword)
+	fmt.Println("          Your Username is: ", recipient.U.LoginUserName)
+	fmt.Println("          Your Password hash is: ", recipient.U.LoginPassword)
 }
 
 // PrettyPrintOrder pretty prints orders

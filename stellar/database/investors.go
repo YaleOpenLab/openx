@@ -7,48 +7,25 @@ import (
 	"log"
 
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
-	xlm "github.com/YaleOpenLab/smartPropertyMVP/stellar/xlm"
 	"github.com/boltdb/bolt"
 )
 
 // NewInvestor creates a new investor object when passed the username, password hash,
 // name and an option to generate the seed and publicKey. This is done because if
 // we decide to allow anonymous investors to invest on our platform, we can easily
-// insert their pbulickey into the system and hten have hanlders for them signing
+// insert their publickey into the system and hten have hanlders for them signing
 // transactions
 // TODO: add anonymous investor signing handlers
-func NewInvestor(uname string, pwhash string, Name string, pkgen bool) (Investor, error) {
+func NewInvestor(uname string, pwd string, Name string) (Investor, error) {
 	// call this after the user has failled in username and password. Store hashed password
 	// in the database
 	var a Investor
-
-	allInvestors, err := RetrieveAllInvestors()
+	var err error
+	a.U, err = NewUser(uname, pwd, Name)
 	if err != nil {
 		return a, err
 	}
-
-	// the ugly indexing thing again, need to think of something better here
-	if len(allInvestors) == 0 {
-		a.Index = 1
-	} else {
-		a.Index = uint32(len(allInvestors) + 1)
-	}
-
-	// for investors, we need to index by username, so Index is not that useful
-	// except maybe for quick stats
-	a.Name = Name
-	if pkgen {
-		a.Seed, a.PublicKey, err = xlm.GetKeyPair()
-		if err != nil {
-			return a, err
-		}
-	}
 	a.AmountInvested = float64(0)
-	a.FirstSignedUp = utils.Timestamp()
-	// don't set InvestedAssets
-	a.LoginUserName = uname
-	a.LoginPassword = pwhash
-	// now we have a new investor, take this and then send this off to be stored in the database
 	return a, nil
 }
 
@@ -66,7 +43,7 @@ func InsertInvestor(a Investor) error {
 			log.Println("Failed to encode this data into json")
 			return err
 		}
-		return b.Put([]byte(utils.Uint32toB(a.Index)), encoded)
+		return b.Put([]byte(utils.Uint32toB(a.U.Index)), encoded)
 		// but why do we index based on Index?
 		// this is because we do want to enumerate through all investors, which can not be done
 		// in a name based construction. But this makes search ahrder, since now you
@@ -81,7 +58,14 @@ func InsertInvestor(a Investor) error {
 
 // RetrieveAllInvestors gets a list of all investor in the database
 func RetrieveAllInvestors() ([]Investor, error) {
+	// this route is broken becuase it reads through keys sequentially
+	// need to see keys until the lenght of ther users dat abse
 	var arr []Investor
+	temp, err := RetrieveAllUsers()
+	if err != nil {
+		return arr, err
+	}
+	limit := uint32(len(temp) + 1)
 	db, err := OpenDB()
 	if err != nil {
 		return arr, err
@@ -93,12 +77,12 @@ func RetrieveAllInvestors() ([]Investor, error) {
 		// trying to retrieve a list of keys
 		b := tx.Bucket(InvestorBucket)
 		i := uint32(1)
-		for ; ; i++ {
+		for ; i < limit; i++ {
 			var rInvestor Investor
 			x := b.Get(utils.Uint32toB(i))
 			if x == nil {
 				// this is where the key does not exist
-				return nil
+				continue
 			}
 			err := json.Unmarshal(x, &rInvestor)
 			//if err != nil && rInvestor.Live == false {
@@ -133,9 +117,9 @@ func RetrieveInvestor(key uint32) (Investor, error) {
 	return inv, nil
 }
 
-// SearchForInvestor searches for an investor when passed the investor's name.
+// ValidateInvestor searches for an investor when passed the investor's name.
 // This is useful for checking the user's password while logging in
-func SearchForInvestor(name string) (Investor, error) {
+func ValidateInvestor(uname string, pwd string) (Investor, error) {
 	var inv Investor
 	db, err := OpenDB()
 	if err != nil {
@@ -156,16 +140,14 @@ func SearchForInvestor(name string) (Investor, error) {
 				return nil
 			}
 			// we have the investor class, check names
-			if rInvestor.LoginUserName == name {
+			if rInvestor.U.LoginUserName == uname && rInvestor.U.LoginPassword == pwd {
 				inv = rInvestor
 			}
 		}
 		return fmt.Errorf("Not Found")
 	})
+	if inv.U.Index == 0 {
+		return inv, fmt.Errorf("Investor Not Found")
+	}
 	return inv, err
 }
-
-// TODO: migrate the password checking logic here and we can simply have
-// something like ValidateUser()
-// Also, have a new user class implemented which can be borrowed by all
-// subsequent classes

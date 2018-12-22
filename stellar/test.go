@@ -46,6 +46,19 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Open the database
+	allOrders, err := database.RetrieveAllOrders()
+	if err != nil {
+		log.Println("Error retrieving all orders from the database")
+	}
+
+	if len(allOrders) == 0 {
+		log.Println("Populating database with test values")
+		err = database.InsertDummyData()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 	// TODO: how much do we pay the investor? how does it work
 	// Do we sell the REC created from the solar panels only to the investor? If so,
 	// isn't that enough to propel investment in the solar contract itself?
@@ -138,18 +151,6 @@ func main() {
 	*/
 	// need to ask for user role as well here, to know whether the user is an investor
 	// or recipient so that we can show both sides
-	// Open the database
-	allOrders, err := database.RetrieveAllOrders()
-	if err != nil {
-		log.Println("Error retrieving all orders from the database")
-	}
-
-	if len(allOrders) == 0 {
-		err = database.InsertDummyData()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
 	// After this, ask what the user wants to do - there are roughly three options:
 	// 1. Create a new investor account
 	// 2. Create a new recipient account
@@ -189,7 +190,7 @@ func main() {
 		tempString := string(bytePassword)
 		invLoginPassword := utils.SHA3hash(tempString)
 
-		inv, err := database.NewInvestor(invLoginUserName, invLoginPassword, invName, true)
+		inv, err := database.NewInvestor(invLoginUserName, invLoginPassword, invName)
 		if err != nil {
 			log.Println("FAILED TO SETUP ACCOUNT, TRY AGAIN")
 			break
@@ -262,18 +263,17 @@ func main() {
 	fmt.Printf("%s", "ENTER YOUR PASSWORD: ")
 	bytePassword, err = terminal.ReadPassword(int(syscall.Stdin))
 	fmt.Println()
-	tempString := string(bytePassword)
-	invLoginPassword := utils.SHA3hash(tempString)
+	invLoginPassword := utils.SHA3hash(string(bytePassword))
 	// check for ibool vs rbool here
 	if rbool {
 		// handle the recipient case here because its simpler
-		recipient, err := database.SearchForRecipient(invLoginUserName)
+		recipient, err := database.ValidateRecipient(invLoginUserName, invLoginPassword)
 		if err != nil {
 			log.Fatal("had trouble retrieving the username")
 		}
 		log.Println("RECIPIENT IS: ", recipient)
-		if recipient.LoginPassword != invLoginPassword { // should rework to check the password, this is just a temp hack
-			log.Printf("INGLOGIN: %s, LOGINP: %s", invLoginPassword, recipient.LoginPassword)
+		if recipient.U.LoginPassword != invLoginPassword { // should rework to check the password, this is just a temp hack
+			log.Printf("INGLOGIN: %s, LOGINP: %s", invLoginPassword, recipient.U.LoginPassword)
 			log.Fatal("Passwords don't match")
 		}
 		// at this point, we have verified the recipient
@@ -389,17 +389,17 @@ func main() {
 					log.Println("Amount entered is not a float, quitting")
 					break
 				}
-				hash, err := assets.TrustAsset(stablecoin.StableUSD, "1000000000", recipient.PublicKey, recipient.Seed)
+				hash, err := assets.TrustAsset(stablecoin.StableUSD, "1000000000", recipient.U.PublicKey, recipient.U.Seed)
 				if err != nil {
 					log.Fatal(err)
 				}
 				log.Println("tx hash for trusting stableUSD: ", hash)
 				// now send coins across and see if our tracker detects it
-				_, hash, err = xlm.SendXLM(stablecoin.Issuer.PublicKey, convAmount, recipient.Seed)
+				_, hash, err = xlm.SendXLM(stablecoin.Issuer.PublicKey, convAmount, recipient.U.Seed)
 				if err != nil {
 					log.Fatal(err)
 				}
-				log.Println("tx hash for sent xlm: ", hash, "pubkey: ", recipient.PublicKey)
+				log.Println("tx hash for sent xlm: ", hash, "pubkey: ", recipient.U.PublicKey)
 				break
 			default:
 				// check whether he wants to go back to the display all screen again
@@ -416,13 +416,9 @@ func main() {
 		return
 	}
 
-	investor, err := database.SearchForInvestor(invLoginUserName)
+	investor, err := database.ValidateInvestor(invLoginUserName, invLoginPassword)
 	if err != nil {
-		log.Fatal("had trouble retrieving user from db")
-	}
-
-	if investor.LoginPassword != invLoginPassword { // should rework to check the password, this is just a temp hack
-		log.Fatal("Passwords don't match")
+		log.Fatal("had trouble retrieving user from db, Username / password doesn't match")
 	}
 
 	for {
@@ -524,26 +520,26 @@ func main() {
 			balance, err = xlm.GetXLMBalance(platform.PublicKey)
 			log.Println("Platform balance updated is: ", balance)
 			log.Printf("Platform seed is: %s and platform's publicKey is %s", platformSeed, platform.PublicKey)
-			log.Println("Investor's publickey is: ", investor.PublicKey)
-			balance, err = xlm.GetXLMBalance(investor.PublicKey)
+			log.Println("Investor's publickey is: ", investor.U.PublicKey)
+			balance, err = xlm.GetXLMBalance(investor.U.PublicKey)
 			if balance == "" {
 				// means we need to setup an account first
 				// Generating a keypair on stellar doesn't mean that you can send funds to it
 				// you need to call the CreateAccount method in order to be able to send funds
 				// to it
 				log.Println("Investor balance empty, refilling!")
-				_, _, err = xlm.SendXLMCreateAccount(investor.PublicKey, "10", platformSeed)
+				_, _, err = xlm.SendXLMCreateAccount(investor.U.PublicKey, "10", platformSeed)
 				if err != nil {
 					log.Println("Investor Account doesn't have funds")
 					log.Fatal(err)
 				}
 			}
 			// balance is in string, convert to float
-			balance, err = xlm.GetXLMBalance(investor.PublicKey)
+			balance, err = xlm.GetXLMBalance(investor.U.PublicKey)
 			balanceI = utils.StringToFloat(balance)
 			log.Println("Investor balance is: ", balanceI)
 			if balanceI < 3 { // to setup trustlines
-				_, _, err = xlm.SendXLM(investor.PublicKey, "10", platformSeed)
+				_, _, err = xlm.SendXLM(investor.U.PublicKey, "10", platformSeed)
 				if err != nil {
 					log.Println("Investor Account doesn't have funds")
 					log.Fatal(err)
@@ -552,32 +548,32 @@ func main() {
 
 			recipient := uOrder.OrderRecipient
 			// from here on, reference recipient
-			balance, err = xlm.GetXLMBalance(recipient.PublicKey)
+			balance, err = xlm.GetXLMBalance(recipient.U.PublicKey)
 			if balance == "" {
 				// means we need to setup an account first
 				// Generating a keypair on stellar doesn't mean that you can send funds to it
 				// you need to call the CreateAccount method in order to be able to send funds
 				// to it
-				_, _, err = xlm.SendXLMCreateAccount(recipient.PublicKey, "10", platformSeed)
+				_, _, err = xlm.SendXLMCreateAccount(recipient.U.PublicKey, "10", platformSeed)
 				if err != nil {
 					log.Println("Recipient Account doesn't have funds")
 					log.Fatal(err)
 				}
 			}
-			balance, err = xlm.GetXLMBalance(recipient.PublicKey)
+			balance, err = xlm.GetXLMBalance(recipient.U.PublicKey)
 			// balance is in string, convert to float
 			balanceI = utils.StringToFloat(balance)
 			log.Println("Recipient balance is: ", balanceI)
 			if balanceI < 3 { // to setup trustlines
-				_, _, err = xlm.SendXLM(recipient.PublicKey, "10", platformSeed)
+				_, _, err = xlm.SendXLM(recipient.U.PublicKey, "10", platformSeed)
 				if err != nil {
 					log.Println("Recipient Account doesn't have funds")
 					log.Fatal(err)
 				}
 			}
 			log.Println("The issuer's public key and private key are: ", platform.PublicKey, " ", platformSeed)
-			log.Println("The investor's public key and private key are: ", investor.PublicKey, " ", investor.Seed)
-			log.Println("The recipient's public key and private key are: ", recipient.PublicKey, " ", recipient.Seed)
+			log.Println("The investor's public key and private key are: ", investor.U.PublicKey, " ", investor.U.Seed)
+			log.Println("The recipient's public key and private key are: ", recipient.U.PublicKey, " ", recipient.U.Seed)
 
 			log.Println(&platform, platformSeed, &investor, &recipient, investedAmountS, uOrder)
 			// so now we have three entities setup, so we create the assets and invest in them
@@ -588,10 +584,10 @@ func main() {
 			fmt.Println("YOUR ORDER HAS BEEN CONFIRMED: ")
 			database.PrettyPrintOrder(cOrder)
 			fmt.Println("PLEASE CHECK A BLOCKHAIN EXPLORER TO CONFIRM BALANCES TO CONFIRM: ")
-			fmt.Println("https://testnet.steexp.com/account/" + investor.PublicKey + "#balances")
+			fmt.Println("https://testnet.steexp.com/account/" + investor.U.PublicKey + "#balances")
 			break
 		case 4:
-			balances, err := xlm.GetAllBalances(investor.PublicKey)
+			balances, err := xlm.GetAllBalances(investor.U.PublicKey)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -627,18 +623,18 @@ func main() {
 			*/
 			// maybe don't trust asset again when you've trusted it already? check if that's
 			// possible and save on the tx fee for a single transaction
-			hash, err := assets.TrustAsset(stablecoin.StableUSD, "10000", investor.PublicKey, investor.Seed)
+			hash, err := assets.TrustAsset(stablecoin.StableUSD, "10000", investor.U.PublicKey, investor.U.Seed)
 			if err != nil {
 				log.Fatal(err)
 			}
 			log.Println("tx hash for trusting stableUSD: ", hash)
 			// now send coins across and see if our tracker detects it
-			_, hash, err = xlm.SendXLM(stablecoin.Issuer.PublicKey, convAmount, investor.Seed)
+			_, hash, err = xlm.SendXLM(stablecoin.Issuer.PublicKey, convAmount, investor.U.Seed)
 			if err != nil {
 				log.Fatal(err)
 			}
 
-			log.Println("tx hash for sent xlm: ", hash, "pubkey: ", investor.PublicKey)
+			log.Println("tx hash for sent xlm: ", hash, "pubkey: ", investor.U.PublicKey)
 			rpc.StartServer("8080") // run this in order to check whether the go routine is running
 			break
 		default:
@@ -655,6 +651,6 @@ func main() {
 	// we now have the order the user wants to confirm, pretty print this order
 	log.Fatal("All good")
 	// start the rpc server
-	rpc.StartServer("8080") // run this in order to check whether the go routine is running
+	rpc.StartServer("8080")    // run this in order to check whether the go routine is running
 	rpc.StartServer(opts.Port) // this must be towards the end
 }
