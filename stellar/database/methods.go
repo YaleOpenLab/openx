@@ -50,6 +50,8 @@ func (a *Investor) TrustAsset(asset build.Asset, limit string) (string, error) {
 // SendAssetToIssuer sends back assets fromn an asset holder to the issuer of the asset.
 func (a *Recipient) SendAssetToIssuer(assetName string, issuerPubkey string, amount string) (int32, string, error) {
 	// SendAssetToIssuer is FROM recipient / investor to issuer
+	// TODO: the platform / issuer doesn't send back the PBToken since PBTOkens are
+	// disabled as of now, can add back in later if needed.
 	paymentTx, err := build.Transaction(
 		build.SourceAccount{a.U.PublicKey},
 		build.TestNetwork,
@@ -107,20 +109,22 @@ func (a *Recipient) SendAssetToIssuer(assetName string, issuerPubkey string, amo
 // (issued bonds, agreements, etc)
 func (a *Recipient) Payback(uOrder Order, assetName string, issuerPubkey string, amount string) error {
 	// once we have the stablecoin here, we can remove the assetName
-	balance, err := xlm.GetAssetBalance(a.U.PublicKey, "STABLEUSD")
+	StableBalance, err := xlm.GetAssetBalance(a.U.PublicKey, "STABLEUSD")
 	// checks for the stablecoin asset
 	if err != nil {
 		log.Println("YOU HAVE NO STABLECOIN BALANCE, PLEASE REFILL ACCOUNT")
 		return fmt.Errorf("YOU HAVE NO STABLECOIN BALANCE, PLEASE REFILL ACCOUNT")
 	}
 
-	oldBalance, err := xlm.GetAssetBalance(a.U.PublicKey, assetName)
+	DEBAssetBalance, err := xlm.GetAssetBalance(a.U.PublicKey, assetName)
 	if err != nil {
 		log.Println("Don't have the debt asset in posession")
 		log.Fatal(err)
 	}
 
-	if utils.StringToFloat(oldBalance) > utils.StringToFloat(balance) {
+	if utils.StringToFloat(amount) > utils.StringToFloat(StableBalance) {
+		// check whether the recipient has enough StableUSD tokens in order to make
+		// this happen
 		log.Println("YOU CAN'T SEND AN AMOUNT MORE THAN WHAT YOU HAVE")
 		return fmt.Errorf("YOU CAN'T SEND AN AMOUNT MORE THAN WHAT YOU HAVE")
 	}
@@ -151,12 +155,12 @@ func (a *Recipient) Payback(uOrder Order, assetName string, issuerPubkey string,
 		log.Fatal(err)
 	}
 
-	newBalanceFloat := utils.FtoS(newBalance)
-	oldBalanceFloat := utils.FtoS(oldBalance)
-	mBillFloat := utils.FtoS(monthlyBill)
+	newBalanceFloat := utils.StringToFloat(newBalance)
+	DEBAssetBalanceFloat := utils.StringToFloat(DEBAssetBalance)
+	mBillFloat := utils.StringToFloat(monthlyBill)
 
-	paidAmount := oldBalanceFloat - newBalanceFloat
-	log.Println("Old Balance: ", oldBalanceFloat, "New Balance: ", newBalanceFloat, "Paid: ", paidAmount, "Bill Amount: ", mBillFloat)
+	paidAmount := DEBAssetBalanceFloat - newBalanceFloat
+	log.Println("Old Balance: ", DEBAssetBalanceFloat, "New Balance: ", newBalanceFloat, "Paid: ", paidAmount, "Bill Amount: ", mBillFloat)
 
 	// would be nice to take some additional action like sending a notification or
 	// something to investors or to the email address given so that everyone is made
@@ -171,7 +175,7 @@ func (a *Recipient) Payback(uOrder Order, assetName string, issuerPubkey string,
 	}
 	// we need to update the database here
 	// no need to retrieve this order again because we have it already
-	uOrder.BalLeft = float64(uOrder.TotalValue) - paidAmount
+	uOrder.BalLeft -= paidAmount
 	uOrder.DateLastPaid = utils.Timestamp()
 	if uOrder.BalLeft == 0 {
 		log.Println("YOU HAVE PAID OFF THIS ASSET, TRANSFERING OWNERSHIP OF ASSET TO YOU")
@@ -186,14 +190,33 @@ func (a *Recipient) Payback(uOrder Order, assetName string, issuerPubkey string,
 	}
 	// balLeft must be updated on the server side and can be challenged easily
 	// if there's some discrepancy since the tx's are on the blockchain
-	return InsertOrder(uOrder)
+	err = InsertOrder(uOrder)
+	if err != nil {
+		return err
+	}
+	err = a.UpdateOrderSlice(uOrder)
+	if err != nil {
+		return err
+	}
+	fmt.Println("UPDATED ORDER: ", uOrder)
+	return err
 }
 
-func (a *Recipient) UpdateOrderSlice(order Order) {
-	for _, mem := range a.ReceivedOrders {
+func (a *Recipient) UpdateOrderSlice(order Order) error{
+	pos := -1
+	for i, mem := range a.ReceivedOrders {
 		if mem.DEBAssetCode == order.DEBAssetCode {
+			log.Println("Rewriting the thing in our copy")
 			// rewrite the thing in memory that we have
-			mem = order
+			pos = i
+			break
 		}
 	}
+	if pos != -1 {
+		// rewrite the thing in memory
+		a.ReceivedOrders[pos] = order
+		err := InsertRecipient(*a)
+		return err
+	}
+	return fmt.Errorf("Not found")
 }

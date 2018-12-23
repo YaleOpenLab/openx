@@ -263,18 +263,14 @@ func main() {
 	fmt.Printf("%s", "ENTER YOUR PASSWORD: ")
 	bytePassword, err = terminal.ReadPassword(int(syscall.Stdin))
 	fmt.Println()
-	invLoginPassword := utils.SHA3hash(string(bytePassword))
+	// invLoginPassword := utils.SHA3hash(string(bytePassword))
+	invLoginPassword := string(bytePassword)
 	// check for ibool vs rbool here
 	if rbool {
 		// handle the recipient case here because its simpler
 		recipient, err := database.ValidateRecipient(invLoginUserName, invLoginPassword)
 		if err != nil {
 			log.Fatal("had trouble retrieving the username")
-		}
-		log.Println("RECIPIENT IS: ", recipient)
-		if recipient.U.LoginPassword != invLoginPassword { // should rework to check the password, this is just a temp hack
-			log.Printf("INGLOGIN: %s, LOGINP: %s", invLoginPassword, recipient.U.LoginPassword)
-			log.Fatal("Passwords don't match")
 		}
 		// at this point, we have verified the recipient
 		// have a for loop here with various options
@@ -357,7 +353,6 @@ func main() {
 				}
 				fmt.Printf("PAYING BACK %s TOWARDS ORDER NUMBER: %d\n", pbAmountS, rtOrder.Index) // use the rtOrder here instead of using orderNumber from long ago
 				// now we need to call back the payback function to payback the asset
-				// TODO: need to check if the recipient has the required USDTokens.
 				// Here, we will simply payback the DEBTokens that was sent to us earlier
 				if rtOrder.DEBAssetCode == "" {
 					log.Fatal("Asset not found")
@@ -368,7 +363,13 @@ func main() {
 					log.Println("PAYBACK TX FAILED, PLEASE TRY AGAIN!")
 					break
 				}
-				fmt.Println("UPDATED ORDER: ")
+				// now send back the PBToken from the platform to the issuer
+				// this function is optional and can be deleted in case we don't need PBAssets
+				err = assets.SendPBAsset(rtOrder,  recipient.U.PublicKey, pbAmountS, platformSeed, platform.PublicKey)
+				if err != nil {
+					log.Println("PBAsset sending back FAILED, PLEASE TRY AGAIN!")
+					break
+				}
 				// check if we can get the roder using the order number that we have here
 				rtOrder, err = database.RetrieveOrder(uint32(orderNumber))
 				if err != nil {

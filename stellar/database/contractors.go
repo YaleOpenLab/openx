@@ -9,11 +9,6 @@ import (
 	"github.com/boltdb/bolt"
 )
 
-// TODO: most of these entities have some common fields like Index, Name,
-// LoginUserName, LoginPassword, FirstSignedUp, Seed, PublicKey
-// we should split these into a separate entity called a "User" and have all
-// other entities import from this low level entity. That would save lots of
-// code duplication on our way forward.
 /*
 	 Contractor Fields
 		 Index uint32 auto
@@ -75,17 +70,22 @@ func RetrieveAllContractors() ([]Contractor, error) {
 	if err != nil {
 		return arr, err
 	}
+	temp, err := RetrieveAllUsers()
+	if err != nil {
+		return arr, err
+	}
+	limit := uint32(len(temp) + 1)
 	defer db.Close()
 
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(ContractorBucket)
 		i := uint32(1)
-		for ; ; i++ {
+		for ; i < limit ; i++ {
 			var rContractor Contractor
 			x := b.Get(utils.Uint32toB(i))
 			if x == nil {
-				// no key, return
-				return nil
+				// might be some other user like an investor or recipient
+				continue
 			}
 			err := json.Unmarshal(x, &rContractor)
 			if err != nil {

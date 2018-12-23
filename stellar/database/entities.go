@@ -66,13 +66,14 @@ type Recipient struct {
 	// instead of storing the PaybackAssets and the DebtAssets, we store this
 	U User
 	// user related functions are called as an instance directly
+	// TODO: better name? idk
 }
 
 // the investor struct contains all the investor details such as
 // public key, seed (if account is created on the website) and ot her stuff which
 // is yet to be decided
 
-// ALl investors will be referenced by their public key, name is optional (maybe necessary?)
+// All investors will be referenced by their public key, name is optional (maybe necessary?)
 // we need to stil ldecide on identity and stuff and how much we want to track
 // people who invest in the schools
 type Investor struct {

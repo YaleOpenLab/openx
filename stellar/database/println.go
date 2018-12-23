@@ -77,8 +77,10 @@ func InsertDummyData() error {
 
 	rec, err = ValidateRecipient("martin", "password") // search by username
 	if err != nil {
+		log.Println("rec.U: ", rec.U.LoginPassword)
 		log.Fatal("Couldn't setup dummy data")
 	}
+
 	order1.Index = 1
 	order1.PanelSize = "100 1000 sq.ft homes each with their own private spaces for luxury"
 	order1.TotalValue = 14000

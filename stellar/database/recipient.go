@@ -139,8 +139,9 @@ func ValidateRecipient(name string, pwd string) (Recipient, error) {
 				return nil
 			}
 			// we have the Recipient class, check password
-			if rRecipient.U.LoginUserName == name && pwd == rRecipient.U.LoginPassword {
+			if rRecipient.U.LoginUserName == name && utils.SHA3hash(pwd) == rRecipient.U.LoginPassword {
 				inv = rRecipient
+				return nil
 			}
 		}
 		return fmt.Errorf("Not Found")

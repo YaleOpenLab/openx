@@ -121,6 +121,12 @@ func RetrieveInvestor(key uint32) (Investor, error) {
 // This is useful for checking the user's password while logging in
 func ValidateInvestor(uname string, pwd string) (Investor, error) {
 	var inv Investor
+	var err error
+	temp, err := RetrieveAllUsers()
+	if err != nil {
+		return inv, err
+	}
+	limit := uint32(len(temp) + 1)
 	db, err := OpenDB()
 	if err != nil {
 		return inv, err
@@ -129,19 +135,22 @@ func ValidateInvestor(uname string, pwd string) (Investor, error) {
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(InvestorBucket)
 		i := uint32(1)
-		for ; ; i++ {
+		for ; i < limit ; i++ {
+			log.Println("I: ", i)
 			var rInvestor Investor
 			x := b.Get(utils.Uint32toB(i))
 			if x == nil {
-				return nil
+				continue
 			}
 			err := json.Unmarshal(x, &rInvestor)
 			if err != nil {
 				return nil
 			}
 			// we have the investor class, check names
-			if rInvestor.U.LoginUserName == uname && rInvestor.U.LoginPassword == pwd {
+			//log.Printf("%s\n%s\n%s\n%s\n", rInvestor.U.LoginUserName, uname, utils.SHA3hash(pwd), rInvestor.U.LoginPassword)
+			if rInvestor.U.LoginUserName == uname && rInvestor.U.LoginPassword == utils.SHA3hash(pwd) {
 				inv = rInvestor
+				return nil
 			}
 		}
 		return fmt.Errorf("Not Found")

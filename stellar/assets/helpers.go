@@ -1,6 +1,7 @@
 package assets
 
 import (
+	database "github.com/YaleOpenLab/smartPropertyMVP/stellar/database"
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
 )
 
@@ -19,10 +20,14 @@ func AssetID(inputString string) string {
 
 // CalculatePayback is a TODO function that should simply some up the PBToken
 // balance and then return them to the frontend UI for a nice display
-func CalculatePayback(balance string, noOfMonths string) error {
+func CalculatePayback(order database.Order, amount string) string {
 	// the idea is that we should be able ot pass an assetId to this function
 	// and it must calculate how much time we have left for payback. For this example
 	// until twe do the db stuff, lets pass a few params (although this could be done
 	// separately as well).
-	return nil
+	// TODO: this functon needs to be the payback function
+	amountF := utils.StringToFloat(amount)
+	amountPB := (amountF / float64(order.TotalValue)) * float64(order.Years*12)
+	amountPBString := utils.FloatToString(amountPB)
+	return amountPBString
 }

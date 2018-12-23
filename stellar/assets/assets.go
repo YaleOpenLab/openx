@@ -250,3 +250,12 @@ func InvestInOrder(issuer *database.Platform, issuerSeed string, investor *datab
 	err = database.InsertOrder(uOrder)
 	return uOrder, err
 }
+
+
+func SendPBAsset(order database.Order, destination string, amount string, Seed string, PublicKey string) error {
+	// need to calculate how much PBAsset we need to send back.
+	amountS := CalculatePayback(order, amount)
+	_, txHash, err := SendAssetFromIssuer(order.PBAssetCode, destination, amountS, Seed, PublicKey)
+	log.Println("TXHASH is: ", txHash)
+	return err
+}
