@@ -73,7 +73,7 @@ func RetrieveAllInvestors() ([]Investor, error) {
 	defer db.Close()
 
 	err = db.Update(func(tx *bolt.Tx) error {
-		// this is Update to cover the case where the  bucket doesn't exists and we're
+		// this is Update to cover the case where the bucket doesn't exist and we're
 		// trying to retrieve a list of keys
 		b := tx.Bucket(InvestorBucket)
 		i := uint32(1)

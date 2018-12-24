@@ -22,15 +22,11 @@
 // given assets at the time of creation. PBTokens are non-fungible, it means
 // that one order's payback token is not worth the same as the other order's PBToken.
 // the other two tokens are fungible - each INVToken is worth +1USD and each DEBToken
-// is worth -1 USD and can be trnasferred to other peers willing to take profit / debt
+// is worth -1 USD and can be transferred to other peers willing to take profit / debt
 // on behalf of the above entities. SInce PBToken is not fungible, the flag
 // authorization_required needs to be set and a party without a trustline with
 // the issuer can not trade in this asset (and ideally, the issuer will not accept
 // trustlines in this new asset)
-// Supported payback periods right now are
-// A. 3 YEARS = 36 PBTokens
-// B. 5 YEARS = 60 PBTokens
-// C. 7 YEARS = 84 PBTokens
 // The hard part is ensuring that the assets are pegged to the USD in a stable way.
 // we could ensure the peg ourselves by accepting USD off chain, but that's not provable
 // on chain and the investor has to trust the issuer with that. Also, in this case,
@@ -142,7 +138,7 @@ func InvestInOrder(issuer *database.Platform, issuerSeed string, investor *datab
 
 	// invest only in integer values as of now, TODO: change to float
 	investmentAmount := utils.StoI(investmentAmountS)
-	//  check if investment amount is greater than or equal to the order requirements
+	// check if investment amount is greater than or equal to the order requirements
 	amtLeft := uOrder.TotalValue - uOrder.MoneyRaised
 	if investmentAmount > amtLeft {
 		fmt.Println("User is trying to invest more thna what is needed, print and exit")
@@ -152,11 +148,11 @@ func InvestInOrder(issuer *database.Platform, issuerSeed string, investor *datab
 	// user has decided to invest in a part of the order (don't know if full yet)
 	// so if there has been no token codes assigned yet, we need to create them and
 	// assign them here
-	// you can retrieve these anywhere since the metadata will mostt likely be unique
+	// you can retrieve these anywhere since the metadata will most likely be unique
 	assetName := AssetID(uOrder.Metadata)
 	if uOrder.INVAssetCode == "" {
 		// this person is the first investor, set the investor token name
-		INVAssetCode := AssetID("INVTokens_" + assetName)
+		INVAssetCode := AssetID(consts.INVAssetPrefix + assetName)
 		uOrder.INVAssetCode = INVAssetCode              // set the investeor code
 		_ = CreateAsset(INVAssetCode, issuer.PublicKey) // create the asset itself, since it would not have bene created earlier
 	}
@@ -194,15 +190,19 @@ func InvestInOrder(issuer *database.Platform, issuerSeed string, investor *datab
 		return uOrder, err
 	}
 	fmt.Println("Updated investor database")
+	// append the investor class to the list of order investors
+	// if the same investor has invested twice, he will appear twice
+	// can be resolved on the UI side by requiring unique, so not doing that here
+	uOrder.OrderInvestors = append(uOrder.OrderInvestors, *investor)
 	if uOrder.MoneyRaised == uOrder.TotalValue {
 		// this order covers up the amount nedeed for the order, so set the DEBAssetCode
 		// and PBAssetCodes, generate them and give to the recipient
-		DEBAssetCode := AssetID("DEBTokens_" + assetName)
-		PBAssetCode := AssetID("PBTokens_" + assetName)
+		DEBAssetCode := AssetID(consts.DEBAssetPrefix + assetName)
+		PBAssetCode := AssetID(consts.PBAssetPrefix + assetName)
 		DEBasset := CreateAsset(DEBAssetCode, issuer.PublicKey)
 		PBasset := CreateAsset(PBAssetCode, issuer.PublicKey)
 		// and the school needs to trust me only for paybackTokens amount of PB tokens
-		pbAmtTrust := utils.IntToString(uOrder.Years * 24)
+		pbAmtTrust := utils.IntToString(uOrder.Years * 12 * 2) // two way exchange possible, to account for errors
 		txHash, err = TrustAsset(PBasset, pbAmtTrust, recipient.U.PublicKey, recipient.U.Seed)
 		if err != nil {
 			return uOrder, err
@@ -232,7 +232,7 @@ func InvestInOrder(issuer *database.Platform, issuerSeed string, investor *datab
 		// easy to get that from the blockchain)
 		log.Println("UORDER BEFORE DB: ", uOrder.DEBAssetCode)
 		if uOrder.DEBAssetCode == "" {
-			log.Fatal("DOnt work")
+			log.Fatal("Empty debt asset code")
 		}
 		err = database.InsertRecipient(*recipient)
 		if err != nil {
@@ -256,6 +256,6 @@ func SendPBAsset(order database.Order, destination string, amount string, Seed s
 	// need to calculate how much PBAsset we need to send back.
 	amountS := CalculatePayback(order, amount)
 	_, txHash, err := SendAssetFromIssuer(order.PBAssetCode, destination, amountS, Seed, PublicKey)
-	log.Println("TXHASH is: ", txHash)
+	log.Println("TXHASH for payback is: ", txHash)
 	return err
 }

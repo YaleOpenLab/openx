@@ -10,6 +10,7 @@ import (
 	"syscall"
 
 	assets "github.com/YaleOpenLab/smartPropertyMVP/stellar/assets"
+	consts "github.com/YaleOpenLab/smartPropertyMVP/stellar/consts"
 	database "github.com/YaleOpenLab/smartPropertyMVP/stellar/database"
 	rpc "github.com/YaleOpenLab/smartPropertyMVP/stellar/rpc"
 	stablecoin "github.com/YaleOpenLab/smartPropertyMVP/stellar/stablecoin"
@@ -34,7 +35,8 @@ var opts struct {
 func ValidateInputs() {
 	if (opts.RecYears != 0) && !(opts.RecYears == 3 || opts.RecYears == 5 || opts.RecYears == 7) {
 		// right now payoff periods are limited, I guess they don't need to be,
-		// but in this case jsut are
+		// but in this case just are. Call this fucntion later when orders are being
+		// created. Maybe don't need to restrict this at all?
 		log.Fatal(fmt.Errorf("Number of years not supported"))
 	}
 }
@@ -277,9 +279,9 @@ func main() {
 		for {
 			fmt.Println("------------RECIPIENT INTERFACE------------")
 			fmt.Println("----CHOOSE ONE OF THE FOLLOWING OPTIONS----")
-			fmt.Println("  1. Display all Open Assets")
+			fmt.Println("  1. Display all Open Orders")
 			fmt.Println("  2. Display my Profile")
-			fmt.Println("  3. Payback towards an Asset")
+			fmt.Println("  3. Payback towards an Order")
 			fmt.Println("  4. Exchange XLM for USD")
 			fmt.Println("  default: Exit")
 			scanner.Scan()
@@ -293,7 +295,7 @@ func main() {
 			}
 			switch menuInput {
 			case 1:
-				fmt.Println("------------LIST OF ALL AVAILABLE ASSETS------------")
+				fmt.Println("------------LIST OF ALL AVAILABLE ORDERS------------")
 				allOrders, err := database.RetrieveAllOrders()
 				if err != nil {
 					log.Println("Error retrieving all orders from the database")
@@ -304,13 +306,6 @@ func main() {
 				database.PrettyPrintRecipient(recipient)
 				break
 			case 3:
-				// regarding payback, we need to first check if the STABLEUSD asset
-				// is present on our account. If yes, we assume that it is 1:1 with USD
-				// and then we need to pay the same balance in DEBTokens.
-				// one could transfer the STRONGUSD token directly as well but we wouldn't
-				// have a proof of token ownership / receipt
-				// TODO: This does not account for the XLM/USD exchange and a recipient
-				// can payback infinitely for now
 				database.PrettyPrintPBOrders(recipient.ReceivedOrders)
 				fmt.Println("WHICH ORDER DO YOU WANT TO PAY BACK TOWARDS? (ENTER ORDER NUMBER)")
 				scanner.Scan()
@@ -355,7 +350,7 @@ func main() {
 				// now we need to call back the payback function to payback the asset
 				// Here, we will simply payback the DEBTokens that was sent to us earlier
 				if rtOrder.DEBAssetCode == "" {
-					log.Fatal("Asset not found")
+					log.Fatal("Order not found")
 				}
 				err = recipient.Payback(rtOrder, rtOrder.DEBAssetCode, platform.PublicKey, pbAmountS)
 				// TODO: right now, the payback asset directly sends back, change
@@ -424,24 +419,11 @@ func main() {
 
 	for {
 		// Main investor loop
-		// password is password
-		// ask for the investor username and password
-		/*
-			err = database.DeleteOrder(1, db)
-			if err != nil {
-				log.Println("Error deleting entry 1 from database")
-			}
-			err = database.DeleteOrder(2, db)
-			if err != nil {
-				log.Println("Error deleting entry 2 from database")
-			}
-		*/
-		// have a menu here that will ask you what you want to do
 		fmt.Println("------------INVESTOR INTERFACE------------")
 		fmt.Println("----CHOOSE ONE OF THE FOLLOWING OPTIONS----")
-		fmt.Println("  1. Display all Open Assets")
+		fmt.Println("  1. Display all Open Order")
 		fmt.Println("  2. Display my Profile")
-		fmt.Println("  3. Invest in an Asset")
+		fmt.Println("  3. Invest in an Order")
 		fmt.Println("  4. Display All Balances")
 		fmt.Println("  5. Exchange XLM for USD")
 		fmt.Println("  default: Exit")
@@ -456,7 +438,7 @@ func main() {
 		}
 		switch menuInput {
 		case 1:
-			fmt.Println("------------LIST OF ALL AVAILABLE ASSETS------------")
+			fmt.Println("------------LIST OF ALL AVAILABLE ORDERS------------")
 			allOrders, err := database.RetrieveAllOrders()
 			if err != nil {
 				log.Println("Error retrieving all orders from the database")
@@ -467,7 +449,7 @@ func main() {
 			database.PrettyPrintInvestor(investor)
 			break
 		case 3:
-			fmt.Println("----WHICH ASSET DO YOU WANT TO INVEST IN? (ENTER NUMBER WITHOUT SPACES)----")
+			fmt.Println("----WHICH ORDER DO YOU WANT TO INVEST IN? (ENTER ORDER NUMBER WITHOUT SPACES)----")
 			scanner.Scan()
 			if scanner.Err() != nil {
 				fmt.Println("Couldn't read user input")
@@ -529,7 +511,7 @@ func main() {
 				// you need to call the CreateAccount method in order to be able to send funds
 				// to it
 				log.Println("Investor balance empty, refilling!")
-				_, _, err = xlm.SendXLMCreateAccount(investor.U.PublicKey, "10", platformSeed)
+				_, _, err = xlm.SendXLMCreateAccount(investor.U.PublicKey, consts.DonateBalance, platformSeed)
 				if err != nil {
 					log.Println("Investor Account doesn't have funds")
 					log.Fatal(err)
@@ -540,7 +522,7 @@ func main() {
 			balanceI = utils.StringToFloat(balance)
 			log.Println("Investor balance is: ", balanceI)
 			if balanceI < 3 { // to setup trustlines
-				_, _, err = xlm.SendXLM(investor.U.PublicKey, "10", platformSeed)
+				_, _, err = xlm.SendXLM(investor.U.PublicKey, consts.DonateBalance, platformSeed)
 				if err != nil {
 					log.Println("Investor Account doesn't have funds")
 					log.Fatal(err)
@@ -555,7 +537,7 @@ func main() {
 				// Generating a keypair on stellar doesn't mean that you can send funds to it
 				// you need to call the CreateAccount method in order to be able to send funds
 				// to it
-				_, _, err = xlm.SendXLMCreateAccount(recipient.U.PublicKey, "10", platformSeed)
+				_, _, err = xlm.SendXLMCreateAccount(recipient.U.PublicKey, consts.DonateBalance, platformSeed)
 				if err != nil {
 					log.Println("Recipient Account doesn't have funds")
 					log.Fatal(err)
@@ -566,7 +548,7 @@ func main() {
 			balanceI = utils.StringToFloat(balance)
 			log.Println("Recipient balance is: ", balanceI)
 			if balanceI < 3 { // to setup trustlines
-				_, _, err = xlm.SendXLM(recipient.U.PublicKey, "10", platformSeed)
+				_, _, err = xlm.SendXLM(recipient.U.PublicKey, consts.DonateBalance, platformSeed)
 				if err != nil {
 					log.Println("Recipient Account doesn't have funds")
 					log.Fatal(err)
@@ -580,7 +562,8 @@ func main() {
 			// so now we have three entities setup, so we create the assets and invest in them
 			cOrder, err := assets.InvestInOrder(&platform, platformSeed, &investor, &recipient, investedAmountS, uOrder) // assume payback period is 5
 			if err != nil {
-				log.Fatal(err)
+				log.Println(err)
+				continue
 			}
 			fmt.Println("YOUR ORDER HAS BEEN CONFIRMED: ")
 			database.PrettyPrintOrder(cOrder)
@@ -607,24 +590,10 @@ func main() {
 				log.Println("Amount entered is not a float, quitting")
 				break
 			}
-			// pay this stablecoin account to test
-			/*
-				reuse this to write unit tests
-				privkey, pubkey, err := xlm.GetKeyPair()
-				if err != nil {
-					log.Fatal(err)
-				}
-				log.Println("created a new pirvkey, pubkrey pair", privkey, pubkey)
-				// setup this account for testing
-				err = xlm.GetXLM(pubkey)
-				if err != nil {
-					log.Fatal(err)
-				}
-				// first trust the stablecoin issuer
-			*/
 			// maybe don't trust asset again when you've trusted it already? check if that's
-			// possible and save on the tx fee for a single transaction
-			hash, err := assets.TrustAsset(stablecoin.StableUSD, "10000", investor.U.PublicKey, investor.U.Seed)
+			// possible and save on the tx fee for a single transaction. But I guess its
+			// difficult to retrieve trustlines, so we'll go ahead with it
+			hash, err := assets.TrustAsset(stablecoin.StableUSD, consts.StablecoinTrustLimit, investor.U.PublicKey, investor.U.Seed)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -649,9 +618,5 @@ func main() {
 		} // end of switch
 	}
 	log.Fatal("")
-	// we now have the order the user wants to confirm, pretty print this order
-	log.Fatal("All good")
-	// start the rpc server
-	rpc.StartServer("8080")    // run this in order to check whether the go routine is running
 	rpc.StartServer(opts.Port) // this must be towards the end
 }

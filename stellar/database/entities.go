@@ -8,8 +8,8 @@ package database
 // parameters. It should hold a contractor, developers, guarantor, originator
 // along with the fields already defined. The other fields should be displayed
 // on the frontend.
-// Another interesting and needed TODO is separating the privkey / pubkey logic
-// a bit more and makign it more wallet like
+// Order is the structure that is actually stored in the database
+// Order is a subset of the larger struct Contractor, which is still a TODO
 type Order struct {
 	Index         uint32  // an Index to keep quick track of how many orders exist
 	PanelSize     string  // size of the given panel, for diplsaying to the user who wants to bid stuff
@@ -53,9 +53,9 @@ type User struct {
 	PublicKey string
 	// PublicKey denotes the public key of the recipient
 	LoginUserName string
-	// the thing you use to login to the platform
+	// the username you use to login to the platform
 	LoginPassword string
-	// password, which is separate from the generated seed.
+	// the password, which you use to authenticate on the platform
 	FirstSignedUp string
 	// auto generated timestamp
 }
@@ -173,6 +173,9 @@ type Feedback struct {
 // we aren't defining the Contract part for each entity because that would casue repetition.
 // Instead, a single Contract struct can be used as an engineering proposal, as a quote,
 // etc.
+// A contract is a superset of an order and is used to display to people what is needed.
+// it will have an order class inside it, similar to how the User class exsits inside
+// the investor and recipient classes.
 type Contract struct {
 	// a contract belongs to a Contractor, so there is no need for a reverse mapping
 	// from the Contract to the Contractor
@@ -183,4 +186,5 @@ type Contract struct {
 	// neighbourly and swytch regarding this. Maybe we need a bridge from stellar to
 	// ethereum to interface with the ERC721 or maybe we coul have an oracle that
 	// does this for us.
+	O Order
 }
