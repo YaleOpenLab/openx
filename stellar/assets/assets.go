@@ -168,7 +168,7 @@ func InvestInOrder(issuer *database.Platform, issuerSeed string, investor *datab
 	INVAsset.Issuer = issuer.PublicKey
 	// INVAsset is not a native token, so don't set that
 	// now we need to send the investor the INVAssets as proof of investment
-	txHash, err := TrustAsset(INVAsset, utils.IntToString(uOrder.TotalValue), investor.U.PublicKey, investor.U.Seed)
+	txHash, err := TrustAsset(INVAsset, utils.ItoS(uOrder.TotalValue), investor.U.PublicKey, investor.U.Seed)
 	// trust upto the total value of the asset
 	if err != nil {
 		return uOrder, err
@@ -202,21 +202,21 @@ func InvestInOrder(issuer *database.Platform, issuerSeed string, investor *datab
 		DEBasset := CreateAsset(DEBAssetCode, issuer.PublicKey)
 		PBasset := CreateAsset(PBAssetCode, issuer.PublicKey)
 		// and the school needs to trust me only for paybackTokens amount of PB tokens
-		pbAmtTrust := utils.IntToString(uOrder.Years * 12 * 2) // two way exchange possible, to account for errors
+		pbAmtTrust := utils.ItoS(uOrder.Years * 12 * 2) // two way exchange possible, to account for errors
 		txHash, err = TrustAsset(PBasset, pbAmtTrust, recipient.U.PublicKey, recipient.U.Seed)
 		if err != nil {
 			return uOrder, err
 		}
 		log.Println("Recipient Trusted Payback asset: ", PBasset.Code, " tx hash: ", txHash)
 
-		txHash, err = TrustAsset(DEBasset, utils.IntToString(uOrder.TotalValue*2), recipient.U.PublicKey, recipient.U.Seed) // since debt = invested amount
+		txHash, err = TrustAsset(DEBasset, utils.ItoS(uOrder.TotalValue*2), recipient.U.PublicKey, recipient.U.Seed) // since debt = invested amount
 		// *2 is for sending the amount back
 		if err != nil {
 			return uOrder, err
 		}
 		log.Println("Recipient Trusted Debt asset: ", DEBasset.Code, " tx hash: ", txHash)
 		log.Println("Sending DEBasset: ", DEBAssetCode)
-		_, txHash, err = SendAssetFromIssuer(DEBAssetCode, recipient.U.PublicKey, utils.IntToString(uOrder.TotalValue), issuerSeed, issuer.PublicKey) // same amount as debt
+		_, txHash, err = SendAssetFromIssuer(DEBAssetCode, recipient.U.PublicKey, utils.ItoS(uOrder.TotalValue), issuerSeed, issuer.PublicKey) // same amount as debt
 		if err != nil {
 			return uOrder, err
 		}

@@ -26,7 +26,7 @@ func NewUser(uname string, pwd string, Name string) (User, error) {
 	if len(allUsers) == 0 {
 		a.Index = 1
 	} else {
-		a.Index = uint32(len(allUsers) + 1)
+		a.Index = len(allUsers) + 1
 	}
 
 	a.Name = Name
@@ -56,7 +56,7 @@ func InsertUser(a User) error {
 			log.Println("Failed to encode this data into json")
 			return err
 		}
-		return b.Put([]byte(utils.Uint32toB(a.Index)), encoded)
+		return b.Put([]byte(utils.ItoB(a.Index)), encoded)
 	})
 	return err
 }
@@ -72,10 +72,9 @@ func RetrieveAllUsers() ([]User, error) {
 
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(UserBucket)
-		i := uint32(1)
-		for ; ; i++ {
+		for i := 1; ; i++ {
 			var rUser User
-			x := b.Get(utils.Uint32toB(i))
+			x := b.Get(utils.ItoB(i))
 			if x == nil {
 				return nil
 			}
@@ -91,7 +90,7 @@ func RetrieveAllUsers() ([]User, error) {
 }
 
 // RetrieveUser retrieves a particular User indexed by key from the database
-func RetrieveUser(key uint32) (User, error) {
+func RetrieveUser(key int) (User, error) {
 	var inv User
 	db, err := OpenDB()
 	if err != nil {
@@ -100,7 +99,7 @@ func RetrieveUser(key uint32) (User, error) {
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(UserBucket)
-		x := b.Get(utils.Uint32toB(key))
+		x := b.Get(utils.ItoB(key))
 		if x == nil {
 			return nil
 		}
@@ -109,9 +108,7 @@ func RetrieveUser(key uint32) (User, error) {
 	return inv, nil
 }
 
-// SearchForUser searches for an User when passed the User's name.
-// This is useful for checking the user's password while logging in
-func SearchForUser(name string, pwhash string) (User, error) {
+func ValidateUser(name string, pwhash string) (User, error) {
 	var inv User
 	db, err := OpenDB()
 	if err != nil {
@@ -120,10 +117,9 @@ func SearchForUser(name string, pwhash string) (User, error) {
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(UserBucket)
-		i := uint32(1)
-		for ; ; i++ {
+		for i := 1; ; i++ {
 			var rUser User
-			x := b.Get(utils.Uint32toB(i))
+			x := b.Get(utils.ItoB(i))
 			if x == nil {
 				return nil
 			}

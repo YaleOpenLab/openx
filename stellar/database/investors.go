@@ -3,7 +3,6 @@ package database
 // contains the WIP Investor struct which will be st ored in a separate bucket
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
@@ -43,7 +42,7 @@ func InsertInvestor(a Investor) error {
 			log.Println("Failed to encode this data into json")
 			return err
 		}
-		return b.Put([]byte(utils.Uint32toB(a.U.Index)), encoded)
+		return b.Put([]byte(utils.ItoB(a.U.Index)), encoded)
 		// but why do we index based on Index?
 		// this is because we do want to enumerate through all investors, which can not be done
 		// in a name based construction. But this makes search ahrder, since now you
@@ -65,7 +64,7 @@ func RetrieveAllInvestors() ([]Investor, error) {
 	if err != nil {
 		return arr, err
 	}
-	limit := uint32(len(temp) + 1)
+	limit := len(temp) + 1
 	db, err := OpenDB()
 	if err != nil {
 		return arr, err
@@ -76,10 +75,9 @@ func RetrieveAllInvestors() ([]Investor, error) {
 		// this is Update to cover the case where the bucket doesn't exist and we're
 		// trying to retrieve a list of keys
 		b := tx.Bucket(InvestorBucket)
-		i := uint32(1)
-		for ; i < limit; i++ {
+		for i := 1; i < limit; i++ {
 			var rInvestor Investor
-			x := b.Get(utils.Uint32toB(i))
+			x := b.Get(utils.ItoB(i))
 			if x == nil {
 				// this is where the key does not exist
 				continue
@@ -99,7 +97,7 @@ func RetrieveAllInvestors() ([]Investor, error) {
 }
 
 // RetrieveInvestor retrieves a particular investor indexed by key from the database
-func RetrieveInvestor(key uint32) (Investor, error) {
+func RetrieveInvestor(key int) (Investor, error) {
 	var inv Investor
 	db, err := OpenDB()
 	if err != nil {
@@ -108,7 +106,7 @@ func RetrieveInvestor(key uint32) (Investor, error) {
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(InvestorBucket)
-		x := b.Get(utils.Uint32toB(key))
+		x := b.Get(utils.ItoB(key))
 		if x == nil {
 			return nil
 		}
@@ -117,46 +115,11 @@ func RetrieveInvestor(key uint32) (Investor, error) {
 	return inv, nil
 }
 
-// ValidateInvestor searches for an investor when passed the investor's name.
-// This is useful for checking the user's password while logging in
-func ValidateInvestor(uname string, pwhash string) (Investor, error) {
-	var inv Investor
-	var err error
-	temp, err := RetrieveAllUsers()
+func ValidateInvestor(name string, pwhash string) (Investor, error) {
+	var rec Investor
+	user, err := ValidateUser(name, pwhash)
 	if err != nil {
-		return inv, err
+		return rec, err
 	}
-	limit := uint32(len(temp) + 1)
-	db, err := OpenDB()
-	if err != nil {
-		return inv, err
-	}
-	defer db.Close()
-	err = db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(InvestorBucket)
-		i := uint32(1)
-		for ; i < limit ; i++ {
-			log.Println("I: ", i)
-			var rInvestor Investor
-			x := b.Get(utils.Uint32toB(i))
-			if x == nil {
-				continue
-			}
-			err := json.Unmarshal(x, &rInvestor)
-			if err != nil {
-				return nil
-			}
-			// we have the investor class, check names
-			//log.Printf("%s\n%s\n%s\n%s\n", rInvestor.U.LoginUserName, uname, utils.SHA3hash(pwd), rInvestor.U.LoginPassword)
-			if rInvestor.U.LoginUserName == uname && rInvestor.U.LoginPassword == pwhash {
-				inv = rInvestor
-				return nil
-			}
-		}
-		return fmt.Errorf("Not Found")
-	})
-	if inv.U.Index == 0 {
-		return inv, fmt.Errorf("Investor Not Found")
-	}
-	return inv, err
+	return RetrieveInvestor(user.Index)
 }

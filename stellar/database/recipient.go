@@ -3,7 +3,6 @@ package database
 // the struct itself.
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
@@ -40,7 +39,7 @@ func InsertRecipient(a Recipient) error {
 			log.Println("Failed to encode this data into json")
 			return err
 		}
-		return b.Put([]byte(utils.Uint32toB(a.U.Index)), encoded)
+		return b.Put([]byte(utils.ItoB(a.U.Index)), encoded)
 		// but why do we index based on Index?
 		// this is because we do want to enumerate through all Recipients, which can not be done
 		// in a name based construction. But this makes search ahrder, since now you
@@ -60,7 +59,7 @@ func RetrieveAllRecipients() ([]Recipient, error) {
 	if err != nil {
 		return arr, err
 	}
-	limit := uint32(len(temp) + 1)
+	limit := len(temp) + 1
 	db, err := OpenDB()
 	if err != nil {
 		return arr, err
@@ -71,10 +70,10 @@ func RetrieveAllRecipients() ([]Recipient, error) {
 		// this is Update to cover the case where the  bucket doesn't exists and we're
 		// trying to retrieve a list of keys
 		b := tx.Bucket(RecipientBucket)
-		i := uint32(1)
+		i := 1
 		for ; i < limit; i++ {
 			var rRecipient Recipient
-			x := b.Get(utils.Uint32toB(i))
+			x := b.Get(utils.ItoB(i))
 			if x == nil {
 				// this is where the key does not exist
 				continue
@@ -93,7 +92,7 @@ func RetrieveAllRecipients() ([]Recipient, error) {
 	return arr, err
 }
 
-func RetrieveRecipient(key uint32) (Recipient, error) {
+func RetrieveRecipient(key int) (Recipient, error) {
 	var inv Recipient
 	db, err := OpenDB()
 	if err != nil {
@@ -102,7 +101,7 @@ func RetrieveRecipient(key uint32) (Recipient, error) {
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(RecipientBucket)
-		x := b.Get(utils.Uint32toB(key))
+		x := b.Get(utils.ItoB(key))
 		if x == nil {
 			return nil
 		}
@@ -112,46 +111,16 @@ func RetrieveRecipient(key uint32) (Recipient, error) {
 }
 
 func ValidateRecipient(name string, pwhash string) (Recipient, error) {
-	var inv Recipient
-	temp, err := RetrieveAllUsers()
+	var rec Recipient
+	user, err := ValidateUser(name, pwhash)
 	if err != nil {
-		return inv, err
+		return rec, err
 	}
-	limit := uint32(len(temp) + 1)
-	db, err := OpenDB()
-	if err != nil {
-		return inv, err
-	}
-	defer db.Close()
-
-	err = db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(RecipientBucket)
-		i := uint32(1)
-		for ; i < limit ; i++ {
-			var rRecipient Recipient
-			x := b.Get(utils.Uint32toB(i))
-			if x == nil {
-				// the given key may be an investor
-				continue
-			}
-			err := json.Unmarshal(x, &rRecipient)
-			if err != nil {
-				return nil
-			}
-			// we have the Recipient class, check password
-			if rRecipient.U.LoginUserName == name && pwhash == rRecipient.U.LoginPassword {
-				inv = rRecipient
-				return nil
-			}
-		}
-		return fmt.Errorf("Not Found")
-	})
-	return inv, err
+	return RetrieveRecipient(user.Index)
 }
 
-
 // DeleteKeyFromBucket deletes a given key from the bucket _bucketName
-func DeleteKeyFromBucket(key uint32, bucketName []byte) error {
+func DeleteKeyFromBucket(key int, bucketName []byte) error {
 	// deleting order might be dangerous since that would mess with the RetrieveAllOrders
 	// function, have it in here for now, don't do too much with it / fiox retrieve all
 	// to handle this case
@@ -162,7 +131,7 @@ func DeleteKeyFromBucket(key uint32, bucketName []byte) error {
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(RecipientBucket)
-		err := b.Delete(utils.Uint32toB(key))
+		err := b.Delete(utils.ItoB(key))
 		if err != nil {
 			return err
 		}

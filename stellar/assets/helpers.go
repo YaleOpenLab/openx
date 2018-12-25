@@ -26,8 +26,8 @@ func CalculatePayback(order database.Order, amount string) string {
 	// until twe do the db stuff, lets pass a few params (although this could be done
 	// separately as well).
 	// TODO: this functon needs to be the payback function
-	amountF := utils.StringToFloat(amount)
+	amountF := utils.StoF(amount)
 	amountPB := (amountF / float64(order.TotalValue)) * float64(order.Years*12)
-	amountPBString := utils.FloatToString(amountPB)
+	amountPBString := utils.FtoS(amountPB)
 	return amountPBString
 }

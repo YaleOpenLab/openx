@@ -28,15 +28,6 @@ var opts struct {
 	Port     string `short:"p" description:"The port on which the server runs on"`
 }
 
-func ValidateInputs() {
-	if (opts.RecYears != 0) && !(opts.RecYears == 3 || opts.RecYears == 5 || opts.RecYears == 7) {
-		// right now payoff periods are limited, I guess they don't need to be,
-		// but in this case just are. Call this fucntion later when orders are being
-		// created. Maybe don't need to restrict this at all?
-		log.Fatal(fmt.Errorf("Number of years not supported"))
-	}
-}
-
 func main() {
 	var err error
 	_, err = flags.ParseArgs(&opts, os.Args)
@@ -45,17 +36,9 @@ func main() {
 	}
 
 	// Open the database
-	allOrders, err := database.RetrieveAllOrders()
+	err = StartPlatform()
 	if err != nil {
-		log.Println("Error retrieving all orders from the database")
-	}
-
-	if len(allOrders) == 0 {
-		log.Println("Populating database with test values")
-		err = database.InsertDummyData()
-		if err != nil {
-			log.Fatal(err)
-		}
+		log.Fatal(err)
 	}
 
 	// TODO: how much do we pay the investor? how does it work
@@ -71,7 +54,6 @@ func main() {
 	// too much to consider on our side
 	// need to spin up a local stellar node and test if things run fine if we just
 	// change the API mapping
-	// need to create different entities and create db mappings for them.
 	// need to update collections to directly hold orders, similar to the investor
 	// class that we have already
 	// need to implement the contract stuff as described earlier, so that people
@@ -82,43 +64,25 @@ func main() {
 	// to see if we can get something from there.
 
 	fmt.Println("------------STELLAR HOUSE INVESTMENT CLI INTERFACE------------")
-	ValidateInputs()
 
-	// setup issuer account if the platform doesn't  already exist
-	// check whether the platform exists
-	tmpPlatform, err := database.RetrievePlatform()
-	if err != nil {
-		log.Fatal(err)
-	}
-	if len(tmpPlatform.PublicKey) == 0 {
-		// this is the first time, so we initialize a platform
-		log.Println("Initializing a new platform")
-		_, err := database.InitializePlatform()
-		if err != nil {
-			log.Fatal(err)
-		}
-	} else {
-		log.Println("Platform already exists, using existing one")
-	}
+	// retrieve the platform from database
 	platform, err := database.RetrievePlatform()
 	if err != nil {
 		log.Fatal(err)
 	}
 	// ask for the platform's password
 	// now here, we must decrypt the seed before using it in other places
-	fmt.Printf("%s: ", "ENTER PASSWORD TO UNLOCK THE PLATFORM")
-	rawPassword, err := utils.ScanRawPassword()
+	platformSeed, err := DecryptSeed()
 	if err != nil {
-		log.Println(err)
-		return
+		log.Fatal(err)
 	}
-	platformSeed := database.GetSeedFromEncryptedSeed("seed.hex", rawPassword)
 	// init stablecoin stuff
 	err = stablecoin.InitStableCoin()
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println(stablecoin.StableUSD)
+
+	// start a goroutine to listen for stablecoin payments and issuance
 	go stablecoin.ListenForPayments()
 	// don't have an error catching thing because if this fails, the platform should
 	// not initialize
@@ -143,113 +107,29 @@ func main() {
 	switch opt {
 	case 1:
 		log.Println("You have chosen to create a new investor account, welcome")
-		fmt.Printf("%s: ", "ENTER YOUR REAL NAME")
-		realName, err := utils.ScanForString()
+		err := NewInvestorPrompt()
 		if err != nil {
-			fmt.Println("Couldn't read user input")
-			break
+			log.Println(err)
+			return
 		}
-		fmt.Printf("%s: ", "ENTER YOUR USERNAME")
-		loginUserName, err := utils.ScanForString()
-		if err != nil {
-			fmt.Println("Couldn't read user input")
-			break
-		}
-
-		fmt.Printf("%s: ", "ENTER DESIRED PASSWORD, YOU WILL NOT BE ASKED TO CONFIRM THIS")
-		loginPassword, err := utils.ScanForPassword()
-		if err != nil {
-			fmt.Println("Couldn't read password")
-			break
-		}
-
-		investor, err := database.NewInvestor(loginUserName, loginPassword, realName)
-		if err != nil {
-			log.Println("FAILED TO SETUP ACCOUNT, TRY AGAIN")
-			break
-		}
-		err = database.InsertInvestor(investor)
-		if err != nil {
-			log.Println("FAILED TO SETUP ACCOUNT, TRY AGAIN")
-			break
-		}
-		// need to send fudns to this guy so that he can setup trustlines
-		break
 	case 2:
 		log.Println("You have chosen to create a new recipient account, welcome")
-		fmt.Printf("%s: ", "ENTER YOUR REAL NAME")
-		realName, err := utils.ScanForString()
+		err := NewRecipientPrompt()
 		if err != nil {
-			fmt.Println("Couldn't read user input")
-			break
+			log.Println(err)
+			return
 		}
-		fmt.Printf("%s: ", "ENTER YOUR USERNAME")
-		loginUserName, err := utils.ScanForString()
-		if err != nil {
-			fmt.Println("Couldn't read user input")
-			break
-		}
-
-		fmt.Printf("%s: ", "ENTER DESIRED PASSWORD, YOU WILL NOT BE ASKED TO CONFIRM THIS")
-		loginPassword, err := utils.ScanForPassword()
-		if err != nil {
-			fmt.Println("Couldn't read password")
-			break
-		}
-
-		recipient, err := database.NewRecipient(loginUserName, loginPassword, realName)
-		if err != nil {
-			log.Println("FAILED TO SETUP ACCOUNT, TRY AGAIN")
-			break
-		}
-		err = database.InsertRecipient(recipient)
-		if err != nil {
-			log.Println("FAILED TO SETUP ACCOUNT, TRY AGAIN")
-			break
-		}
-		break
 	default:
-		// don't add the entire file as a switch case because it would be ugly. we can
-		// fall through, shouldn't be an issue
-	}
-	fmt.Printf("%s: ", "---ARE YOU AN INVESTOR (I) OR RECIPIENT (R)? ---")
-	optS, err := utils.ScanForString()
-	if err != nil {
-		log.Println("Failed to read user input")
-		return
-	}
-	rbool := false
-	if optS == "I" || optS == "i" {
-		fmt.Println("WELCOME BACK INVESTOR")
-	} else if optS == "R" || optS == "r" {
-		fmt.Println("WELCOME BACK RECIPIENT")
-		rbool = true
-	} else {
-		log.Println("INVALID INPUT, EXITING!")
-		return
-	}
-	// ask for username and password combo here
-	fmt.Printf("%s: ", "ENTER YOUR USERNAME")
-	loginUserName, err := utils.ScanForString()
-	if err != nil {
-		fmt.Println("Couldn't read user input")
-		return
 	}
 
-	fmt.Printf("%s: ", "ENTER YOUR PASSWORD: ")
-	loginPassword, err := utils.ScanForPassword()
+	investor, recipient, isRecipient, err := LoginPrompt()
 	if err != nil {
-		fmt.Println("Couldn't read password")
+		log.Println(err)
 		return
 	}
-	// check for ibool vs rbool here
-	if rbool {
-		// handle the recipient case here because its simpler
-		recipient, err := database.ValidateRecipient(loginUserName, loginPassword)
-		if err != nil {
-			log.Fatal("had trouble retrieving the username")
-		}
-		// at this point, we have verified the recipient
+	// check if the user is a recipient here
+	if isRecipient {
+		// we already have the recipient, so no need to make a call to the database
 		// have a for loop here with various options
 		for {
 			fmt.Println("------------RECIPIENT INTERFACE------------")
@@ -286,7 +166,7 @@ func main() {
 					continue
 				}
 				// check if we can get the roder using the order number that we have here
-				rtOrder, err := database.RetrieveOrder(uint32(orderNumber))
+				rtOrder, err := database.RetrieveOrder(orderNumber)
 				if err != nil {
 					log.Println("Couldn't retrieve order, try again!")
 					continue
@@ -329,7 +209,7 @@ func main() {
 					break
 				}
 				// check if we can get the roder using the order number that we have here
-				rtOrder, err = database.RetrieveOrder(uint32(orderNumber))
+				rtOrder, err = database.RetrieveOrder(orderNumber)
 				if err != nil {
 					log.Println("Couldn't retrieve updated order, check again!")
 					continue
@@ -447,7 +327,7 @@ func main() {
 						break
 					}
 					// now we need to set the winning order's chosen flag as true
-					bestOrder, err := database.RetrieveOrder(uint32(opt))
+					bestOrder, err := database.RetrieveOrder(opt)
 					if err != nil {
 						log.Println(err)
 						break
@@ -488,11 +368,7 @@ func main() {
 		return
 	}
 
-	investor, err := database.ValidateInvestor(loginUserName, loginPassword)
-	if err != nil {
-		log.Fatal("had trouble retrieving user from db, Username / password doesn't match")
-	}
-
+	// User is an investor
 	for {
 		// Main investor loop
 		fmt.Println("------------INVESTOR INTERFACE------------")
@@ -531,7 +407,7 @@ func main() {
 			}
 			// now the user has decided to invest in the asset with index uInput
 			// we need to retrieve the order and ask for confirmation
-			uOrder, err := database.RetrieveOrder(uint32(oNumber))
+			uOrder, err := database.RetrieveOrder(oNumber)
 			if err != nil {
 				log.Fatal("Order with specified index not found in the database")
 			}
@@ -557,7 +433,7 @@ func main() {
 			// check whether the investor has XLM already
 			balance, err := xlm.GetXLMBalance(platform.PublicKey)
 			// balance is in string, convert to int
-			balanceI := utils.StringToFloat(balance)
+			balanceI := utils.StoF(balance)
 			log.Println("Platform's balance is: ", balanceI)
 			if balanceI < 21 { // 1 to account for fees
 				// get coins if balance is this low
@@ -589,7 +465,7 @@ func main() {
 			}
 			// balance is in string, convert to float
 			balance, err = xlm.GetXLMBalance(investor.U.PublicKey)
-			balanceI = utils.StringToFloat(balance)
+			balanceI = utils.StoF(balance)
 			log.Println("Investor balance is: ", balanceI)
 			if balanceI < 3 { // to setup trustlines
 				_, _, err = xlm.SendXLM(investor.U.PublicKey, consts.DonateBalance, platformSeed)
@@ -615,7 +491,7 @@ func main() {
 			}
 			balance, err = xlm.GetXLMBalance(recipient.U.PublicKey)
 			// balance is in string, convert to float
-			balanceI = utils.StringToFloat(balance)
+			balanceI = utils.StoF(balance)
 			log.Println("Recipient balance is: ", balanceI)
 			if balanceI < 3 { // to setup trustlines
 				_, _, err = xlm.SendXLM(recipient.U.PublicKey, consts.DonateBalance, platformSeed)
@@ -724,11 +600,11 @@ func main() {
 			// we need to go through the contractor's proposed orders to find an order
 			// with index pOrderN
 			for _, elem := range allContractors {
-				if elem.U.Index == uint32(vote) {
+				if elem.U.Index == vote {
 					// we have the specific contractor
 					log.Println("FOUND CONTRACTOR!")
 					for i, pcs := range elem.ProposedContracts {
-						if pcs.O.Index == uint32(pOrderN) {
+						if pcs.O.Index == pOrderN {
 							// this is the order the user voted towards
 							// need to update the vote stuff
 							// check whether user has already voted

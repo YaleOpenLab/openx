@@ -22,7 +22,7 @@ func MonthlyBill() (string, error) {
 	// the average energy consumption in puerto rico seems to be 5,657 kWh or about
 	// 471 kWH per household. lets take 600 accounting for a 20% error margin.
 	averageConsumption := float64(600)
-	avgString := utils.FloatToString(priceOfElectricity * averageConsumption)
+	avgString := utils.FtoS(priceOfElectricity * averageConsumption)
 	return avgString, nil
 }
 
@@ -39,7 +39,7 @@ func MonthlyBillInFloat() float64 {
 // how real world exchanges would behave. This fee is 0.01% for now
 func ExchangeXLMforUSD (amount string) float64 {
 	// defines the rate for 1 usd = x XLM. Currently hardcoded to 10
-	amountF := utils.StringToFloat(amount)
+	amountF := utils.StoF(amount)
 	// exchangeRate := 0.1 // hardcode for now, can query cmc apis later
 	exchangeRate := 100000.0 // rig the exchange rate so that we can test some stuff
 	premium := 0.01 / 100 // 0.01% premium on ao tx

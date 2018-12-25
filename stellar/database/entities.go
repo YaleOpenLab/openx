@@ -11,7 +11,7 @@ package database
 // Order is the structure that is actually stored in the database
 // Order is a subset of the larger struct Contractor, which is still a TODO
 type Order struct {
-	Index         uint32  // an Index to keep quick track of how many orders exist
+	Index         int  // an Index to keep quick track of how many orders exist
 	PanelSize     string  // size of the given panel, for diplsaying to the user who wants to bid stuff
 	TotalValue    int     // the total money that we need from investors
 	Location      string  // where this specific solar panel is located
@@ -40,7 +40,7 @@ type Order struct {
 // the user structure  houses all entities that are of type "User". This contains
 // commonly used functions so that we need not repeat the ssame thing for every instance.
 type User struct {
-	Index uint32
+	Index int
 	// default index, gets us easy stats on how many people are there and stuff,
 	// don't want to omit this
 	Seed string

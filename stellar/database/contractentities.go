@@ -50,7 +50,7 @@ func InsertContractEntity(a ContractEntity) error {
 			log.Println("Failed to encode this data into json")
 			return err
 		}
-		return b.Put([]byte(utils.Uint32toB(a.U.Index)), encoded)
+		return b.Put([]byte(utils.ItoB(a.U.Index)), encoded)
 	})
 	return err
 }
@@ -77,7 +77,7 @@ func RetrieveAllContractEntities(role string) ([]ContractEntity, error) {
 	if err != nil {
 		return arr, err
 	}
-	limit := uint32(len(temp) + 1)
+	limit := len(temp) + 1
 	db, err := OpenDB()
 	if err != nil {
 		return arr, err
@@ -86,10 +86,9 @@ func RetrieveAllContractEntities(role string) ([]ContractEntity, error) {
 
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(ContractorBucket)
-		i := uint32(1)
-		for ; i < limit; i++ {
+		for i := 1 ; i < limit; i++ {
 			var rContractor ContractEntity
-			x := b.Get(utils.Uint32toB(i))
+			x := b.Get(utils.ItoB(i))
 			if x == nil {
 				// might be some other user like an investor or recipient
 				continue
@@ -124,7 +123,7 @@ func RetrieveAllContractEntities(role string) ([]ContractEntity, error) {
 	return arr, err
 }
 
-func RetrieveContractEntity(key uint32) (ContractEntity, error) {
+func RetrieveContractEntity(key int) (ContractEntity, error) {
 	var a ContractEntity
 	db, err := OpenDB()
 	if err != nil {
@@ -133,7 +132,7 @@ func RetrieveContractEntity(key uint32) (ContractEntity, error) {
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(ContractorBucket)
-		x := b.Get(utils.Uint32toB(key))
+		x := b.Get(utils.ItoB(key))
 		if x == nil {
 			return nil
 		}
@@ -155,10 +154,9 @@ func SearchForContractEntity(name string, pwhash string) (ContractEntity, error)
 	err = db.Update(func(tx *bolt.Tx) error {
 		// TODO: change all similar functions to db.View
 		b := tx.Bucket(ContractorBucket)
-		i := uint32(1)
-		for ; ; i++ {
+		for i := 1; ; i++ {
 			var rContractor ContractEntity
-			x := b.Get(utils.Uint32toB(i))
+			x := b.Get(utils.ItoB(i))
 			if x == nil {
 				return nil
 			}
@@ -174,68 +172,6 @@ func SearchForContractEntity(name string, pwhash string) (ContractEntity, error)
 		return fmt.Errorf("Not Found")
 	})
 	return a, err
-}
-
-// we go through each contract entity and retrieve orders specific to the boIndex
-// which is stored in their proposed contracts slice
-func RetrieveAllProposedContracts(boIndex uint32) ([]ContractEntity, []Contract, error) {
-	// boindex is the bidding order index which we should search for in all
-	// contractors' proposed contracts
-	var contractorsArr []ContractEntity
-	var contractsArr []Contract
-	temp, err := RetrieveAllUsers()
-	if err != nil {
-		return contractorsArr, contractsArr, err
-	}
-	limit := uint32(len(temp) + 1)
-	db, err := OpenDB()
-	if err != nil {
-		return contractorsArr, contractsArr, err
-	}
-	defer db.Close()
-
-	err = db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(ContractorBucket)
-		i := uint32(1)
-		for ; i < limit; i++ {
-			var rContractor ContractEntity
-			x := b.Get(utils.Uint32toB(i))
-			if x == nil {
-				// might be some other user like an investor or recipient
-				continue
-			}
-			err := json.Unmarshal(x, &rContractor)
-			if err != nil {
-				return nil
-			}
-			if !rContractor.Contractor {
-				continue
-			}
-			// is a contractor, search for the index of his proposed contracts
-			contract1, err := FindInKey(boIndex, rContractor.ProposedContracts)
-			if err != nil {
-				// doesnt have a proposed contract for the specific recipient
-				continue
-			}
-			// contract1 is the specific contract which has a bid towards this order
-			// now we need to store the contractor and the contract for the bidding process
-			contractorsArr = append(contractorsArr, rContractor)
-			contractsArr = append(contractsArr, contract1)
-			// default is to add all contractentities to the array
-		}
-		return nil
-	})
-	return contractorsArr, contractsArr, err
-}
-
-func FindInKey(key uint32, arr []Contract) (Contract, error) {
-	var dummy Contract
-	for _, elem := range arr {
-		if elem.O.Index == key {
-			return elem, nil
-		}
-	}
-	return dummy, fmt.Errorf("Not found")
 }
 
 // you need to have a lock in period beyond which contractors can not post what

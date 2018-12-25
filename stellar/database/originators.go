@@ -33,7 +33,7 @@ func (originator *ContractEntity) OriginContract(panelSize string, totalValue in
 	if len(allOrders) == 0 {
 		pc.O.Index = 1
 	} else {
-		pc.O.Index = uint32(len(allOrders) + 1)
+		pc.O.Index = len(allOrders) + 1
 	}
 
 	pc.O.PanelSize = panelSize

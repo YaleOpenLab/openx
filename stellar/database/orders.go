@@ -29,7 +29,7 @@ func NewOrder(panelSize string, totalValue int, location string, moneyRaised int
 	if len(allOrders) == 0 {
 		a.Index = 1
 	} else {
-		a.Index = uint32(len(allOrders) + 1)
+		a.Index = len(allOrders) + 1
 	}
 	a.PanelSize = panelSize
 	a.TotalValue = totalValue
@@ -55,7 +55,7 @@ func NewOrder(panelSize string, totalValue int, location string, moneyRaised int
 // while creating an order. For other cases, we should set Live to False and edit
 // the order
 // TODO: make delete not mess up with indices, which it currently does
-func DeleteOrder(key uint32) error {
+func DeleteOrder(key int) error {
 	// deleting order might be dangerous since that would mess with the RetrieveAllOrders
 	// function, have it in here for now, don't do too much with it / fiox retrieve all
 	// to handle this case
@@ -66,7 +66,7 @@ func DeleteOrder(key uint32) error {
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(OrdersBucket)
-		err := b.Delete(utils.Uint32toB(key))
+		err := b.Delete(utils.ItoB(key))
 		if err != nil {
 			return err
 		}
@@ -89,10 +89,9 @@ func RetrieveAllOrders() ([]Order, error) {
 		// this is Update to cover the case where the  bucket doesn't exists and we're
 		// trying to retrieve a list of keys
 		b := tx.Bucket(OrdersBucket)
-		i := uint32(1)
-		for ; ; i++ {
+		for i := 1; ; i++ {
 			var rOrder Order
-			x := b.Get(utils.Uint32toB(i))
+			x := b.Get(utils.ItoB(i))
 			if x == nil {
 				// this is where the key does not exist
 				return nil
@@ -125,10 +124,9 @@ func RetrieveAllOriginatedOrders() ([]Order, error) {
 		// this is Update to cover the case where the  bucket doesn't exists and we're
 		// trying to retrieve a list of keys
 		b := tx.Bucket(OrdersBucket)
-		i := uint32(1)
-		for ; ; i++ {
+		for i := 1; ; i++ {
 			var rOrder Order
-			x := b.Get(utils.Uint32toB(i))
+			x := b.Get(utils.ItoB(i))
 			if x == nil {
 				// this is where the key does not exist
 				return nil
@@ -152,7 +150,7 @@ func RetrieveAllOriginatedOrders() ([]Order, error) {
 
 // RetrieveOrder retrievs a single value corresponding to a given key from
 // the default database. For use only by RPC calls
-func RetrieveOrder(key uint32) (Order, error) {
+func RetrieveOrder(key int) (Order, error) {
 	var rOrder Order
 	db, err := OpenDB()
 	if err != nil {
@@ -161,7 +159,7 @@ func RetrieveOrder(key uint32) (Order, error) {
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(OrdersBucket)
-		x := b.Get(utils.Uint32toB(key))
+		x := b.Get(utils.ItoB(key))
 		err = json.Unmarshal(x, &rOrder)
 		if err != nil {
 			return err
@@ -187,7 +185,7 @@ func InsertOrder(order Order) error {
 			log.Println("Failed to encode this data into json")
 			return err
 		}
-		return b.Put([]byte(utils.Uint32toB(order.Index)), encoded)
+		return b.Put([]byte(utils.ItoB(order.Index)), encoded)
 	})
 	return err
 }

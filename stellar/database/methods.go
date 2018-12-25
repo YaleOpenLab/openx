@@ -122,7 +122,7 @@ func (a *Recipient) Payback(uOrder Order, assetName string, issuerPubkey string,
 		log.Fatal(err)
 	}
 
-	if utils.StringToFloat(amount) > utils.StringToFloat(StableBalance) {
+	if utils.StoF(amount) > utils.StoF(StableBalance) {
 		// check whether the recipient has enough StableUSD tokens in order to make
 		// this happen
 		log.Println("YOU CAN'T SEND AN AMOUNT MORE THAN WHAT YOU HAVE")
@@ -155,9 +155,9 @@ func (a *Recipient) Payback(uOrder Order, assetName string, issuerPubkey string,
 		log.Fatal(err)
 	}
 
-	newBalanceFloat := utils.StringToFloat(newBalance)
-	DEBAssetBalanceFloat := utils.StringToFloat(DEBAssetBalance)
-	mBillFloat := utils.StringToFloat(monthlyBill)
+	newBalanceFloat := utils.StoF(newBalance)
+	DEBAssetBalanceFloat := utils.StoF(DEBAssetBalance)
+	mBillFloat := utils.StoF(monthlyBill)
 
 	paidAmount := DEBAssetBalanceFloat - newBalanceFloat
 	log.Println("Old Balance: ", DEBAssetBalanceFloat, "New Balance: ", newBalanceFloat, "Paid: ", paidAmount, "Bill Amount: ", mBillFloat)

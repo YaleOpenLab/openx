@@ -133,9 +133,9 @@ func getOrder() {
 		// slice "/order/" off from the URLPath
 		keyS := URLPath[7:]
 		// we now need to get the order corresponding to keyS
-		// the rpc accepts the key as uint32 though, so string -> uint32
+		// the rpc accepts the key as int though, so string -> int
 
-		uKey := utils.StoUint32(keyS)
+		uKey := utils.StoI(keyS)
 		order, err := database.RetrieveOrder(uKey)
 		if err != nil {
 			errorHandler(w, r, http.StatusNotFound)
@@ -155,7 +155,7 @@ func parseOrder(r *http.Request) (database.Order, error) {
 	// and then map values if they do exist
 	// note that we just prepare the order here and don't invest in it
 	// for that, we need new a new investor struct and a recipient struct
-	// Index         uint32
+	// Index         int
 	// PanelSize     string  required
 	// TotalValue    int     required
 	// Location      string  required
@@ -180,7 +180,7 @@ func parseOrder(r *http.Request) (database.Order, error) {
 	if err != nil {
 		return prepOrder, fmt.Errorf("Error in assigning index")
 	}
-	prepOrder.Index = uint32(len(allOrders) + 1)
+	prepOrder.Index = len(allOrders) + 1
 	if r.FormValue("PanelSize") != "" {
 		prepOrder.PanelSize = r.FormValue("PanelSize")
 	} else {
@@ -248,7 +248,7 @@ func insertOrder() {
 
 func parseInvestor(r *http.Request) (database.Investor, error) {
 	// we need to create an instance of the Order
-	// Index uint32 auto
+	// Index int auto
 	// Name string required
 	// PublicKey string optional, need bool "gen"
 	// Seed string optional, need bool "gen"
@@ -269,7 +269,7 @@ func parseInvestor(r *http.Request) (database.Investor, error) {
 	if err != nil {
 		return prepInvestor, err
 	}
-	prepInvestor.U.Index = uint32(len(allInvestors) + 1)
+	prepInvestor.U.Index = len(allInvestors) + 1
 	if r.FormValue("LoginUserName") != "" {
 		prepInvestor.U.LoginUserName = r.FormValue("LoginUserName")
 	} else {
@@ -391,7 +391,7 @@ func getAllInvestors() {
 }
 
 func parseRecipient(r *http.Request) (database.Recipient, error) {
-	// Index uint32 auto
+	// Index int auto
 	// Name string required
 	// PublicKey string required
 	// Seed string required
@@ -412,7 +412,7 @@ func parseRecipient(r *http.Request) (database.Recipient, error) {
 		return prepRecipient, err
 	}
 
-	prepRecipient.U.Index = uint32(len(allInvestors) + 1)
+	prepRecipient.U.Index = len(allInvestors) + 1
 
 	if r.FormValue("Name") != "" {
 		prepRecipient.U.Name = r.FormValue("Name")

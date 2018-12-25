@@ -27,7 +27,7 @@ import (
 // StableIssuer defines the structure for storing the publickey of the platform
 // in the database
 type StableIssuer struct {
-	Index     uint32
+	Index     int
 	Seed      string
 	PublicKey string
 	// Fields are enough since this is a meta structure.
@@ -79,7 +79,7 @@ func InsertIssuer(a StableIssuer) error {
 			log.Println("Failed to encode this data into json")
 			return err
 		}
-		return b.Put([]byte(utils.Uint32toB(a.Index)), encoded)
+		return b.Put([]byte(utils.ItoB(a.Index)), encoded)
 	})
 	return err
 }
@@ -96,8 +96,7 @@ func CheckStableIssuer() error {
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(StableBucket)
-		i := uint32(1)
-		x := b.Get(utils.Uint32toB(i))
+		x := b.Get(utils.ItoB(1)) // since there is only one
 		if x == nil {
 			log.Println("Deteceted no other Stable issuer, returning")
 			// this is where the key does not exist
@@ -130,8 +129,7 @@ func RetrieveStableIssuer() (StableIssuer, error) {
 
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(StableBucket)
-		i := uint32(1)
-		x := b.Get(utils.Uint32toB(i))
+		x := b.Get(utils.ItoB(1)) // only one
 		if x == nil {
 			// this is where the key does not exist
 			return nil
@@ -204,7 +202,7 @@ func InitStableCoin() error {
 func ListenForPayments() {
 	// this will be started as a goroutine
 	// address := Issuer.PublicKey
-	const address = "GCJ7UN44GL3DDS2WV6SV6GQTBRD4AVJASIBSYQUZMLMXDV4DLLBNT3EK"
+	const address = "GATCZGZEC363VABRKGRNTCQPGRIGFUBRION7KPNFV32X5PA47OBEBSV5"
 	// this thing above has to be hardcoded because stellar's APi wants it like so
 	// stupid stuff, but we need to go ahead with it. IN reality, this shouldn't
 	// be much of a problem since we expect that the platform's seed will be
@@ -245,7 +243,7 @@ func ListenForPayments() {
 			xlmWorth := oracle.ExchangeXLMforUSD(amount)
 			log.Println("The deposited amount is worth: ", xlmWorth)
 			// now send the stableusd asset over to this guy
-			_, hash, err := assets.SendAssetFromIssuer(StableUSD.Code, payee, utils.FloatToString(xlmWorth), Issuer.Seed, Issuer.PublicKey)
+			_, hash, err := assets.SendAssetFromIssuer(StableUSD.Code, payee, utils.FtoS(xlmWorth), Issuer.Seed, Issuer.PublicKey)
 			if err != nil {
 				log.Println("Error while sending USD Assets back to payee: ", payee)
 				//  don't skip here, there's technically nothing we can do

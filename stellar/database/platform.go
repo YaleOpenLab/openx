@@ -14,14 +14,15 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
-// TODO: this strucutre assumes one platform for all assets, do we have a
+// TODO: this structure assumes one platform for all assets, do we have a
 // master st ruct which houses all these platforms for additional seed security?
 // in this case, we could give the seed to a lawyer who can enforce the platform's
 // behaviour in case of any dispute.
+// TODO: should  this have its won database for security reasons?
 type Platform struct {
 	// TODO: theoretically, we don't need this structure at all, since we can get the pubkey
 	// anytime we want, so remove it
-	Index uint32
+	Index int
 	// ideally there should only be one platform
 	PublicKey string
 	// the publickey of the platform
@@ -58,7 +59,7 @@ func NewPlatform() (Platform, error) {
 	var nPlatform Platform
 	var nPlatformSeed string // init eparately since we don't store this
 	var err error
-	nPlatform.Index = uint32(1) // only one platform, so this is fine
+	nPlatform.Index = 1 // only one platform, so this is fine
 	nPlatformSeed, nPlatform.PublicKey, err = xlm.GetKeyPair()
 	log.Printf("\nTHE PLATFORM SEED IS: %s\nAND YOUR PUBLIC KEY IS: %s\nKEEP IT SUPER SAFE OR YOU MIGHT NOT HAVE ACCESS TO THESE FUNDS AGAIN \n", nPlatformSeed, nPlatform.PublicKey)
 	nPlatform.DateInitiated = utils.Timestamp()
@@ -120,7 +121,7 @@ func InsertPlatform(a Platform) error {
 			log.Println("Failed to encode this data into json")
 			return err
 		}
-		return b.Put([]byte(utils.Uint32toB(a.Index)), encoded)
+		return b.Put([]byte(utils.ItoB(a.Index)), encoded)
 	})
 	return err
 }
@@ -137,8 +138,7 @@ func RetrievePlatform() (Platform, error) {
 
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(PlatformBucket)
-		i := uint32(1)
-		x := b.Get(utils.Uint32toB(i))
+		x := b.Get(utils.ItoB(1)) // since there is only a single platform
 		if x == nil {
 			// this is where the key does not exist
 			return nil
