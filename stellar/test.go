@@ -61,6 +61,118 @@ func main() {
 			log.Fatal(err)
 		}
 	}
+
+	// NewOriginator(uname string, pwd string, Name string, Address string, Description string)
+	newOriginator, err := database.NewContractEntity("john", "password", "John Doe", "14 ABC Street London", "This is a sample originator", "originator")
+	if err != nil {
+		log.Fatal(err)
+	}
+	tRec, err := database.RetrieveRecipient(1) // for retrieving martin
+	if err != nil {
+		log.Fatal(err)
+	}
+	//log.Println("NEW ORING: ", newOriginator)
+	var pc database.Contract
+	// PanelSize, TotalValue, Location, Years, Metadata
+	// skip Recipient now
+	pc.O.PanelSize = "100 16x24 panels on a solar rooftop"
+	pc.O.TotalValue = 14000
+	pc.O.Location = "Puerto Rico"
+	pc.O.Years = 5
+	pc.O.Metadata = "ABC School in XYZ peninsula"
+	newOriginator.ProposedContracts = append(newOriginator.ProposedContracts, pc)
+
+	// insert the entities into the database
+	err = database.InsertContractEntity(newOriginator)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = database.InsertOrder(pc.O) // assume this originated order is final
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	biddingOrder, err := database.RetrieveOrder(1)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// once an originator proposes a contract (and we assume 1 originator for each
+	// school), it becomes final and is inserted into the orders bucket. Each
+	// contractor building off of this must reference the order index in their
+	// proposed contract to enable searchability
+	// bucket. Andeach contractor must build off of this in their proposed Contracts
+	// Contractor stuff below
+	newContractor, err := database.NewContractEntity("john", "password", "John Doe", "14 ABC Street London", "This is a sample contractor", "contractor")
+	if err != nil {
+		log.Println(err)
+	}
+	var ConPc database.Contract
+	ConPc.O.PanelSize = pc.O.PanelSize
+	ConPc.O.TotalValue = 28000
+	ConPc.O.Location = pc.O.Location
+	ConPc.O.Years = 6
+	ConPc.O.Metadata = pc.O.Metadata + " we supply our own devs and provide insurance guarantee as well. Dual audit maintenance upto 1 year. Returns capped as per defaults"
+	ConPc.O.OrderRecipient = tRec
+	ConPc.O.Index = biddingOrder.Index
+	ConPc.O.DateInitiated = utils.Timestamp()
+	newContractor.ProposedContracts = append(newContractor.ProposedContracts, ConPc)
+	// now we have a single proposed contract. Lets create another contractor who
+	// has a competing bid for hte same asset
+	err = database.InsertContractEntity(newContractor)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// competing contractor details follow
+	competingContractor, err := database.NewContractEntity("sam", "password", "Samuel Jackson", "14 ABC Street London", "This is a competing contractor", "contractor")
+	if err != nil {
+		log.Fatal(err)
+	}
+	var CompC database.Contract
+	CompC = ConPc
+	CompC.O.DateInitiated = utils.Timestamp()
+	CompC.O.TotalValue = 30000
+	CompC.O.Metadata = pc.O.Metadata + " free lifetime service, developers and isnurance also provided"
+	competingContractor.ProposedContracts = append(competingContractor.ProposedContracts, CompC)
+
+	err = database.InsertContractEntity(competingContractor)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	allContractors1, allContracts, err := database.RetrieveAllProposedContracts(1) // retrieve all contracts towards the order 1, which is hardcoded right now
+	if err != nil {
+		log.Fatal(err)
+	}
+	// the length of the above two slices must be the same
+	for i, contractor := range allContractors1 {
+		log.Println("======================================================================================")
+		log.Println("Contractor Name: ", contractor.U.Name)
+		log.Println("Proposed Contract: ")
+		database.PrettyPrintProposedContract(allContracts[i].O)
+	}
+	// here we assume that the timeout period for the auction is up and that
+	// price is the winning metric of a specific bid, like in traditional contract
+	bestContract, err := database.ChooseBestContract(allContracts)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("BESET CONTRACT IS: ")
+	database.PrettyPrintProposedContract(bestContract.O)
+	log.Fatal("")
+	// retrieve and check if everything is alright
+	allOriginators, err := database.RetrieveAllContractEntities("originator")
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("LIST OF ALL Originators: ", allOriginators)
+	allContractors, err := database.RetrieveAllContractEntities("contractor")
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("LIST OF ALL Contractors: ", allContractors)
+	log.Fatal("test run")
+
 	// TODO: how much do we pay the investor? how does it work
 	// Do we sell the REC created from the solar panels only to the investor? If so,
 	// isn't that enough to propel investment in the solar contract itself?
@@ -360,7 +472,7 @@ func main() {
 				}
 				// now send back the PBToken from the platform to the issuer
 				// this function is optional and can be deleted in case we don't need PBAssets
-				err = assets.SendPBAsset(rtOrder,  recipient.U.PublicKey, pbAmountS, platformSeed, platform.PublicKey)
+				err = assets.SendPBAsset(rtOrder, recipient.U.PublicKey, pbAmountS, platformSeed, platform.PublicKey)
 				if err != nil {
 					log.Println("PBAsset sending back FAILED, PLEASE TRY AGAIN!")
 					break

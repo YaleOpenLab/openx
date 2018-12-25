@@ -40,6 +40,7 @@ import (
 	"log"
 	"strconv"
 
+	consts "github.com/YaleOpenLab/smartPropertyMVP/stellar/consts"
 	database "github.com/YaleOpenLab/smartPropertyMVP/stellar/database"
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
 	xlm "github.com/YaleOpenLab/smartPropertyMVP/stellar/xlm"
@@ -127,11 +128,11 @@ func SendAssetFromIssuer(assetName string, destination string, amount string, Se
 	return tx.Ledger, tx.Hash, nil
 }
 
- // InvestInOrder invests in a particular oder issued by _issuer_ wtih seed _issuerSeed_
- // the _investor_ decides to invest _investmentAmountS_ amount of USD Tokens in
- // a particular _uOrder_. If the invested amount makes the money raised equal to
- // the total value of the _uOrder_, we issue the PBTokens and DEBTokens to the
- // _recipient_
+// InvestInOrder invests in a particular oder issued by _issuer_ wtih seed _issuerSeed_
+// the _investor_ decides to invest _investmentAmountS_ amount of USD Tokens in
+// a particular _uOrder_. If the invested amount makes the money raised equal to
+// the total value of the _uOrder_, we issue the PBTokens and DEBTokens to the
+// _recipient_
 func InvestInOrder(issuer *database.Platform, issuerSeed string, investor *database.Investor, recipient *database.Recipient, investmentAmountS string, uOrder database.Order) (database.Order, error) {
 	var partOrder database.Order
 	var err error
@@ -209,7 +210,7 @@ func InvestInOrder(issuer *database.Platform, issuerSeed string, investor *datab
 		}
 		log.Println("Recipient Trusted Payback asset: ", PBasset.Code, " tx hash: ", txHash)
 
-		txHash, err = TrustAsset(DEBasset, strconv.Itoa(uOrder.TotalValue * 2), recipient.U.PublicKey, recipient.U.Seed) // since debt = invested amount
+		txHash, err = TrustAsset(DEBasset, strconv.Itoa(uOrder.TotalValue*2), recipient.U.PublicKey, recipient.U.Seed) // since debt = invested amount
 		// *2 is for sending the amount back
 		if err != nil {
 			return uOrder, err
@@ -250,7 +251,6 @@ func InvestInOrder(issuer *database.Platform, issuerSeed string, investor *datab
 	err = database.InsertOrder(uOrder)
 	return uOrder, err
 }
-
 
 func SendPBAsset(order database.Order, destination string, amount string, Seed string, PublicKey string) error {
 	// need to calculate how much PBAsset we need to send back.

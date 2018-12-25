@@ -221,3 +221,24 @@ func PrintDEB(orders []Order) {
 		fmt.Println("          Debt Asset Code: ", order.DEBAssetCode)
 	}
 }
+
+// PrettyPrintOrder pretty prints orders
+func PrettyPrintProposedContract(order Order) {
+	fmt.Println("          Proposed Contract: ")
+	fmt.Println("          Panel Size: ", order.PanelSize)
+	fmt.Println("          Total Value: ", order.TotalValue)
+	fmt.Println("          Location: ", order.Location)
+	fmt.Println("          Metadata: ", order.Metadata)
+	fmt.Println("          Years: ", order.Years)
+	fmt.Println("          Date Initiated: ", order.DateInitiated)
+	fmt.Println("          Recipient: ", order.OrderRecipient)
+	fmt.Println("          Investors: ", order.OrderInvestors)
+}
+
+func PrettyPrintUser(user User) {
+	fmt.Println("    WELCOME BACK ", user.Name)
+	fmt.Println("          Your Public Key is: ", user.PublicKey)
+	fmt.Println("          Your Seed is: ", user.Seed)
+	fmt.Println("          Your Username is: ", user.LoginUserName)
+	fmt.Println("          Your Password hash is: ", user.LoginPassword)
+}

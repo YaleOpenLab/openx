@@ -56,6 +56,15 @@ type User struct {
 	// the username you use to login to the platform
 	LoginPassword string
 	// the password, which you use to authenticate on the platform
+	Address string
+	// the registered address of the above company
+	Description string
+	// Does the contractor need to have a seed and a publickey?
+	// we assume that it does in this case and proceed.
+	// information on company credentials, their experience
+	Image string
+	// image can be company logo, founder selfie
+	// hash of the password in reality
 	FirstSignedUp string
 	// auto generated timestamp
 }
@@ -93,26 +102,16 @@ type Investor struct {
 // TODO: in some ways, the Name, LoginUserName and LoginPassword fields can be
 // devolved into a separate User struct, that would result in less duplication as
 // well
-type Contractor struct {
+type ContractEntity struct {
 	// User defines common params such as name, seed, publickey
 	U User
 	// the name of the contractor / company that is contracting
-	Address string
-	// the registered address of the above company
-	Description string
-	// Does the contractor need to have a seed and a publickey?
-	// we assume that it does in this case and proceed.
-	// information on company credentials, their experience
-	Image string
-	// image can be company logo, founder selfie
-	// hash of the password in reality
-	IsContractor bool
 	// A contractor is party who proposes a specific some of money towards a
 	// particular project. This is the actual amount that the investors invest in.
 	// This ideally must include the developer fee within it, so that investors
 	// don't have to invest in two things. It would also make sense because the contractors
 	// sometimes would hire developers themselves.
-	IsGuarantor bool
+	Contractor bool
 	// A guarantor is somebody who can assure investors that the school will get paid
 	// on time. This authority should be trusted and either should be vetted by the law
 	// or have a multisig paying out to the investors beyond a certain timeline if they
@@ -120,7 +119,7 @@ type Contractor struct {
 	// nice Pineapple Fund guy. THis can also be an insurance company, who is willing to
 	// guarantee for specific school and the school can pay him out of chain / have
 	// that as fee within the contract the originator
-	IsDeveloper bool
+	Developer bool
 	// A developer is someone who installs the required equipment (Raspberry Pi,
 	// network adapters, anti tamper installations and similar) In the initial
 	// orders, this will be us, since we'd be installign the pi ourselves, but in
@@ -129,7 +128,7 @@ type Contractor struct {
 	// in fiat or can be a portion of the funds the investors chooses to invest in.
 	// a contractor may also employ developers by himself, so this entity is not
 	// strictly necessary.
-	IsOriginator bool
+	Originator bool
 	// An Originator is an entity that will start a project and get a fixed fee for
 	// rendering its service. An Originator's role is not restricted, the originator
 	// can also be the developer, contractor or guarantor. The originator should take
@@ -138,9 +137,14 @@ type Contractor struct {
 	// out some kind of form on the website so that the originator's proposal is live
 	// and shown to potential investors. The originators get paid only when the order
 	// is live, else they can just spam, without any actual investment
+	Guarantor     bool
 	PastContracts []Contract
 	// list of all the contracts that the contractor has won in the past
-	PresentContracts []Contract
+	ProposedContracts []Contract
+	// the Originator proposes a contract which will then be taken up
+	// by a contractor, who publishes his own copy of the proposed contract
+	// which will be the set of contracts that will be sent to auction
+	PresentContracts  []Contract
 	// list of all contracts that the contractor is presently undertaking1
 	PastFeedback []Feedback
 	// feedback received on the contractor from parites involved in the past
@@ -159,9 +163,9 @@ type Feedback struct {
 	// the content of the feedback, good / bad
 	// maybe we could have a  rating system baked in? a star based rating system?
 	// would be nice, idk
-	From Contractor
+	From ContractEntity
 	// who gave the feedback?
-	To Contractor
+	To ContractEntity
 	// regarding whom is this feedback about
 	Date string
 	// time at which this feedback was written
@@ -187,4 +191,19 @@ type Contract struct {
 	// ethereum to interface with the ERC721 or maybe we coul have an oracle that
 	// does this for us.
 	O Order
+	// here, you need to specify the following keys:
+	// PanelSize, TotalValue, Location, Years, Metadata, OrderRecipient
+}
+
+type ContractAuction struct {
+	// TODO: this struct isn't used yet as it needs handlers and stuff, but when
+	// we move off main.go for testinge, this must be  used in order to make stuff
+	// easier for us.
+	// this is called when there is an originated order live and when there are
+	// contractors who want to get this price. This is a blind auction and the
+	// choosing criteria is just price for now.
+	// TODO: decide this criteria
+	AllContracts []Contract
+	AllContractors []ContractEntity
+	WinningContract Contract // do we need this?
 }
