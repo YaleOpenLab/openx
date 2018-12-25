@@ -176,6 +176,8 @@ func SearchForContractEntity(name string, pwhash string) (ContractEntity, error)
 	return a, err
 }
 
+// we go through each contract entity and retrieve orders specific to the boIndex
+// which is stored in their proposed contracts slice
 func RetrieveAllProposedContracts(boIndex uint32) ([]ContractEntity, []Contract, error) {
 	// boindex is the bidding order index which we should search for in all
 	// contractors' proposed contracts
@@ -230,7 +232,6 @@ func FindInKey(key uint32, arr []Contract) (Contract, error) {
 	var dummy Contract
 	for _, elem := range arr {
 		if elem.O.Index == key {
-			log.Println("FOUND!!", elem)
 			return elem, nil
 		}
 	}
@@ -256,19 +257,3 @@ func FindInKey(key uint32, arr []Contract) (Contract, error) {
 // also, a given Contractor right now is allowed only for one final bid for blind
 // auction advantages (no price disvocery, etc). If we want to change this, we must
 // have an auction handler that will take care of this.
-
-func ChooseBestContract(arr []Contract) (Contract, error) {
-	var a Contract
-	if len(arr) == 0 {
-		return a, fmt.Errorf("Empty array passed!")
-	}
-	// array is not empty, min 1 elem
-	a = arr[0]
-	for _, elem := range arr {
-		if elem.O.TotalValue < a.O.TotalValue {
-			a = elem
-			continue
-		}
-	}
-	return a, nil
-}

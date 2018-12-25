@@ -151,3 +151,17 @@ func RetrievePlatform() (Platform, error) {
 	})
 	return rPlatform, err
 }
+
+func InitializePlatform() (Platform, error) {
+	log.Println("Creating a new platform")
+	platform, err := NewPlatform()
+	if err != nil {
+		log.Fatal(err)
+	}
+	// insert this into the database
+	err = InsertPlatform(platform)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return platform, nil
+}

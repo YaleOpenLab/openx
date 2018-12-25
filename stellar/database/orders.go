@@ -103,7 +103,47 @@ func RetrieveAllOrders() ([]Order, error) {
 				// ideal error would be "unexpected JSON input" or something similar
 				return nil
 			}
-			arr = append(arr, rOrder)
+			if !rOrder.Origin {
+				// only return final orders
+				arr = append(arr, rOrder)
+			}
+		}
+		return nil
+	})
+	return arr, err
+}
+
+// RetrieveAllProposedOrders retrieves proposed orders from the default database
+func RetrieveAllOriginatedOrders() ([]Order, error) {
+	var arr []Order
+	db, err := OpenDB()
+	if err != nil {
+		return arr, err
+	}
+	defer db.Close()
+	err = db.Update(func(tx *bolt.Tx) error {
+		// this is Update to cover the case where the  bucket doesn't exists and we're
+		// trying to retrieve a list of keys
+		b := tx.Bucket(OrdersBucket)
+		i := uint32(1)
+		for ; ; i++ {
+			var rOrder Order
+			x := b.Get(utils.Uint32toB(i))
+			if x == nil {
+				// this is where the key does not exist
+				return nil
+			}
+			err := json.Unmarshal(x, &rOrder)
+			if err != nil && rOrder.Live == false {
+				// we've reached the end of input, so this is not an error
+				// ideal error would be "unexpected JSON input" or something similar
+				return nil
+			}
+			if rOrder.Origin {
+				// only return originated orders, so that the function calling this can
+				// display the originated orders
+				arr = append(arr, rOrder)
+			}
 		}
 		return nil
 	})

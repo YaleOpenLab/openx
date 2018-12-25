@@ -38,7 +38,6 @@ package assets
 import (
 	"fmt"
 	"log"
-	"strconv"
 
 	consts "github.com/YaleOpenLab/smartPropertyMVP/stellar/consts"
 	database "github.com/YaleOpenLab/smartPropertyMVP/stellar/database"
@@ -176,7 +175,7 @@ func InvestInOrder(issuer *database.Platform, issuerSeed string, investor *datab
 	}
 	log.Println("Investor trusted asset: ", INVAsset.Code, " tx hash: ", txHash)
 	log.Println("Sending INVAsset: ", INVAsset.Code, "for: ", investmentAmount)
-	_, txHash, err = SendAssetFromIssuer(INVAsset.Code, investor.U.PublicKey, strconv.Itoa(investmentAmount), issuerSeed, issuer.PublicKey)
+	_, txHash, err = SendAssetFromIssuer(INVAsset.Code, investor.U.PublicKey, investmentAmountS, issuerSeed, issuer.PublicKey)
 	if err != nil {
 		return uOrder, err
 	}
@@ -210,14 +209,14 @@ func InvestInOrder(issuer *database.Platform, issuerSeed string, investor *datab
 		}
 		log.Println("Recipient Trusted Payback asset: ", PBasset.Code, " tx hash: ", txHash)
 
-		txHash, err = TrustAsset(DEBasset, strconv.Itoa(uOrder.TotalValue*2), recipient.U.PublicKey, recipient.U.Seed) // since debt = invested amount
+		txHash, err = TrustAsset(DEBasset, utils.IntToString(uOrder.TotalValue*2), recipient.U.PublicKey, recipient.U.Seed) // since debt = invested amount
 		// *2 is for sending the amount back
 		if err != nil {
 			return uOrder, err
 		}
 		log.Println("Recipient Trusted Debt asset: ", DEBasset.Code, " tx hash: ", txHash)
 		log.Println("Sending DEBasset: ", DEBAssetCode)
-		_, txHash, err = SendAssetFromIssuer(DEBAssetCode, recipient.U.PublicKey, strconv.Itoa(uOrder.TotalValue), issuerSeed, issuer.PublicKey) // same amount as debt
+		_, txHash, err = SendAssetFromIssuer(DEBAssetCode, recipient.U.PublicKey, utils.IntToString(uOrder.TotalValue), issuerSeed, issuer.PublicKey) // same amount as debt
 		if err != nil {
 			return uOrder, err
 		}

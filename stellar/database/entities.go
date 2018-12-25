@@ -19,12 +19,15 @@ type Order struct {
 	Years         int     // number of years the recipient has chosen to opt for
 	Metadata      string  // any other metadata can be stored here
 	Live          bool    // check to see whether the current order is live or not
+	Origin        bool    // if this order is an originated order
+	Votes         int     // the number of votes of a proposed contract
 	PaidOff       bool    // whether the asset has been paidoff by the recipient
 	INVAssetCode  string  // once all funds have been raised, we need to set assetCodes
 	DEBAssetCode  string  // once all funds have been raised, we need to set assetCodes
 	PBAssetCode   string  // once all funds have been raised, we need to set assetCodes
 	BalLeft       float64 // denotes the balance left to pay by the party
 	DateInitiated string  // date the order was created
+	DateFunded    string  // date when the order was funded
 	DateLastPaid  string  // date the order was last paid
 	// instead of just holding the recipient's name here, we can hold the recipient
 	OrderRecipient Recipient
@@ -86,6 +89,8 @@ type Recipient struct {
 // we need to stil ldecide on identity and stuff and how much we want to track
 // people who invest in the schools
 type Investor struct {
+	VotingBalance int // this will be equal to the amount of stablecoins that the
+	// investor possesses
 	AmountInvested float64
 	// total amount, would be nice to track to contact them,
 	// give them some kind of medals or something
@@ -144,7 +149,7 @@ type ContractEntity struct {
 	// the Originator proposes a contract which will then be taken up
 	// by a contractor, who publishes his own copy of the proposed contract
 	// which will be the set of contracts that will be sent to auction
-	PresentContracts  []Contract
+	PresentContracts []Contract
 	// list of all contracts that the contractor is presently undertaking1
 	PastFeedback []Feedback
 	// feedback received on the contractor from parites involved in the past
@@ -203,7 +208,7 @@ type ContractAuction struct {
 	// contractors who want to get this price. This is a blind auction and the
 	// choosing criteria is just price for now.
 	// TODO: decide this criteria
-	AllContracts []Contract
-	AllContractors []ContractEntity
+	AllContracts    []Contract
+	AllContractors  []ContractEntity
 	WinningContract Contract // do we need this?
 }

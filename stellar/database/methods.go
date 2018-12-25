@@ -220,3 +220,30 @@ func (a *Recipient) UpdateOrderSlice(order Order) error{
 	}
 	return fmt.Errorf("Not found")
 }
+
+func (a *Investor) DeductVotingBalance(votes int) error {
+	// TODO: we need to update the voting balance often in accordance with the stablecoin
+	// balance or a user will have way less votes. This needs an aadditional field
+	// in the db to track past balance and then adjust the amoutn of votes he has
+	// accordingly
+	var err error
+	a.VotingBalance -= votes
+	err = InsertInvestor(*a)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (a *Investor) AddVotingBalance(votes int) error {
+	// this funtion is caled when we want to refund the user with the votes once
+	// an order has been finalized.
+	// TODO: use this
+	var err error
+	a.VotingBalance += votes
+	err = InsertInvestor(*a)
+	if err != nil {
+		return err
+	}
+	return nil
+}

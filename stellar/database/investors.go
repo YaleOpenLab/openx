@@ -119,7 +119,7 @@ func RetrieveInvestor(key uint32) (Investor, error) {
 
 // ValidateInvestor searches for an investor when passed the investor's name.
 // This is useful for checking the user's password while logging in
-func ValidateInvestor(uname string, pwd string) (Investor, error) {
+func ValidateInvestor(uname string, pwhash string) (Investor, error) {
 	var inv Investor
 	var err error
 	temp, err := RetrieveAllUsers()
@@ -148,7 +148,7 @@ func ValidateInvestor(uname string, pwd string) (Investor, error) {
 			}
 			// we have the investor class, check names
 			//log.Printf("%s\n%s\n%s\n%s\n", rInvestor.U.LoginUserName, uname, utils.SHA3hash(pwd), rInvestor.U.LoginPassword)
-			if rInvestor.U.LoginUserName == uname && rInvestor.U.LoginPassword == utils.SHA3hash(pwd) {
+			if rInvestor.U.LoginUserName == uname && rInvestor.U.LoginPassword == pwhash {
 				inv = rInvestor
 				return nil
 			}

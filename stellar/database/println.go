@@ -11,25 +11,7 @@ import (
 // PrettyPrintOrder pretty prints orders
 func PrettyPrintOrders(orders []Order) {
 	for _, order := range orders {
-		fmt.Println("    ORDER NUMBER: ", order.Index)
-		fmt.Println("          Panel Size: ", order.PanelSize)
-		fmt.Println("          Total Value: ", order.TotalValue)
-		fmt.Println("          Location: ", order.Location)
-		fmt.Println("          Money Raised: ", order.MoneyRaised)
-		fmt.Println("          Metadata: ", order.Metadata)
-		fmt.Println("          Years: ", order.Years)
-		// if order.Live {
-		fmt.Println("          Investor Asset Code: ", order.INVAssetCode)
-		fmt.Println("          Debt Asset Code: ", order.DEBAssetCode)
-		fmt.Println("          Payback Asset Code: ", order.PBAssetCode)
-		fmt.Println("          Balance Left: ", order.BalLeft)
-		// }
-		fmt.Println("          Date Initiated: ", order.DateInitiated)
-		// if order.Live {
-		fmt.Println("          Date Last Paid: ", order.DateLastPaid)
-		// }
-		fmt.Println("          Recipient: ", order.OrderRecipient)
-		fmt.Println("          Investors: ", order.OrderInvestors)
+		PrettyPrintOrder(order)
 	}
 }
 
@@ -54,6 +36,7 @@ func PrettyPrintOrder(order Order) {
 	// }
 	fmt.Println("          Recipient: ", order.OrderRecipient)
 	fmt.Println("          Investors: ", order.OrderInvestors)
+	fmt.Println("          Votes: ", order.Votes)
 }
 
 func InsertDummyData() error {
@@ -73,12 +56,6 @@ func InsertDummyData() error {
 		if err != nil {
 			log.Fatal(err)
 		}
-	}
-
-	rec, err = ValidateRecipient("martin", "password") // search by username
-	if err != nil {
-		log.Println("rec.U: ", rec.U.LoginPassword)
-		log.Fatal("Couldn't setup dummy data")
 	}
 
 	order1.Index = 1
@@ -148,11 +125,69 @@ func InsertDummyData() error {
 		if err != nil {
 			log.Fatal(err)
 		}
+		inv.VotingBalance = 100000
+		// TODO: this is being set as a constant now, but should be updated to check
+		// the stablecoin and adjust accordingly.
 		err = InsertInvestor(inv)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
+	tRec, err := RetrieveRecipient(1) // for retrieving martin
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// NewOriginator(uname string, pwd string, Name string, Address string, Description string)
+	newOriginator, err := NewOriginator("john", "password", "John Doe", "14 ABC Street London", "This is a sample originator")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	pc, err := newOriginator.OriginContract("100 16x24 panels on a solar rooftop", 14000, "Puerto Rico", 5, "ABC School in XYZ peninsula")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	biddingOrder, err := RetrieveOrder(pc.O.Index)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Each contractor building off of this must reference the order index in their
+	// proposed contract to enable searchability of the bucket. And each contractor
+	// must build off of this in their proposed Contracts
+	// Contractor stuff below
+	contractor1, err := NewContractor("john", "password", "John Doe", "14 ABC Street London", "This is a sample contractor")
+	if err != nil {
+		log.Println(err)
+	}
+
+	_, err = contractor1.ProposeContract(pc.O.PanelSize, 28000, "Puerto Rico", 6, pc.O.Metadata+" we supply our own devs and provide insurance guarantee as well. Dual audit maintenance upto 1 year. Returns capped as per defaults", tRec, biddingOrder.Index)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// competing contractor details follow
+	contractor2, err := NewContractor("sam", "password", "Samuel Jackson", "14 ABC Street London", "This is a competing contractor")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = contractor2.ProposeContract(pc.O.PanelSize, 35000, "Puerto Rico", 5, pc.O.Metadata+" free lifetime service, developers and insurance also provided", tRec, biddingOrder.Index)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = RetrieveAllContractEntities("originator")
+	if err != nil {
+		log.Fatal(err)
+	}
+	_, err = RetrieveAllContractEntities("contractor")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	return nil
 }
 
@@ -161,6 +196,7 @@ func PrettyPrintInvestor(investor Investor) {
 	fmt.Println("    WELCOME BACK ", investor.U.Name)
 	fmt.Println("          Your Public Key is: ", investor.U.PublicKey)
 	fmt.Println("          Your Seed is: ", investor.U.Seed)
+	fmt.Println("          Your Voting Balance is: ", investor.VotingBalance)
 	fmt.Println("          You have Invested: ", investor.AmountInvested)
 	fmt.Println("          Your Invested Assets are: ", investor.InvestedAssets)
 	fmt.Println("          Your Username is: ", investor.U.LoginUserName)

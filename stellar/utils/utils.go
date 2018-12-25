@@ -3,20 +3,98 @@ package utils
 // utils contains utility functions that are needed commonly in packages
 import (
 	//"log"
+	"bufio"
+	"os"
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
 	"net/http"
 	"strconv"
+	"syscall"
 	"time"
 
 	clients "github.com/stellar/go/clients/horizon"
 	"golang.org/x/crypto/sha3"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 var DefaultTestNetClient = &clients.Client{
 	URL:  "https://horizon-testnet.stellar.org",
 	HTTP: http.DefaultClient,
+}
+
+func ScanForInt() (int, error) {
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Scan()
+	if scanner.Err() != nil {
+		return -1, fmt.Errorf("Couldn't read user input")
+	}
+	num := scanner.Text()
+	numI, err := strconv.Atoi(num)
+	if err != nil {
+		return -1, fmt.Errorf("Input not a number")
+	}
+	return numI, nil
+}
+
+func ScanForString() (string, error) {
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Scan()
+	if scanner.Err() != nil {
+		return "", fmt.Errorf("Couldn't read user input")
+	}
+	inputString := scanner.Text()
+	return inputString, nil
+}
+
+func ScanForStringWithCheckI() (string, error) {
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Scan()
+	if scanner.Err() != nil {
+		return "", fmt.Errorf("Couldn't read user input")
+	}
+	inputString := scanner.Text()
+	_, err := strconv.Atoi(inputString) // check whether input string is a number (for payback)
+	if err != nil {
+		return "", err
+	}
+	return inputString, nil
+}
+
+
+func ScanForStringWithCheckF() (string, error) {
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Scan()
+	if scanner.Err() != nil {
+		return "", fmt.Errorf("Couldn't read user input")
+	}
+	inputString := scanner.Text()
+	if StringToFloat(inputString) == 0 {
+		fmt.Println("Amount entered is not a float, quitting")
+		return "", fmt.Errorf("Amount entered is not a float, quitting")
+	}
+	return inputString, nil
+}
+
+func ScanForPassword() (string, error) {
+	bytePassword, err := terminal.ReadPassword(int(syscall.Stdin))
+	fmt.Println()
+	if err != nil {
+		return "", err
+	}
+	tempString := string(bytePassword)
+	hashedPassword := SHA3hash(tempString)
+	return hashedPassword, nil
+}
+
+func ScanRawPassword() (string, error) {
+	bytePassword, err := terminal.ReadPassword(int(syscall.Stdin))
+	fmt.Println()
+	if err != nil {
+		return "", err
+	}
+	password := string(bytePassword)
+	return password, nil
 }
 
 func StoI(a string) int {

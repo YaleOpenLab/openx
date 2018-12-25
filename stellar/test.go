@@ -2,12 +2,9 @@ package main
 
 // test.go runs the PoC stellar implementation calling various functions
 import (
-	"bufio"
 	"fmt"
 	"log"
 	"os"
-	"strconv"
-	"syscall"
 
 	assets "github.com/YaleOpenLab/smartPropertyMVP/stellar/assets"
 	consts "github.com/YaleOpenLab/smartPropertyMVP/stellar/consts"
@@ -17,7 +14,6 @@ import (
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
 	xlm "github.com/YaleOpenLab/smartPropertyMVP/stellar/xlm"
 	flags "github.com/jessevdk/go-flags"
-	"golang.org/x/crypto/ssh/terminal"
 )
 
 var opts struct {
@@ -62,117 +58,6 @@ func main() {
 		}
 	}
 
-	// NewOriginator(uname string, pwd string, Name string, Address string, Description string)
-	newOriginator, err := database.NewContractEntity("john", "password", "John Doe", "14 ABC Street London", "This is a sample originator", "originator")
-	if err != nil {
-		log.Fatal(err)
-	}
-	tRec, err := database.RetrieveRecipient(1) // for retrieving martin
-	if err != nil {
-		log.Fatal(err)
-	}
-	//log.Println("NEW ORING: ", newOriginator)
-	var pc database.Contract
-	// PanelSize, TotalValue, Location, Years, Metadata
-	// skip Recipient now
-	pc.O.PanelSize = "100 16x24 panels on a solar rooftop"
-	pc.O.TotalValue = 14000
-	pc.O.Location = "Puerto Rico"
-	pc.O.Years = 5
-	pc.O.Metadata = "ABC School in XYZ peninsula"
-	newOriginator.ProposedContracts = append(newOriginator.ProposedContracts, pc)
-
-	// insert the entities into the database
-	err = database.InsertContractEntity(newOriginator)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = database.InsertOrder(pc.O) // assume this originated order is final
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	biddingOrder, err := database.RetrieveOrder(1)
-	if err != nil {
-		log.Fatal(err)
-	}
-	// once an originator proposes a contract (and we assume 1 originator for each
-	// school), it becomes final and is inserted into the orders bucket. Each
-	// contractor building off of this must reference the order index in their
-	// proposed contract to enable searchability
-	// bucket. Andeach contractor must build off of this in their proposed Contracts
-	// Contractor stuff below
-	newContractor, err := database.NewContractEntity("john", "password", "John Doe", "14 ABC Street London", "This is a sample contractor", "contractor")
-	if err != nil {
-		log.Println(err)
-	}
-	var ConPc database.Contract
-	ConPc.O.PanelSize = pc.O.PanelSize
-	ConPc.O.TotalValue = 28000
-	ConPc.O.Location = pc.O.Location
-	ConPc.O.Years = 6
-	ConPc.O.Metadata = pc.O.Metadata + " we supply our own devs and provide insurance guarantee as well. Dual audit maintenance upto 1 year. Returns capped as per defaults"
-	ConPc.O.OrderRecipient = tRec
-	ConPc.O.Index = biddingOrder.Index
-	ConPc.O.DateInitiated = utils.Timestamp()
-	newContractor.ProposedContracts = append(newContractor.ProposedContracts, ConPc)
-	// now we have a single proposed contract. Lets create another contractor who
-	// has a competing bid for hte same asset
-	err = database.InsertContractEntity(newContractor)
-	if err != nil {
-		log.Fatal(err)
-	}
-	// competing contractor details follow
-	competingContractor, err := database.NewContractEntity("sam", "password", "Samuel Jackson", "14 ABC Street London", "This is a competing contractor", "contractor")
-	if err != nil {
-		log.Fatal(err)
-	}
-	var CompC database.Contract
-	CompC = ConPc
-	CompC.O.DateInitiated = utils.Timestamp()
-	CompC.O.TotalValue = 30000
-	CompC.O.Metadata = pc.O.Metadata + " free lifetime service, developers and isnurance also provided"
-	competingContractor.ProposedContracts = append(competingContractor.ProposedContracts, CompC)
-
-	err = database.InsertContractEntity(competingContractor)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	allContractors1, allContracts, err := database.RetrieveAllProposedContracts(1) // retrieve all contracts towards the order 1, which is hardcoded right now
-	if err != nil {
-		log.Fatal(err)
-	}
-	// the length of the above two slices must be the same
-	for i, contractor := range allContractors1 {
-		log.Println("======================================================================================")
-		log.Println("Contractor Name: ", contractor.U.Name)
-		log.Println("Proposed Contract: ")
-		database.PrettyPrintProposedContract(allContracts[i].O)
-	}
-	// here we assume that the timeout period for the auction is up and that
-	// price is the winning metric of a specific bid, like in traditional contract
-	bestContract, err := database.ChooseBestContract(allContracts)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println("BESET CONTRACT IS: ")
-	database.PrettyPrintProposedContract(bestContract.O)
-	log.Fatal("")
-	// retrieve and check if everything is alright
-	allOriginators, err := database.RetrieveAllContractEntities("originator")
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println("LIST OF ALL Originators: ", allOriginators)
-	allContractors, err := database.RetrieveAllContractEntities("contractor")
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println("LIST OF ALL Contractors: ", allContractors)
-	log.Fatal("test run")
-
 	// TODO: how much do we pay the investor? how does it work
 	// Do we sell the REC created from the solar panels only to the investor? If so,
 	// isn't that enough to propel investment in the solar contract itself?
@@ -201,20 +86,14 @@ func main() {
 
 	// setup issuer account if the platform doesn't  already exist
 	// check whether the platform exists
-	test, err := database.RetrievePlatform()
+	tmpPlatform, err := database.RetrievePlatform()
 	if err != nil {
 		log.Fatal(err)
 	}
-	if len(test.PublicKey) == 0 {
-		// weird way to test, but still
-		// this is the first time we're initializing a platform
-		log.Println("Creating a new platform")
-		platform, err := database.NewPlatform()
-		if err != nil {
-			log.Fatal(err)
-		}
-		// insert this into the database
-		err = database.InsertPlatform(platform)
+	if len(tmpPlatform.PublicKey) == 0 {
+		// this is the first time, so we initialize a platform
+		log.Println("Initializing a new platform")
+		_, err := database.InitializePlatform()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -228,10 +107,12 @@ func main() {
 	// ask for the platform's password
 	// now here, we must decrypt the seed before using it in other places
 	fmt.Printf("%s: ", "ENTER PASSWORD TO UNLOCK THE PLATFORM")
-	bytePassword, err := terminal.ReadPassword(int(syscall.Stdin))
-	fmt.Println()
-	psPassword := string(bytePassword)
-	platformSeed := database.GetSeedFromEncryptedSeed("seed.hex", psPassword)
+	rawPassword, err := utils.ScanRawPassword()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	platformSeed := database.GetSeedFromEncryptedSeed("seed.hex", rawPassword)
 	// init stablecoin stuff
 	err = stablecoin.InitStableCoin()
 	if err != nil {
@@ -244,25 +125,6 @@ func main() {
 	// insert an investor with the relevant details
 	// add dummy investor and recipient data for the demo
 	// uname: john, password: password
-	/*
-		nInvestor, err := database.NewInvestor("john",
-			"e9a75486736a550af4fea861e2378305c4a555a05094dee1dca2f68afea49cc3a50e8de6ea131ea521311f4d6fb054a146e8282f8e35ff2e6368c1a62e909716",
-			"John", true)
-		err = database.InsertInvestor(nInvestor)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		// need to add a dummy recipient here as well
-		// uname: martin, password:password
-		nRecipient, err := database.NewRecipientWithoutSeed("martin",
-			"8a56bac869374c669443a1626ff0967af258123f83faf6b55e31dd541e6bbd90308a3385713294bf2e8861bc8cf8f8feda41f9c4db19d5811a6b5de85eac9870",
-			"Martin")
-		err = database.InsertRecipient(nRecipient)
-		if err != nil {
-			log.Fatal(err)
-		}
-	*/
 	// need to ask for user role as well here, to know whether the user is an investor
 	// or recipient so that we can show both sides
 	// After this, ask what the user wants to do - there are roughly three options:
@@ -272,80 +134,75 @@ func main() {
 	fmt.Println("------WHAT DO YOU WANT TO DO?------")
 	fmt.Println("1. CREATE A NEW INVESTOR ACCOUNT")
 	fmt.Println("2. CREATE A NEW RECIPIENT ACCOUNT")
-	fmt.Println("deafult: ALREADY HAVE AN ACCOUNT")
-	scanner := bufio.NewScanner(os.Stdin)
-	scanner.Scan()
-	if scanner.Err() != nil {
+	fmt.Println("3: ALREADY HAVE AN ACCOUNT")
+	opt, err := utils.ScanForInt()
+	if err != nil {
 		fmt.Println("Couldn't read user input")
 		return
 	}
-	switch scanner.Text() {
-	case "1":
+	switch opt {
+	case 1:
 		log.Println("You have chosen to create a new investor account, welcome")
-		log.Println("ENTER YOUR REAL NAME")
-		scanner.Scan()
-		if scanner.Err() != nil {
+		fmt.Printf("%s: ", "ENTER YOUR REAL NAME")
+		realName, err := utils.ScanForString()
+		if err != nil {
 			fmt.Println("Couldn't read user input")
 			break
 		}
-		invName := scanner.Text()
-
-		log.Println("ENTER YOUR USERNAME")
-		scanner.Scan()
-		if scanner.Err() != nil {
+		fmt.Printf("%s: ", "ENTER YOUR USERNAME")
+		loginUserName, err := utils.ScanForString()
+		if err != nil {
 			fmt.Println("Couldn't read user input")
 			break
 		}
-		invLoginUserName := scanner.Text()
 
-		log.Println("ENTER DESIRED PASSWORD, YOU WILL NOT BE ASKED TO CONFIRM THIS")
-		bytePassword, err = terminal.ReadPassword(int(syscall.Stdin))
-		fmt.Println()
-		tempString := string(bytePassword)
-		invLoginPassword := utils.SHA3hash(tempString)
+		fmt.Printf("%s: ", "ENTER DESIRED PASSWORD, YOU WILL NOT BE ASKED TO CONFIRM THIS")
+		loginPassword, err := utils.ScanForPassword()
+		if err != nil {
+			fmt.Println("Couldn't read password")
+			break
+		}
 
-		inv, err := database.NewInvestor(invLoginUserName, invLoginPassword, invName)
+		investor, err := database.NewInvestor(loginUserName, loginPassword, realName)
 		if err != nil {
 			log.Println("FAILED TO SETUP ACCOUNT, TRY AGAIN")
 			break
 		}
-		err = database.InsertInvestor(inv)
+		err = database.InsertInvestor(investor)
 		if err != nil {
 			log.Println("FAILED TO SETUP ACCOUNT, TRY AGAIN")
 			break
 		}
 		// need to send fudns to this guy so that he can setup trustlines
 		break
-	case "2":
+	case 2:
 		log.Println("You have chosen to create a new recipient account, welcome")
-		log.Println("ENTER YOUR REAL NAME")
-		scanner.Scan()
-		if scanner.Err() != nil {
+		fmt.Printf("%s: ", "ENTER YOUR REAL NAME")
+		realName, err := utils.ScanForString()
+		if err != nil {
 			fmt.Println("Couldn't read user input")
 			break
 		}
-		invName := scanner.Text()
-
-		log.Println("ENTER YOUR USERNAME")
-		scanner.Scan()
-		if scanner.Err() != nil {
+		fmt.Printf("%s: ", "ENTER YOUR USERNAME")
+		loginUserName, err := utils.ScanForString()
+		if err != nil {
 			fmt.Println("Couldn't read user input")
 			break
 		}
-		invLoginUserName := scanner.Text()
 
-		log.Println("ENTER DESIRED PASSWORD, YOU WILL NOT BE ASKED TO CONFIRM THIS")
-		bytePassword, err = terminal.ReadPassword(int(syscall.Stdin))
-		fmt.Println()
-		tempString := string(bytePassword)
-		invLoginPassword := utils.SHA3hash(tempString)
+		fmt.Printf("%s: ", "ENTER DESIRED PASSWORD, YOU WILL NOT BE ASKED TO CONFIRM THIS")
+		loginPassword, err := utils.ScanForPassword()
+		if err != nil {
+			fmt.Println("Couldn't read password")
+			break
+		}
 
-		inv, err := database.NewRecipient(invLoginUserName, invLoginPassword, invName)
+		recipient, err := database.NewRecipient(loginUserName, loginPassword, realName)
 		if err != nil {
 			log.Println("FAILED TO SETUP ACCOUNT, TRY AGAIN")
 			break
 		}
-		err = database.InsertRecipient(inv)
+		err = database.InsertRecipient(recipient)
 		if err != nil {
 			log.Println("FAILED TO SETUP ACCOUNT, TRY AGAIN")
 			break
@@ -355,34 +212,40 @@ func main() {
 		// don't add the entire file as a switch case because it would be ugly. we can
 		// fall through, shouldn't be an issue
 	}
-	fmt.Println("---ARE YOU AN INVESTOR (I) OR RECIPIENT (R)? ---")
-	scanner.Scan()
+	fmt.Printf("%s: ", "---ARE YOU AN INVESTOR (I) OR RECIPIENT (R)? ---")
+	optS, err := utils.ScanForString()
+	if err != nil {
+		log.Println("Failed to read user input")
+		return
+	}
 	rbool := false
-	if scanner.Text() == "I" || scanner.Text() == "i" {
+	if optS == "I" || optS == "i" {
 		fmt.Println("WELCOME BACK INVESTOR")
-	} else if scanner.Text() == "R" || scanner.Text() == "r" {
+	} else if optS == "R" || optS == "r" {
 		fmt.Println("WELCOME BACK RECIPIENT")
 		rbool = true
 	} else {
-		log.Fatal("INVALID INPUT, EXITING!")
+		log.Println("INVALID INPUT, EXITING!")
+		return
 	}
 	// ask for username and password combo here
-	fmt.Printf("%s", "ENTER YOUR USERNAME: ")
-	scanner.Scan()
-	if scanner.Err() != nil {
+	fmt.Printf("%s: ", "ENTER YOUR USERNAME")
+	loginUserName, err := utils.ScanForString()
+	if err != nil {
 		fmt.Println("Couldn't read user input")
 		return
 	}
-	invLoginUserName := scanner.Text() // read user input regarding which option
-	fmt.Printf("%s", "ENTER YOUR PASSWORD: ")
-	bytePassword, err = terminal.ReadPassword(int(syscall.Stdin))
-	fmt.Println()
-	// invLoginPassword := utils.SHA3hash(string(bytePassword))
-	invLoginPassword := string(bytePassword)
+
+	fmt.Printf("%s: ", "ENTER YOUR PASSWORD: ")
+	loginPassword, err := utils.ScanForPassword()
+	if err != nil {
+		fmt.Println("Couldn't read password")
+		return
+	}
 	// check for ibool vs rbool here
 	if rbool {
 		// handle the recipient case here because its simpler
-		recipient, err := database.ValidateRecipient(invLoginUserName, invLoginPassword)
+		recipient, err := database.ValidateRecipient(loginUserName, loginPassword)
 		if err != nil {
 			log.Fatal("had trouble retrieving the username")
 		}
@@ -395,17 +258,14 @@ func main() {
 			fmt.Println("  2. Display my Profile")
 			fmt.Println("  3. Payback towards an Order")
 			fmt.Println("  4. Exchange XLM for USD")
+			fmt.Println("  5. Finalize a specific contract")
 			fmt.Println("  default: Exit")
-			scanner.Scan()
-			if scanner.Err() != nil {
+			optI, err := utils.ScanForInt()
+			if err != nil {
 				fmt.Println("Couldn't read user input")
 				break
 			}
-			menuInput, err := strconv.Atoi(scanner.Text())
-			if err != nil {
-				log.Fatal(err)
-			}
-			switch menuInput {
+			switch optI {
 			case 1:
 				fmt.Println("------------LIST OF ALL AVAILABLE ORDERS------------")
 				allOrders, err := database.RetrieveAllOrders()
@@ -420,13 +280,7 @@ func main() {
 			case 3:
 				database.PrettyPrintPBOrders(recipient.ReceivedOrders)
 				fmt.Println("WHICH ORDER DO YOU WANT TO PAY BACK TOWARDS? (ENTER ORDER NUMBER)")
-				scanner.Scan()
-				if scanner.Err() != nil {
-					fmt.Println("Couldn't read user input")
-					break
-				}
-				// user input must be an integer, else quit
-				orderNumber, err := strconv.Atoi(scanner.Text())
+				orderNumber, err := utils.ScanForInt()
 				if err != nil {
 					log.Println("INPUT NOT AN INTEGER, TRY AGAIN")
 					continue
@@ -440,31 +294,28 @@ func main() {
 				// so we can retrieve the order using the order Index, nice
 				database.PrettyPrintPBOrder(rtOrder)
 				fmt.Println("HOW MUCH DO YOU WANT TO PAYBACK?")
-				scanner.Scan()
-				if scanner.Err() != nil {
-					fmt.Println("Couldn't read user input")
+				paybackAmount, err := utils.ScanForStringWithCheckI()
+				if err != nil {
+					log.Println(err)
 					break
 				}
-				// user input must be an integer, else quit
-				pbAmountS := scanner.Text()
-				_, err = strconv.Atoi(pbAmountS) // TODO: assumes whole numbers
+				fmt.Printf(" DO YOU WANT TO CONFIRM THAT YOU WANT TO PAYBACK %s TOWARDS THIS ORDER? (PRESS N IF YOU DON'T WANT TO)\n", paybackAmount)
+				confirmOpt, err := utils.ScanForString()
 				if err != nil {
-					log.Println("PAYBACK AMOUNT NOT AN INTEGER, TRY AGAIN")
-					continue
+					log.Println(err)
+					break
 				}
-				fmt.Printf(" DO YOU WANT TO CONFIRM THAT YOU WANT TO PAYBACK %s TOWARDS THIS ORDER? (PRESS N IF YOU DON'T WANT TO)\n", pbAmountS)
-				scanner.Scan()
-				if scanner.Text() == "N" || scanner.Text() == "n" {
+				if confirmOpt == "N" || confirmOpt == "n" {
 					fmt.Println("YOU HAVE DECIDED TO CANCEL THIS ORDER")
 					break
 				}
-				fmt.Printf("PAYING BACK %s TOWARDS ORDER NUMBER: %d\n", pbAmountS, rtOrder.Index) // use the rtOrder here instead of using orderNumber from long ago
+				fmt.Printf("PAYING BACK %s TOWARDS ORDER NUMBER: %d\n", paybackAmount, rtOrder.Index) // use the rtOrder here instead of using orderNumber from long ago
 				// now we need to call back the payback function to payback the asset
 				// Here, we will simply payback the DEBTokens that was sent to us earlier
 				if rtOrder.DEBAssetCode == "" {
 					log.Fatal("Order not found")
 				}
-				err = recipient.Payback(rtOrder, rtOrder.DEBAssetCode, platform.PublicKey, pbAmountS)
+				err = recipient.Payback(rtOrder, rtOrder.DEBAssetCode, platform.PublicKey, paybackAmount)
 				// TODO: right now, the payback asset directly sends back, change
 				if err != nil {
 					log.Println("PAYBACK TX FAILED, PLEASE TRY AGAIN!")
@@ -472,7 +323,7 @@ func main() {
 				}
 				// now send back the PBToken from the platform to the issuer
 				// this function is optional and can be deleted in case we don't need PBAssets
-				err = assets.SendPBAsset(rtOrder, recipient.U.PublicKey, pbAmountS, platformSeed, platform.PublicKey)
+				err = assets.SendPBAsset(rtOrder, recipient.U.PublicKey, paybackAmount, platformSeed, platform.PublicKey)
 				if err != nil {
 					log.Println("PBAsset sending back FAILED, PLEASE TRY AGAIN!")
 					break
@@ -491,13 +342,12 @@ func main() {
 				break
 			case 4:
 				log.Println("Enter the amount you want to convert into STABLEUSD")
-				scanner.Scan()
-				convAmount := scanner.Text()
-				if utils.StringToFloat(convAmount) == 0 {
-					log.Println("Amount entered is not a float, quitting")
+				convAmount, err := utils.ScanForStringWithCheckF()
+				if err != nil {
+					log.Println(err)
 					break
 				}
-				hash, err := assets.TrustAsset(stablecoin.StableUSD, "1000000000", recipient.U.PublicKey, recipient.U.Seed)
+				hash, err := assets.TrustAsset(stablecoin.StableUSD, consts.StablecoinTrustLimit, recipient.U.PublicKey, recipient.U.Seed)
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -509,11 +359,125 @@ func main() {
 				}
 				log.Println("tx hash for sent xlm: ", hash, "pubkey: ", recipient.U.PublicKey)
 				break
-			default:
+			case 5:
+				// we shouild  finalize the contract that we want
+				// can be imagined as some sort of voting mechanism to choose the winning
+				// contract.
+				// now we display a list of options for the recipient to choose which parameter
+				// he would like to decide the winning contract
+				// 1. Price
+				// 2. Completion time
+				// 3. Select Manually
+				fmt.Println("CHOOSE THE METRIC BY WHICH YOU WANT TO SELECT THE WINNING BID: ")
+				fmt.Println("1. PRICE")
+				fmt.Println("2. COMPLETION TIME (IN YEARS)")
+				fmt.Println("3. SELECT MANUALLY")
+				fmt.Println("ENTER YOUR CHOICE AS A NUMBER (1 / 2 / 3)")
+				opt, err := utils.ScanForInt()
+				if err != nil {
+					fmt.Println("Couldn't read user input")
+					break
+				}
+				contractorsForBid, contractsForBid, err := database.RetrieveAllProposedContracts(4)
+				// retrieve all contracts towards the order
+				if err != nil {
+					log.Fatal(err)
+				}
+				// the length of the above two slices must be the same
+				for i, contractor := range contractorsForBid {
+					log.Println("======================================================================================")
+					log.Println("Contractor Name: ", contractor.U.Name)
+					log.Println("Proposed Contract: ")
+					database.PrettyPrintProposedContract(contractsForBid[i].O)
+				}
+				switch opt {
+				case 1:
+					fmt.Println("YOU'VE CHOSEN TO SELECT BY LEAST PRICE")
+					// here we assume that the timeout period for the auction is up and that
+					// price is the winning metric of a specific bid, like in traditional contract
+					bestContract, err := database.SelectContractByPrice(contractsForBid)
+					if err != nil {
+						log.Fatal(err)
+					}
+					log.Println("BEST CONTRACT IS: ")
+					database.PrettyPrintProposedContract(bestContract.O)
+					// now we need to replace the originator order with this order, order
+					// indices are same, so we can insert
+					err = database.InsertOrder(bestContract.O)
+					if err != nil {
+						log.Println(err)
+						break
+					}
+					// now at this point, we need to mark this specific contract as completed.
+					// do we set a flag? db entry? how do we do that
+				case 2:
+					fmt.Println("YOU'VE CHOSEN TO SELECT BY NUMBER OF YEARS")
+					bestContract, err := database.SelectContractByTime(contractsForBid)
+					if err != nil {
+						log.Fatal(err)
+					}
+					log.Println("BEST CONTRACT IS: ")
+					database.PrettyPrintProposedContract(bestContract.O)
+					// finalize this order and open to investors
+					err = database.InsertOrder(bestContract.O)
+					if err != nil {
+						log.Println(err)
+						break
+					}
+				case 3:
+					fmt.Println("HERE ARE A LIST OF AVAILABLE OPTIONS, CHOOSE ANY ONE CONTRACT")
+					for i, contractor := range contractorsForBid {
+						log.Println("======================================================================================")
+						log.Println("CONTRACTOR NUMBER: ", i+1) // +1 to skip 0
+						log.Println("Contractor Name: ", contractor.U.Name)
+						log.Println("Proposed Contract: ")
+						database.PrettyPrintProposedContract(contractsForBid[i].O)
+					}
+					fmt.Println("ENTER YOUR OPTION AS A NUMBER")
+					opt, err := utils.ScanForInt()
+					if err != nil {
+						log.Println(err)
+						break
+					}
+					// here we get the ContractEntity that the user has chosen
+					// we need to insert the ContractEntity's Proposed Order
+					err = database.InsertOrder(contractsForBid[opt-1].O) // -1  for order index
+					if err != nil {
+						log.Println(err)
+						break
+					}
+					// now we need to set the winning order's chosen flag as true
+					bestOrder, err := database.RetrieveOrder(uint32(opt))
+					if err != nil {
+						log.Println(err)
+						break
+					}
+					// we also need to udpate the contract, once differences are clearer
+					err = database.InsertOrder(bestOrder)
+					if err != nil {
+						log.Println(err)
+						break
+					}
+					// TODO: have a flag filter
+					log.Println("Marking order number: ", opt, " as completed")
+				default:
+					break
+				}
+				// now we need to finalize this person, potentially
+				// move funds from the investor money to this person and so on.
+				// another question is that whether we raise money before and then we have a
+				// blind auction or whether we take in their feedback and then present this to
+				// investors. Investors would ideally want to know more about what they are
+				// investing in, so I guess the second option is better for now.
+			default: // this default is for the larger switch case
 				// check whether he wants to go back to the display all screen again
 				fmt.Println("DO YOU REALLY WANT TO EXIT? (PRESS Y TO CONFIRM)")
-				scanner.Scan()
-				if scanner.Text() == "Y" || scanner.Text() == "y" {
+				exitOpt, err := utils.ScanForString()
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				if exitOpt == "Y" || exitOpt == "y" {
 					fmt.Println("YOU HAVE DECIDED TO EXIT")
 					log.Fatal("")
 				}
@@ -524,7 +488,7 @@ func main() {
 		return
 	}
 
-	investor, err := database.ValidateInvestor(invLoginUserName, invLoginPassword)
+	investor, err := database.ValidateInvestor(loginUserName, loginPassword)
 	if err != nil {
 		log.Fatal("had trouble retrieving user from db, Username / password doesn't match")
 	}
@@ -533,22 +497,20 @@ func main() {
 		// Main investor loop
 		fmt.Println("------------INVESTOR INTERFACE------------")
 		fmt.Println("----CHOOSE ONE OF THE FOLLOWING OPTIONS----")
-		fmt.Println("  1. Display all Open Order")
+		fmt.Println("  1. Display all Open Orders")
 		fmt.Println("  2. Display my Profile")
 		fmt.Println("  3. Invest in an Order")
 		fmt.Println("  4. Display All Balances")
 		fmt.Println("  5. Exchange XLM for USD")
+		fmt.Println("  6. Display all Originated Orders")
+		fmt.Println("  7. Vote towards a specific proposed order")
 		fmt.Println("  default: Exit")
-		scanner.Scan()
-		if scanner.Err() != nil {
+		optI, err := utils.ScanForInt()
+		if err != nil {
 			fmt.Println("Couldn't read user input")
 			break
 		}
-		menuInput, err := strconv.Atoi(scanner.Text())
-		if err != nil {
-			log.Fatal(err)
-		}
-		switch menuInput {
+		switch optI {
 		case 1:
 			fmt.Println("------------LIST OF ALL AVAILABLE ORDERS------------")
 			allOrders, err := database.RetrieveAllOrders()
@@ -562,35 +524,31 @@ func main() {
 			break
 		case 3:
 			fmt.Println("----WHICH ORDER DO YOU WANT TO INVEST IN? (ENTER ORDER NUMBER WITHOUT SPACES)----")
-			scanner.Scan()
-			if scanner.Err() != nil {
+			oNumber, err := utils.ScanForInt()
+			if err != nil {
 				fmt.Println("Couldn't read user input")
 				break
 			}
-			// they want to choose
-			// also check whether received user input is an integer
-			uInput, err := strconv.Atoi(scanner.Text())
-			if err != nil {
-				log.Fatal("user input is not a number")
-			}
 			// now the user has decided to invest in the asset with index uInput
 			// we need to retrieve the order and ask for confirmation
-			uOrder, err := database.RetrieveOrder(uint32(uInput))
+			uOrder, err := database.RetrieveOrder(uint32(oNumber))
 			if err != nil {
 				log.Fatal("Order with specified index not found in the database")
 			}
 			database.PrettyPrintOrder(uOrder)
 			fmt.Println(" HOW MUCH DO YOU WANT TO INVEST?")
-			scanner.Scan()
-			investedAmountS := scanner.Text()
-			_, err = strconv.Atoi(investedAmountS)
+			investmentAmount, err := utils.ScanForStringWithCheckI()
 			if err != nil {
-				fmt.Println("AMOUNT INVESTED IS NOT AN INTEGER, EXITING!")
+				log.Println(err)
 				break
 			}
 			fmt.Println(" DO YOU WANT TO CONFIRM THIS ORDER? (PRESS N IF YOU DON'T WANT TO)")
-			scanner.Scan()
-			if scanner.Text() == "N" || scanner.Text() == "n" {
+			confirmOpt, err := utils.ScanForString()
+			if err != nil {
+				log.Println(err)
+				break
+			}
+			if confirmOpt == "N" || confirmOpt == "n" {
 				fmt.Println("YOU HAVE DECIDED TO CANCEL THIS ORDER")
 				break
 			}
@@ -614,7 +572,7 @@ func main() {
 
 			balance, err = xlm.GetXLMBalance(platform.PublicKey)
 			log.Println("Platform balance updated is: ", balance)
-			log.Printf("Platform seed is: %s and platform's publicKey is %s", platformSeed, platform.PublicKey)
+			fmt.Printf("Platform seed is: %s and platform's publicKey is %s", platformSeed, platform.PublicKey)
 			log.Println("Investor's publickey is: ", investor.U.PublicKey)
 			balance, err = xlm.GetXLMBalance(investor.U.PublicKey)
 			if balance == "" {
@@ -670,9 +628,9 @@ func main() {
 			log.Println("The investor's public key and private key are: ", investor.U.PublicKey, " ", investor.U.Seed)
 			log.Println("The recipient's public key and private key are: ", recipient.U.PublicKey, " ", recipient.U.Seed)
 
-			log.Println(&platform, platformSeed, &investor, &recipient, investedAmountS, uOrder)
+			log.Println(&platform, platformSeed, &investor, &recipient, investmentAmount, uOrder)
 			// so now we have three entities setup, so we create the assets and invest in them
-			cOrder, err := assets.InvestInOrder(&platform, platformSeed, &investor, &recipient, investedAmountS, uOrder) // assume payback period is 5
+			cOrder, err := assets.InvestInOrder(&platform, platformSeed, &investor, &recipient, investmentAmount, uOrder) // assume payback period is 5
 			if err != nil {
 				log.Println(err)
 				continue
@@ -696,11 +654,10 @@ func main() {
 			log.Println("Enter the amount you want to convert into STABLEUSD")
 			// this would also mean that you need to check whether we have the balance
 			// here and then proceed further
-			scanner.Scan()
-			convAmount := scanner.Text()
-			if utils.StringToFloat(convAmount) == 0 {
-				log.Println("Amount entered is not a float, quitting")
-				break
+			convAmount, err := utils.ScanForStringWithCheckF()
+			if err != nil {
+				log.Println(err)
+				return
 			}
 			// maybe don't trust asset again when you've trusted it already? check if that's
 			// possible and save on the tx fee for a single transaction. But I guess its
@@ -719,11 +676,108 @@ func main() {
 			log.Println("tx hash for sent xlm: ", hash, "pubkey: ", investor.U.PublicKey)
 			rpc.StartServer("8080") // run this in order to check whether the go routine is running
 			break
+		case 6:
+			// TODO: add voting scheme here
+			fmt.Println("LIST OF ALL ORIGINATED ORDERS: ")
+			originatedOrders, err := database.RetrieveAllOriginatedOrders()
+			if err != nil {
+				log.Println(err)
+				break
+			}
+			database.PrettyPrintOrders(originatedOrders)
+		case 7:
+			// this is the case where an investor can vote on a particular proposed order
+			fmt.Println("LIST OF ALL PROPOSED ORDERS: ")
+			// now the investor can only put his funds in one potential proposed order.
+			// his voting weight will be the amount of stableUSD that he has.
+			// for testing, we assume that weights are 100 each.
+			allContractors, err := database.RetrieveAllContractEntities("contractor")
+			if err != nil {
+				log.Println(err)
+				break
+			}
+			for index, contractor := range allContractors {
+				log.Println("CONTRACTOR NAME: ", contractor.U.Name)
+				log.Println("CONTRACTOR INDEX: ", contractor.U.Index)
+				for _, contract := range allContractors[index].ProposedContracts {
+					database.PrettyPrintOrder(contract.O)
+				}
+			}
+			// we need to get the vote of the investor here, but how do you get the vote?
+			// because you have two arrays, you need to have some kind of a common index
+			// between the two and then you can fetch the stuff back.
+			// lets ask for the user index, which will be unique and the order number,
+			// which can get us the specific proposed contract
+			fmt.Println("WHICH INVESTOR DO YOU WANT TO VOTE TOWARDS?")
+			vote, err := utils.ScanForInt()
+			if err != nil {
+				log.Println(err)
+				break
+			}
+			log.Println("You have voted for user number: ", vote)
+			fmt.Println("WHICH PROPOSED ORDER OF HIS DO YOU WANT TO VOTE TOWARDS?")
+			pOrderN, err := utils.ScanForInt()
+			if err != nil {
+				log.Println(err)
+				break
+			}
+			// we need to go through the contractor's proposed orders to find an order
+			// with index pOrderN
+			for _, elem := range allContractors {
+				if elem.U.Index == uint32(vote) {
+					// we have the specific contractor
+					log.Println("FOUND CONTRACTOR!")
+					for i, pcs := range elem.ProposedContracts {
+						if pcs.O.Index == uint32(pOrderN) {
+							// this is the order the user voted towards
+							// need to update the vote stuff
+							// check whether user has already voted
+							// now an investor can vote  up to a max of his balance in StableUSD
+							// the final call for selecting still falls on to the recipient, but
+							// the recipient can get soem idea on which proposed contracts are
+							// popular.
+							fmt.Println("YOUR AVAILABLE VOTING BALANCE IS: ", investor.VotingBalance)
+							fmt.Println("HOW MANY VOTES DO YOU WANT TO DELEGATE TOWARDS THIS ORDER?")
+							votes, err := utils.ScanForInt()
+							if err != nil {
+								log.Println(err)
+								break
+							}
+							if votes > investor.VotingBalance {
+								log.Println("Can't vote with an amount greater than available balance")
+								break
+							}
+							pcs.O.Votes += votes
+							// an order's votes can exceed the total amount because it only shows
+							// that many peopel feel that contract to be doing the right thing
+							elem.ProposedContracts[i] = pcs
+							// and we need to update the contractor, not order, since these
+							// are not in the order database yet)
+							err = database.InsertContractEntity(elem)
+							if err != nil {
+								log.Println(err)
+								break
+							}
+							err = investor.DeductVotingBalance(votes)
+							if err != nil {
+								// fatal since we need to exit if there's a bug in updating votes
+								log.Fatal(err)
+								break
+							}
+							log.Println("CASTING VOTE! ", pcs)
+						}
+					}
+				}
+			}
 		default:
 			// check whether he wants to go back to the display all screen again
 			fmt.Println("DO YOU REALLY WANT TO EXIT? (PRESS Y TO CONFIRM)")
-			scanner.Scan()
-			if scanner.Text() == "Y" || scanner.Text() == "y" {
+			exitOpt, err := utils.ScanForString()
+			if err != nil {
+				log.Println(err)
+				break
+			}
+			if exitOpt == "Y" || exitOpt == "y" {
 				fmt.Println("YOU HAVE DECIDED TO EXIT")
 				log.Fatal("")
 			}

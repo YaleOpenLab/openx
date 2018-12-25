@@ -111,7 +111,7 @@ func RetrieveRecipient(key uint32) (Recipient, error) {
 	return inv, nil
 }
 
-func ValidateRecipient(name string, pwd string) (Recipient, error) {
+func ValidateRecipient(name string, pwhash string) (Recipient, error) {
 	var inv Recipient
 	temp, err := RetrieveAllUsers()
 	if err != nil {
@@ -139,7 +139,7 @@ func ValidateRecipient(name string, pwd string) (Recipient, error) {
 				return nil
 			}
 			// we have the Recipient class, check password
-			if rRecipient.U.LoginUserName == name && utils.SHA3hash(pwd) == rRecipient.U.LoginPassword {
+			if rRecipient.U.LoginUserName == name && pwhash == rRecipient.U.LoginPassword {
 				inv = rRecipient
 				return nil
 			}
