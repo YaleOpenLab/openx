@@ -36,11 +36,12 @@ func main() {
 	}
 
 	// Open the database
-	err = StartPlatform()
+	platformPublicKey, platformSeed, err := StartPlatform()
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	log.Printf("PLATFORM SEED IS: %s\n PLATFORM PUBLIC KEY IS: %s", platformSeed, platformPublicKey)
 	// TODO: how much do we pay the investor? how does it work
 	// Do we sell the REC created from the solar panels only to the investor? If so,
 	// isn't that enough to propel investment in the solar contract itself?
@@ -65,17 +66,6 @@ func main() {
 
 	fmt.Println("------------STELLAR HOUSE INVESTMENT CLI INTERFACE------------")
 
-	// retrieve the platform from database
-	platform, err := database.RetrievePlatform()
-	if err != nil {
-		log.Fatal(err)
-	}
-	// ask for the platform's password
-	// now here, we must decrypt the seed before using it in other places
-	platformSeed, err := DecryptSeed()
-	if err != nil {
-		log.Fatal(err)
-	}
 	// init stablecoin stuff
 	err = stablecoin.InitStableCoin()
 	if err != nil {
@@ -165,7 +155,7 @@ func main() {
 					log.Println("INPUT NOT AN INTEGER, TRY AGAIN")
 					continue
 				}
-				// check if we can get the roder using the order number that we have here
+				// check if we can get the order using the order number that we have here
 				rtOrder, err := database.RetrieveOrder(orderNumber)
 				if err != nil {
 					log.Println("Couldn't retrieve order, try again!")
@@ -195,7 +185,7 @@ func main() {
 				if rtOrder.DEBAssetCode == "" {
 					log.Fatal("Order not found")
 				}
-				err = recipient.Payback(rtOrder, rtOrder.DEBAssetCode, platform.PublicKey, paybackAmount)
+				err = recipient.Payback(rtOrder, rtOrder.DEBAssetCode, platformPublicKey, paybackAmount)
 				// TODO: right now, the payback asset directly sends back, change
 				if err != nil {
 					log.Println("PAYBACK TX FAILED, PLEASE TRY AGAIN!")
@@ -203,12 +193,12 @@ func main() {
 				}
 				// now send back the PBToken from the platform to the issuer
 				// this function is optional and can be deleted in case we don't need PBAssets
-				err = assets.SendPBAsset(rtOrder, recipient.U.PublicKey, paybackAmount, platformSeed, platform.PublicKey)
+				err = assets.SendPBAsset(rtOrder, recipient.U.PublicKey, paybackAmount, platformSeed, platformPublicKey)
 				if err != nil {
 					log.Println("PBAsset sending back FAILED, PLEASE TRY AGAIN!")
 					break
 				}
-				// check if we can get the roder using the order number that we have here
+				// check if we can get the order using the order number that we have here
 				rtOrder, err = database.RetrieveOrder(orderNumber)
 				if err != nil {
 					log.Println("Couldn't retrieve updated order, check again!")
@@ -431,14 +421,14 @@ func main() {
 			// when I am creating an account, I will have a PublicKey and Seed, so
 			// don't need them here
 			// check whether the investor has XLM already
-			balance, err := xlm.GetXLMBalance(platform.PublicKey)
+			balance, err := xlm.GetXLMBalance(platformPublicKey)
 			// balance is in string, convert to int
 			balanceI := utils.StoF(balance)
 			log.Println("Platform's balance is: ", balanceI)
 			if balanceI < 21 { // 1 to account for fees
 				// get coins if balance is this low
 				log.Println("Refilling platform balance")
-				err := xlm.GetXLM(platform.PublicKey)
+				err := xlm.GetXLM(platformPublicKey)
 				// TODO: in future, need to refill platform sufficiently well and interact
 				// with a cold wallet that we have previously set
 				if err != nil {
@@ -446,9 +436,9 @@ func main() {
 				}
 			}
 
-			balance, err = xlm.GetXLMBalance(platform.PublicKey)
+			balance, err = xlm.GetXLMBalance(platformPublicKey)
 			log.Println("Platform balance updated is: ", balance)
-			fmt.Printf("Platform seed is: %s and platform's publicKey is %s", platformSeed, platform.PublicKey)
+			fmt.Printf("Platform seed is: %s and platform's publicKey is %s", platformSeed, platformPublicKey)
 			log.Println("Investor's publickey is: ", investor.U.PublicKey)
 			balance, err = xlm.GetXLMBalance(investor.U.PublicKey)
 			if balance == "" {
@@ -500,13 +490,13 @@ func main() {
 					log.Fatal(err)
 				}
 			}
-			log.Println("The issuer's public key and private key are: ", platform.PublicKey, " ", platformSeed)
+			log.Println("The issuer's public key and private key are: ", platformPublicKey, " ", platformSeed)
 			log.Println("The investor's public key and private key are: ", investor.U.PublicKey, " ", investor.U.Seed)
 			log.Println("The recipient's public key and private key are: ", recipient.U.PublicKey, " ", recipient.U.Seed)
 
-			log.Println(&platform, platformSeed, &investor, &recipient, investmentAmount, uOrder)
+			log.Println(&investor, &recipient, investmentAmount, uOrder)
 			// so now we have three entities setup, so we create the assets and invest in them
-			cOrder, err := assets.InvestInOrder(&platform, platformSeed, &investor, &recipient, investmentAmount, uOrder) // assume payback period is 5
+			cOrder, err := assets.InvestInOrder(platformPublicKey, platformSeed, &investor, &recipient, investmentAmount, uOrder) // assume payback period is 5
 			if err != nil {
 				log.Println(err)
 				continue

@@ -7,7 +7,29 @@ import (
 
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
 	"github.com/boltdb/bolt"
+	"github.com/stellar/go/build"
 )
+
+// the investor struct contains all the investor details such as
+// public key, seed (if account is created on the website) and ot her stuff which
+// is yet to be decided
+
+// All investors will be referenced by their public key, name is optional (maybe necessary?)
+// we need to stil ldecide on identity and stuff and how much we want to track
+// people who invest in the schools
+type Investor struct {
+	VotingBalance int // this will be equal to the amount of stablecoins that the
+	// investor possesses
+	AmountInvested float64
+	// total amount, would be nice to track to contact them,
+	// give them some kind of medals or something
+	InvestedAssets []Order
+	// array of asset codes this user has invested in
+	// also I think we need a username + password for logging on to the platform itself
+	// linking it here for now
+	U User
+	// user related functions are called as an instance directly
+}
 
 // NewInvestor creates a new investor object when passed the username, password hash,
 // name and an option to generate the seed and publicKey. This is done because if
@@ -58,7 +80,7 @@ func InsertInvestor(a Investor) error {
 // RetrieveAllInvestors gets a list of all investor in the database
 func RetrieveAllInvestors() ([]Investor, error) {
 	// this route is broken becuase it reads through keys sequentially
-	// need to see keys until the lenght of ther users dat abse
+	// need to see keys until the length of the users database
 	var arr []Investor
 	temp, err := RetrieveAllUsers()
 	if err != nil {
@@ -72,8 +94,6 @@ func RetrieveAllInvestors() ([]Investor, error) {
 	defer db.Close()
 
 	err = db.Update(func(tx *bolt.Tx) error {
-		// this is Update to cover the case where the bucket doesn't exist and we're
-		// trying to retrieve a list of keys
 		b := tx.Bucket(InvestorBucket)
 		for i := 1; i < limit; i++ {
 			var rInvestor Investor
@@ -122,4 +142,68 @@ func ValidateInvestor(name string, pwhash string) (Investor, error) {
 		return rec, err
 	}
 	return RetrieveInvestor(user.Index)
+}
+
+
+func (a *Investor) DeductVotingBalance(votes int) error {
+	// TODO: we need to update the voting balance often in accordance with the stablecoin
+	// balance or a user will have way less votes. This needs an aadditional field
+	// in the db to track past balance and then adjust the amoutn of votes he has
+	// accordingly
+	var err error
+	a.VotingBalance -= votes
+	err = InsertInvestor(*a)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (a *Investor) AddVotingBalance(votes int) error {
+	// this funtion is caled when we want to refund the user with the votes once
+	// an order has been finalized.
+	// TODO: use this
+	var err error
+	a.VotingBalance += votes
+	err = InsertInvestor(*a)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+
+// TrustAsset creates a trustline from the caller towards the specific asset
+// and asset issuer with a _limit_ set on the maximum amount of tokens that can be sent
+// through the trust channel. Each trustline costs 0.5XLM.
+func (a *Investor) TrustAsset(asset build.Asset, limit string) (string, error) {
+	// TRUST is FROM recipient TO issuer
+	trustTx, err := build.Transaction(
+		build.SourceAccount{a.U.PublicKey},
+		build.AutoSequence{SequenceProvider: utils.DefaultTestNetClient},
+		build.TestNetwork,
+		build.Trust(asset.Code, asset.Issuer, build.Limit(limit)),
+	)
+
+	if err != nil {
+		return "", err
+	}
+
+	trustTxe, err := trustTx.Sign(a.U.Seed)
+	if err != nil {
+		return "", err
+	}
+
+	trustTxeB64, err := trustTxe.Base64()
+	if err != nil {
+		return "", err
+	}
+
+	tx, err := utils.DefaultTestNetClient.SubmitTransaction(trustTxeB64)
+	if err != nil {
+		return "", err
+	}
+
+	log.Println("Trusted asset tx: ", tx.Hash)
+	return tx.Hash, nil
 }

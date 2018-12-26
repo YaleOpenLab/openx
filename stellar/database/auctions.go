@@ -4,6 +4,19 @@ import (
 	"fmt"
 )
 
+type ContractAuction struct {
+	// TODO: this struct isn't used yet as it needs handlers and stuff, but when
+	// we move off main.go for testinge, this must be  used in order to make stuff
+	// easier for us.
+	// this is called when there is an originated order live and when there are
+	// contractors who want to get this price. This is a blind auction and the
+	// choosing criteria is just price for now.
+	// TODO: decide this criteria
+	AllContracts    []Contract
+	AllContractors  []ContractEntity
+	WinningContract Contract // do we need this?
+}
+
 // auctions contains stuff related to choosing the best contract and potentially
 // future auction logic that might need to be housed here
 func SelectContractByPrice(arr []Contract) (Contract, error) {

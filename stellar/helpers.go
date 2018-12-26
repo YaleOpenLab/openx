@@ -5,6 +5,7 @@ import (
 	"log"
 
 	database "github.com/YaleOpenLab/smartPropertyMVP/stellar/database"
+	platform "github.com/YaleOpenLab/smartPropertyMVP/stellar/platform"
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
 )
 
@@ -17,69 +18,55 @@ func ValidateInputs() {
 	}
 }
 
-func StartPlatform() error {
+func StartPlatform() (string, string, error) {
+	var publicKey string
+	var seed string
 	ValidateInputs()
 	allOrders, err := database.RetrieveAllOrders()
 	if err != nil {
 		log.Println("Error retrieving all orders from the database")
-		return err
+		return publicKey, seed, err
 	}
 
 	if len(allOrders) == 0 {
 		log.Println("Populating database with test values")
 		err = database.InsertDummyData()
 		if err != nil {
-			return err
+			return publicKey, seed, err
 		}
 	}
-	// setup issuer account if the platform doesn't  already exist
-	// check whether the platform exists
-	tmpPlatform, err := database.RetrievePlatform()
-	if err != nil {
-		return err
-	}
-	if len(tmpPlatform.PublicKey) == 0 {
-		// this is the first time, so we initialize a platform
-		log.Println("Initializing a new platform")
-		_, err := database.InitializePlatform()
-		if err != nil {
-			return err
-		}
-	} else {
-		log.Println("Platform already exists, using existing one")
-	}
-	return nil
+	publicKey, seed, err = platform.InitializePlatform()
+	return publicKey, seed, err
 }
 
-func DecryptSeed() (string, error) {
-	fmt.Printf("%s: ", "ENTER PASSWORD TO UNLOCK THE PLATFORM")
-	rawPassword, err := utils.ScanRawPassword()
-	if err != nil {
-		log.Println(err)
-		return "", err
-	}
-	platformSeed := database.GetSeedFromEncryptedSeed("seed.hex", rawPassword)
-	return platformSeed, nil
-}
-
-func NewInvestorPrompt() error {
-	fmt.Printf("%s: ", "ENTER YOUR REAL NAME")
+func NewUserPrompt() (string, string, string, error) {
 	realName, err := utils.ScanForString()
 	if err != nil {
 		fmt.Println("Couldn't read user input")
-		return err
+		return "", "", "", err
 	}
 	fmt.Printf("%s: ", "ENTER YOUR USERNAME")
 	loginUserName, err := utils.ScanForString()
 	if err != nil {
 		fmt.Println("Couldn't read user input")
-		return err
+		return "", "", "", err
 	}
 
 	fmt.Printf("%s: ", "ENTER DESIRED PASSWORD, YOU WILL NOT BE ASKED TO CONFIRM THIS")
 	loginPassword, err := utils.ScanForPassword()
 	if err != nil {
 		fmt.Println("Couldn't read password")
+		return "", "", "", err
+	}
+	return realName, loginUserName, loginPassword, err
+}
+
+func NewInvestorPrompt() error {
+	fmt.Printf("%s: ", "ENTER YOUR REAL NAME")
+
+	loginUserName, loginPassword, realName, err := NewUserPrompt()
+	if err != nil {
+		log.Println(err)
 		return err
 	}
 
@@ -97,26 +84,12 @@ func NewInvestorPrompt() error {
 }
 
 func NewRecipientPrompt() error {
-	fmt.Printf("%s: ", "ENTER YOUR REAL NAME")
-	realName, err := utils.ScanForString()
-	if err != nil {
-		fmt.Println("Couldn't read user input")
-		return err
-	}
-	fmt.Printf("%s: ", "ENTER YOUR USERNAME")
-	loginUserName, err := utils.ScanForString()
-	if err != nil {
-		fmt.Println("Couldn't read user input")
-		return err
-	}
 
-	fmt.Printf("%s: ", "ENTER DESIRED PASSWORD, YOU WILL NOT BE ASKED TO CONFIRM THIS")
-	loginPassword, err := utils.ScanForPassword()
+	loginUserName, loginPassword, realName, err := NewUserPrompt()
 	if err != nil {
-		fmt.Println("Couldn't read password")
+		log.Println(err)
 		return err
 	}
-
 	recipient, err := database.NewRecipient(loginUserName, loginPassword, realName)
 	if err != nil {
 		log.Println("FAILED TO SETUP ACCOUNT, TRY AGAIN")

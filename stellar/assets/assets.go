@@ -132,7 +132,7 @@ func SendAssetFromIssuer(assetName string, destination string, amount string, Se
 // a particular _uOrder_. If the invested amount makes the money raised equal to
 // the total value of the _uOrder_, we issue the PBTokens and DEBTokens to the
 // _recipient_
-func InvestInOrder(issuer *database.Platform, issuerSeed string, investor *database.Investor, recipient *database.Recipient, investmentAmountS string, uOrder database.Order) (database.Order, error) {
+func InvestInOrder(issuerPublicKey string, issuerSeed string, investor *database.Investor, recipient *database.Recipient, investmentAmountS string, uOrder database.Order) (database.Order, error) {
 	var partOrder database.Order
 	var err error
 
@@ -154,7 +154,7 @@ func InvestInOrder(issuer *database.Platform, issuerSeed string, investor *datab
 		// this person is the first investor, set the investor token name
 		INVAssetCode := AssetID(consts.INVAssetPrefix + assetName)
 		uOrder.INVAssetCode = INVAssetCode              // set the investeor code
-		_ = CreateAsset(INVAssetCode, issuer.PublicKey) // create the asset itself, since it would not have bene created earlier
+		_ = CreateAsset(INVAssetCode, issuerPublicKey) // create the asset itself, since it would not have bene created earlier
 	}
 	// we should check here whether the investor has enough USDTokens in order to be
 	// able to ivnest in the asset
@@ -165,7 +165,7 @@ func InvestInOrder(issuer *database.Platform, issuerSeed string, investor *datab
 	}
 	var INVAsset build.Asset
 	INVAsset.Code = uOrder.INVAssetCode
-	INVAsset.Issuer = issuer.PublicKey
+	INVAsset.Issuer = issuerPublicKey
 	// INVAsset is not a native token, so don't set that
 	// now we need to send the investor the INVAssets as proof of investment
 	txHash, err := TrustAsset(INVAsset, utils.ItoS(uOrder.TotalValue), investor.U.PublicKey, investor.U.Seed)
@@ -175,7 +175,7 @@ func InvestInOrder(issuer *database.Platform, issuerSeed string, investor *datab
 	}
 	log.Println("Investor trusted asset: ", INVAsset.Code, " tx hash: ", txHash)
 	log.Println("Sending INVAsset: ", INVAsset.Code, "for: ", investmentAmount)
-	_, txHash, err = SendAssetFromIssuer(INVAsset.Code, investor.U.PublicKey, investmentAmountS, issuerSeed, issuer.PublicKey)
+	_, txHash, err = SendAssetFromIssuer(INVAsset.Code, investor.U.PublicKey, investmentAmountS, issuerSeed, issuerPublicKey)
 	if err != nil {
 		return uOrder, err
 	}
@@ -199,8 +199,8 @@ func InvestInOrder(issuer *database.Platform, issuerSeed string, investor *datab
 		// and PBAssetCodes, generate them and give to the recipient
 		DEBAssetCode := AssetID(consts.DEBAssetPrefix + assetName)
 		PBAssetCode := AssetID(consts.PBAssetPrefix + assetName)
-		DEBasset := CreateAsset(DEBAssetCode, issuer.PublicKey)
-		PBasset := CreateAsset(PBAssetCode, issuer.PublicKey)
+		DEBasset := CreateAsset(DEBAssetCode, issuerPublicKey)
+		PBasset := CreateAsset(PBAssetCode, issuerPublicKey)
 		// and the school needs to trust me only for paybackTokens amount of PB tokens
 		pbAmtTrust := utils.ItoS(uOrder.Years * 12 * 2) // two way exchange possible, to account for errors
 		txHash, err = TrustAsset(PBasset, pbAmtTrust, recipient.U.PublicKey, recipient.U.Seed)
@@ -216,7 +216,7 @@ func InvestInOrder(issuer *database.Platform, issuerSeed string, investor *datab
 		}
 		log.Println("Recipient Trusted Debt asset: ", DEBasset.Code, " tx hash: ", txHash)
 		log.Println("Sending DEBasset: ", DEBAssetCode)
-		_, txHash, err = SendAssetFromIssuer(DEBAssetCode, recipient.U.PublicKey, utils.ItoS(uOrder.TotalValue), issuerSeed, issuer.PublicKey) // same amount as debt
+		_, txHash, err = SendAssetFromIssuer(DEBAssetCode, recipient.U.PublicKey, utils.ItoS(uOrder.TotalValue), issuerSeed, issuerPublicKey) // same amount as debt
 		if err != nil {
 			return uOrder, err
 		}
