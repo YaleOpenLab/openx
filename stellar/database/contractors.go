@@ -3,167 +3,106 @@ package database
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
-	xlm "github.com/YaleOpenLab/smartPropertyMVP/stellar/xlm"
 	"github.com/boltdb/bolt"
 )
 
-// TODO: most of these entities have some common fields like Index, Name,
-// LoginUserName, LoginPassword, FirstSignedUp, Seed, PublicKey
-// we should split these into a separate entity called a "User" and have all
-// other entities import from this low level entity. That would save lots of
-// code duplication on our way forward.
-func NewContractor(uname string, pwhash string, Name string, Address string, Description string) (Contractor, error) {
-	// call this after the user has failled in username and password. Store hashed password
-	// in the database
-	var a Contractor
-
-	/*
-	   Contractor Fields
-	     Index uint32 auto
-	     Name string required
-	     Address string required
-	     Description string required
-	     Image string optional
-	   	Seed string auto
-	   	PublicKey string auto
-	     LoginUserName string required
-	     LoginPassword string required
-	   	one of the following four flags is required:
-	   	  IsContractor bool
-	   	  IsGuarantor bool
-	   	  IsDeveloper bool
-	   	  IsOriginator bool
-	     PastContracts []Contract
-	     PresentContracts []Contract
-	     PastFeedback []Feedback
-	   	FirstSignedUp string auto
-	*/
-	allContractors, err := RetrieveAllContractors()
+func NewContractor(uname string, pwd string, Name string, Address string, Description string) (ContractEntity, error) {
+	newContractor, err := NewContractEntity(uname, pwd, Name, Address, Description, "contractor")
 	if err != nil {
-		return a, err
+		return newContractor, err
 	}
 
-	// the ugly indexing thing again, need to think of something better here
-	if len(allContractors) == 0 {
-		a.Index = 1
-	} else {
-		a.Index = uint32(len(allContractors) + 1)
-	}
-
-	// for aestors, we need to index by username, so Index is not that useful
-	// except maybe for quick stats
-	a.Seed, a.PublicKey, err = xlm.GetKeyPair()
+	// insert the contractor into the database
+	err = InsertContractEntity(newContractor)
 	if err != nil {
-		return a, err
+		return newContractor, err
 	}
-	a.FirstSignedUp = utils.Timestamp()
-	// set all auto fields above
-	a.Name = Name
-	a.Address = Address
-	a.Description = Description
-	a.LoginUserName = uname
-	a.LoginPassword = pwhash
-	// insertion into the database will be a separate handler, pass this contractor there
-	return a, nil
+
+	return newContractor, err
 }
 
-func InsertContractor(a Contractor) error {
-	db, err := OpenDB()
+func (contractor *ContractEntity) ProposeContract(panelSize string, totalValue int, location string, years int, metadata string, recipient Recipient, orderIndex int) (Contract, error) {
+	var pc Contract
+	var err error
+
+	pc.O.Index = orderIndex
+	pc.O.PanelSize = panelSize
+	pc.O.TotalValue = totalValue
+	pc.O.Location = location
+	pc.O.Years = years
+	pc.O.Metadata = metadata
+	pc.O.OrderRecipient = recipient
+	pc.O.DateInitiated = utils.Timestamp()
+	contractor.ProposedContracts = append(contractor.ProposedContracts, pc)
+
+	err = InsertContractEntity(*contractor)
 	if err != nil {
-		return err
+		return pc, err
 	}
-	defer db.Close()
-	err = db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(ContractorBucket)
-		encoded, err := json.Marshal(a)
-		if err != nil {
-			log.Println("Failed to encode this data into json")
-			return err
-		}
-		return b.Put([]byte(utils.Uint32toB(a.Index)), encoded)
-	})
-	return err
+
+	// don't insert the order since the contractor's orders are not final
+	return pc, err
 }
 
-func RetrieveAllContractors() ([]Contractor, error) {
-	var arr []Contractor
+// we go through each contract entity and retrieve orders specific to the boIndex
+// which is stored in their proposed contracts slice
+func RetrieveAllProposedContracts(boIndex int) ([]ContractEntity, []Contract, error) {
+	// boindex is the bidding order index which we should search for in all
+	// contractors' proposed contracts
+	var contractorsArr []ContractEntity
+	var contractsArr []Contract
+	temp, err := RetrieveAllUsers()
+	if err != nil {
+		return contractorsArr, contractsArr, err
+	}
+	limit := len(temp) + 1
 	db, err := OpenDB()
 	if err != nil {
-		return arr, err
+		return contractorsArr, contractsArr, err
 	}
 	defer db.Close()
 
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(ContractorBucket)
-		i := uint32(1)
-		for ; ; i++ {
-			var rContractor Contractor
-			x := b.Get(utils.Uint32toB(i))
+		for i := 1; i < limit; i++ {
+			var rContractor ContractEntity
+			x := b.Get(utils.ItoB(i))
 			if x == nil {
-				// no key, return
-				return nil
+				// might be some other user like an investor or recipient
+				continue
 			}
 			err := json.Unmarshal(x, &rContractor)
 			if err != nil {
 				return nil
 			}
-			arr = append(arr, rContractor)
+			if !rContractor.Contractor {
+				continue
+			}
+			// is a contractor, search for the index of his proposed contracts
+			contract1, err := FindInKey(boIndex, rContractor.ProposedContracts)
+			if err != nil {
+				// doesnt have a proposed contract for the specific recipient
+				continue
+			}
+			// contract1 is the specific contract which has a bid towards this order
+			// now we need to store the contractor and the contract for the bidding process
+			contractorsArr = append(contractorsArr, rContractor)
+			contractsArr = append(contractsArr, contract1)
+			// default is to add all contractentities to the array
 		}
 		return nil
 	})
-	return arr, err
+	return contractorsArr, contractsArr, err
 }
 
-func RetrieveContractor(key uint32) (Contractor, error) {
-	var a Contractor
-	db, err := OpenDB()
-	if err != nil {
-		return a, err
-	}
-	defer db.Close()
-	err = db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(ContractorBucket)
-		x := b.Get(utils.Uint32toB(key))
-		if x == nil {
-			return nil
+func FindInKey(key int, arr []Contract) (Contract, error) {
+	var dummy Contract
+	for _, elem := range arr {
+		if elem.O.Index == key {
+			return elem, nil
 		}
-		return json.Unmarshal(x, &a)
-	})
-	return a, nil
-}
-
-// search by username for login stuff
-// TODO: if two people have the same username, bolt defaults to the alst inserted
-// one. So we need to have a function that prevents username collisions
-func SearchForContractor(name string) (Contractor, error) {
-	var a Contractor
-	db, err := OpenDB()
-	if err != nil {
-		return a, err
 	}
-	defer db.Close()
-	err = db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(ContractorBucket)
-		i := uint32(1)
-		for ; ; i++ {
-			var rContractor Contractor
-			x := b.Get(utils.Uint32toB(i))
-			if x == nil {
-				return nil
-			}
-			err := json.Unmarshal(x, &rContractor)
-			if err != nil {
-				return nil
-			}
-			// we have the investor class, check names
-			if rContractor.LoginUserName == name {
-				a = rContractor
-			}
-		}
-		return fmt.Errorf("Not Found")
-	})
-	return a, err
+	return dummy, fmt.Errorf("Not found")
 }

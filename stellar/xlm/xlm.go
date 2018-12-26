@@ -77,18 +77,17 @@ func GetUSDTokenBalance(PublicKey string, targetBalance string) (error) {
 	// specific amount of "X TOKEN" which can be either be a currency like btc / usd / xlm
 	// or can be something like a stablecoin or token
 	// we also assume that the assetCode of the USDToken is constant and doesn't change.
-	return nil
 	account, err := utils.DefaultTestNetClient.LoadAccount(PublicKey)
 	if err != nil {
 		return err
 	}
 
 	for _, balance := range account.Balances {
-		if balance.Asset.Code == "USDTokenCode here" && balance.Balance == targetBalance {
+		if balance.Asset.Code == "STABLEUSD" && balance.Balance >= targetBalance {
 			return nil
 		}
 	}
-	return fmt.Errorf("Balance insufficient or token not found on your account")
+	return fmt.Errorf("Balance insufficient or STABLEUSD token not found on your account")
 }
 
 // GetAllBalances calls  the stellar testnet API to get all the balances associated

@@ -12,6 +12,7 @@ var InvestorBucket = []byte("Investors")
 var RecipientBucket = []byte("Recipients")
 var PlatformBucket = []byte("Platforms")
 var ContractorBucket = []byte("Contractors")
+var UserBucket = []byte("Users")
 
 // TODO: need locks over this to ensure no one's using the db while we are
 func OpenDB() (*bolt.DB, error) {
@@ -38,6 +39,10 @@ func OpenDB() (*bolt.DB, error) {
 			return err
 		}
 		_, err = tx.CreateBucketIfNotExists(ContractorBucket) // the orders bucket contains all our orders
+		if err != nil {
+			return err
+		}
+		_, err = tx.CreateBucketIfNotExists(UserBucket) // the orders bucket contains all our orders
 		if err != nil {
 			return err
 		}
