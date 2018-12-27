@@ -24,7 +24,7 @@ import (
 // Order is the structure that is actually stored in the database
 // Order is a subset of the larger struct Contractor, which is still a TODO
 type Order struct {
-	Index         int  // an Index to keep quick track of how many orders exist
+	Index         int     // an Index to keep quick track of how many orders exist
 	PanelSize     string  // size of the given panel, for diplsaying to the user who wants to bid stuff
 	TotalValue    int     // the total money that we need from investors
 	Location      string  // where this specific solar panel is located
@@ -34,6 +34,7 @@ type Order struct {
 	Live          bool    // check to see whether the current order is live or not
 	Origin        bool    // if this order is an originated order
 	Votes         int     // the number of votes of a proposed contract
+	Stage         int     // the stage at which the specific order is at, can be used to see the progess of order
 	PaidOff       bool    // whether the asset has been paidoff by the recipient
 	INVAssetCode  string  // once all funds have been raised, we need to set assetCodes
 	DEBAssetCode  string  // once all funds have been raised, we need to set assetCodes

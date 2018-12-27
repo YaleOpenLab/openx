@@ -23,7 +23,7 @@ func NewContractor(uname string, pwd string, Name string, Address string, Descri
 	return newContractor, err
 }
 
-func (contractor *ContractEntity) ProposeContract(panelSize string, totalValue int, location string, years int, metadata string, recipient Recipient, orderIndex int) (Contract, error) {
+func (contractor *ContractEntity) ProposeContract(panelSize string, totalValue int, location string, years int, metadata string, recIndex int, orderIndex int) (Contract, error) {
 	var pc Contract
 	var err error
 
@@ -33,8 +33,13 @@ func (contractor *ContractEntity) ProposeContract(panelSize string, totalValue i
 	pc.O.Location = location
 	pc.O.Years = years
 	pc.O.Metadata = metadata
-	pc.O.OrderRecipient = recipient
 	pc.O.DateInitiated = utils.Timestamp()
+	iRecipient, err := RetrieveRecipient(recIndex)
+	if err != nil {
+		return pc, err
+	}
+	pc.O.OrderRecipient = iRecipient
+	pc.O.Stage = 2
 	contractor.ProposedContracts = append(contractor.ProposedContracts, pc)
 
 	err = InsertContractEntity(*contractor)

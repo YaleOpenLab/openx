@@ -125,6 +125,7 @@ func SendXLMCreateAccount(destination string, amount string, Seed string) (int32
 		build.SourceAccount{Seed},
 		build.AutoSequence{utils.DefaultTestNetClient},
 		build.Network{passphrase},
+		build.MemoText{"Sending Boootstrap Money"},
 		build.CreateAccount(
 			build.Destination{destination},
 			build.NativeAmount{amount},

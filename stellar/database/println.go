@@ -34,6 +34,7 @@ func PrettyPrintOrder(order Order) {
 	fmt.Println("          Recipient: ", order.OrderRecipient)
 	fmt.Println("          Investors: ", order.OrderInvestors)
 	fmt.Println("          Votes: ", order.Votes)
+	fmt.Println("          Order Stage: ", order.Stage)
 }
 
 // PrettyPrintInvestor pretty prints investors
@@ -122,4 +123,15 @@ func PrettyPrintUser(user User) {
 	fmt.Println("          Your Seed is: ", user.Seed)
 	fmt.Println("          Your Username is: ", user.LoginUserName)
 	fmt.Println("          Your Password hash is: ", user.LoginPassword)
+}
+
+func PrettyPrintContractEntity(a ContractEntity) {
+	fmt.Println("    WELCOME BACK ", a.U.Name)
+	fmt.Println("    			 Your Index is ", a.U.Index)
+	fmt.Println("          Your Public Key is: ", a.U.PublicKey)
+	fmt.Println("          Your Seed is: ", a.U.Seed)
+	fmt.Println("          Your Username is: ", a.U.LoginUserName)
+	fmt.Println("          Your Password hash is: ", a.U.LoginPassword)
+	fmt.Println("          Your Address is: ", a.U.Address)
+	fmt.Println("          Your Description is: ", a.U.Description)
 }

@@ -19,7 +19,7 @@ func NewOriginator(uname string, pwd string, Name string, Address string, Descri
 	return newOriginator, err
 }
 
-func (originator *ContractEntity) OriginContract(panelSize string, totalValue int, location string, years int, metadata string) (Contract, error) {
+func (originator *ContractEntity) OriginContract(panelSize string, totalValue int, location string, years int, metadata string, recIndex int) (Contract, error) {
 	//log.Println("NEW ORING: ", newOriginator)
 	var pc Contract
 	var err error
@@ -43,6 +43,12 @@ func (originator *ContractEntity) OriginContract(panelSize string, totalValue in
 	pc.O.Metadata = metadata
 	pc.O.DateInitiated = utils.Timestamp()
 	pc.O.Origin = true
+	oRecipient, err := RetrieveRecipient(recIndex)
+	if err != nil {
+		return pc, err
+	}
+	pc.O.OrderRecipient = oRecipient
+	pc.O.Stage = 0
 	originator.ProposedContracts = append(originator.ProposedContracts, pc)
 	// need to update the database
 	err = InsertContractEntity(*originator)

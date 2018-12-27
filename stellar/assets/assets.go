@@ -96,6 +96,7 @@ func SendAssetFromIssuer(assetName string, destination string, amount string, Se
 		build.SourceAccount{PublicKey},
 		build.TestNetwork,
 		build.AutoSequence{SequenceProvider: utils.DefaultTestNetClient},
+		build.MemoText{"Sending Asset: " + assetName},
 		build.Payment(
 			build.Destination{AddressOrSeed: destination},
 			build.CreditAmount{assetName, PublicKey, amount},

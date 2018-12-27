@@ -4,12 +4,14 @@ package utils
 import (
 	//"log"
 	"bufio"
-	"os"
 	"encoding/hex"
 	"fmt"
 	"net/http"
+	"os"
+	"os/user"
 	"strconv"
 	"syscall"
+	"math/rand"
 	"time"
 
 	clients "github.com/stellar/go/clients/horizon"
@@ -59,7 +61,6 @@ func ScanForStringWithCheckI() (string, error) {
 	}
 	return inputString, nil
 }
-
 
 func ScanForStringWithCheckF() (string, error) {
 	scanner := bufio.NewScanner(os.Stdin)
@@ -136,4 +137,42 @@ func SHA3hash(inputString string) string {
 	byteString := sha3.Sum512([]byte(inputString))
 	return hex.EncodeToString(byteString[:])
 	// so now we have a SHA3hash that we can use to assign unique ids to our assets
+}
+
+func GetHomeDir() (string, error) {
+	var homedir string
+	usr, err := user.Current()
+	if err != nil {
+		return homedir, err
+	}
+	homedir = usr.HomeDir
+	return homedir, nil
+}
+
+func GetRandomString(n int) string {
+	// random string implementation courtesy: icza
+	// https://stackoverflow.com/questions/22892120/how-to-generate-a-random-string-of-a-fixed-length-in-go
+	const (
+		letterBytes   = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+		letterIdxBits = 6                    // 6 bits to represent a letter index
+		letterIdxMask = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
+		letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
+	)
+
+	var src = rand.NewSource(time.Now().UnixNano())
+	b := make([]byte, n)
+	// A src.Int63() generates 63 random bits, enough for letterIdxMax characters!
+	for i, cache, remain := n-1, src.Int63(), letterIdxMax; i >= 0; {
+		if remain == 0 {
+			cache, remain = src.Int63(), letterIdxMax
+		}
+		if idx := int(cache & letterIdxMask); idx < len(letterBytes) {
+			b[i] = letterBytes[idx]
+			i--
+		}
+		cache >>= letterIdxBits
+		remain--
+	}
+
+	return string(b)
 }

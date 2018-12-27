@@ -12,6 +12,7 @@ import (
 	rpc "github.com/YaleOpenLab/smartPropertyMVP/stellar/rpc"
 	stablecoin "github.com/YaleOpenLab/smartPropertyMVP/stellar/stablecoin"
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
+	// ipfs "github.com/YaleOpenLab/smartPropertyMVP/stellar/ipfs"
 	xlm "github.com/YaleOpenLab/smartPropertyMVP/stellar/xlm"
 	flags "github.com/jessevdk/go-flags"
 )
@@ -46,23 +47,28 @@ func main() {
 	// Do we sell the REC created from the solar panels only to the investor? If so,
 	// isn't that enough to propel investment in the solar contract itself?
 	// TODO: need a server to run a public stellar node to test out stuff
-	// things to consider:
-	// while an investor signs up on our platform, do we send them 10 XLM free?
-	// do we charge investors to be on our platform? if not, we shouldn't ideally
-	// be sending them free XLM. also, should the platform have some function for
-	// withdrawing XLM? if so, we'll become an exchange of sorts and have some
-	// legal stuff there. If not, we'll just be a custodian and would not have
-	// too much to consider on our side
-	// need to spin up a local stellar node and test if things run fine if we just
 	// change the API mapping
-	// need to update collections to directly hold orders, similar to the investor
-	// class that we have already
-	// need to implement the contract stuff as described earlier, so that people
-	// can advertise bids, get paid for it, etc.
 	// move current number of years metric to a separate package since that is
 	// more suitable for a model like affordable housing.
 	// look into what kind of data we get from the pi and checkout pi specific code
 	// to see if we can get something from there.
+
+	// TODO: so the idea would be to split the current PoC into two parts, one
+	// focused on the platform of platform ideas and one on the platform of contracts
+	// ideas. The current implementation that we have is focused more on the platform
+	// of platforms idea, with ideas to integrate various partners at differnet stages
+	// to use their input in some parts, but we could do it in an automated way with
+	// assets and tokens for everything as well, which is similar to the platform
+	// of contracts idea.
+	// TODO: how do we emulate various partners? need to get input / have some stuff
+	// that we presume they do and then fill in the rest.
+	// also need to implement stages in contracts based on finalization
+	// need to integrate ipfs into the workflow so that we can store copies of the
+	// specific contract and then reference it when needed using the ipfs hash.
+	// need to start working on the base contract that connects investors and
+	// recipients and the investors and the platform. Need to transition automatically
+	// and also cover breach scenarios in case the recipient doesn't pay for a specific
+	// period of time
 
 	fmt.Println("------------STELLAR HOUSE INVESTMENT CLI INTERFACE------------")
 
@@ -112,7 +118,7 @@ func main() {
 	default:
 	}
 
-	investor, recipient, isRecipient, err := LoginPrompt()
+	investor, recipient, contractor, isRecipient, isContractor, err := LoginPrompt()
 	if err != nil {
 		log.Println(err)
 		return
@@ -129,6 +135,7 @@ func main() {
 			fmt.Println("  3. Payback towards an Order")
 			fmt.Println("  4. Exchange XLM for USD")
 			fmt.Println("  5. Finalize a specific contract")
+			fmt.Println("  6. View all Originated Contracts for us")
 			fmt.Println("  default: Exit")
 			optI, err := utils.ScanForInt()
 			if err != nil {
@@ -273,6 +280,7 @@ func main() {
 					database.PrettyPrintProposedContract(bestContract.O)
 					// now we need to replace the originator order with this order, order
 					// indices are same, so we can insert
+					bestContract.O.Stage = 3
 					err = database.InsertOrder(bestContract.O)
 					if err != nil {
 						log.Println(err)
@@ -289,6 +297,7 @@ func main() {
 					log.Println("BEST CONTRACT IS: ")
 					database.PrettyPrintProposedContract(bestContract.O)
 					// finalize this order and open to investors
+					bestContract.O.Stage = 3
 					err = database.InsertOrder(bestContract.O)
 					if err != nil {
 						log.Println(err)
@@ -311,6 +320,7 @@ func main() {
 					}
 					// here we get the ContractEntity that the user has chosen
 					// we need to insert the ContractEntity's Proposed Order
+					contractsForBid[opt-1].O.Stage = 3
 					err = database.InsertOrder(contractsForBid[opt-1].O) // -1  for order index
 					if err != nil {
 						log.Println(err)
@@ -339,6 +349,69 @@ func main() {
 				// blind auction or whether we take in their feedback and then present this to
 				// investors. Investors would ideally want to know more about what they are
 				// investing in, so I guess the second option is better for now.
+			case 6:
+				fmt.Println("LIST OF ALL ORIGINATED CONTRACTS THAT HAVE US AS THE RECIPIENT")
+				// first, we need to get all the contract entities
+				allOriginators, err := database.RetrieveAllContractEntities("originator")
+				if err != nil {
+					log.Println(err)
+					continue
+				}
+				for _, originator := range allOriginators {
+					// we need to go through their proposed contracts
+					database.PrettyPrintContractEntity(originator)
+					// print info about hte originator
+					for _, oContract := range originator.ProposedContracts {
+						// preint info about the originator's various proposed contracts
+						database.PrettyPrintOrder(oContract.O)
+					}
+				}
+				// now here, the person ahs had a chance to see all the proposed contracts
+				// allow him to choose one so that the contractors can then build on top
+				// of this proposed contract
+				fmt.Println("ENTER THE ORIGINATOR INDEX")
+				originatorIndex, err := utils.ScanForInt()
+				if err != nil {
+					log.Println(err)
+					continue
+				}
+				fmt.Println("ENTER THE CONTRACT INDEX")
+				contractIndex, err := utils.ScanForInt()
+				if err != nil {
+					log.Println(err)
+					continue
+				}
+
+				for _, originator := range allOriginators {
+					if originator.U.Index == originatorIndex {
+						// we have the correct originator
+						log.Println("Found originator")
+						for _, contract := range originator.ProposedContracts {
+							if contract.O.Index == contractIndex {
+								// we found the correct contract as well
+								// insert the contract order into the database
+								log.Println("Found Contract")
+								contract.O.Origin = true
+								contract.O.Stage = 1
+								err = database.InsertOrder(contract.O)
+								if err != nil {
+									fmt.Println(err)
+									break
+								}
+								// now we need to update the contractor as well sicne we set the
+								// origin flag to true
+								err = database.InsertContractEntity(originator)
+								if err != nil {
+									fmt.Println(err)
+									break
+								}
+								// TODO: we don't need to delete the originated orders since we
+								// mark this one to be the originated contract,  others are not
+								// displayed to the investors / contractors
+							}
+						}
+					}
+				}
 			default: // this default is for the larger switch case
 				// check whether he wants to go back to the display all screen again
 				fmt.Println("DO YOU REALLY WANT TO EXIT? (PRESS Y TO CONFIRM)")
@@ -356,299 +429,390 @@ func main() {
 		}
 		database.PrettyPrintRecipient(recipient)
 		return
-	}
-
-	// User is an investor
-	for {
-		// Main investor loop
-		fmt.Println("------------INVESTOR INTERFACE------------")
-		fmt.Println("----CHOOSE ONE OF THE FOLLOWING OPTIONS----")
-		fmt.Println("  1. Display all Open Orders")
-		fmt.Println("  2. Display my Profile")
-		fmt.Println("  3. Invest in an Order")
-		fmt.Println("  4. Display All Balances")
-		fmt.Println("  5. Exchange XLM for USD")
-		fmt.Println("  6. Display all Originated Orders")
-		fmt.Println("  7. Vote towards a specific proposed order")
-		fmt.Println("  default: Exit")
-		optI, err := utils.ScanForInt()
-		if err != nil {
-			fmt.Println("Couldn't read user input")
-			break
+	} else if isContractor {
+		log.Println("WELCOME BACK!!")
+		fmt.Println("----------CONTRACTOR INTERFACE-------------")
+		fmt.Println("AVAILABLE ROLES: ")
+		fmt.Println("  1. CONTRACTOR")
+		fmt.Println("  2. ORIGINATOR")
+		var optI int
+		if contractor.Contractor {
+			optI = 1
+		} else if contractor.Originator {
+			optI = 2
 		}
 		switch optI {
 		case 1:
-			fmt.Println("------------LIST OF ALL AVAILABLE ORDERS------------")
-			allOrders, err := database.RetrieveAllOrders()
-			if err != nil {
-				log.Println("Error retrieving all orders from the database")
+			fmt.Println("-------------WELCOME BACK CONTRACTOR-------------")
+			for {
+				fmt.Println("WHAT WOULD YOU LIKE TO DO?")
+				fmt.Println("  1. VIEW ALL ORIGINATED CONTRACTS")
+				fmt.Println("  2. VIEW PROFILE")
+				fmt.Println("  3. CREATE A PROPOSED CONTRACT")
+				optI, err := utils.ScanForInt()
+				if err != nil {
+					log.Println(err)
+					continue
+				}
+				switch optI {
+				case 1:
+					// TODO: add voting scheme here
+					fmt.Println("LIST OF ALL ORIGINATED ORDERS: ")
+					originatedOrders, err := database.RetrieveAllOriginatedOrders()
+					if err != nil {
+						log.Println(err)
+						break
+					}
+					database.PrettyPrintOrders(originatedOrders)
+				case 2:
+					database.PrettyPrintContractEntity(contractor)
+				case 3:
+					fmt.Println("YOU HAVE CHOSEN TO CREATE A NEW PROPOSED CONTRACT")
+					err = ProposeContractPrompt(&contractor)
+					if err != nil {
+						log.Println(err)
+						continue
+					}
+				}
 			}
-			database.PrettyPrintOrders(allOrders)
-			break
 		case 2:
-			database.PrettyPrintInvestor(investor)
-			break
-		case 3:
-			fmt.Println("----WHICH ORDER DO YOU WANT TO INVEST IN? (ENTER ORDER NUMBER WITHOUT SPACES)----")
-			oNumber, err := utils.ScanForInt()
+			fmt.Println("-------------WELCOME BACK ORIGINATOR-------------")
+			for {
+				fmt.Println("WHAT WOULD YOU LIKE TO DO?")
+				fmt.Println("  1. PROPOSE A CONTRACT TO A RECIPIENT")
+				fmt.Println("  2. VIEW PROFILE")
+				fmt.Println("  3. VIEW ORIGINATED CONTRACTS")
+				optI, err = utils.ScanForInt()
+				if err != nil {
+					log.Println(err)
+					continue
+				}
+				switch optI {
+				case 1:
+					err := OriginContractPrompt(&contractor)
+					if err != nil {
+						fmt.Println(err)
+						fmt.Println("RETURNING BACK TO THE MAIN LOOP")
+						continue
+					}
+				case 2:
+					database.PrettyPrintContractEntity(contractor)
+				case 3:
+					err = PrintAllOriginatedContracts(&contractor)
+					if err != nil {
+						fmt.Println(err)
+						fmt.Println("RETURNING BACK TO THE MAIN LOOP")
+						continue
+					}
+				default:
+					// check whether he wants to go back to the display all screen again
+					fmt.Println("DO YOU REALLY WANT TO EXIT? (PRESS Y TO CONFIRM)")
+					exitOpt, err := utils.ScanForString()
+					if err != nil {
+						log.Println(err)
+						break
+					}
+					if exitOpt == "Y" || exitOpt == "y" {
+						fmt.Println("YOU HAVE DECIDED TO EXIT")
+						log.Fatal("")
+					}
+				}
+			}
+		}
+		database.PrettyPrintContractEntity(contractor)
+	} else {
+		// User is an investor
+		for {
+			// Main investor loop
+			fmt.Println("------------INVESTOR INTERFACE------------")
+			fmt.Println("----CHOOSE ONE OF THE FOLLOWING OPTIONS----")
+			fmt.Println("  1. Display all Open Orders")
+			fmt.Println("  2. Display my Profile")
+			fmt.Println("  3. Invest in an Order")
+			fmt.Println("  4. Display All Balances")
+			fmt.Println("  5. Exchange XLM for USD")
+			fmt.Println("  6. Display all Originated Orders")
+			fmt.Println("  7. Vote towards a specific proposed order")
+			fmt.Println("  default: Exit")
+			optI, err := utils.ScanForInt()
 			if err != nil {
 				fmt.Println("Couldn't read user input")
 				break
 			}
-			// now the user has decided to invest in the asset with index uInput
-			// we need to retrieve the order and ask for confirmation
-			uOrder, err := database.RetrieveOrder(oNumber)
-			if err != nil {
-				log.Fatal("Order with specified index not found in the database")
-			}
-			database.PrettyPrintOrder(uOrder)
-			fmt.Println(" HOW MUCH DO YOU WANT TO INVEST?")
-			investmentAmount, err := utils.ScanForStringWithCheckI()
-			if err != nil {
-				log.Println(err)
-				break
-			}
-			fmt.Println(" DO YOU WANT TO CONFIRM THIS ORDER? (PRESS N IF YOU DON'T WANT TO)")
-			confirmOpt, err := utils.ScanForString()
-			if err != nil {
-				log.Println(err)
-				break
-			}
-			if confirmOpt == "N" || confirmOpt == "n" {
-				fmt.Println("YOU HAVE DECIDED TO CANCEL THIS ORDER")
-				break
-			}
-			// when I am creating an account, I will have a PublicKey and Seed, so
-			// don't need them here
-			// check whether the investor has XLM already
-			balance, err := xlm.GetXLMBalance(platformPublicKey)
-			// balance is in string, convert to int
-			balanceI := utils.StoF(balance)
-			log.Println("Platform's balance is: ", balanceI)
-			if balanceI < 21 { // 1 to account for fees
-				// get coins if balance is this low
-				log.Println("Refilling platform balance")
-				err := xlm.GetXLM(platformPublicKey)
-				// TODO: in future, need to refill platform sufficiently well and interact
-				// with a cold wallet that we have previously set
+			switch optI {
+			case 1:
+				fmt.Println("------------LIST OF ALL AVAILABLE ORDERS------------")
+				allOrders, err := database.RetrieveAllOrders()
 				if err != nil {
-					log.Fatal(err)
+					log.Println("Error retrieving all orders from the database")
 				}
-			}
+				database.PrettyPrintOrders(allOrders)
+				break
+			case 2:
+				database.PrettyPrintInvestor(investor)
+				break
+			case 3:
+				fmt.Println("----WHICH ORDER DO YOU WANT TO INVEST IN? (ENTER ORDER NUMBER WITHOUT SPACES)----")
+				oNumber, err := utils.ScanForInt()
+				if err != nil {
+					fmt.Println("Couldn't read user input")
+					break
+				}
+				// now the user has decided to invest in the asset with index uInput
+				// we need to retrieve the order and ask for confirmation
+				uOrder, err := database.RetrieveOrder(oNumber)
+				if err != nil {
+					log.Fatal("Order with specified index not found in the database")
+				}
+				database.PrettyPrintOrder(uOrder)
+				fmt.Println(" HOW MUCH DO YOU WANT TO INVEST?")
+				investmentAmount, err := utils.ScanForStringWithCheckI()
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				fmt.Println(" DO YOU WANT TO CONFIRM THIS ORDER? (PRESS N IF YOU DON'T WANT TO)")
+				confirmOpt, err := utils.ScanForString()
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				if confirmOpt == "N" || confirmOpt == "n" {
+					fmt.Println("YOU HAVE DECIDED TO CANCEL THIS ORDER")
+					break
+				}
+				// when I am creating an account, I will have a PublicKey and Seed, so
+				// don't need them here
+				// check whether the investor has XLM already
+				balance, err := xlm.GetXLMBalance(platformPublicKey)
+				// balance is in string, convert to int
+				balanceI := utils.StoF(balance)
+				log.Println("Platform's balance is: ", balanceI)
+				if balanceI < 21 { // 1 to account for fees
+					// get coins if balance is this low
+					log.Println("Refilling platform balance")
+					err := xlm.GetXLM(platformPublicKey)
+					// TODO: in future, need to refill platform sufficiently well and interact
+					// with a cold wallet that we have previously set
+					if err != nil {
+						log.Fatal(err)
+					}
+				}
 
-			balance, err = xlm.GetXLMBalance(platformPublicKey)
-			log.Println("Platform balance updated is: ", balance)
-			fmt.Printf("Platform seed is: %s and platform's publicKey is %s", platformSeed, platformPublicKey)
-			log.Println("Investor's publickey is: ", investor.U.PublicKey)
-			balance, err = xlm.GetXLMBalance(investor.U.PublicKey)
-			if balance == "" {
-				// means we need to setup an account first
-				// Generating a keypair on stellar doesn't mean that you can send funds to it
-				// you need to call the CreateAccount method in order to be able to send funds
-				// to it
-				log.Println("Investor balance empty, refilling!")
-				_, _, err = xlm.SendXLMCreateAccount(investor.U.PublicKey, consts.DonateBalance, platformSeed)
-				if err != nil {
-					log.Println("Investor Account doesn't have funds")
-					log.Fatal(err)
+				balance, err = xlm.GetXLMBalance(platformPublicKey)
+				log.Println("Platform balance updated is: ", balance)
+				fmt.Printf("Platform seed is: %s and platform's publicKey is %s", platformSeed, platformPublicKey)
+				log.Println("Investor's publickey is: ", investor.U.PublicKey)
+				balance, err = xlm.GetXLMBalance(investor.U.PublicKey)
+				if balance == "" {
+					// means we need to setup an account first
+					// Generating a keypair on stellar doesn't mean that you can send funds to it
+					// you need to call the CreateAccount method in order to be able to send funds
+					// to it
+					log.Println("Investor balance empty, refilling: ", investor.U.PublicKey)
+					_, _, err = xlm.SendXLMCreateAccount(investor.U.PublicKey, consts.DonateBalance, platformSeed)
+					if err != nil {
+						log.Println("Investor Account doesn't have funds")
+						log.Fatal(err)
+					}
 				}
-			}
-			// balance is in string, convert to float
-			balance, err = xlm.GetXLMBalance(investor.U.PublicKey)
-			balanceI = utils.StoF(balance)
-			log.Println("Investor balance is: ", balanceI)
-			if balanceI < 3 { // to setup trustlines
-				_, _, err = xlm.SendXLM(investor.U.PublicKey, consts.DonateBalance, platformSeed)
-				if err != nil {
-					log.Println("Investor Account doesn't have funds")
-					log.Fatal(err)
+				// balance is in string, convert to float
+				balance, err = xlm.GetXLMBalance(investor.U.PublicKey)
+				balanceI = utils.StoF(balance)
+				log.Println("Investor balance is: ", balanceI)
+				if balanceI < 3 { // to setup trustlines
+					_, _, err = xlm.SendXLM(investor.U.PublicKey, consts.DonateBalance, platformSeed)
+					if err != nil {
+						log.Println("Investor Account doesn't have funds")
+						log.Fatal(err)
+					}
 				}
-			}
 
-			recipient := uOrder.OrderRecipient
-			// from here on, reference recipient
-			balance, err = xlm.GetXLMBalance(recipient.U.PublicKey)
-			if balance == "" {
-				// means we need to setup an account first
-				// Generating a keypair on stellar doesn't mean that you can send funds to it
-				// you need to call the CreateAccount method in order to be able to send funds
-				// to it
-				_, _, err = xlm.SendXLMCreateAccount(recipient.U.PublicKey, consts.DonateBalance, platformSeed)
+				recipient := uOrder.OrderRecipient
+				// from here on, reference recipient
+				balance, err = xlm.GetXLMBalance(recipient.U.PublicKey)
+				if balance == "" {
+					// means we need to setup an account first
+					// Generating a keypair on stellar doesn't mean that you can send funds to it
+					// you need to call the CreateAccount method in order to be able to send funds
+					// to it
+					_, _, err = xlm.SendXLMCreateAccount(recipient.U.PublicKey, consts.DonateBalance, platformSeed)
+					if err != nil {
+						log.Println("Recipient Account doesn't have funds")
+						log.Fatal(err)
+					}
+				}
+				balance, err = xlm.GetXLMBalance(recipient.U.PublicKey)
+				// balance is in string, convert to float
+				balanceI = utils.StoF(balance)
+				log.Println("Recipient balance is: ", balanceI)
+				if balanceI < 3 { // to setup trustlines
+					_, _, err = xlm.SendXLM(recipient.U.PublicKey, consts.DonateBalance, platformSeed)
+					if err != nil {
+						log.Println("Recipient Account doesn't have funds")
+						log.Fatal(err)
+					}
+				}
+				log.Println("The issuer's public key and private key are: ", platformPublicKey, " ", platformSeed)
+				log.Println("The investor's public key and private key are: ", investor.U.PublicKey, " ", investor.U.Seed)
+				log.Println("The recipient's public key and private key are: ", recipient.U.PublicKey, " ", recipient.U.Seed)
+
+				log.Println(&investor, &recipient, investmentAmount, uOrder)
+				// so now we have three entities setup, so we create the assets and invest in them
+				cOrder, err := assets.InvestInOrder(platformPublicKey, platformSeed, &investor, &recipient, investmentAmount, uOrder) // assume payback period is 5
 				if err != nil {
-					log.Println("Recipient Account doesn't have funds")
+					log.Println(err)
+					continue
+				}
+				fmt.Println("YOUR ORDER HAS BEEN CONFIRMED: ")
+				database.PrettyPrintOrder(cOrder)
+				fmt.Println("PLEASE CHECK A BLOCKHAIN EXPLORER TO CONFIRM BALANCES TO CONFIRM: ")
+				fmt.Println("https://testnet.steexp.com/account/" + investor.U.PublicKey + "#balances")
+				break
+			case 4:
+				balances, err := xlm.GetAllBalances(investor.U.PublicKey)
+				if err != nil {
 					log.Fatal(err)
 				}
-			}
-			balance, err = xlm.GetXLMBalance(recipient.U.PublicKey)
-			// balance is in string, convert to float
-			balanceI = utils.StoF(balance)
-			log.Println("Recipient balance is: ", balanceI)
-			if balanceI < 3 { // to setup trustlines
-				_, _, err = xlm.SendXLM(recipient.U.PublicKey, consts.DonateBalance, platformSeed)
+				// need to pr etty print this, experiment out with stuff
+				xlm.PrettyPrintBalances(balances)
+				break
+			case 5:
+				// this should be expanded in the future to make use of the inbuilt DEX
+				// on stellar (checkout stellarterm)
+				log.Println("Enter the amount you want to convert into STABLEUSD")
+				// this would also mean that you need to check whether we have the balance
+				// here and then proceed further
+				convAmount, err := utils.ScanForStringWithCheckF()
 				if err != nil {
-					log.Println("Recipient Account doesn't have funds")
+					log.Println(err)
+					return
+				}
+				// maybe don't trust asset again when you've trusted it already? check if that's
+				// possible and save on the tx fee for a single transaction. But I guess its
+				// difficult to retrieve trustlines, so we'll go ahead with it
+				hash, err := assets.TrustAsset(stablecoin.StableUSD, consts.StablecoinTrustLimit, investor.U.PublicKey, investor.U.Seed)
+				if err != nil {
 					log.Fatal(err)
 				}
-			}
-			log.Println("The issuer's public key and private key are: ", platformPublicKey, " ", platformSeed)
-			log.Println("The investor's public key and private key are: ", investor.U.PublicKey, " ", investor.U.Seed)
-			log.Println("The recipient's public key and private key are: ", recipient.U.PublicKey, " ", recipient.U.Seed)
-
-			log.Println(&investor, &recipient, investmentAmount, uOrder)
-			// so now we have three entities setup, so we create the assets and invest in them
-			cOrder, err := assets.InvestInOrder(platformPublicKey, platformSeed, &investor, &recipient, investmentAmount, uOrder) // assume payback period is 5
-			if err != nil {
-				log.Println(err)
-				continue
-			}
-			fmt.Println("YOUR ORDER HAS BEEN CONFIRMED: ")
-			database.PrettyPrintOrder(cOrder)
-			fmt.Println("PLEASE CHECK A BLOCKHAIN EXPLORER TO CONFIRM BALANCES TO CONFIRM: ")
-			fmt.Println("https://testnet.steexp.com/account/" + investor.U.PublicKey + "#balances")
-			break
-		case 4:
-			balances, err := xlm.GetAllBalances(investor.U.PublicKey)
-			if err != nil {
-				log.Fatal(err)
-			}
-			// need to pr etty print this, experiment out with stuff
-			xlm.PrettyPrintBalances(balances)
-			break
-		case 5:
-			// this should be expanded in the future to make use of the inbuilt DEX
-			// on stellar (checkout stellarterm)
-			log.Println("Enter the amount you want to convert into STABLEUSD")
-			// this would also mean that you need to check whether we have the balance
-			// here and then proceed further
-			convAmount, err := utils.ScanForStringWithCheckF()
-			if err != nil {
-				log.Println(err)
-				return
-			}
-			// maybe don't trust asset again when you've trusted it already? check if that's
-			// possible and save on the tx fee for a single transaction. But I guess its
-			// difficult to retrieve trustlines, so we'll go ahead with it
-			hash, err := assets.TrustAsset(stablecoin.StableUSD, consts.StablecoinTrustLimit, investor.U.PublicKey, investor.U.Seed)
-			if err != nil {
-				log.Fatal(err)
-			}
-			log.Println("tx hash for trusting stableUSD: ", hash)
-			// now send coins across and see if our tracker detects it
-			_, hash, err = xlm.SendXLM(stablecoin.Issuer.PublicKey, convAmount, investor.U.Seed)
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			log.Println("tx hash for sent xlm: ", hash, "pubkey: ", investor.U.PublicKey)
-			rpc.StartServer("8080") // run this in order to check whether the go routine is running
-			break
-		case 6:
-			// TODO: add voting scheme here
-			fmt.Println("LIST OF ALL ORIGINATED ORDERS: ")
-			originatedOrders, err := database.RetrieveAllOriginatedOrders()
-			if err != nil {
-				log.Println(err)
-				break
-			}
-			database.PrettyPrintOrders(originatedOrders)
-		case 7:
-			// this is the case where an investor can vote on a particular proposed order
-			fmt.Println("LIST OF ALL PROPOSED ORDERS: ")
-			// now the investor can only put his funds in one potential proposed order.
-			// his voting weight will be the amount of stableUSD that he has.
-			// for testing, we assume that weights are 100 each.
-			allContractors, err := database.RetrieveAllContractEntities("contractor")
-			if err != nil {
-				log.Println(err)
-				break
-			}
-			for index, contractor := range allContractors {
-				log.Println("CONTRACTOR NAME: ", contractor.U.Name)
-				log.Println("CONTRACTOR INDEX: ", contractor.U.Index)
-				for _, contract := range allContractors[index].ProposedContracts {
-					database.PrettyPrintOrder(contract.O)
+				log.Println("tx hash for trusting stableUSD: ", hash)
+				// now send coins across and see if our tracker detects it
+				_, hash, err = xlm.SendXLM(stablecoin.Issuer.PublicKey, convAmount, investor.U.Seed)
+				if err != nil {
+					log.Fatal(err)
 				}
-			}
-			// we need to get the vote of the investor here, but how do you get the vote?
-			// because you have two arrays, you need to have some kind of a common index
-			// between the two and then you can fetch the stuff back.
-			// lets ask for the user index, which will be unique and the order number,
-			// which can get us the specific proposed contract
-			fmt.Println("WHICH INVESTOR DO YOU WANT TO VOTE TOWARDS?")
-			vote, err := utils.ScanForInt()
-			if err != nil {
-				log.Println(err)
+
+				log.Println("tx hash for sent xlm: ", hash, "pubkey: ", investor.U.PublicKey)
+				rpc.StartServer("8080") // run this in order to check whether the go routine is running
 				break
-			}
-			log.Println("You have voted for user number: ", vote)
-			fmt.Println("WHICH PROPOSED ORDER OF HIS DO YOU WANT TO VOTE TOWARDS?")
-			pOrderN, err := utils.ScanForInt()
-			if err != nil {
-				log.Println(err)
-				break
-			}
-			// we need to go through the contractor's proposed orders to find an order
-			// with index pOrderN
-			for _, elem := range allContractors {
-				if elem.U.Index == vote {
-					// we have the specific contractor
-					log.Println("FOUND CONTRACTOR!")
-					for i, pcs := range elem.ProposedContracts {
-						if pcs.O.Index == pOrderN {
-							// this is the order the user voted towards
-							// need to update the vote stuff
-							// check whether user has already voted
-							// now an investor can vote  up to a max of his balance in StableUSD
-							// the final call for selecting still falls on to the recipient, but
-							// the recipient can get soem idea on which proposed contracts are
-							// popular.
-							fmt.Println("YOUR AVAILABLE VOTING BALANCE IS: ", investor.VotingBalance)
-							fmt.Println("HOW MANY VOTES DO YOU WANT TO DELEGATE TOWARDS THIS ORDER?")
-							votes, err := utils.ScanForInt()
-							if err != nil {
-								log.Println(err)
-								break
+			case 6:
+				// TODO: add voting scheme here
+				fmt.Println("LIST OF ALL ORIGINATED ORDERS: ")
+				originatedOrders, err := database.RetrieveAllOriginatedOrders()
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				database.PrettyPrintOrders(originatedOrders)
+			case 7:
+				// this is the case where an investor can vote on a particular proposed order
+				fmt.Println("LIST OF ALL PROPOSED ORDERS: ")
+				// now the investor can only put his funds in one potential proposed order.
+				// his voting weight will be the amount of stableUSD that he has.
+				// for testing, we assume that weights are 100 each.
+				allContractors, err := database.RetrieveAllContractEntities("contractor")
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				for index, contractor := range allContractors {
+					log.Println("CONTRACTOR NAME: ", contractor.U.Name)
+					log.Println("CONTRACTOR INDEX: ", contractor.U.Index)
+					for _, contract := range allContractors[index].ProposedContracts {
+						database.PrettyPrintOrder(contract.O)
+					}
+				}
+				// we need to get the vote of the investor here, but how do you get the vote?
+				// because you have two arrays, you need to have some kind of a common index
+				// between the two and then you can fetch the stuff back.
+				// lets ask for the user index, which will be unique and the order number,
+				// which can get us the specific proposed contract
+				fmt.Println("WHICH INVESTOR DO YOU WANT TO VOTE TOWARDS?")
+				vote, err := utils.ScanForInt()
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				log.Println("You have voted for user number: ", vote)
+				fmt.Println("WHICH PROPOSED ORDER OF HIS DO YOU WANT TO VOTE TOWARDS?")
+				pOrderN, err := utils.ScanForInt()
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				// we need to go through the contractor's proposed orders to find an order
+				// with index pOrderN
+				for _, elem := range allContractors {
+					if elem.U.Index == vote {
+						// we have the specific contractor
+						log.Println("FOUND CONTRACTOR!")
+						for i, pcs := range elem.ProposedContracts {
+							if pcs.O.Index == pOrderN {
+								// this is the order the user voted towards
+								// need to update the vote stuff
+								// check whether user has already voted
+								// now an investor can vote  up to a max of his balance in StableUSD
+								// the final call for selecting still falls on to the recipient, but
+								// the recipient can get soem idea on which proposed contracts are
+								// popular.
+								fmt.Println("YOUR AVAILABLE VOTING BALANCE IS: ", investor.VotingBalance)
+								fmt.Println("HOW MANY VOTES DO YOU WANT TO DELEGATE TOWARDS THIS ORDER?")
+								votes, err := utils.ScanForInt()
+								if err != nil {
+									log.Println(err)
+									break
+								}
+								if votes > investor.VotingBalance {
+									log.Println("Can't vote with an amount greater than available balance")
+									break
+								}
+								pcs.O.Votes += votes
+								// an order's votes can exceed the total amount because it only shows
+								// that many peopel feel that contract to be doing the right thing
+								elem.ProposedContracts[i] = pcs
+								// and we need to update the contractor, not order, since these
+								// are not in the order database yet)
+								err = database.InsertContractEntity(elem)
+								if err != nil {
+									log.Println(err)
+									break
+								}
+								err = investor.DeductVotingBalance(votes)
+								if err != nil {
+									// fatal since we need to exit if there's a bug in updating votes
+									log.Fatal(err)
+									break
+								}
+								log.Println("CASTING VOTE! ", pcs)
 							}
-							if votes > investor.VotingBalance {
-								log.Println("Can't vote with an amount greater than available balance")
-								break
-							}
-							pcs.O.Votes += votes
-							// an order's votes can exceed the total amount because it only shows
-							// that many peopel feel that contract to be doing the right thing
-							elem.ProposedContracts[i] = pcs
-							// and we need to update the contractor, not order, since these
-							// are not in the order database yet)
-							err = database.InsertContractEntity(elem)
-							if err != nil {
-								log.Println(err)
-								break
-							}
-							err = investor.DeductVotingBalance(votes)
-							if err != nil {
-								// fatal since we need to exit if there's a bug in updating votes
-								log.Fatal(err)
-								break
-							}
-							log.Println("CASTING VOTE! ", pcs)
 						}
 					}
 				}
-			}
-		default:
-			// check whether he wants to go back to the display all screen again
-			fmt.Println("DO YOU REALLY WANT TO EXIT? (PRESS Y TO CONFIRM)")
-			exitOpt, err := utils.ScanForString()
-			if err != nil {
-				log.Println(err)
-				break
-			}
-			if exitOpt == "Y" || exitOpt == "y" {
-				fmt.Println("YOU HAVE DECIDED TO EXIT")
-				log.Fatal("")
-			}
-		} // end of switch
+			default:
+				// check whether he wants to go back to the display all screen again
+				fmt.Println("DO YOU REALLY WANT TO EXIT? (PRESS Y TO CONFIRM)")
+				exitOpt, err := utils.ScanForString()
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				if exitOpt == "Y" || exitOpt == "y" {
+					fmt.Println("YOU HAVE DECIDED TO EXIT")
+					log.Fatal("")
+				}
+			} // end of switch
+		}
+		log.Fatal("")
+		rpc.StartServer(opts.Port) // this must be towards the end
 	}
-	log.Fatal("")
-	rpc.StartServer(opts.Port) // this must be towards the end
 }

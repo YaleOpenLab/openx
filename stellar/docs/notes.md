@@ -24,6 +24,41 @@ Observations:
 1. Modify some parts of the contract so that we use a bigger structure named User which can be imported where needed.
 2. Change naming scheme of some parts to be more user friendly.
 
+## Discussion in call 4:
+
+Need to have stages for originator proposed contracts and contracts
+pre-certified projects, documents need to be attached as well, people need
+to be able to see stages at which the project is at - stage 1,2,3 and then it is Live
+
+Kind of need provisions for initial seed that comes from a recipient / originator or an investor
+you use this documentation and then put it out for tender (a solar engineer)
+seed funding should come from the recipient.
+
+Orders -> Projects -> Stages (can not invest until it arrives a particular stage)
+
+munibond model that has a contract, tweak the model of that model to suit our needs
+smart contract needs to point to a specific legal contract, stored on ipfs for eg
+munibond vs equity crowdfunding vs opportunity zones
+
+platform of platforms or platform of different contracts themselves
+
+originators need consent before proposing a project, no consent, don't continue, propose RfPs
+possibility to raise funds before contract becomes final, differences between munibonds
+and equity crowdfunding, undershot vs overshot problems wrt crowdfunding - Matt Maroney, Jase
+
+2 things to consider right now: need to have some form of registry, as payments are made,
+ownership of solar systems change, we need to automate that via smart contracts, must be
+able to query ownership percent of a solar system or, parties involved must
+be able to check this. You could also consider escrow model, track ownership
+
+start working on the base contract: per kwh that is read from the iot device, need to
+find where we import the info from the iot device (atonomi), charge the recipient to
+pay as per the tariff, similar to the electriicty bill and that changes ownership
+as well, see breach scenarios (eth smart contract) and shift between funds, trigger hardware to export
+to grid directly
+
+have two contracts - investors and platforms, contractors' access for funds
+
 ## TODOs copied from the Ethereum Smart Contract
 
 ### TODO TENDER PROCESS & REQUEST FOR PROPOSALS ###

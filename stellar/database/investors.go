@@ -46,6 +46,7 @@ func NewInvestor(uname string, pwd string, Name string) (Investor, error) {
 	if err != nil {
 		return a, err
 	}
+	// new user creates keys, so don't create them here
 	a.AmountInvested = float64(0)
 	return a, nil
 }
