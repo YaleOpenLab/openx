@@ -1,13 +1,13 @@
 package database
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
-	"encoding/json"
 
-	"github.com/boltdb/bolt"
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
 	xlm "github.com/YaleOpenLab/smartPropertyMVP/stellar/xlm"
+	"github.com/boltdb/bolt"
 )
 
 // the user structure  houses all entities that are of type "User". This contains
@@ -140,7 +140,7 @@ func RetrieveUser(key int) (User, error) {
 		}
 		return json.Unmarshal(x, &inv)
 	})
-	return inv, nil
+	return inv, err
 }
 
 func ValidateUser(name string, pwhash string) (User, error) {
@@ -182,6 +182,6 @@ func (a *User) GenKeys() error {
 		return err
 	}
 	err = InsertUser(dup)
-	a = &dup
+	// a = &dup
 	return err
 }

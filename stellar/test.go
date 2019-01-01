@@ -20,7 +20,7 @@ import (
 var opts struct {
 	// Slice of bool will append 'true' each time the option
 	// is encountered (can be set multiple times, like -vvv)
-	// TOOD: define default values for each and then use them if not passed
+	// TODO: define default values for each and then use them if not passed
 	Verbose []bool `short:"v" long:"verbose" description:"Show verbose debug information"`
 	// InvAmount int    `short:"i" description:"Desired investment" required:"true"`
 	InvAmount int `short:"i" description:"Desired investment"`
@@ -36,6 +36,47 @@ func main() {
 		log.Fatal(err)
 	}
 
+	fmt.Println("WHICH PLATFORM WOULD YOU IKE TO ENTER INTO?")
+	fmt.Println("1. Platform of Contracts")
+	fmt.Println("1. Platform of Platforms")
+	platformArg, err := utils.ScanForInt()
+	if err != nil {
+		log.Fatal(err)
+	}
+	switch platformArg {
+	case 1:
+		fmt.Println("WELCOME TO THE PLATFORM OF CONTRACTS IDEA")
+		// the platform of contracts idea is the idea of having an open platform with
+		// various stakeholders and optimizing their game theoretic objectives. Specific
+		// conttracts coud emulate the function of platforms themselves but in this case,
+		// we handle all aspects of game theory within what we have and ecnourage people
+		// to tak part in the system.
+		// TODO: think of how to implement this in a nice way
+	case 2:
+		fmt.Println("WELCOME TO THE PLATFORM OF PLATFORMS IDEA")
+		// the platform of platforms idea is similar to what we want in the opensolar
+		// project where we can implement various partners as entities in the system
+		// TODO: emulate different partners in the system that we have now.
+	}
+
+	// bal,  _ := xlm.GetNativeBalance("GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ")
+	// log.Println(bal)
+	// log.Fatal("")
+	height, err := xlm.GetTransactionHeight("46c04134b95204b82067f8753dce5bf825365ae58753effbfcc9a7cac2e14f65")
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("HEIGHT= ", height)
+	log.Fatal("")
+	// _,  _ = xlm.GetNativeBalance("GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ")
+	// log.Fatal("")
+	// the memo field in stellar is particularly interesting for us wrt preserving state
+	// as shown in the preliminary pdf example. We need to test out whether we can commit
+	// more state in the memo field and find a way for third party clients to be able
+	// to replicate this state so that this is verifiable and not just an entry of state
+	// in the system.
+	// TODO: think of a reasonable way to hash the current state of the system with
+	// its hash in the memo field
 	// Open the database
 	platformPublicKey, platformSeed, err := StartPlatform()
 	if err != nil {
@@ -149,13 +190,13 @@ func main() {
 				if err != nil {
 					log.Println("Error retrieving all orders from the database")
 				}
-				database.PrettyPrintOrders(allOrders)
+				database.PrintOrders(allOrders)
 				break
 			case 2:
-				database.PrettyPrintRecipient(recipient)
+				database.PrintRecipient(recipient)
 				break
 			case 3:
-				database.PrettyPrintPBOrders(recipient.ReceivedOrders)
+				database.PrintPBOrders(recipient.ReceivedOrders)
 				fmt.Println("WHICH ORDER DO YOU WANT TO PAY BACK TOWARDS? (ENTER ORDER NUMBER)")
 				orderNumber, err := utils.ScanForInt()
 				if err != nil {
@@ -169,7 +210,7 @@ func main() {
 					continue
 				}
 				// so we can retrieve the order using the order Index, nice
-				database.PrettyPrintPBOrder(rtOrder)
+				database.PrintPBOrder(rtOrder)
 				fmt.Println("HOW MUCH DO YOU WANT TO PAYBACK?")
 				paybackAmount, err := utils.ScanForStringWithCheckI()
 				if err != nil {
@@ -214,7 +255,7 @@ func main() {
 				// we should update the local slice to keep track of the changes here
 				recipient.UpdateOrderSlice(rtOrder)
 				// so we can retrieve the order using the order Index, nice
-				database.PrettyPrintOrder(rtOrder)
+				database.PrintOrder(rtOrder)
 				// print the order in a nice way
 				break
 			case 4:
@@ -265,7 +306,7 @@ func main() {
 					log.Println("======================================================================================")
 					log.Println("Contractor Name: ", contractor.U.Name)
 					log.Println("Proposed Contract: ")
-					database.PrettyPrintProposedContract(contractsForBid[i].O)
+					database.PrintProposedContract(contractsForBid[i].O)
 				}
 				switch opt {
 				case 1:
@@ -277,7 +318,7 @@ func main() {
 						log.Fatal(err)
 					}
 					log.Println("BEST CONTRACT IS: ")
-					database.PrettyPrintProposedContract(bestContract.O)
+					database.PrintProposedContract(bestContract.O)
 					// now we need to replace the originator order with this order, order
 					// indices are same, so we can insert
 					bestContract.O.Stage = 3
@@ -295,7 +336,7 @@ func main() {
 						log.Fatal(err)
 					}
 					log.Println("BEST CONTRACT IS: ")
-					database.PrettyPrintProposedContract(bestContract.O)
+					database.PrintProposedContract(bestContract.O)
 					// finalize this order and open to investors
 					bestContract.O.Stage = 3
 					err = database.InsertOrder(bestContract.O)
@@ -310,7 +351,7 @@ func main() {
 						log.Println("CONTRACTOR NUMBER: ", i+1) // +1 to skip 0
 						log.Println("Contractor Name: ", contractor.U.Name)
 						log.Println("Proposed Contract: ")
-						database.PrettyPrintProposedContract(contractsForBid[i].O)
+						database.PrintProposedContract(contractsForBid[i].O)
 					}
 					fmt.Println("ENTER YOUR OPTION AS A NUMBER")
 					opt, err := utils.ScanForInt()
@@ -359,11 +400,11 @@ func main() {
 				}
 				for _, originator := range allOriginators {
 					// we need to go through their proposed contracts
-					database.PrettyPrintContractEntity(originator)
+					database.PrintContractEntity(originator)
 					// print info about hte originator
 					for _, oContract := range originator.ProposedContracts {
 						// preint info about the originator's various proposed contracts
-						database.PrettyPrintOrder(oContract.O)
+						database.PrintOrder(oContract.O)
 					}
 				}
 				// now here, the person ahs had a chance to see all the proposed contracts
@@ -398,7 +439,7 @@ func main() {
 									fmt.Println(err)
 									break
 								}
-								// now we need to update the contractor as well sicne we set the
+								// now we need to update the contractor as well since we set the
 								// origin flag to true
 								err = database.InsertContractEntity(originator)
 								if err != nil {
@@ -427,7 +468,7 @@ func main() {
 				break
 			}
 		}
-		database.PrettyPrintRecipient(recipient)
+		database.PrintRecipient(recipient)
 		return
 	} else if isContractor {
 		log.Println("WELCOME BACK!!")
@@ -463,9 +504,9 @@ func main() {
 						log.Println(err)
 						break
 					}
-					database.PrettyPrintOrders(originatedOrders)
+					database.PrintOrders(originatedOrders)
 				case 2:
-					database.PrettyPrintContractEntity(contractor)
+					database.PrintContractEntity(contractor)
 				case 3:
 					fmt.Println("YOU HAVE CHOSEN TO CREATE A NEW PROPOSED CONTRACT")
 					err = ProposeContractPrompt(&contractor)
@@ -496,7 +537,7 @@ func main() {
 						continue
 					}
 				case 2:
-					database.PrettyPrintContractEntity(contractor)
+					database.PrintContractEntity(contractor)
 				case 3:
 					err = PrintAllOriginatedContracts(&contractor)
 					if err != nil {
@@ -519,7 +560,7 @@ func main() {
 				}
 			}
 		}
-		database.PrettyPrintContractEntity(contractor)
+		database.PrintContractEntity(contractor)
 	} else {
 		// User is an investor
 		for {
@@ -546,10 +587,10 @@ func main() {
 				if err != nil {
 					log.Println("Error retrieving all orders from the database")
 				}
-				database.PrettyPrintOrders(allOrders)
+				database.PrintOrders(allOrders)
 				break
 			case 2:
-				database.PrettyPrintInvestor(investor)
+				database.PrintInvestor(investor)
 				break
 			case 3:
 				fmt.Println("----WHICH ORDER DO YOU WANT TO INVEST IN? (ENTER ORDER NUMBER WITHOUT SPACES)----")
@@ -564,7 +605,7 @@ func main() {
 				if err != nil {
 					log.Fatal("Order with specified index not found in the database")
 				}
-				database.PrettyPrintOrder(uOrder)
+				database.PrintOrder(uOrder)
 				fmt.Println(" HOW MUCH DO YOU WANT TO INVEST?")
 				investmentAmount, err := utils.ScanForStringWithCheckI()
 				if err != nil {
@@ -584,7 +625,10 @@ func main() {
 				// when I am creating an account, I will have a PublicKey and Seed, so
 				// don't need them here
 				// check whether the investor has XLM already
-				balance, err := xlm.GetXLMBalance(platformPublicKey)
+				balance, err := xlm.GetNativeBalance(platformPublicKey)
+				if err != nil {
+					log.Fatal(err)
+				}
 				// balance is in string, convert to int
 				balanceI := utils.StoF(balance)
 				log.Println("Platform's balance is: ", balanceI)
@@ -599,11 +643,17 @@ func main() {
 					}
 				}
 
-				balance, err = xlm.GetXLMBalance(platformPublicKey)
+				balance, err = xlm.GetNativeBalance(platformPublicKey)
+				if err != nil {
+					log.Fatal(err)
+				}
 				log.Println("Platform balance updated is: ", balance)
 				fmt.Printf("Platform seed is: %s and platform's publicKey is %s", platformSeed, platformPublicKey)
 				log.Println("Investor's publickey is: ", investor.U.PublicKey)
-				balance, err = xlm.GetXLMBalance(investor.U.PublicKey)
+				balance, err = xlm.GetNativeBalance(investor.U.PublicKey)
+				if err != nil {
+					log.Fatal(err)
+				}
 				if balance == "" {
 					// means we need to setup an account first
 					// Generating a keypair on stellar doesn't mean that you can send funds to it
@@ -617,7 +667,10 @@ func main() {
 					}
 				}
 				// balance is in string, convert to float
-				balance, err = xlm.GetXLMBalance(investor.U.PublicKey)
+				balance, err = xlm.GetNativeBalance(investor.U.PublicKey)
+				if err != nil {
+					log.Fatal(err)
+				}
 				balanceI = utils.StoF(balance)
 				log.Println("Investor balance is: ", balanceI)
 				if balanceI < 3 { // to setup trustlines
@@ -630,7 +683,10 @@ func main() {
 
 				recipient := uOrder.OrderRecipient
 				// from here on, reference recipient
-				balance, err = xlm.GetXLMBalance(recipient.U.PublicKey)
+				balance, err = xlm.GetNativeBalance(recipient.U.PublicKey)
+				if err != nil {
+					log.Fatal(err)
+				}
 				if balance == "" {
 					// means we need to setup an account first
 					// Generating a keypair on stellar doesn't mean that you can send funds to it
@@ -642,7 +698,10 @@ func main() {
 						log.Fatal(err)
 					}
 				}
-				balance, err = xlm.GetXLMBalance(recipient.U.PublicKey)
+				balance, err = xlm.GetNativeBalance(recipient.U.PublicKey)
+				if err != nil {
+					log.Fatal(err)
+				}
 				// balance is in string, convert to float
 				balanceI = utils.StoF(balance)
 				log.Println("Recipient balance is: ", balanceI)
@@ -665,7 +724,7 @@ func main() {
 					continue
 				}
 				fmt.Println("YOUR ORDER HAS BEEN CONFIRMED: ")
-				database.PrettyPrintOrder(cOrder)
+				database.PrintOrder(cOrder)
 				fmt.Println("PLEASE CHECK A BLOCKHAIN EXPLORER TO CONFIRM BALANCES TO CONFIRM: ")
 				fmt.Println("https://testnet.steexp.com/account/" + investor.U.PublicKey + "#balances")
 				break
@@ -675,7 +734,7 @@ func main() {
 					log.Fatal(err)
 				}
 				// need to pr etty print this, experiment out with stuff
-				xlm.PrettyPrintBalances(balances)
+				xlm.PrintBalances(balances)
 				break
 			case 5:
 				// this should be expanded in the future to make use of the inbuilt DEX
@@ -713,7 +772,7 @@ func main() {
 					log.Println(err)
 					break
 				}
-				database.PrettyPrintOrders(originatedOrders)
+				database.PrintOrders(originatedOrders)
 			case 7:
 				// this is the case where an investor can vote on a particular proposed order
 				fmt.Println("LIST OF ALL PROPOSED ORDERS: ")
@@ -729,7 +788,7 @@ func main() {
 					log.Println("CONTRACTOR NAME: ", contractor.U.Name)
 					log.Println("CONTRACTOR INDEX: ", contractor.U.Index)
 					for _, contract := range allContractors[index].ProposedContracts {
-						database.PrettyPrintOrder(contract.O)
+						database.PrintOrder(contract.O)
 					}
 				}
 				// we need to get the vote of the investor here, but how do you get the vote?
@@ -763,7 +822,7 @@ func main() {
 								// check whether user has already voted
 								// now an investor can vote  up to a max of his balance in StableUSD
 								// the final call for selecting still falls on to the recipient, but
-								// the recipient can get soem idea on which proposed contracts are
+								// the recipient can get some idea on which proposed contracts are
 								// popular.
 								fmt.Println("YOUR AVAILABLE VOTING BALANCE IS: ", investor.VotingBalance)
 								fmt.Println("HOW MANY VOTES DO YOU WANT TO DELEGATE TOWARDS THIS ORDER?")
@@ -778,7 +837,7 @@ func main() {
 								}
 								pcs.O.Votes += votes
 								// an order's votes can exceed the total amount because it only shows
-								// that many peopel feel that contract to be doing the right thing
+								// that many people feel that contract to be doing the right thing
 								elem.ProposedContracts[i] = pcs
 								// and we need to update the contractor, not order, since these
 								// are not in the order database yet)

@@ -2,10 +2,11 @@ package database
 
 import (
 	"fmt"
-  "log"
+	"log"
 
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
 )
+
 func InsertDummyData() error {
 	var err error
 	// populate database with dumym data
@@ -19,6 +20,9 @@ func InsertDummyData() error {
 	if len(allRecs) == 0 {
 		var err error
 		rec.U, err = NewUser("martin", "password", "Martin")
+		if err != nil {
+			log.Fatal(err)
+		}
 		err = rec.U.GenKeys()
 		if err != nil {
 			log.Fatal(err)

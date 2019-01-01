@@ -1,17 +1,19 @@
 package database
+
 // recipient.go defines all recipient related functions that are not defined on
 // the struct itself.
 import (
-	"fmt"
 	"encoding/json"
+	"fmt"
 	"log"
 
+	oracle "github.com/YaleOpenLab/smartPropertyMVP/stellar/oracle"
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
 	xlm "github.com/YaleOpenLab/smartPropertyMVP/stellar/xlm"
-	oracle "github.com/YaleOpenLab/smartPropertyMVP/stellar/oracle"
 	"github.com/boltdb/bolt"
 	"github.com/stellar/go/build"
 )
+
 type Recipient struct {
 	ReceivedOrders []Order
 	// ReceivedOrders denotes the orders that have been received by the recipient
@@ -106,7 +108,7 @@ func RetrieveRecipient(key int) (Recipient, error) {
 		}
 		return json.Unmarshal(x, &inv)
 	})
-	return inv, nil
+	return inv, err
 }
 
 func ValidateRecipient(name string, pwhash string) (Recipient, error) {
@@ -140,7 +142,6 @@ func DeleteKeyFromBucket(key int, bucketName []byte) error {
 	return err
 }
 
-
 // SendAssetToIssuer sends back assets fromn an asset holder to the issuer of the asset.
 func (a *Recipient) SendAssetToIssuer(assetName string, issuerPubkey string, amount string) (int32, string, error) {
 	// SendAssetToIssuer is FROM recipient / investor to issuer
@@ -149,7 +150,7 @@ func (a *Recipient) SendAssetToIssuer(assetName string, issuerPubkey string, amo
 	paymentTx, err := build.Transaction(
 		build.SourceAccount{a.U.PublicKey},
 		build.TestNetwork,
-		build.AutoSequence{SequenceProvider: utils.DefaultTestNetClient},
+		build.AutoSequence{SequenceProvider: xlm.TestNetClient},
 		build.Payment(
 			build.Destination{AddressOrSeed: issuerPubkey},
 			build.CreditAmount{assetName, issuerPubkey, amount},
@@ -170,7 +171,7 @@ func (a *Recipient) SendAssetToIssuer(assetName string, issuerPubkey string, amo
 		return -11, "", err
 	}
 
-	tx, err := utils.DefaultTestNetClient.SubmitTransaction(paymentTxeB64)
+	tx, err := xlm.TestNetClient.SubmitTransaction(paymentTxeB64)
 	if err != nil {
 		return -11, "", err
 	}
@@ -212,7 +213,7 @@ func (a *Recipient) Payback(uOrder Order, assetName string, issuerPubkey string,
 
 	DEBAssetBalance, err := xlm.GetAssetBalance(a.U.PublicKey, assetName)
 	if err != nil {
-		log.Println("Don't have the debt asset in posession")
+		log.Println("Don't have the debt asset in possession")
 		log.Fatal(err)
 	}
 
@@ -261,7 +262,7 @@ func (a *Recipient) Payback(uOrder Order, assetName string, issuerPubkey string,
 	// aware of this and there's data transparency
 
 	if paidAmount < mBillFloat {
-		log.Println("Amount paid is less than amount required, balance not updating, please amke sure to cover this next time")
+		log.Println("Amount paid is less than amount required, balance not updating, please make sure to cover this next time")
 	} else if paidAmount > mBillFloat {
 		log.Println("You've chosen to pay more than what is required for this month. Adjusting payback period accordingly")
 	} else {
@@ -272,7 +273,7 @@ func (a *Recipient) Payback(uOrder Order, assetName string, issuerPubkey string,
 	uOrder.BalLeft -= paidAmount
 	uOrder.DateLastPaid = utils.Timestamp()
 	if uOrder.BalLeft == 0 {
-		log.Println("YOU HAVE PAID OFF THIS ASSET, TRANSFERING OWNERSHIP OF ASSET TO YOU")
+		log.Println("YOU HAVE PAID OFF THIS ASSET, TRANSFERRING OWNERSHIP OF ASSET TO YOU")
 		// don't delete the asset from the received assets list, we still need it so
 		// that we c an look back and find out hwo many assets this particular
 		// enttiy has been invested in, have a leaderboard kind of thing, etc.
@@ -296,7 +297,7 @@ func (a *Recipient) Payback(uOrder Order, assetName string, issuerPubkey string,
 	return err
 }
 
-func (a *Recipient) UpdateOrderSlice(order Order) error{
+func (a *Recipient) UpdateOrderSlice(order Order) error {
 	pos := -1
 	for i, mem := range a.ReceivedOrders {
 		if mem.DEBAssetCode == order.DEBAssetCode {

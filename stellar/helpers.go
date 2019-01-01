@@ -12,7 +12,7 @@ import (
 func ValidateInputs() {
 	if (opts.RecYears != 0) && !(opts.RecYears == 3 || opts.RecYears == 5 || opts.RecYears == 7) {
 		// right now payoff periods are limited, I guess they don't need to be,
-		// but in this case just are. Call this fucntion later when orders are being
+		// but in this case just are. Call this function later when orders are being
 		// created. Maybe don't need to restrict this at all?
 		log.Fatal(fmt.Errorf("Number of years not supported"))
 	}
@@ -206,11 +206,11 @@ func OriginContractPrompt(contractor *database.ContractEntity) error {
 		return err
 	}
 	// order insertion is done by the  above function, so we needn't call the database to do it again for us
-	database.PrettyPrintOrder(originContract.O)
+	database.PrintOrder(originContract.O)
 	return nil
 }
 
-func PrintAllOriginatedContracts (contractor *database.ContractEntity) (error) {
+func PrintAllOriginatedContracts(contractor *database.ContractEntity) error {
 	fmt.Println("LIST OF ALL ORIGINATED CONTRACTS: ")
 	// the database would be updated each time the user has an originated
 	// contract, so we need to retrieve the contractor struct again
@@ -219,13 +219,13 @@ func PrintAllOriginatedContracts (contractor *database.ContractEntity) (error) {
 		return err
 	}
 	for _, elem := range contractor.ProposedContracts {
-		database.PrettyPrintOrder(elem.O)
+		database.PrintOrder(elem.O)
 	}
 	contractor = &contractorDup
 	return nil
 }
 
-func ProposeContractPrompt(contractor *database.ContractEntity) (error) {
+func ProposeContractPrompt(contractor *database.ContractEntity) error {
 	fmt.Println("YOU HAVE DECIDED TO PROPOSE A NEW CONTRACT")
 	fmt.Println("ENTER THE PANEL SIZE")
 	panelSize, err := utils.ScanForString()
@@ -267,6 +267,6 @@ func ProposeContractPrompt(contractor *database.ContractEntity) (error) {
 		return err
 	}
 	// order insertion is done by the  above function, so we needn't call the database to do it again for us
-	database.PrettyPrintOrder(originContract.O)
+	database.PrintOrder(originContract.O)
 	return nil
 }

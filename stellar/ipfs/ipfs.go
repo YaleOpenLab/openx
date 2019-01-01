@@ -13,7 +13,6 @@ package ipfs
 // hash van be decrypted using curl "http://127.0.0.1:8080/ipfs/hash" where 8080
 // is the endpoint of the ipfs server or by doing cat /ipfs/hash directly
 
-
 // when we are adding a file to ipfs, we either could use the javascript handler
 // to call the ipfs api and then use the hash ourselves to decrypt it. Or we need to
 // process a pdf file (ie build an xref table) and then convert that into an ipfs file
@@ -25,8 +24,8 @@ import (
 	"os"
 	"strings"
 
-	shell "github.com/ipfs/go-ipfs-api"
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
+	shell "github.com/ipfs/go-ipfs-api"
 )
 
 func RetrieveShell() *shell.Shell {

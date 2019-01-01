@@ -2,7 +2,7 @@ package database
 
 // the database package maintains read / write operations to the orderbook
 // we need an orderbook because there is no state on Stellar which makes it
-// difficult for us to store this on the blockchain. We use boltdb no sicne we don't
+// difficult for us to store this on the blockchain. We use boltdb no since we don't
 // do that much relational mapping, but in the case we need that, we can modify
 // this package to do that.
 
@@ -51,7 +51,7 @@ type Order struct {
 	// Percentage raised is not stored in the database since that can be calculated by the UI
 }
 
-// NewOrder creates a new order struct with the order parameters pased to the function
+// NewOrder creates a new order struct with the order parameters passed to the function
 // quite ugly with all the parameters passed, would be nice if we could rewrite this
 // in a nicer way
 func NewOrder(panelSize string, totalValue int, location string, moneyRaised int, metadata string, INVAssetCode string, DEBAssetCode string, PBAssetCode string) (Order, error) {

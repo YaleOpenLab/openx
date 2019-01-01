@@ -2,27 +2,19 @@ package utils
 
 // utils contains utility functions that are needed commonly in packages
 import (
-	//"log"
 	"bufio"
 	"encoding/hex"
 	"fmt"
-	"net/http"
+	"math/rand"
 	"os"
 	"os/user"
 	"strconv"
 	"syscall"
-	"math/rand"
 	"time"
 
-	clients "github.com/stellar/go/clients/horizon"
 	"golang.org/x/crypto/sha3"
 	"golang.org/x/crypto/ssh/terminal"
 )
-
-var DefaultTestNetClient = &clients.Client{
-	URL:  "https://horizon-testnet.stellar.org",
-	HTTP: http.DefaultClient,
-}
 
 func ScanForInt() (int, error) {
 	scanner := bufio.NewScanner(os.Stdin)

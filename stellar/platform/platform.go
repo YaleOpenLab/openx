@@ -34,10 +34,10 @@ func EncryptAndStoreSeed(seed string, password string) {
 	// handler to store the seed over at platformseed.hex
 	// person either needs to store this file and remember the password or has to
 	// remember the seed in order to access the platform again
-	aes.EncryptFile(consts.HomeDir + "/platformseed.hex", []byte(seed), password)
-	if seed != string(aes.DecryptFile(consts.HomeDir + "/platformseed.hex", password)) {
-		// somethign wrong wiht encryption, exit
-		log.Fatal("Encrpytion and decryption seeds don't match, exiting!")
+	aes.EncryptFile(consts.HomeDir+"/platformseed.hex", []byte(seed), password)
+	if seed != string(aes.DecryptFile(consts.HomeDir+"/platformseed.hex", password)) {
+		// something wrong with encryption, exit
+		log.Fatal("Encryption and decryption seeds don't match, exiting!")
 	}
 	fmt.Println("Successfully encrypted your seed as platformseed.hex")
 }
@@ -51,6 +51,9 @@ func NewPlatform() (string, string, error) {
 	var err error
 
 	seed, publicKey, err = xlm.GetKeyPair()
+	if err != nil {
+		return publicKey, seed, err
+	}
 	log.Printf("\nTHE PLATFORM SEED IS: %s\nAND YOUR PUBLIC KEY IS: %s\nKEEP IT SUPER SAFE OR YOU MIGHT NOT HAVE ACCESS TO THESE FUNDS AGAIN \n", seed, publicKey)
 	fmt.Println("Enter a password to encrypt your platform's master seed. Please store this in a very safe place. This prompt will not ask to confirm your password")
 	password, err := utils.ScanRawPassword()
@@ -58,7 +61,7 @@ func NewPlatform() (string, string, error) {
 		return publicKey, seed, err
 	}
 	EncryptAndStoreSeed(seed, password) // store the seed in a secure location
-	err = xlm.GetXLM(publicKey)               // get funds for our platform
+	err = xlm.GetXLM(publicKey)         // get funds for our platform
 	return publicKey, seed, err
 }
 
@@ -90,7 +93,7 @@ func GetPlatformPublicKeyAndStoreSeed(seed string) (string, error) {
 	return publicKey, nil
 }
 
-// RestorePlatformFromFile restores the platfrom struct directly from the file
+// RestorePlatformFromFile restores the platform struct directly from the file
 func GetPlatformFromFile(path string, password string) (string, string, error) {
 	var publicKey string
 	var seed string

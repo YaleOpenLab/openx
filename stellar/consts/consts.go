@@ -1,10 +1,11 @@
 package consts
 
 import (
-  "os"
+	"os"
 )
 
 var DonateBalance = "10"
+
 // while an investor signs up on our platform, do we send them 10 XLM free?
 // do we charge investors to be on our platform? if not, we shouldn't ideally
 // be sending them free XLM. also, should the platform have some function for

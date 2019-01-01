@@ -23,7 +23,7 @@ func TestDb(t *testing.T) {
 	err = InsertOrder(dummy, db)
 	if err != nil {
 		t.Errorf("Inserting an order into the database failed")
-		// shouldn't realyl fatal here, but htis is in main, so we can't return
+		// shouldn't really fatal here, but this is in main, so we can't return
 	}
 	order, err := RetrieveOrder(dummy.Index, db)
 	if err != nil {
@@ -37,7 +37,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		log.Println(err)
 		t.Errorf("Inserting an order into the database failed")
-		// shouldn't realyl fatal here, but htis is in main, so we can't return
+		// shouldn't really fatal here, but this is in main, so we can't return
 	}
 	orders, err := RetrieveAllOrders(db)
 	if err != nil {
@@ -51,7 +51,7 @@ func TestDb(t *testing.T) {
 		t.Errorf("Deleting an  roder from the db failed")
 	}
 	log.Println("Deleted order")
-	order, err = RetrieveOrder(dummy.Index, db)
+	_, err = RetrieveOrder(dummy.Index, db)
 	if err == nil {
 		log.Println(err)
 		// this should fail because we're trying to read an empty key value pair

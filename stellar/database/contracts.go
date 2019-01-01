@@ -6,7 +6,7 @@ package database
 // now and can transfer funds if they really want to
 // look into state commitments and committing state in the memo field of transactions
 // and then having to propagate one transaction for ever major state change
-// Stage 0: Originator appraoches the recipient to originate an order
+// Stage 0: Originator approaches the recipient to originate an order
 // Stage 0.5: Legal contract between the originator and the recipient
 // Stage 1: Originator  proposes a contract on behalf of the recipient
 // Stage 1.5: The contract, even though not final, is now open to investors' money
@@ -19,5 +19,5 @@ package database
 // A legal contract should ideally be sotred on ipfs and we must keep track of the
 // ipfs hash so that we can retrieve it later when required
 type Contract struct {
-  O Order
+	O Order
 }
