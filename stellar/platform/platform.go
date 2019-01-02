@@ -30,16 +30,21 @@ type Platform struct {
 
 // EncryptAndStoreSeed encrypts and stores the seed of the platform in a file
 // named platformseed.hex at the root directory
-func EncryptAndStoreSeed(seed string, password string) {
+func EncryptAndStoreSeed(seed string, password string) error {
 	// handler to store the seed over at platformseed.hex
 	// person either needs to store this file and remember the password or has to
 	// remember the seed in order to access the platform again
 	aes.EncryptFile(consts.HomeDir+"/platformseed.hex", []byte(seed), password)
-	if seed != string(aes.DecryptFile(consts.HomeDir+"/platformseed.hex", password)) {
+	decrypted, err := aes.DecryptFile(consts.HomeDir+"/platformseed.hex", password)
+	if err != nil {
+		return err
+	}
+	if seed != string(decrypted) {
 		// something wrong with encryption, exit
 		log.Fatal("Encryption and decryption seeds don't match, exiting!")
 	}
 	fmt.Println("Successfully encrypted your seed as platformseed.hex")
+	return nil
 }
 
 // NewPlatform creates a new platform and returns the platform struct
@@ -67,9 +72,13 @@ func NewPlatform() (string, string, error) {
 
 // GetSeedFromEncryptedSeed gets the unencrypted seed from the encrypted file
 // stored on disk with the help of the password.
-func GetSeedFromEncryptedSeed(encrypted string, password string) string {
+func GetSeedFromEncryptedSeed(encrypted string, password string) (string, error) {
 	// this function must be used for any handling within the code written here
-	return string(aes.DecryptFile(encrypted, password))
+	data, err := aes.DecryptFile(encrypted, password)
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
 }
 
 // GetPlatformPublicKeyAndStoreSeed restores the platform struct when passed the seed
@@ -97,7 +106,11 @@ func GetPlatformPublicKeyAndStoreSeed(seed string) (string, error) {
 func GetPlatformFromFile(path string, password string) (string, string, error) {
 	var publicKey string
 	var seed string
-	seed = string(aes.DecryptFile(path, password))
+	data, err := aes.DecryptFile(path, password)
+	if err != nil {
+		return publicKey, seed, err
+	}
+	seed = string(data)
 	keyp, err := keypair.Parse(seed)
 	if err != nil {
 		return publicKey, seed, err

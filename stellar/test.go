@@ -186,13 +186,13 @@ func main() {
 				if err != nil {
 					log.Println("Error retrieving all orders from the database")
 				}
-				database.PrintOrders(allOrders)
+				PrintOrders(allOrders)
 				break
 			case 2:
-				database.PrintRecipient(recipient)
+				PrintRecipient(recipient)
 				break
 			case 3:
-				database.PrintPBOrders(recipient.ReceivedOrders)
+				PrintPBOrders(recipient.ReceivedOrders)
 				fmt.Println("WHICH ORDER DO YOU WANT TO PAY BACK TOWARDS? (ENTER ORDER NUMBER)")
 				orderNumber, err := utils.ScanForInt()
 				if err != nil {
@@ -206,7 +206,7 @@ func main() {
 					continue
 				}
 				// so we can retrieve the order using the order Index, nice
-				database.PrintPBOrder(rtOrder)
+				PrintPBOrder(rtOrder)
 				fmt.Println("HOW MUCH DO YOU WANT TO PAYBACK?")
 				paybackAmount, err := utils.ScanForStringWithCheckI()
 				if err != nil {
@@ -251,7 +251,7 @@ func main() {
 				// we should update the local slice to keep track of the changes here
 				recipient.UpdateOrderSlice(rtOrder)
 				// so we can retrieve the order using the order Index, nice
-				database.PrintOrder(rtOrder)
+				PrintOrder(rtOrder)
 				// print the order in a nice way
 				break
 			case 4:
@@ -302,7 +302,7 @@ func main() {
 					log.Println("======================================================================================")
 					log.Println("Contractor Name: ", contractor.U.Name)
 					log.Println("Proposed Contract: ")
-					database.PrintProposedContract(contractsForBid[i].O)
+					PrintProposedContract(contractsForBid[i].O)
 				}
 				switch opt {
 				case 1:
@@ -314,7 +314,7 @@ func main() {
 						log.Fatal(err)
 					}
 					log.Println("BEST CONTRACT IS: ")
-					database.PrintProposedContract(bestContract.O)
+					PrintProposedContract(bestContract.O)
 					// now we need to replace the originator order with this order, order
 					// indices are same, so we can insert
 					bestContract.O.Stage = 3
@@ -332,7 +332,7 @@ func main() {
 						log.Fatal(err)
 					}
 					log.Println("BEST CONTRACT IS: ")
-					database.PrintProposedContract(bestContract.O)
+					PrintProposedContract(bestContract.O)
 					// finalize this order and open to investors
 					bestContract.O.Stage = 3
 					err = database.InsertOrder(bestContract.O)
@@ -347,7 +347,7 @@ func main() {
 						log.Println("CONTRACTOR NUMBER: ", i+1) // +1 to skip 0
 						log.Println("Contractor Name: ", contractor.U.Name)
 						log.Println("Proposed Contract: ")
-						database.PrintProposedContract(contractsForBid[i].O)
+						PrintProposedContract(contractsForBid[i].O)
 					}
 					fmt.Println("ENTER YOUR OPTION AS A NUMBER")
 					opt, err := utils.ScanForInt()
@@ -396,11 +396,11 @@ func main() {
 				}
 				for _, originator := range allOriginators {
 					// we need to go through their proposed contracts
-					database.PrintContractEntity(originator)
+					PrintContractEntity(originator)
 					// print info about hte originator
 					for _, oContract := range originator.ProposedContracts {
 						// preint info about the originator's various proposed contracts
-						database.PrintOrder(oContract.O)
+						PrintOrder(oContract.O)
 					}
 				}
 				// now here, the person ahs had a chance to see all the proposed contracts
@@ -464,7 +464,7 @@ func main() {
 				break
 			}
 		}
-		database.PrintRecipient(recipient)
+		PrintRecipient(recipient)
 		return
 	} else if isContractor {
 		log.Println("WELCOME BACK!!")
@@ -500,9 +500,9 @@ func main() {
 						log.Println(err)
 						break
 					}
-					database.PrintOrders(originatedOrders)
+					PrintOrders(originatedOrders)
 				case 2:
-					database.PrintContractEntity(contractor)
+					PrintContractEntity(contractor)
 				case 3:
 					fmt.Println("YOU HAVE CHOSEN TO CREATE A NEW PROPOSED CONTRACT")
 					err = ProposeContractPrompt(&contractor)
@@ -533,7 +533,7 @@ func main() {
 						continue
 					}
 				case 2:
-					database.PrintContractEntity(contractor)
+					PrintContractEntity(contractor)
 				case 3:
 					err = PrintAllOriginatedContracts(&contractor)
 					if err != nil {
@@ -556,7 +556,7 @@ func main() {
 				}
 			}
 		}
-		database.PrintContractEntity(contractor)
+		PrintContractEntity(contractor)
 	} else {
 		// User is an investor
 		for {
@@ -583,10 +583,10 @@ func main() {
 				if err != nil {
 					log.Println("Error retrieving all orders from the database")
 				}
-				database.PrintOrders(allOrders)
+				PrintOrders(allOrders)
 				break
 			case 2:
-				database.PrintInvestor(investor)
+				PrintInvestor(investor)
 				break
 			case 3:
 				fmt.Println("----WHICH ORDER DO YOU WANT TO INVEST IN? (ENTER ORDER NUMBER WITHOUT SPACES)----")
@@ -601,7 +601,7 @@ func main() {
 				if err != nil {
 					log.Fatal("Order with specified index not found in the database")
 				}
-				database.PrintOrder(uOrder)
+				PrintOrder(uOrder)
 				fmt.Println(" HOW MUCH DO YOU WANT TO INVEST?")
 				investmentAmount, err := utils.ScanForStringWithCheckI()
 				if err != nil {
@@ -720,7 +720,7 @@ func main() {
 					continue
 				}
 				fmt.Println("YOUR ORDER HAS BEEN CONFIRMED: ")
-				database.PrintOrder(cOrder)
+				PrintOrder(cOrder)
 				fmt.Println("PLEASE CHECK A BLOCKHAIN EXPLORER TO CONFIRM BALANCES TO CONFIRM: ")
 				fmt.Println("https://testnet.steexp.com/account/" + investor.U.PublicKey + "#balances")
 				break
@@ -730,7 +730,7 @@ func main() {
 					log.Fatal(err)
 				}
 				// need to pr etty print this, experiment out with stuff
-				xlm.PrintBalances(balances)
+				PrintBalances(balances)
 				break
 			case 5:
 				// this should be expanded in the future to make use of the inbuilt DEX
@@ -768,7 +768,7 @@ func main() {
 					log.Println(err)
 					break
 				}
-				database.PrintOrders(originatedOrders)
+				PrintOrders(originatedOrders)
 			case 7:
 				// this is the case where an investor can vote on a particular proposed order
 				fmt.Println("LIST OF ALL PROPOSED ORDERS: ")
@@ -784,7 +784,7 @@ func main() {
 					log.Println("CONTRACTOR NAME: ", contractor.U.Name)
 					log.Println("CONTRACTOR INDEX: ", contractor.U.Index)
 					for _, contract := range allContractors[index].ProposedContracts {
-						database.PrintOrder(contract.O)
+						PrintOrder(contract.O)
 					}
 				}
 				// we need to get the vote of the investor here, but how do you get the vote?

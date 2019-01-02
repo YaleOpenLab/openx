@@ -30,7 +30,7 @@ func StartPlatform() (string, string, error) {
 
 	if len(allOrders) == 0 {
 		log.Println("Populating database with test values")
-		err = database.InsertDummyData()
+		err = InsertDummyData()
 		if err != nil {
 			return publicKey, seed, err
 		}
@@ -206,7 +206,7 @@ func OriginContractPrompt(contractor *database.ContractEntity) error {
 		return err
 	}
 	// order insertion is done by the  above function, so we needn't call the database to do it again for us
-	database.PrintOrder(originContract.O)
+	PrintOrder(originContract.O)
 	return nil
 }
 
@@ -219,7 +219,7 @@ func PrintAllOriginatedContracts(contractor *database.ContractEntity) error {
 		return err
 	}
 	for _, elem := range contractor.ProposedContracts {
-		database.PrintOrder(elem.O)
+		PrintOrder(elem.O)
 	}
 	contractor = &contractorDup
 	return nil
@@ -267,6 +267,6 @@ func ProposeContractPrompt(contractor *database.ContractEntity) error {
 		return err
 	}
 	// order insertion is done by the  above function, so we needn't call the database to do it again for us
-	database.PrintOrder(originContract.O)
+	PrintOrder(originContract.O)
 	return nil
 }

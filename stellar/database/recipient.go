@@ -131,7 +131,7 @@ func DeleteKeyFromBucket(key int, bucketName []byte) error {
 	}
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(RecipientBucket)
+		b := tx.Bucket(bucketName)
 		err := b.Delete(utils.ItoB(key))
 		if err != nil {
 			return err

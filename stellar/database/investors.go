@@ -80,6 +80,25 @@ func InsertInvestor(a Investor) error {
 	return err
 }
 
+// RetrieveInvestor retrieves a particular investor indexed by key from the database
+func RetrieveInvestor(key int) (Investor, error) {
+	var inv Investor
+	db, err := OpenDB()
+	if err != nil {
+		return inv, err
+	}
+	defer db.Close()
+	err = db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket(InvestorBucket)
+		x := b.Get(utils.ItoB(key))
+		if x == nil {
+			return nil
+		}
+		return json.Unmarshal(x, &inv)
+	})
+	return inv, err
+}
+
 // RetrieveAllInvestors gets a list of all investor in the database
 func RetrieveAllInvestors() ([]Investor, error) {
 	// this route is broken because it reads through keys sequentially
@@ -117,25 +136,6 @@ func RetrieveAllInvestors() ([]Investor, error) {
 		return nil
 	})
 	return arr, err
-}
-
-// RetrieveInvestor retrieves a particular investor indexed by key from the database
-func RetrieveInvestor(key int) (Investor, error) {
-	var inv Investor
-	db, err := OpenDB()
-	if err != nil {
-		return inv, err
-	}
-	defer db.Close()
-	err = db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(InvestorBucket)
-		x := b.Get(utils.ItoB(key))
-		if x == nil {
-			return nil
-		}
-		return json.Unmarshal(x, &inv)
-	})
-	return inv, err
 }
 
 func ValidateInvestor(name string, pwhash string) (Investor, error) {

@@ -1,25 +1,26 @@
-package database
+package main
 
 import (
 	"fmt"
 	"log"
 
+	database "github.com/YaleOpenLab/smartPropertyMVP/stellar/database"
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
 )
 
 func InsertDummyData() error {
 	var err error
 	// populate database with dumym data
-	var order1 Order
+	var order1 database.Order
 
-	var rec Recipient
-	allRecs, err := RetrieveAllRecipients()
+	var rec database.Recipient
+	allRecs, err := database.RetrieveAllRecipients()
 	if err != nil {
 		log.Fatal(err)
 	}
 	if len(allRecs) == 0 {
 		var err error
-		rec.U, err = NewUser("martin", "password", "Martin")
+		rec.U, err = database.NewUser("martin", "password", "Martin")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -27,7 +28,7 @@ func InsertDummyData() error {
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = InsertRecipient(rec)
+		err = database.InsertRecipient(rec)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -47,7 +48,7 @@ func InsertDummyData() error {
 	order1.Years = 3
 	order1.OrderRecipient = rec
 	order1.Stage = 3
-	err = InsertOrder(order1)
+	err = database.InsertOrder(order1)
 	if err != nil {
 		return fmt.Errorf("Error inserting order into db")
 	}
@@ -66,7 +67,7 @@ func InsertDummyData() error {
 	order1.Years = 5
 	order1.OrderRecipient = rec
 	order1.Stage = 3
-	err = InsertOrder(order1)
+	err = database.InsertOrder(order1)
 	if err != nil {
 		return fmt.Errorf("Error inserting order into db")
 	}
@@ -85,19 +86,19 @@ func InsertDummyData() error {
 	order1.Years = 7
 	order1.OrderRecipient = rec
 	order1.Stage = 3
-	err = InsertOrder(order1)
+	err = database.InsertOrder(order1)
 	if err != nil {
 		return fmt.Errorf("Error inserting order into db")
 	}
 
-	var inv Investor
-	allInvs, err := RetrieveAllInvestors()
+	var inv database.Investor
+	allInvs, err := database.RetrieveAllInvestors()
 	if err != nil {
 		log.Fatal(err)
 	}
 	if len(allInvs) == 0 {
 		var err error
-		inv.U, err = NewUser("john", "password", "John")
+		inv.U, err = database.NewUser("john", "password", "John")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -108,13 +109,13 @@ func InsertDummyData() error {
 		}
 		// TODO: this is being set as a constant now, but should be updated to check
 		// the stablecoin and adjust accordingly.
-		err = InsertInvestor(inv)
+		err = database.InsertInvestor(inv)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 	// NewOriginator(uname string, pwd string, Name string, Address string, Description string)
-	newOriginator, err := NewOriginator("john", "password", "John Doe", "14 ABC Street London", "This is a sample originator")
+	newOriginator, err := database.NewOriginator("john", "password", "John Doe", "14 ABC Street London", "This is a sample originator")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -124,7 +125,7 @@ func InsertDummyData() error {
 		log.Fatal(err)
 	}
 
-	biddingOrder, err := RetrieveOrder(pc.O.Index)
+	biddingOrder, err := database.RetrieveOrder(pc.O.Index)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -133,7 +134,7 @@ func InsertDummyData() error {
 	// proposed contract to enable searchability of the bucket. And each contractor
 	// must build off of this in their proposed Contracts
 	// Contractor stuff below
-	contractor1, err := NewContractor("john", "password", "John Doe", "14 ABC Street London", "This is a sample contractor")
+	contractor1, err := database.NewContractor("john", "password", "John Doe", "14 ABC Street London", "This is a sample contractor")
 	if err != nil {
 		log.Println(err)
 	}
@@ -144,7 +145,7 @@ func InsertDummyData() error {
 	}
 
 	// competing contractor details follow
-	contractor2, err := NewContractor("sam", "password", "Samuel Jackson", "14 ABC Street London", "This is a competing contractor")
+	contractor2, err := database.NewContractor("sam", "password", "Samuel Jackson", "14 ABC Street London", "This is a competing contractor")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -154,16 +155,16 @@ func InsertDummyData() error {
 		log.Fatal(err)
 	}
 
-	_, err = NewOriginator("samuel", "password", "Samuel L. Jackson", "ABC Street, London", "I am an originator")
+	_, err = database.NewOriginator("samuel", "password", "Samuel L. Jackson", "ABC Street, London", "I am an originator")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	_, err = RetrieveAllContractEntities("originator")
+	_, err = database.RetrieveAllContractEntities("originator")
 	if err != nil {
 		log.Fatal(err)
 	}
-	_, err = RetrieveAllContractEntities("contractor")
+	_, err = database.RetrieveAllContractEntities("contractor")
 	if err != nil {
 		log.Fatal(err)
 	}

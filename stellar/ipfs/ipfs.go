@@ -89,7 +89,3 @@ func IpfsHashPdf(filepath string) (string, error) {
 	}
 	return hash, nil
 }
-
-/*
-useful for writing tests in the future:
-*/

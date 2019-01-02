@@ -145,6 +145,11 @@ func RetrieveUser(key int) (User, error) {
 
 func ValidateUser(name string, pwhash string) (User, error) {
 	var inv User
+	temp, err := RetrieveAllUsers()
+	if err != nil {
+		return inv, err
+	}
+	limit := len(temp) + 1
 	db, err := OpenDB()
 	if err != nil {
 		return inv, err
@@ -152,11 +157,11 @@ func ValidateUser(name string, pwhash string) (User, error) {
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(UserBucket)
-		for i := 1; ; i++ {
+		for i := 1; i < limit; i++ {
 			var rUser User
 			x := b.Get(utils.ItoB(i))
 			if x == nil {
-				return nil
+				continue
 			}
 			err := json.Unmarshal(x, &rUser)
 			if err != nil {

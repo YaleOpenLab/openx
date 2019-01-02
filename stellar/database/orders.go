@@ -54,7 +54,7 @@ type Order struct {
 // NewOrder creates a new order struct with the order parameters passed to the function
 // quite ugly with all the parameters passed, would be nice if we could rewrite this
 // in a nicer way
-func NewOrder(panelSize string, totalValue int, location string, moneyRaised int, metadata string, INVAssetCode string, DEBAssetCode string, PBAssetCode string) (Order, error) {
+func NewOrder(panelSize string, totalValue int, location string, moneyRaised int, metadata string) (Order, error) {
 	var a Order
 	// need to get a new index since we have a small bug on that
 	allOrders, err := RetrieveAllOrders()
@@ -73,9 +73,6 @@ func NewOrder(panelSize string, totalValue int, location string, moneyRaised int
 	a.MoneyRaised = moneyRaised
 	a.Metadata = metadata
 	a.Live = true
-	a.INVAssetCode = INVAssetCode
-	a.DEBAssetCode = DEBAssetCode
-	a.PBAssetCode = PBAssetCode
 	a.BalLeft = float64(totalValue)
 	a.DateInitiated = utils.Timestamp()
 	// need to insert this into the database
@@ -86,15 +83,10 @@ func NewOrder(panelSize string, totalValue int, location string, moneyRaised int
 	return a, nil
 }
 
-// DeleteOrder deltes a given value corresponding to the ky from the database
-// DeleteOrder should be used only in cases where something is wrong from our side
-// while creating an order. For other cases, we should set Live to False and edit
-// the order
-// TODO: make delete not mess up with indices, which it currently does
-func DeleteOrder(key int) error {
-	// deleting order might be dangerous since that would mess with the RetrieveAllOrders
-	// function, have it in here for now, don't do too much with it / fiox retrieve all
-	// to handle this case
+// InsertOrder inserts a passed order into the given database
+// TODO: need locks over insert and retrieve operations since BOLTdb supports only
+// one operation at a time.
+func InsertOrder(order Order) error {
 	db, err := OpenDB()
 	if err != nil {
 		return err
@@ -102,14 +94,35 @@ func DeleteOrder(key int) error {
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(OrdersBucket)
-		err := b.Delete(utils.ItoB(key))
+		encoded, err := json.Marshal(order)
+		if err != nil {
+			log.Println("Failed to encode this data into json")
+			return err
+		}
+		return b.Put([]byte(utils.ItoB(order.Index)), encoded)
+	})
+	return err
+}
+
+// RetrieveOrder retrievs a single value corresponding to a given key from
+// the default database. For use only by RPC calls
+func RetrieveOrder(key int) (Order, error) {
+	var rOrder Order
+	db, err := OpenDB()
+	if err != nil {
+		return rOrder, err
+	}
+	defer db.Close()
+	err = db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket(OrdersBucket)
+		x := b.Get(utils.ItoB(key))
+		err = json.Unmarshal(x, &rOrder)
 		if err != nil {
 			return err
 		}
-		log.Println("Deleted order with key: ", key)
 		return nil
 	})
-	return err
+	return rOrder, err
 }
 
 // RetrieveAllOrders retrieves all orders from the default database (for use only
@@ -184,31 +197,15 @@ func RetrieveAllOriginatedOrders() ([]Order, error) {
 	return arr, err
 }
 
-// RetrieveOrder retrievs a single value corresponding to a given key from
-// the default database. For use only by RPC calls
-func RetrieveOrder(key int) (Order, error) {
-	var rOrder Order
-	db, err := OpenDB()
-	if err != nil {
-		return rOrder, err
-	}
-	defer db.Close()
-	err = db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(OrdersBucket)
-		x := b.Get(utils.ItoB(key))
-		err = json.Unmarshal(x, &rOrder)
-		if err != nil {
-			return err
-		}
-		return nil
-	})
-	return rOrder, err
-}
-
-// InsertOrder inserts a passed order into the given database
-// TODO: need locks over insert and retrieve operations since BOLTdb supports only
-// one operation at a time.
-func InsertOrder(order Order) error {
+// DeleteOrder deltes a given value corresponding to the ky from the database
+// DeleteOrder should be used only in cases where something is wrong from our side
+// while creating an order. For other cases, we should set Live to False and edit
+// the order
+// TODO: make delete not mess up with indices, which it currently does
+func DeleteOrder(key int) error {
+	// deleting order might be dangerous since that would mess with the RetrieveAllOrders
+	// function, have it in here for now, don't do too much with it / fiox retrieve all
+	// to handle this case
 	db, err := OpenDB()
 	if err != nil {
 		return err
@@ -216,12 +213,13 @@ func InsertOrder(order Order) error {
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(OrdersBucket)
-		encoded, err := json.Marshal(order)
+		// TODO: we must first retrieve the order to see if it exists before trying to delete it right away
+		err := b.Delete(utils.ItoB(key))
 		if err != nil {
-			log.Println("Failed to encode this data into json")
 			return err
 		}
-		return b.Put([]byte(utils.ItoB(order.Index)), encoded)
+		log.Println("Deleted order with key: ", key)
+		return nil
 	})
 	return err
 }

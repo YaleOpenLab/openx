@@ -4,7 +4,6 @@ notifications:
 language: go
 go:
   - 1.11.x
-before_script: cd stellar
 before_install:
   - cd stellar
   - go get github.com/stellar/go
@@ -15,6 +14,6 @@ before_install:
   - dep ensure -v
   - cd ${TRAVIS_HOME}/gopath/src/github.com/Varunram/smartPropertyMVP/stellar
 script:
-  - go test -race -coverprofile=coverage.txt -covermode=atomic
+  - go test --tags="travis" -race -coverprofile=coverage.txt -covermode=atomic ./...
 after_success:
 - bash <(curl -s https://codecov.io/bash)

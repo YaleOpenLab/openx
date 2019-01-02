@@ -170,6 +170,7 @@ func RetrieveAllContractEntities(role string) ([]ContractEntity, error) {
 				if !rContractor.Guarantor {
 					continue
 				}
+			default: continue
 				// default is to add all contractentities to the array
 			}
 			arr = append(arr, rContractor)
@@ -202,6 +203,11 @@ func RetrieveContractEntity(key int) (ContractEntity, error) {
 // one. So we need to have a function that prevents username collisions
 func SearchForContractEntity(name string, pwhash string) (ContractEntity, error) {
 	var a ContractEntity
+	temp, err := RetrieveAllUsers()
+	if err != nil {
+		return a, err
+	}
+	limit := len(temp) + 1
 	db, err := OpenDB()
 	if err != nil {
 		return a, err
@@ -210,11 +216,11 @@ func SearchForContractEntity(name string, pwhash string) (ContractEntity, error)
 	err = db.Update(func(tx *bolt.Tx) error {
 		// TODO: change all similar functions to db.View
 		b := tx.Bucket(ContractorBucket)
-		for i := 1; ; i++ {
+		for i := 1; i < limit; i++ {
 			var rContractor ContractEntity
 			x := b.Get(utils.ItoB(i))
 			if x == nil {
-				return nil
+				continue
 			}
 			err := json.Unmarshal(x, &rContractor)
 			if err != nil {
@@ -223,6 +229,7 @@ func SearchForContractEntity(name string, pwhash string) (ContractEntity, error)
 			// we have the investor class, check names
 			if rContractor.U.LoginUserName == name && rContractor.U.LoginPassword == pwhash {
 				a = rContractor
+				return nil
 			}
 		}
 		return fmt.Errorf("Not Found")

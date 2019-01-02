@@ -1,19 +1,21 @@
-package database
+package main
 
-// println.go pretty prints orders, recipients and other methods
 import (
 	"fmt"
+
+	database "github.com/YaleOpenLab/smartPropertyMVP/stellar/database"
+	"github.com/stellar/go/protocols/horizon"
 )
 
 // PrintOrder pretty prints orders
-func PrintOrders(orders []Order) {
+func PrintOrders(orders []database.Order) {
 	for _, order := range orders {
 		PrintOrder(order)
 	}
 }
 
 // PrintOrder pretty prints orders
-func PrintOrder(order Order) {
+func PrintOrder(order database.Order) {
 	fmt.Println("    ORDER NUMBER: ", order.Index)
 	fmt.Println("          Panel Size: ", order.PanelSize)
 	fmt.Println("          Total Value: ", order.TotalValue)
@@ -38,7 +40,7 @@ func PrintOrder(order Order) {
 }
 
 // PrintInvestor pretty prints investors
-func PrintInvestor(investor Investor) {
+func PrintInvestor(investor database.Investor) {
 	fmt.Println("    WELCOME BACK ", investor.U.Name)
 	fmt.Println("          Your Public Key is: ", investor.U.PublicKey)
 	fmt.Println("          Your Seed is: ", investor.U.Seed)
@@ -50,7 +52,7 @@ func PrintInvestor(investor Investor) {
 }
 
 // PrintRecipient pretty prints recipients
-func PrintRecipient(recipient Recipient) {
+func PrintRecipient(recipient database.Recipient) {
 	fmt.Println("    WELCOME BACK ", recipient.U.Name)
 	fmt.Println("          Your Public Key is: ", recipient.U.PublicKey)
 	fmt.Println("          Your Seed is: ", recipient.U.Seed)
@@ -60,7 +62,7 @@ func PrintRecipient(recipient Recipient) {
 }
 
 // PrintOrder pretty prints orders
-func PrintPBOrders(orders []Order) {
+func PrintPBOrders(orders []database.Order) {
 	for _, order := range orders {
 		if !order.PaidOff {
 			fmt.Println("    ORDER NUMBER: ", order.Index)
@@ -82,7 +84,7 @@ func PrintPBOrders(orders []Order) {
 }
 
 // PrintOrder pretty prints orders
-func PrintPBOrder(order Order) {
+func PrintPBOrder(order database.Order) {
 	fmt.Println("    ORDER NUMBER: ", order.Index)
 	fmt.Println("          Panel Size: ", order.PanelSize)
 	fmt.Println("          Total Value: ", order.TotalValue)
@@ -98,14 +100,14 @@ func PrintPBOrder(order Order) {
 	fmt.Println("          Date Last Paid: ", order.DateLastPaid)
 }
 
-func PrintDEB(orders []Order) {
+func PrintDEB(orders []database.Order) {
 	for _, order := range orders {
 		fmt.Println("          Debt Asset Code: ", order.DEBAssetCode)
 	}
 }
 
 // PrintOrder pretty prints orders
-func PrintProposedContract(order Order) {
+func PrintProposedContract(order database.Order) {
 	fmt.Println("          Proposed Contract: ")
 	fmt.Println("          Panel Size: ", order.PanelSize)
 	fmt.Println("          Total Value: ", order.TotalValue)
@@ -117,7 +119,7 @@ func PrintProposedContract(order Order) {
 	fmt.Println("          Investors: ", order.OrderInvestors)
 }
 
-func PrintUser(user User) {
+func PrintUser(user database.User) {
 	fmt.Println("    WELCOME BACK ", user.Name)
 	fmt.Println("          Your Public Key is: ", user.PublicKey)
 	fmt.Println("          Your Seed is: ", user.Seed)
@@ -125,7 +127,7 @@ func PrintUser(user User) {
 	fmt.Println("          Your Password hash is: ", user.LoginPassword)
 }
 
-func PrintContractEntity(a ContractEntity) {
+func PrintContractEntity(a database.ContractEntity) {
 	fmt.Println("    WELCOME BACK ", a.U.Name)
 	fmt.Println("    			 Your Index is ", a.U.Index)
 	fmt.Println("          Your Public Key is: ", a.U.PublicKey)
@@ -134,4 +136,15 @@ func PrintContractEntity(a ContractEntity) {
 	fmt.Println("          Your Password hash is: ", a.U.LoginPassword)
 	fmt.Println("          Your Address is: ", a.U.Address)
 	fmt.Println("          Your Description is: ", a.U.Description)
+}
+
+func PrintBalances(balances []horizon.Balance) {
+	fmt.Println("   LIST OF ALL YOUR BALANCES: ")
+	for _, balance := range balances {
+		if balance.Asset.Code == "" {
+			fmt.Printf("    ASSET CODE: XLM, ASSET BALANCE: %s\n", balance.Balance)
+			continue
+		}
+		fmt.Printf("    ASSET CODE: %s, ASSET BALANCE: %s\n", balance.Asset.Code, balance.Balance)
+	}
 }
