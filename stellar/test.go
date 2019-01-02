@@ -110,7 +110,8 @@ func main() {
 	// recipients and the investors and the platform. Need to transition automatically
 	// and also cover breach scenarios in case the recipient doesn't pay for a specific
 	// period of time
-
+	// TODO: upgrade the RPC and tests to fit in with recent changes
+	// also would be nice to set something like travis / circle up
 	fmt.Println("------------STELLAR HOUSE INVESTMENT CLI INTERFACE------------")
 
 	// init stablecoin stuff

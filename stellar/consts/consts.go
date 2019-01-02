@@ -17,3 +17,4 @@ var INVAssetPrefix = "INVTokens_"
 var DEBAssetPrefix = "DEBTokens_"
 var PBAssetPrefix = "PBTokens_"
 var HomeDir = os.Getenv("HOME") + "/.opensolar" // home directory where we store seeds
+var IpfsFileLength = "10"

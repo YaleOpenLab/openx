@@ -24,6 +24,7 @@ import (
 	"os"
 	"strings"
 
+	consts "github.com/YaleOpenLab/smartPropertyMVP/stellar/consts"
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
 	shell "github.com/ipfs/go-ipfs-api"
 )
@@ -48,7 +49,7 @@ func GetFileFromIpfs(hash string, extension string) error {
 	// extension can be pdf, txt, ppt and others
 	sh := RetrieveShell()
 	// generate a random fileName and then return the file to the user
-	fileName := utils.GetRandomString(10) + "." + extension
+	fileName := utils.GetRandomString(consts.IpfsFileLength) + "." + extension
 	log.Println("DECRYPTED FILE NAME is: ", fileName)
 	return sh.Get(hash, fileName)
 }
@@ -58,7 +59,7 @@ func GetStringFromIpfs(hash string) (string, error) {
 	// since ipfs doesn't provide a method to read the string directly, we create a
 	// random fiel at tmp/, decrypt contents to that fiel and then read the file
 	// contents from there
-	tmpFileDir := "/tmp/" + utils.GetRandomString(10)
+	tmpFileDir := "/tmp/" + utils.GetRandomString(consts.IpfsFileLength) // using the same length here for consistency
 	sh.Get(hash, tmpFileDir)
 	data, err := ioutil.ReadFile(tmpFileDir)
 	if err != nil {
