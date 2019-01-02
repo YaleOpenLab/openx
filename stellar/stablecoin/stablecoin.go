@@ -10,6 +10,11 @@ package stablecoin
 // place here. We also need a stablecoin Code, which we shall call as "STABLEUSD"
 // for easy reference. Most functions would be similar to the one in assets.go,
 // but need to be tailored to suit our requirements
+
+// the USD token defined here is what is issued by the speciifc bank. Ideally, we
+// could accept a tx hash and check it as well, but since we can query balances,
+// much easier to do it this way.
+// or can be something like a stablecoin or token
 import (
 	"context"
 	"encoding/json"
@@ -150,6 +155,7 @@ func RetrieveStableIssuer() (StableIssuer, error) {
 // some way to mitigate this wihtout retrieving the key each time?
 func SetVals(PublicKey string, Seed string) {
 	StableUSD.Code = "STABLEUSD"
+	// we assume that the assetCode of the USDToken is constant and doesn't change.
 	StableUSD.Issuer = PublicKey
 	Issuer.PublicKey = PublicKey
 	Issuer.Seed = Seed

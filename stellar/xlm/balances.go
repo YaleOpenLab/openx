@@ -4,13 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 
 	"github.com/stellar/go/protocols/horizon" // using this since hte client/horizon package has some deprecated fields
 	protocols "github.com/stellar/go/protocols/horizon"
 )
 
+// TODO: probably query balance from a couple of servers to avoid the chance for a mitm attack
+// this also makes it asset independednt, means we can require people to hold a
+// specific amount of "X TOKEN" which can be either be a currency like btc / usd / xlm
 /*
 type Account struct {
     Links struct {
@@ -43,7 +45,6 @@ func GetAccountData(a string) ([]byte, error) {
 	if err != nil {
 		return data, err
 	}
-	log.Println("StATUS: ", resp.Status)
 	if resp.Status != "200 OK" {
 		return data, fmt.Errorf("Request did not succeed")
 	}
@@ -67,7 +68,6 @@ func GetNativeBalance(publicKey string) (string, error) {
 	}
 	for _, balance := range x.Balances {
 		if balance.Asset.Type == "native" {
-			log.Println("Native balance: ", balance.Balance)
 			return balance.Balance, nil
 		}
 	}
@@ -87,44 +87,57 @@ func GetAssetBalance(publicKey string, assetName string) (string, error) {
 		return balance, err
 	}
 	for _, balance := range x.Balances {
-		if balance.Asset.Type == assetName {
-			log.Println("Native balance: ", balance.Balance)
+		if balance.Asset.Code == assetName {
 			return balance.Balance, nil
 		}
 	}
-	return balance, fmt.Errorf("Native balance not found")
+	return balance, fmt.Errorf("Asset balance not found")
 }
 
 // GetAllBalances calls the stellar testnet API to get all the balances associated
 // with a certain account.
 func GetAllBalances(publicKey string) ([]horizon.Balance, error) {
-
 	account, err := TestNetClient.LoadAccount(publicKey)
 	if err != nil {
 		return nil, err
 	}
-
 	return account.Balances, nil
 }
 
-func GetUSDTokenBalance(PublicKey string, targetBalance string) error {
-	// the USD token defined here is what is issued by the speciifc bank. Ideally, we
-	// could accept a tx hash and check it as well, but since we can query balances,
-	// much easier to do it this way
-	// probably query balance from a couple of servers to avoid the chance for a mitm attack
-	// this also makes it asset independednt, means we can require people to hold a
-	// specific amount of "X TOKEN" which can be either be a currency like btc / usd / xlm
-	// or can be something like a stablecoin or token
-	// we also assume that the assetCode of the USDToken is constant and doesn't change.
+// HasStableCoin checks whether the PublicKey has a stablecoin balance associated
+// with it in the first place, if not, returns false
+func HasStableCoin(PublicKey string) bool {
 	account, err := TestNetClient.LoadAccount(PublicKey)
 	if err != nil {
-		return err
+		// account does not exist
+		return false
 	}
 
 	for _, balance := range account.Balances {
-		if balance.Asset.Code == "STABLEUSD" && balance.Balance >= targetBalance {
-			return nil
+		if balance.Asset.Code == "STABLEUSD" {
+			return true
 		}
 	}
-	return fmt.Errorf("Balance insufficient or STABLEUSD token not found on your account")
+	return false
+}
+
+// GetUSDTokenBalance checks whether the publicKey has a balance in stableUSD
+// and retunrs the balance if the account has any
+func GetUSDTokenBalance(PublicKey string) (string, error) {
+
+	if !HasStableCoin(PublicKey) {
+		return "", fmt.Errorf("Account does not exist or STABLEUSD token not found on your account")
+	}
+
+	account, err := TestNetClient.LoadAccount(PublicKey)
+	if err != nil {
+		return "", err
+	}
+
+	for _, balance := range account.Balances {
+		if balance.Asset.Code == "STABLEUSD" { // stablecoin code is constnat for now, need to change with changes in issuing bank
+			return balance.Balance, nil
+		}
+	}
+	return "", fmt.Errorf("error while fetching usd token balance")
 }

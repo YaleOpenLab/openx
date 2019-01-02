@@ -159,8 +159,7 @@ func InvestInOrder(issuerPublicKey string, issuerSeed string, investor *database
 	}
 	// we should check here whether the investor has enough USDTokens in order to be
 	// able to ivnest in the asset
-	err = xlm.GetUSDTokenBalance(investor.U.PublicKey, investmentAmountS)
-	if err != nil {
+	if !investor.CanInvest(investor.U.PublicKey, investmentAmountS) {
 		log.Println("Investor has less balance than what is required to ivnest in this asset")
 		return uOrder, err
 	}
