@@ -59,17 +59,11 @@ func main() {
 		// TODO: emulate different partners in the system that we have now.
 	}
 
-	// bal,  _ := xlm.GetNativeBalance("GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ")
-	// log.Println(bal)
-	// log.Fatal("")
 	height, err := xlm.GetTransactionHeight("46c04134b95204b82067f8753dce5bf825365ae58753effbfcc9a7cac2e14f65")
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Println("HEIGHT= ", height)
-	log.Fatal("")
-	// _,  _ = xlm.GetNativeBalance("GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ")
-	// log.Fatal("")
 	// the memo field in stellar is particularly interesting for us wrt preserving state
 	// as shown in the preliminary pdf example. We need to test out whether we can commit
 	// more state in the memo field and find a way for third party clients to be able
@@ -112,6 +106,7 @@ func main() {
 	// period of time
 	// TODO: upgrade the RPC and tests to fit in with recent changes
 	// also would be nice to set something like travis / circle up
+	// TODO: also write a Makefile so that its easy for people to get started with stuff
 	fmt.Println("------------STELLAR HOUSE INVESTMENT CLI INTERFACE------------")
 
 	// init stablecoin stuff

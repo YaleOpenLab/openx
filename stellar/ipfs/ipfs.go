@@ -92,33 +92,4 @@ func IpfsHashPdf(filepath string) (string, error) {
 
 /*
 useful for writing tests in the future:
-hash, err := ipfs.AddStringToIpfs("Hello, this is a test from ipfs to see if it works")
-if err != nil {
-	log.Fatal(err)
-}
-log.Println("HASH: ", hash)
-string1, err := ipfs.GetStringFromIpfs(hash)
-if err != nil {
-	log.Fatal(err)
-}
-err = ipfs.GetFileFromIpfs("/ipfs/QmSjvpAbHtAkFNV7SRmsV5pRALwsr8waEoWL4NesCvUdpw", "pdf")
-if err != nil {
-	log.Fatal(err)
-}
-log.Println("DECRYPTED STRING IS: ", string1)
-_, err = ipfs.ReadfromPdf("test.pdf") // get the data from the pdf as a datastream
-if err != nil {
-	log.Fatal(err)
-}
-
-hash, err := ipfs.IpfsHashPdf("test.pdf")
-if err != nil {
-	log.Fatal(err)
-}
-log.Println("HASH IS: ", hash)
-err = ipfs.GetFileFromIpfs(hash, "pdf")
-if err != nil {
-	log.Fatal(err)
-}
-log.Fatal("TEST")
 */

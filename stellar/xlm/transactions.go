@@ -37,13 +37,11 @@ func GetTransactionHeight(txhash string) (int, error) {
 	if err != nil {
 		return txheight, err
 	}
-	log.Println("B+", b)
 	var x protocols.Transaction
 	err = json.Unmarshal(b, &x)
 	if err != nil {
 		return txheight, err
 	}
-	log.Println("X= ", x)
 	log.Printf("Tx height of %s is %d", txhash, x.Ledger)
 	return int(x.Ledger), nil
 }
