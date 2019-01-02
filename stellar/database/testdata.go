@@ -2,10 +2,11 @@ package database
 
 import (
 	"fmt"
-  "log"
+	"log"
 
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
 )
+
 func InsertDummyData() error {
 	var err error
 	// populate database with dumym data
@@ -19,6 +20,13 @@ func InsertDummyData() error {
 	if len(allRecs) == 0 {
 		var err error
 		rec.U, err = NewUser("martin", "password", "Martin")
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = rec.U.GenKeys()
+		if err != nil {
+			log.Fatal(err)
+		}
 		err = InsertRecipient(rec)
 		if err != nil {
 			log.Fatal(err)
@@ -38,6 +46,7 @@ func InsertDummyData() error {
 	order1.DateInitiated = utils.Timestamp()
 	order1.Years = 3
 	order1.OrderRecipient = rec
+	order1.Stage = 3
 	err = InsertOrder(order1)
 	if err != nil {
 		return fmt.Errorf("Error inserting order into db")
@@ -56,7 +65,7 @@ func InsertDummyData() error {
 	order1.DateInitiated = utils.Timestamp()
 	order1.Years = 5
 	order1.OrderRecipient = rec
-
+	order1.Stage = 3
 	err = InsertOrder(order1)
 	if err != nil {
 		return fmt.Errorf("Error inserting order into db")
@@ -75,7 +84,7 @@ func InsertDummyData() error {
 	order1.DateInitiated = utils.Timestamp()
 	order1.Years = 7
 	order1.OrderRecipient = rec
-
+	order1.Stage = 3
 	err = InsertOrder(order1)
 	if err != nil {
 		return fmt.Errorf("Error inserting order into db")
@@ -93,6 +102,10 @@ func InsertDummyData() error {
 			log.Fatal(err)
 		}
 		inv.VotingBalance = 100000
+		err = inv.U.GenKeys()
+		if err != nil {
+			log.Fatal(err)
+		}
 		// TODO: this is being set as a constant now, but should be updated to check
 		// the stablecoin and adjust accordingly.
 		err = InsertInvestor(inv)
@@ -100,18 +113,13 @@ func InsertDummyData() error {
 			log.Fatal(err)
 		}
 	}
-	tRec, err := RetrieveRecipient(1) // for retrieving martin
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	// NewOriginator(uname string, pwd string, Name string, Address string, Description string)
 	newOriginator, err := NewOriginator("john", "password", "John Doe", "14 ABC Street London", "This is a sample originator")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	pc, err := newOriginator.OriginContract("100 16x24 panels on a solar rooftop", 14000, "Puerto Rico", 5, "ABC School in XYZ peninsula")
+	pc, err := newOriginator.OriginContract("100 16x24 panels on a solar rooftop", 14000, "Puerto Rico", 5, "ABC School in XYZ peninsula", 1) // 1 is the idnex for martin
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -130,7 +138,7 @@ func InsertDummyData() error {
 		log.Println(err)
 	}
 
-	_, err = contractor1.ProposeContract(pc.O.PanelSize, 28000, "Puerto Rico", 6, pc.O.Metadata+" we supply our own devs and provide insurance guarantee as well. Dual audit maintenance upto 1 year. Returns capped as per defaults", tRec, biddingOrder.Index)
+	_, err = contractor1.ProposeContract(pc.O.PanelSize, 28000, "Puerto Rico", 6, pc.O.Metadata+" we supply our own devs and provide insurance guarantee as well. Dual audit maintenance upto 1 year. Returns capped as per defaults", 1, biddingOrder.Index) // 1 for retrieving martin as the recipient
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -141,7 +149,12 @@ func InsertDummyData() error {
 		log.Fatal(err)
 	}
 
-	_, err = contractor2.ProposeContract(pc.O.PanelSize, 35000, "Puerto Rico", 5, pc.O.Metadata+" free lifetime service, developers and insurance also provided", tRec, biddingOrder.Index)
+	_, err = contractor2.ProposeContract(pc.O.PanelSize, 35000, "Puerto Rico", 5, pc.O.Metadata+" free lifetime service, developers and insurance also provided", 1, biddingOrder.Index) // 1 for retrieving martin as the recipient
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = NewOriginator("samuel", "password", "Samuel L. Jackson", "ABC Street, London", "I am an originator")
 	if err != nil {
 		log.Fatal(err)
 	}

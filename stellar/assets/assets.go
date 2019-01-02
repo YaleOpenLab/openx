@@ -59,7 +59,7 @@ func TrustAsset(asset build.Asset, limit string, PublicKey string, Seed string) 
 	// TRUST is FROM recipient TO issuer
 	trustTx, err := build.Transaction(
 		build.SourceAccount{PublicKey},
-		build.AutoSequence{SequenceProvider: utils.DefaultTestNetClient},
+		build.AutoSequence{SequenceProvider: xlm.TestNetClient},
 		build.TestNetwork,
 		build.Trust(asset.Code, asset.Issuer, build.Limit(limit)),
 	)
@@ -78,7 +78,7 @@ func TrustAsset(asset build.Asset, limit string, PublicKey string, Seed string) 
 		return "", err
 	}
 
-	tx, err := utils.DefaultTestNetClient.SubmitTransaction(trustTxeB64)
+	tx, err := xlm.TestNetClient.SubmitTransaction(trustTxeB64)
 	if err != nil {
 		return "", err
 	}
@@ -95,7 +95,8 @@ func SendAssetFromIssuer(assetName string, destination string, amount string, Se
 	paymentTx, err := build.Transaction(
 		build.SourceAccount{PublicKey},
 		build.TestNetwork,
-		build.AutoSequence{SequenceProvider: utils.DefaultTestNetClient},
+		build.AutoSequence{SequenceProvider: xlm.TestNetClient},
+		build.MemoText{"Sending Asset: " + assetName},
 		build.Payment(
 			build.Destination{AddressOrSeed: destination},
 			build.CreditAmount{assetName, PublicKey, amount},
@@ -119,7 +120,7 @@ func SendAssetFromIssuer(assetName string, destination string, amount string, Se
 		return -1, "", err
 	}
 
-	tx, err := utils.DefaultTestNetClient.SubmitTransaction(paymentTxeB64)
+	tx, err := xlm.TestNetClient.SubmitTransaction(paymentTxeB64)
 	if err != nil {
 		return -1, "", err
 	}
@@ -127,7 +128,7 @@ func SendAssetFromIssuer(assetName string, destination string, amount string, Se
 	return tx.Ledger, tx.Hash, nil
 }
 
-// InvestInOrder invests in a particular oder issued by _issuer_ wtih seed _issuerSeed_
+// InvestInOrder invests in a particular oder issued by _issuer_ with seed _issuerSeed_
 // the _investor_ decides to invest _investmentAmountS_ amount of USD Tokens in
 // a particular _uOrder_. If the invested amount makes the money raised equal to
 // the total value of the _uOrder_, we issue the PBTokens and DEBTokens to the
@@ -141,8 +142,8 @@ func InvestInOrder(issuerPublicKey string, issuerSeed string, investor *database
 	// check if investment amount is greater than or equal to the order requirements
 	amtLeft := uOrder.TotalValue - uOrder.MoneyRaised
 	if investmentAmount > amtLeft {
-		fmt.Println("User is trying to invest more thna what is needed, print and exit")
-		return partOrder, fmt.Errorf("User is trying to invest more thna what is needed, print and exit")
+		fmt.Println("User is trying to invest more than what is needed, print and exit")
+		return partOrder, fmt.Errorf("User is trying to invest more than what is needed, print and exit")
 	}
 
 	// user has decided to invest in a part of the order (don't know if full yet)
@@ -153,7 +154,7 @@ func InvestInOrder(issuerPublicKey string, issuerSeed string, investor *database
 	if uOrder.INVAssetCode == "" {
 		// this person is the first investor, set the investor token name
 		INVAssetCode := AssetID(consts.INVAssetPrefix + assetName)
-		uOrder.INVAssetCode = INVAssetCode              // set the investeor code
+		uOrder.INVAssetCode = INVAssetCode             // set the investeor code
 		_ = CreateAsset(INVAssetCode, issuerPublicKey) // create the asset itself, since it would not have bene created earlier
 	}
 	// we should check here whether the investor has enough USDTokens in order to be

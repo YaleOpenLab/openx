@@ -1,7 +1,8 @@
 package stablecoin
+
 // the idea of this stablecoin package is to issue a stablecoin on stellar testnet
 // so that we can test the function of something similar on mainnet. The stablecoin
-// provider should be stored in a different database becuase we will not be migrating
+// provider should be stored in a different database because we will not be migrating
 // this.
 
 // The idea is to issue a single USD token for every USD t hat we receive on our
@@ -16,9 +17,9 @@ import (
 	"log"
 
 	assets "github.com/YaleOpenLab/smartPropertyMVP/stellar/assets"
+	oracle "github.com/YaleOpenLab/smartPropertyMVP/stellar/oracle"
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
 	xlm "github.com/YaleOpenLab/smartPropertyMVP/stellar/xlm"
-	oracle "github.com/YaleOpenLab/smartPropertyMVP/stellar/oracle"
 	"github.com/boltdb/bolt"
 	"github.com/stellar/go/build"
 	"github.com/stellar/go/clients/horizon"
@@ -45,7 +46,7 @@ func CreateStableCoin() build.Asset {
 	return build.CreditAsset(StableUSD.Code, Issuer.PublicKey)
 }
 
-// We use a different databse here becasue when we clean yol.db, we don't want to
+// We use a different databse here because when we clean yol.db, we don't want to
 // generate a new stablecoin (which in theory should be pegged to the USD)
 func OpenDB() (*bolt.DB, error) {
 	db, err := bolt.Open("sbc.db", 0600, nil)
@@ -114,7 +115,7 @@ func CheckStableIssuer() error {
 		fmt.Println("Found another stablecoin instance running, please remember the seed")
 		return fmt.Errorf("Found another stablecoin instance running, please remember the seed")
 	}
-	return nil
+	return err
 }
 
 // RetrieveStableIssuer retreives the publickey of the platform from the database
@@ -180,14 +181,14 @@ func InitStableCoin() error {
 	x.Index = 1 // only one stable instance
 	err = InsertIssuer(x)
 	if err != nil {
-		// no way / ened to continue after this
+		// no way / need to continue after this
 		log.Fatal(err)
 	}
 	// set parameters for stablecoin ehre to avoid issues
 	SetVals(x.PublicKey, x.Seed)
 	err = xlm.GetXLM(x.PublicKey)
 	if err != nil {
-		// no way / ened to continue after this
+		// no way / need to continue after this
 		log.Fatal(err)
 	}
 	Issuer = x // set the local val to the global one
@@ -210,7 +211,7 @@ func ListenForPayments() {
 	ctx := context.Background() // start in the background context
 	cursor := horizon.Cursor("now")
 	fmt.Println("Waiting for a payment...")
-	err := utils.DefaultTestNetClient.StreamPayments(ctx, address, &cursor, func(payment horizon.Payment) {
+	err := xlm.TestNetClient.StreamPayments(ctx, address, &cursor, func(payment horizon.Payment) {
 		/*
 			Sample Response:
 			Payment type payment

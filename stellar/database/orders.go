@@ -2,7 +2,7 @@ package database
 
 // the database package maintains read / write operations to the orderbook
 // we need an orderbook because there is no state on Stellar which makes it
-// difficult for us to store this on the blockchain. We use boltdb no sicne we don't
+// difficult for us to store this on the blockchain. We use boltdb no since we don't
 // do that much relational mapping, but in the case we need that, we can modify
 // this package to do that.
 
@@ -24,7 +24,7 @@ import (
 // Order is the structure that is actually stored in the database
 // Order is a subset of the larger struct Contractor, which is still a TODO
 type Order struct {
-	Index         int  // an Index to keep quick track of how many orders exist
+	Index         int     // an Index to keep quick track of how many orders exist
 	PanelSize     string  // size of the given panel, for diplsaying to the user who wants to bid stuff
 	TotalValue    int     // the total money that we need from investors
 	Location      string  // where this specific solar panel is located
@@ -34,6 +34,7 @@ type Order struct {
 	Live          bool    // check to see whether the current order is live or not
 	Origin        bool    // if this order is an originated order
 	Votes         int     // the number of votes of a proposed contract
+	Stage         int     // the stage at which the specific order is at, can be used to see the progess of order
 	PaidOff       bool    // whether the asset has been paidoff by the recipient
 	INVAssetCode  string  // once all funds have been raised, we need to set assetCodes
 	DEBAssetCode  string  // once all funds have been raised, we need to set assetCodes
@@ -50,7 +51,7 @@ type Order struct {
 	// Percentage raised is not stored in the database since that can be calculated by the UI
 }
 
-// NewOrder creates a new order struct with the order parameters pased to the function
+// NewOrder creates a new order struct with the order parameters passed to the function
 // quite ugly with all the parameters passed, would be nice if we could rewrite this
 // in a nicer way
 func NewOrder(panelSize string, totalValue int, location string, moneyRaised int, metadata string, INVAssetCode string, DEBAssetCode string, PBAssetCode string) (Order, error) {

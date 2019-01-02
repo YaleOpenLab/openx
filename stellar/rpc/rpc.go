@@ -165,7 +165,7 @@ func parseOrder(r *http.Request) (database.Order, error) {
 	// INVAssetCode  string  should be set by subsequent calls
 	// DEBAssetCode  string  should be set by subsequent calls
 	// PBAssetCode   string  should be set by subsequent calls
-	// BalLeft       float64 should be equal to  totalValue sicne htis is a new order
+	// BalLeft       float64 should be equal to  totalValue since this is a new order
 	// DateInitiated string  auto
 	// DateLastPaid  string  don't set
 

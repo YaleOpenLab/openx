@@ -1,6 +1,7 @@
 package oracle
+
 //  oracle defines oracle related functions
-// right now, most are jsut placehlders, but in the future, they should call
+// right now, most are just placehlders, but in the future, they should call
 // remote APIs and act as oracles
 import (
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
@@ -10,7 +11,7 @@ import (
 // that is in the real world. Right now, this is hardcoded since we need to come up
 // with a construct to get the price data in a reliable way - this could be a website
 // were poeple erport this or certified authorities can timestamp this on chain
-// or similar. Web s craping governemnt websites might work, but that seems too
+// or similar. Web s craping government websites might work, but that seems too
 // overkill for what we're doing now.
 func MonthlyBill() (string, error) {
 	// right now, community consensus look like the price of electricity is
@@ -37,11 +38,11 @@ func MonthlyBillInFloat() float64 {
 // Oracle retrieves the current price of XLM/USD and then returns the USD amount
 // that the XLM deposited is worth and takes a percentage premium that emulates
 // how real world exchanges would behave. This fee is 0.01% for now
-func ExchangeXLMforUSD (amount string) float64 {
+func ExchangeXLMforUSD(amount string) float64 {
 	// defines the rate for 1 usd = x XLM. Currently hardcoded to 10
 	amountF := utils.StoF(amount)
 	// exchangeRate := 0.1 // hardcode for now, can query cmc apis later
 	exchangeRate := 100000.0 // rig the exchange rate so that we can test some stuff
-	premium := 0.01 / 100 // 0.01% premium on ao tx
+	premium := 0.01 / 100    // 0.01% premium on ao tx
 	return amountF * (1 - premium) * exchangeRate
 }

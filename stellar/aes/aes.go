@@ -1,4 +1,5 @@
 package aes
+
 // the aes package implements AES-256 GCM encryption and decrpytion functions
 import (
 	"crypto/aes"

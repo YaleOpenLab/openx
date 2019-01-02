@@ -1,11 +1,12 @@
 package database
 
-// contains the WIP Investor struct which will be st ored in a separate bucket
+// contains the WIP Investor struct which will be stored in a separate bucket
 import (
 	"encoding/json"
 	"log"
 
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
+	xlm "github.com/YaleOpenLab/smartPropertyMVP/stellar/xlm"
 	"github.com/boltdb/bolt"
 	"github.com/stellar/go/build"
 )
@@ -19,7 +20,8 @@ import (
 // people who invest in the schools
 type Investor struct {
 	VotingBalance int // this will be equal to the amount of stablecoins that the
-	// investor possesses
+	// investor possesses, should update this every once in a while to ensure voting
+	// consistency.
 	AmountInvested float64
 	// total amount, would be nice to track to contact them,
 	// give them some kind of medals or something
@@ -34,7 +36,7 @@ type Investor struct {
 // NewInvestor creates a new investor object when passed the username, password hash,
 // name and an option to generate the seed and publicKey. This is done because if
 // we decide to allow anonymous investors to invest on our platform, we can easily
-// insert their publickey into the system and hten have hanlders for them signing
+// insert their publickey into the system and then have hanlders for them signing
 // transactions
 // TODO: add anonymous investor signing handlers
 func NewInvestor(uname string, pwd string, Name string) (Investor, error) {
@@ -46,6 +48,7 @@ func NewInvestor(uname string, pwd string, Name string) (Investor, error) {
 	if err != nil {
 		return a, err
 	}
+	// new user creates keys, so don't create them here
 	a.AmountInvested = float64(0)
 	return a, nil
 }
@@ -79,7 +82,7 @@ func InsertInvestor(a Investor) error {
 
 // RetrieveAllInvestors gets a list of all investor in the database
 func RetrieveAllInvestors() ([]Investor, error) {
-	// this route is broken becuase it reads through keys sequentially
+	// this route is broken because it reads through keys sequentially
 	// need to see keys until the length of the users database
 	var arr []Investor
 	temp, err := RetrieveAllUsers()
@@ -132,7 +135,7 @@ func RetrieveInvestor(key int) (Investor, error) {
 		}
 		return json.Unmarshal(x, &inv)
 	})
-	return inv, nil
+	return inv, err
 }
 
 func ValidateInvestor(name string, pwhash string) (Investor, error) {
@@ -143,7 +146,6 @@ func ValidateInvestor(name string, pwhash string) (Investor, error) {
 	}
 	return RetrieveInvestor(user.Index)
 }
-
 
 func (a *Investor) DeductVotingBalance(votes int) error {
 	// TODO: we need to update the voting balance often in accordance with the stablecoin
@@ -160,7 +162,7 @@ func (a *Investor) DeductVotingBalance(votes int) error {
 }
 
 func (a *Investor) AddVotingBalance(votes int) error {
-	// this funtion is caled when we want to refund the user with the votes once
+	// this function is caled when we want to refund the user with the votes once
 	// an order has been finalized.
 	// TODO: use this
 	var err error
@@ -172,7 +174,6 @@ func (a *Investor) AddVotingBalance(votes int) error {
 	return nil
 }
 
-
 // TrustAsset creates a trustline from the caller towards the specific asset
 // and asset issuer with a _limit_ set on the maximum amount of tokens that can be sent
 // through the trust channel. Each trustline costs 0.5XLM.
@@ -180,7 +181,7 @@ func (a *Investor) TrustAsset(asset build.Asset, limit string) (string, error) {
 	// TRUST is FROM recipient TO issuer
 	trustTx, err := build.Transaction(
 		build.SourceAccount{a.U.PublicKey},
-		build.AutoSequence{SequenceProvider: utils.DefaultTestNetClient},
+		build.AutoSequence{SequenceProvider: xlm.TestNetClient},
 		build.TestNetwork,
 		build.Trust(asset.Code, asset.Issuer, build.Limit(limit)),
 	)
@@ -199,7 +200,7 @@ func (a *Investor) TrustAsset(asset build.Asset, limit string) (string, error) {
 		return "", err
 	}
 
-	tx, err := utils.DefaultTestNetClient.SubmitTransaction(trustTxeB64)
+	tx, err := xlm.TestNetClient.SubmitTransaction(trustTxeB64)
 	if err != nil {
 		return "", err
 	}

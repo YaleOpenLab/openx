@@ -59,7 +59,7 @@ type ContractEntity struct {
 	PresentContracts []Contract
 	// list of all contracts that the contractor is presently undertaking1
 	PastFeedback []Feedback
-	// feedback received on the contractor from parites involved in the past
+	// feedback received on the contractor from parties involved in the past
 	// What kind of proof do we want from the company? KYC?
 	// maybe we could have a photo op like exchanges do these days, with the owner
 	// holding up his drivers' license or similar
@@ -142,7 +142,7 @@ func RetrieveAllContractEntities(role string) ([]ContractEntity, error) {
 
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(ContractorBucket)
-		for i := 1 ; i < limit; i++ {
+		for i := 1; i < limit; i++ {
 			var rContractor ContractEntity
 			x := b.Get(utils.ItoB(i))
 			if x == nil {
@@ -194,7 +194,7 @@ func RetrieveContractEntity(key int) (ContractEntity, error) {
 		}
 		return json.Unmarshal(x, &a)
 	})
-	return a, nil
+	return a, err
 }
 
 // search by username for login stuff
