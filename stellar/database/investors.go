@@ -25,7 +25,7 @@ type Investor struct {
 	AmountInvested float64
 	// total amount, would be nice to track to contact them,
 	// give them some kind of medals or something
-	InvestedAssets []Order
+	InvestedAssets []DBParams
 	// array of asset codes this user has invested in
 	// also I think we need a username + password for logging on to the platform itself
 	// linking it here for now
@@ -54,7 +54,7 @@ func NewInvestor(uname string, pwd string, Name string) (Investor, error) {
 }
 
 // InsertInvestor inserts a passed Investor object into the database
-func InsertInvestor(a Investor) error {
+func (a *Investor) Save() error {
 	db, err := OpenDB()
 	if err != nil {
 		return err
@@ -154,7 +154,7 @@ func (a *Investor) DeductVotingBalance(votes int) error {
 	// accordingly
 	var err error
 	a.VotingBalance -= votes
-	err = InsertInvestor(*a)
+	err = a.Save()
 	if err != nil {
 		return err
 	}
@@ -167,7 +167,7 @@ func (a *Investor) AddVotingBalance(votes int) error {
 	// TODO: use this
 	var err error
 	a.VotingBalance += votes
-	err = InsertInvestor(*a)
+	err = a.Save()
 	if err != nil {
 		return err
 	}

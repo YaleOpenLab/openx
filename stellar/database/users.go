@@ -73,12 +73,12 @@ func NewUser(uname string, pwd string, Name string) (User, error) {
 	a.LoginPassword = utils.SHA3hash(pwd) // store tha sha3 hash
 	// now we have a new User, take this and then send this struct off to be stored in the database
 	a.FirstSignedUp = utils.Timestamp()
-	err = InsertUser(a)
+	err = a.Save()
 	return a, err // since user is a meta structure, insert it and then return the function
 }
 
 // InsertUser inserts a passed User object into the database
-func InsertUser(a User) error {
+func (a *User) Save() error {
 	db, err := OpenDB()
 	if err != nil {
 		return err
@@ -115,7 +115,7 @@ func RetrieveAllUsers() ([]User, error) {
 			}
 			err := json.Unmarshal(x, &rUser)
 			if err != nil {
-				return nil
+				return err
 			}
 			arr = append(arr, rUser)
 		}
@@ -165,7 +165,7 @@ func ValidateUser(name string, pwhash string) (User, error) {
 			}
 			err := json.Unmarshal(x, &rUser)
 			if err != nil {
-				return nil
+				return err
 			}
 			// we have the User class, check names
 			if rUser.LoginUserName == name && rUser.LoginPassword == pwhash {
@@ -186,7 +186,7 @@ func (a *User) GenKeys() error {
 	if err != nil {
 		return err
 	}
-	err = InsertUser(dup)
+	err = dup.Save()
 	// a = &dup
 	return err
 }

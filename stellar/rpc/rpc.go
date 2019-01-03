@@ -101,59 +101,59 @@ func setupPingHandler() {
 	})
 }
 
-func getOpenOrders() {
-	http.HandleFunc("/orders/open", func(w http.ResponseWriter, r *http.Request) {
+func getOpenProjects() {
+	http.HandleFunc("/projects/open", func(w http.ResponseWriter, r *http.Request) {
 		checkOrigin(w, r)
 		checkGet(w, r)
-		// make a call to the db to get all orders
+		// make a call to the db to get all projects
 		// while making this call, the rpc should not be aware of the db we are using
 		// and stuff. So we need to have another route that would open the existing
 		// db, without asking for one
-		allOrders, err := database.RetrieveAllOrders()
+		allContracts, err := database.RetrieveAllProjects()
 		if err != nil {
 			errorHandler(w, r, http.StatusNotFound)
 			return
 		}
-		ordersJson, err := json.Marshal(allOrders)
+		contractsJson, err := json.Marshal(allContracts)
 		if err != nil {
 			errorHandler(w, r, http.StatusNotFound)
 			return
 		}
-		WriteToHandler(w, ordersJson)
+		WriteToHandler(w, contractsJson)
 	})
 }
 
-func getOrder() {
+func getProject() {
 	// we need to read passed the key from the URL that the user calls
-	http.HandleFunc("/orders/get", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/projects/get", func(w http.ResponseWriter, r *http.Request) {
 		checkOrigin(w, r)
 		checkGet(w, r)
 		URLPath := r.URL.Path
 		// so we now have the URL path
-		// slice "/order/" off from the URLPath
+		// slice "/project/" off from the URLPath
 		keyS := URLPath[7:]
-		// we now need to get the order corresponding to keyS
+		// we now need to get the project corresponding to keyS
 		// the rpc accepts the key as int though, so string -> int
 
 		uKey := utils.StoI(keyS)
-		order, err := database.RetrieveOrder(uKey)
+		contract, err := database.RetrieveProject(uKey)
 		if err != nil {
 			errorHandler(w, r, http.StatusNotFound)
 			return
 		}
-		orderJson, err := json.Marshal(order)
+		projectJson, err := json.Marshal(contract.Params)
 		if err != nil {
 			errorHandler(w, r, http.StatusNotFound)
 			return
 		}
-		WriteToHandler(w, orderJson)
+		WriteToHandler(w, projectJson)
 	})
 }
 
-func parseOrder(r *http.Request) (database.Order, error) {
-	// we need to create an instance of the Order
+func parseProject(r *http.Request) (database.DBParams, error) {
+	// we need to create an instance of the Project
 	// and then map values if they do exist
-	// note that we just prepare the order here and don't invest in it
+	// note that we just prepare the project here and don't invest in it
 	// for that, we need new a new investor struct and a recipient struct
 	// Index         int
 	// PanelSize     string  required
@@ -165,71 +165,73 @@ func parseOrder(r *http.Request) (database.Order, error) {
 	// INVAssetCode  string  should be set by subsequent calls
 	// DEBAssetCode  string  should be set by subsequent calls
 	// PBAssetCode   string  should be set by subsequent calls
-	// BalLeft       float64 should be equal to  totalValue since this is a new order
+	// BalLeft       float64 should be equal to  totalValue since this is a new project
 	// DateInitiated string  auto
 	// DateLastPaid  string  don't set
 
-	var prepOrder database.Order
+	var prepProject database.DBParams
 	err := r.ParseForm()
 	if err != nil {
-		return prepOrder, err
+		return prepProject, err
 	}
 	// if we're inserting this in, we need to get the next index number
 	// so that we can set this without causing some weird bugs
-	allOrders, err := database.RetrieveAllOrders()
+	allContracts, err := database.RetrieveAllProjects()
 	if err != nil {
-		return prepOrder, fmt.Errorf("Error in assigning index")
+		return prepProject, fmt.Errorf("Error in assigning index")
 	}
-	prepOrder.Index = len(allOrders) + 1
+	prepProject.Index = len(allContracts) + 1
 	if r.FormValue("PanelSize") != "" {
-		prepOrder.PanelSize = r.FormValue("PanelSize")
+		prepProject.PanelSize = r.FormValue("PanelSize")
 	} else {
 		// if this is not defined, error out
-		return prepOrder, fmt.Errorf("No PanelSize")
+		return prepProject, fmt.Errorf("No PanelSize")
 	}
 
 	if r.FormValue("TotalValue") != "" {
 		// the totlaValue passed here is a string, we need to convert to an int
 		totalValueS := utils.StoI(r.FormValue("TotalValue"))
-		prepOrder.TotalValue = totalValueS
+		prepProject.TotalValue = totalValueS
 	} else {
-		return prepOrder, fmt.Errorf("No TotalValue")
+		return prepProject, fmt.Errorf("No TotalValue")
 	}
 
 	if r.FormValue("Location") != "" {
-		prepOrder.Location = r.FormValue("Location")
+		prepProject.Location = r.FormValue("Location")
 	} else {
-		return prepOrder, fmt.Errorf("No Location")
+		return prepProject, fmt.Errorf("No Location")
 	}
 
-	prepOrder.MoneyRaised = 0
+	prepProject.MoneyRaised = 0
 
 	if r.FormValue("Metadata") != "" {
-		prepOrder.Metadata = r.FormValue("Metadata")
+		prepProject.Metadata = r.FormValue("Metadata")
 	}
 
-	prepOrder.Live = true
+	prepProject.Funded = true
 	// set the codes later while setting up stuff, need rpc calls for those as well
-	prepOrder.BalLeft = float64(0)
-	prepOrder.DateInitiated = utils.Timestamp()
-	return prepOrder, nil
+	prepProject.BalLeft = float64(0)
+	prepProject.DateInitiated = utils.Timestamp()
+	return prepProject, nil
 }
 
-func insertOrder() {
-	// this should be a post method since you want to accetp an order and then insert
+func insertProject() {
+	// this should be a post method since you want to accetp an project and then insert
 	// that into the database
-	http.HandleFunc("/insert/order", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/insert/project", func(w http.ResponseWriter, r *http.Request) {
 		checkOrigin(w, r)
 		checkPost(w, r)
-		var prepOrder database.Order
-		prepOrder, err := parseOrder(r)
+		var prepContract database.Project
+		var prepProject database.DBParams
+		prepProject, err := parseProject(r)
 		if err != nil {
 			errorHandler(w, r, http.StatusNotFound)
 			return
 		}
 
-		log.Println("Prepared Order:", prepOrder)
-		err = database.InsertOrder(prepOrder)
+		log.Println("Prepared Project:", prepProject)
+		prepContract.Params = prepProject
+		err = prepContract.Save()
 		if err != nil {
 			errorHandler(w, r, http.StatusNotFound)
 			return
@@ -247,14 +249,14 @@ func insertOrder() {
 }
 
 func parseInvestor(r *http.Request) (database.Investor, error) {
-	// we need to create an instance of the Order
+	// we need to create an instance of the Project
 	// Index int auto
 	// Name string required
 	// PublicKey string optional, need bool "gen"
 	// Seed string optional, need bool "gen"
 	// AmountInvested float64 0 on init
 	// FirstSignedUp string auto
-	// InvestedAssets []Order don't set
+	// InvestedAssets []Project don't set
 	// LoginUserName string required
 	// LoginPassword string required
 
@@ -307,7 +309,7 @@ func parseInvestor(r *http.Request) (database.Investor, error) {
 }
 
 func insertInvestor() {
-	// this should be a post method since you want to accetp an order and then insert
+	// this should be a post method since you want to accetp an project and then insert
 	// that into the database
 	http.HandleFunc("/investor/insert", func(w http.ResponseWriter, r *http.Request) {
 		checkOrigin(w, r)
@@ -320,7 +322,7 @@ func insertInvestor() {
 		}
 
 		log.Println("Prepared Investor:", prepInvestor)
-		err = database.InsertInvestor(prepInvestor)
+		err = prepInvestor.Save()
 		if err != nil {
 			errorHandler(w, r, http.StatusNotFound)
 			return
@@ -467,7 +469,7 @@ func getAllRecipient() {
 }
 
 func insertRecipient() {
-	// this should be a post method since you want to accept an order and then insert
+	// this should be a post method since you want to accept an project and then insert
 	// that into the database
 	http.HandleFunc("/recipient/insert", func(w http.ResponseWriter, r *http.Request) {
 		checkOrigin(w, r)
@@ -480,7 +482,7 @@ func insertRecipient() {
 		}
 
 		log.Println("Prepared Recipient:", prepRecipient)
-		err = database.InsertRecipient(prepRecipient)
+		err = prepRecipient.Save()
 		if err != nil {
 			errorHandler(w, r, http.StatusNotFound)
 			return
@@ -534,11 +536,11 @@ func recipientPassword() {
 // collect all hadnlers in one place so that we can aseemble them easily
 // there are some repeating RPCs that we would like to avoid and maybe there's some
 // nice way to group them together
-// setupOrderRPCs sets up all the RPC calls related to orders that might be used
-func setupOrderRPCs() {
-	getOpenOrders()
-	getOrder()
-	insertOrder()
+// setupProjectRPCs sets up all the RPC calls related to projects that might be used
+func setupProjectRPCs() {
+	getOpenProjects()
+	getProject()
+	insertProject()
 }
 
 // setupInvestorRPCs sets up all RPCs related to the investor
@@ -587,8 +589,8 @@ func StartServer(port string) {
 	// to access the API
 	setupBasicHandlers()
 	// setup basic handlers - / and /ping
-	setupOrderRPCs()
-	// setup order related RPCs
+	setupProjectRPCs()
+	// setup project related RPCs
 	setupInvestorRPCs()
 	// setup investor related RPCs
 	setupRecipientRPCs()

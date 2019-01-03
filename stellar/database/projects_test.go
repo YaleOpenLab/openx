@@ -9,6 +9,7 @@ import (
 )
 
 // go test --tags="all" -coverprofile=test.txt .
+// TODO: rework this entire thing after the merge between project and contract
 func TestDb(t *testing.T) {
 	var err error
 	db, err := OpenDB()
@@ -16,62 +17,62 @@ func TestDb(t *testing.T) {
 		t.Fatal(err)
 	}
 	db.Close() // close immmediately after check
-	dummy, err := NewOrder("16 inches long, 36	inches wide", 14000, "Puerto Rico", 0, "This is a test entry and if present in the database, should be deleted")
+	dummy, err := NewProject("16 inches long, 36	inches wide", 14000, "Puerto Rico", 0, "This is a test entry and if present in the database, should be deleted")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = InsertOrder(dummy)
+	err = dummy.Save()
 	if err != nil {
-		t.Errorf("Inserting an order into the database failed")
+		t.Errorf("Inserting an project into the database failed")
 		// shouldn't really fatal here, but this is in main, so we can't return
 	}
-	order, err := RetrieveOrder(dummy.Index)
+	project, err := RetrieveProject(dummy.Index)
 	if err != nil {
 		log.Println(err)
-		t.Errorf("Retrieving order from the database failed")
+		t.Errorf("Retrieving project from the database failed")
 		// again, shouldn't really fat a here, but we're in main
 	}
-	klx1, err := RetrieveOrder(1000)
+	klx1, err := RetrieveProject(1000)
 	if klx1.Index != 0 {
-		t.Fatalf("REtrieved order which does not exist, quitting!")
+		t.Fatalf("REtrieved project which does not exist, quitting!")
 	}
-	log.Println("Retrieved order: ", order)
-	if order.Index != dummy.Index {
+	log.Println("Retrieved project: ", project)
+	if project.Index != dummy.Index {
 		t.Fatalf("Indices don't match, quitting!")
 	}
-	dummy.Index = 2 // change index and try inserting another order
-	err = InsertOrder(dummy)
+	dummy.Index = 2 // change index and try inserting another project
+	err = dummy.Save()
 	if err != nil {
 		log.Println(err)
-		t.Errorf("Inserting an order into the database failed")
+		t.Errorf("Inserting an project into the database failed")
 		// shouldn't really fatal here, but this is in main, so we can't return
 	}
-	orders, err := RetrieveAllOrders()
+	projects, err := RetrieveAllProjects()
 	if err != nil {
 		log.Println("Retrieve all error: ", err)
-		t.Errorf("Failed in retrieving all orders")
+		t.Errorf("Failed in retrieving all projects")
 	}
-	if orders[0].Index != 1 {
+	if projects[0].Index != 1 {
 		t.Fatalf("Index of first element doesn't match, quitting!")
 	}
-	log.Println("Retrieved orders: ", orders)
-	oOrders, err := RetrieveAllOrders()
+	log.Println("Retrieved projects: ", projects)
+	oProjects, err := RetrieveAllProjects()
 	if err != nil {
 		log.Println("Retrieve all error: ", err)
-		t.Errorf("Failed in retrieving all originated orders")
+		t.Errorf("Failed in retrieving all originated projects")
 	}
-	if len(oOrders) != 2 {
-		t.Fatalf("Originated orders present!")
+	if len(oProjects) != 2 {
+		t.Fatalf("Originated projects present!")
 	}
-	err = DeleteOrder(dummy.Index)
+	err = DeleteProject(dummy.Index)
 	if err != nil {
 		log.Println(err)
 		t.Errorf("Deleting an  roder from the db failed")
 	}
-	log.Println("Deleted order")
-	// err = DeleteOrder(1000) this would work becuase the key will not be found and hence would not return an error
-	_, err = RetrieveOrder(dummy.Index)
+	log.Println("Deleted project")
+	// err = DeleteProject(1000) this would work becuase the key will not be found and hence would not return an error
+	_, err = RetrieveProject(dummy.Index)
 	if err == nil {
 		log.Println(err)
 		// this should fail because we're trying to read an empty key value pair
@@ -83,7 +84,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = InsertInvestor(inv)
+	err = inv.Save()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -102,7 +103,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = InsertInvestor(inv)
+	err = inv.Save()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -128,7 +129,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = InsertRecipient(recp)
+	err = recp.Save()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -147,7 +148,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = InsertRecipient(recp)
+	err = recp.Save()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -167,11 +168,11 @@ func TestDb(t *testing.T) {
 		t.Fatalf("UserNames don't match, quitting!")
 	}
 	// tests for originators
-	newCE, err := NewContractEntity("OrigTest", "pwd", "NameOrigTest", "123 ABC Street", "OrigDescription", "originator")
+	newCE, err := NewEntity("OrigTest", "pwd", "NameOrigTest", "123 ABC Street", "OrigDescription", "originator")
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = InsertContractEntity(newCE)
+	err = InsertEntity(newCE)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -192,7 +193,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = InsertContractEntity(newCE)
+	err = InsertEntity(newCE)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -204,12 +205,12 @@ func TestDb(t *testing.T) {
 		t.Fatal("Names don't match, quitting!")
 	}
 	_, err = newCE.ProposeContract("100 16x32 panels", 28000, "Puerto Rico", 6, "LEED+ Gold rated panels and this is random data out of nowhere and we supply our own devs and provide insurance guarantee as well. Dual audit maintenance upto 1 year. Returns capped as per defaults", 1, 1)
-	// 1 for retrieving martin as the recipient and 1 is the order Index
+	// 1 for retrieving martin as the recipient and 1 is the project Index
 	if err != nil {
 		log.Fatal(err)
 	}
 	// now try retrieving this proposed contract
-	rO, err := RetrieveOrder(1)
+	rO, err := RetrieveProject(1)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -224,7 +225,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if rPC.O.Index != rO.Index {
+	if rPC.P.Index != rO.Index {
 		t.Fatal("Indices don't match")
 	}
 
@@ -273,8 +274,8 @@ func TestDb(t *testing.T) {
 	if len(allUs) != 7 {
 		t.Fatal("Length of all users doesn't match")
 	}
-	// newCE, err = NewContractEntity("ConTest", "pwd", "NameConTest", "123 ABC Street", "ConDescription", "contractor")
-	rCE, err := SearchForContractEntity("ConTest", "9f88a8d40b90616715f868ed195d24e5df994f56bce34eddb022c213484eb0f220d8907e4ecd8f64ddd364cb30bb5758b32ee26541f340b930f7e5bf756907a4")
+	// newCE, err = NewEntity("ConTest", "pwd", "NameConTest", "123 ABC Street", "ConDescription", "contractor")
+	rCE, err := SearchForEntity("ConTest", "9f88a8d40b90616715f868ed195d24e5df994f56bce34eddb022c213484eb0f220d8907e4ecd8f64ddd364cb30bb5758b32ee26541f340b930f7e5bf756907a4")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -282,15 +283,15 @@ func TestDb(t *testing.T) {
 		log.Println("THe reole: ", rCE.Contractor, rCE)
 		t.Fatal("Roles don't match!")
 	}
-	trC1, err := RetrieveContractEntity(6)
+	trC1, err := RetrieveEntity(6)
 	if err != nil || trC1.U.Index == 0 {
-		t.Fatal("Contract Entity lookup failed")
+		t.Fatal("Project Entity lookup failed")
 	}
 	newCE2, err := NewOriginator("OrigTest2", "pwd", "NameOrigTest2", "123 ABC Street", "OrigDescription2")
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = InsertContractEntity(newCE2)
+	err = InsertEntity(newCE2)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -298,13 +299,13 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	allOOs, err := RetrieveAllOriginatedOrders()
+	allOOs, err := RetrieveAllOriginatedProjects()
 	if err != nil {
 		t.Fatal(err)
 	}
 	if len(allOOs) != 1 {
-		log.Println("Length of all Originated Orders: ", len(allOOs))
-		t.Fatalf("Length of all orignated orders doesn't match")
+		log.Println("Length of all Originated Projects: ", len(allOOs))
+		t.Fatalf("Length of all orignated projects doesn't match")
 	}
 	err = DeleteKeyFromBucket(recp.U.Index, RecipientBucket)
 	if err != nil {

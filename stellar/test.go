@@ -36,34 +36,30 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println("WHICH PLATFORM WOULD YOU IKE TO ENTER INTO?")
-	fmt.Println("1. Platform of Contracts")
-	fmt.Println("1. Platform of Platforms")
-	platformArg, err := utils.ScanForInt()
-	if err != nil {
-		log.Fatal(err)
-	}
-	switch platformArg {
-	case 1:
-		fmt.Println("WELCOME TO THE PLATFORM OF CONTRACTS IDEA")
-		// the platform of contracts idea is the idea of having an open platform with
-		// various stakeholders and optimizing their game theoretic objectives. Specific
-		// conttracts coud emulate the function of platforms themselves but in this case,
-		// we handle all aspects of game theory within what we have and ecnourage people
-		// to tak part in the system.
-		// TODO: think of how to implement this in a nice way
-	case 2:
-		fmt.Println("WELCOME TO THE PLATFORM OF PLATFORMS IDEA")
-		// the platform of platforms idea is similar to what we want in the opensolar
-		// project where we can implement various partners as entities in the system
-		// TODO: emulate different partners in the system that we have now.
-	}
-
-	height, err := xlm.GetTransactionHeight("46c04134b95204b82067f8753dce5bf825365ae58753effbfcc9a7cac2e14f65")
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println("HEIGHT= ", height)
+	/*
+		fmt.Println("WHICH PLATFORM WOULD YOU IKE TO ENTER INTO?")
+		fmt.Println("1. Platform of Contracts")
+		fmt.Println("1. Platform of Platforms")
+		platformArg, err := utils.ScanForInt()
+		if err != nil {
+			log.Fatal(err)
+		}
+		switch platformArg {
+		case 1:
+			fmt.Println("WELCOME TO THE PLATFORM OF CONTRACTS IDEA")
+			// the platform of contracts idea is the idea of having an open platform with
+			// various stakeholders and optimizing their game theoretic objectives. Specific
+			// conttracts coud emulate the function of platforms themselves but in this case,
+			// we handle all aspects of game theory within what we have and ecnourage people
+			// to tak part in the system.
+			// TODO: think of how to implement this in a nice way
+		case 2:
+			fmt.Println("WELCOME TO THE PLATFORM OF PLATFORMS IDEA")
+			// the platform of platforms idea is similar to what we want in the opensolar
+			// project where we can implement various partners as entities in the system
+			// TODO: emulate different partners in the system that we have now.
+		}
+	*/
 	// the memo field in stellar is particularly interesting for us wrt preserving state
 	// as shown in the preliminary pdf example. We need to test out whether we can commit
 	// more state in the memo field and find a way for third party clients to be able
@@ -105,7 +101,6 @@ func main() {
 	// and also cover breach scenarios in case the recipient doesn't pay for a specific
 	// period of time
 	// TODO: upgrade the RPC and tests to fit in with recent changes
-	// also would be nice to set something like travis / circle up
 	// TODO: also write a Makefile so that its easy for people to get started with stuff
 	fmt.Println("------------STELLAR HOUSE INVESTMENT CLI INTERFACE------------")
 
@@ -167,12 +162,14 @@ func main() {
 		for {
 			fmt.Println("------------RECIPIENT INTERFACE------------")
 			fmt.Println("----CHOOSE ONE OF THE FOLLOWING OPTIONS----")
-			fmt.Println("  1. Display all Open Orders")
+			fmt.Println("  1. Display all Open Projects")
 			fmt.Println("  2. Display my Profile")
-			fmt.Println("  3. Payback towards an Order")
+			fmt.Println("  3. Payback towards an Project")
 			fmt.Println("  4. Exchange XLM for USD")
 			fmt.Println("  5. Finalize a specific contract")
-			fmt.Println("  6. View all Originated Contracts for us")
+			fmt.Println("  6. View all Proposed Contracts")
+			fmt.Println("  7. View all Contracts")
+			fmt.Println("  8. View all Originated Contracts")
 			fmt.Println("  default: Exit")
 			optI, err := utils.ScanForInt()
 			if err != nil {
@@ -182,31 +179,31 @@ func main() {
 			switch optI {
 			case 1:
 				fmt.Println("------------LIST OF ALL AVAILABLE ORDERS------------")
-				allOrders, err := database.RetrieveAllOrders()
+				allProjects, err := database.RetrieveStage3Projects()
 				if err != nil {
-					log.Println("Error retrieving all orders from the database")
+					log.Println("Error retrieving all projects from the database")
 				}
-				PrintOrders(allOrders)
+				PrintProjects(allProjects)
 				break
 			case 2:
 				PrintRecipient(recipient)
 				break
 			case 3:
-				PrintPBOrders(recipient.ReceivedOrders)
+				PrintPBProjects(recipient.ReceivedProjects)
 				fmt.Println("WHICH ORDER DO YOU WANT TO PAY BACK TOWARDS? (ENTER ORDER NUMBER)")
-				orderNumber, err := utils.ScanForInt()
+				projectNumber, err := utils.ScanForInt()
 				if err != nil {
 					log.Println("INPUT NOT AN INTEGER, TRY AGAIN")
 					continue
 				}
-				// check if we can get the order using the order number that we have here
-				rtOrder, err := database.RetrieveOrder(orderNumber)
+				// check if we can get the project using the project number that we have here
+				rtContract, err := database.RetrieveProject(projectNumber)
 				if err != nil {
-					log.Println("Couldn't retrieve order, try again!")
+					log.Println("Couldn't retrieve project, try again!")
 					continue
 				}
-				// so we can retrieve the order using the order Index, nice
-				PrintPBOrder(rtOrder)
+				// so we can retrieve the project using the project Index, nice
+				PrintPBProject(rtContract.Params)
 				fmt.Println("HOW MUCH DO YOU WANT TO PAYBACK?")
 				paybackAmount, err := utils.ScanForStringWithCheckI()
 				if err != nil {
@@ -223,13 +220,14 @@ func main() {
 					fmt.Println("YOU HAVE DECIDED TO CANCEL THIS ORDER")
 					break
 				}
-				fmt.Printf("PAYING BACK %s TOWARDS ORDER NUMBER: %d\n", paybackAmount, rtOrder.Index) // use the rtOrder here instead of using orderNumber from long ago
+				fmt.Printf("PAYING BACK %s TOWARDS ORDER NUMBER: %d\n", paybackAmount, rtContract.Params.Index) // use the rtContract.Params here instead of using projectNumber from long ago
 				// now we need to call back the payback function to payback the asset
 				// Here, we will simply payback the DEBTokens that was sent to us earlier
-				if rtOrder.DEBAssetCode == "" {
-					log.Fatal("Order not found")
+				if rtContract.Params.DEBAssetCode == "" {
+					log.Fatal("Project not found")
 				}
-				err = recipient.Payback(rtOrder, rtOrder.DEBAssetCode, platformPublicKey, paybackAmount)
+
+				err = recipient.Payback(rtContract, rtContract.Params.DEBAssetCode, platformPublicKey, paybackAmount)
 				// TODO: right now, the payback asset directly sends back, change
 				if err != nil {
 					log.Println("PAYBACK TX FAILED, PLEASE TRY AGAIN!")
@@ -237,22 +235,21 @@ func main() {
 				}
 				// now send back the PBToken from the platform to the issuer
 				// this function is optional and can be deleted in case we don't need PBAssets
-				err = assets.SendPBAsset(rtOrder, recipient.U.PublicKey, paybackAmount, platformSeed, platformPublicKey)
+				err = assets.SendPBAsset(rtContract.Params, recipient.U.PublicKey, paybackAmount, platformSeed, platformPublicKey)
 				if err != nil {
 					log.Println("PBAsset sending back FAILED, PLEASE TRY AGAIN!")
 					break
 				}
-				// check if we can get the order using the order number that we have here
-				rtOrder, err = database.RetrieveOrder(orderNumber)
+				rtContract, err = database.RetrieveProject(projectNumber)
 				if err != nil {
-					log.Println("Couldn't retrieve updated order, check again!")
+					log.Println("Couldn't retrieve updated project, check again!")
 					continue
 				}
 				// we should update the local slice to keep track of the changes here
-				recipient.UpdateOrderSlice(rtOrder)
-				// so we can retrieve the order using the order Index, nice
-				PrintOrder(rtOrder)
-				// print the order in a nice way
+				recipient.UpdateProjectSlice(rtContract.Params)
+				// so we can retrieve the project using the project Index, nice
+				PrintParams(rtContract.Params)
+				// print the project in a nice way
 				break
 			case 4:
 				log.Println("Enter the amount you want to convert into STABLEUSD")
@@ -283,6 +280,12 @@ func main() {
 				// 2. Completion time
 				// 3. Select Manually
 				fmt.Println("CHOOSE THE METRIC BY WHICH YOU WANT TO SELECT THE WINNING BID: ")
+				allContracts, err := database.RetrieveAllProposedProjects(recipient.U.Index)
+				// retrieve all contracts towards the project
+				if err != nil {
+					log.Fatal(err)
+				}
+				PrintProjects(allContracts)
 				fmt.Println("1. PRICE")
 				fmt.Println("2. COMPLETION TIME (IN YEARS)")
 				fmt.Println("3. SELECT MANUALLY")
@@ -292,62 +295,39 @@ func main() {
 					fmt.Println("Couldn't read user input")
 					break
 				}
-				contractorsForBid, contractsForBid, err := database.RetrieveAllProposedContracts(4)
-				// retrieve all contracts towards the order
-				if err != nil {
-					log.Fatal(err)
-				}
 				// the length of the above two slices must be the same
-				for i, contractor := range contractorsForBid {
+				for _, elem := range allContracts {
 					log.Println("======================================================================================")
-					log.Println("Contractor Name: ", contractor.U.Name)
-					log.Println("Proposed Contract: ")
-					PrintProposedContract(contractsForBid[i].O)
+					PrintProject(elem)
 				}
 				switch opt {
 				case 1:
 					fmt.Println("YOU'VE CHOSEN TO SELECT BY LEAST PRICE")
 					// here we assume that the timeout period for the auction is up and that
 					// price is the winning metric of a specific bid, like in traditional contract
-					bestContract, err := database.SelectContractByPrice(contractsForBid)
+					bestContract, err := database.SelectContractByPrice(allContracts)
 					if err != nil {
 						log.Fatal(err)
 					}
 					log.Println("BEST CONTRACT IS: ")
-					PrintProposedContract(bestContract.O)
-					// now we need to replace the originator order with this order, order
-					// indices are same, so we can insert
-					bestContract.O.Stage = 3
-					err = database.InsertOrder(bestContract.O)
-					if err != nil {
-						log.Println(err)
-						break
-					}
+					// we need the contractor who proposed this contract
+					database.FinalizeProject(bestContract)
+					PrintProject(bestContract)
 					// now at this point, we need to mark this specific contract as completed.
 					// do we set a flag? db entry? how do we do that
 				case 2:
 					fmt.Println("YOU'VE CHOSEN TO SELECT BY NUMBER OF YEARS")
-					bestContract, err := database.SelectContractByTime(contractsForBid)
+					bestContract, err := database.SelectContractByTime(allContracts)
 					if err != nil {
 						log.Fatal(err)
 					}
 					log.Println("BEST CONTRACT IS: ")
-					PrintProposedContract(bestContract.O)
-					// finalize this order and open to investors
-					bestContract.O.Stage = 3
-					err = database.InsertOrder(bestContract.O)
-					if err != nil {
-						log.Println(err)
-						break
-					}
+					database.FinalizeProject(bestContract)
+					PrintProject(bestContract)
 				case 3:
-					fmt.Println("HERE ARE A LIST OF AVAILABLE OPTIONS, CHOOSE ANY ONE CONTRACT")
-					for i, contractor := range contractorsForBid {
-						log.Println("======================================================================================")
-						log.Println("CONTRACTOR NUMBER: ", i+1) // +1 to skip 0
-						log.Println("Contractor Name: ", contractor.U.Name)
-						log.Println("Proposed Contract: ")
-						PrintProposedContract(contractsForBid[i].O)
+					for i, contract := range allContracts {
+						log.Println("BEST BID CHOICE NUMBER: ", i)
+						PrintProject(contract)
 					}
 					fmt.Println("ENTER YOUR OPTION AS A NUMBER")
 					opt, err := utils.ScanForInt()
@@ -355,28 +335,10 @@ func main() {
 						log.Println(err)
 						break
 					}
-					// here we get the ContractEntity that the user has chosen
-					// we need to insert the ContractEntity's Proposed Order
-					contractsForBid[opt-1].O.Stage = 3
-					err = database.InsertOrder(contractsForBid[opt-1].O) // -1  for order index
-					if err != nil {
-						log.Println(err)
-						break
-					}
-					// now we need to set the winning order's chosen flag as true
-					bestOrder, err := database.RetrieveOrder(opt)
-					if err != nil {
-						log.Println(err)
-						break
-					}
-					// we also need to udpate the contract, once differences are clearer
-					err = database.InsertOrder(bestOrder)
-					if err != nil {
-						log.Println(err)
-						break
-					}
-					// TODO: have a flag filter
-					log.Println("Marking order number: ", opt, " as completed")
+					log.Println("BEST CONTRACT IS: ")
+					// we need the contractor who proposed this contract
+					database.FinalizeProject(allContracts[opt])
+					PrintProject(allContracts[opt])
 				default:
 					break
 				}
@@ -387,7 +349,7 @@ func main() {
 				// investors. Investors would ideally want to know more about what they are
 				// investing in, so I guess the second option is better for now.
 			case 6:
-				fmt.Println("LIST OF ALL ORIGINATED CONTRACTS THAT HAVE US AS THE RECIPIENT")
+				fmt.Println("LIST OF ALL PROPOSED PROJECTS FOR US")
 				// first, we need to get all the contract entities
 				allOriginators, err := database.RetrieveAllContractEntities("originator")
 				if err != nil {
@@ -396,11 +358,11 @@ func main() {
 				}
 				for _, originator := range allOriginators {
 					// we need to go through their proposed contracts
-					PrintContractEntity(originator)
+					PrintEntity(originator)
 					// print info about hte originator
 					for _, oContract := range originator.ProposedContracts {
-						// preint info about the originator's various proposed contracts
-						PrintOrder(oContract.O)
+						// print info about the originator's various proposed contracts
+						PrintParams(oContract.Params)
 					}
 				}
 				// now here, the person ahs had a chance to see all the proposed contracts
@@ -418,37 +380,49 @@ func main() {
 					log.Println(err)
 					continue
 				}
-
+				// TODO: spin the below thing into its own function so that we can have an RPC route for that
 				for _, originator := range allOriginators {
 					if originator.U.Index == originatorIndex {
 						// we have the correct originator
 						log.Println("Found originator")
-						for _, contract := range originator.ProposedContracts {
-							if contract.O.Index == contractIndex {
-								// we found the correct contract as well
-								// insert the contract order into the database
-								log.Println("Found Contract")
-								contract.O.Origin = true
-								contract.O.Stage = 1
-								err = database.InsertOrder(contract.O)
+						for _, originatorProposedContract := range originator.ProposedContracts {
+							if originatorProposedContract.Params.Index == contractIndex {
+								// we found the correct contract as well, need to originate a contract now
+								// ie store this in the contractors database
+								log.Println("Found Project, creating a new origin contract now")
+								newContract, err := database.NewOriginProject(originatorProposedContract.Params, originator)
 								if err != nil {
 									fmt.Println(err)
 									break
 								}
-								// now we need to update the contractor as well since we set the
-								// origin flag to true
-								err = database.InsertContractEntity(originator)
+								err = newContract.Save()
 								if err != nil {
 									fmt.Println(err)
 									break
 								}
-								// TODO: we don't need to delete the originated orders since we
+								// TODO: we don't need to delete the originated projects since we
 								// mark this one to be the originated contract,  others are not
 								// displayed to the investors / contractors
 							}
 						}
 					}
 				}
+			case 7:
+				fmt.Println("PRINTING ALL CONTRACTS: ")
+				allContracts, err := database.RetrieveAllProjects()
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				PrintProjects(allContracts)
+			case 8:
+				fmt.Println("PRINTING ALL ORIGINATED CONTRACTS: ")
+				x, err := database.RetrieveOriginatedProjects()
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				PrintProjects(x)
 			default: // this default is for the larger switch case
 				// check whether he wants to go back to the display all screen again
 				fmt.Println("DO YOU REALLY WANT TO EXIT? (PRESS Y TO CONFIRM)")
@@ -495,14 +469,14 @@ func main() {
 				case 1:
 					// TODO: add voting scheme here
 					fmt.Println("LIST OF ALL ORIGINATED ORDERS: ")
-					originatedOrders, err := database.RetrieveAllOriginatedOrders()
+					originatedProjects, err := database.RetrieveOriginatedProjects()
 					if err != nil {
 						log.Println(err)
 						break
 					}
-					PrintOrders(originatedOrders)
+					PrintProjects(originatedProjects)
 				case 2:
-					PrintContractEntity(contractor)
+					PrintEntity(contractor)
 				case 3:
 					fmt.Println("YOU HAVE CHOSEN TO CREATE A NEW PROPOSED CONTRACT")
 					err = ProposeContractPrompt(&contractor)
@@ -518,7 +492,7 @@ func main() {
 				fmt.Println("WHAT WOULD YOU LIKE TO DO?")
 				fmt.Println("  1. PROPOSE A CONTRACT TO A RECIPIENT")
 				fmt.Println("  2. VIEW PROFILE")
-				fmt.Println("  3. VIEW ORIGINATED CONTRACTS")
+				fmt.Println("  3. VIEW ALL MY PROPOSED CONTRACTS")
 				optI, err = utils.ScanForInt()
 				if err != nil {
 					log.Println(err)
@@ -533,9 +507,9 @@ func main() {
 						continue
 					}
 				case 2:
-					PrintContractEntity(contractor)
+					PrintEntity(contractor)
 				case 3:
-					err = PrintAllOriginatedContracts(&contractor)
+					err = PrintAllProposedContracts(&contractor)
 					if err != nil {
 						fmt.Println(err)
 						fmt.Println("RETURNING BACK TO THE MAIN LOOP")
@@ -556,20 +530,20 @@ func main() {
 				}
 			}
 		}
-		PrintContractEntity(contractor)
+		PrintEntity(contractor)
 	} else {
 		// User is an investor
 		for {
 			// Main investor loop
 			fmt.Println("------------INVESTOR INTERFACE------------")
 			fmt.Println("----CHOOSE ONE OF THE FOLLOWING OPTIONS----")
-			fmt.Println("  1. Display all Open Orders")
+			fmt.Println("  1. Display all Open Projects")
 			fmt.Println("  2. Display my Profile")
-			fmt.Println("  3. Invest in an Order")
+			fmt.Println("  3. Invest in an Project")
 			fmt.Println("  4. Display All Balances")
 			fmt.Println("  5. Exchange XLM for USD")
-			fmt.Println("  6. Display all Originated Orders")
-			fmt.Println("  7. Vote towards a specific proposed order")
+			fmt.Println("  6. Display all Originated Projects")
+			fmt.Println("  7. Vote towards a specific proposed project")
 			fmt.Println("  default: Exit")
 			optI, err := utils.ScanForInt()
 			if err != nil {
@@ -579,11 +553,11 @@ func main() {
 			switch optI {
 			case 1:
 				fmt.Println("------------LIST OF ALL AVAILABLE ORDERS------------")
-				allOrders, err := database.RetrieveAllOrders()
+				allProjects, err := database.RetrieveStage3Projects()
 				if err != nil {
-					log.Println("Error retrieving all orders from the database")
+					log.Println("Error retrieving all projects from the database")
 				}
-				PrintOrders(allOrders)
+				PrintProjects(allProjects)
 				break
 			case 2:
 				PrintInvestor(investor)
@@ -596,12 +570,12 @@ func main() {
 					break
 				}
 				// now the user has decided to invest in the asset with index uInput
-				// we need to retrieve the order and ask for confirmation
-				uOrder, err := database.RetrieveOrder(oNumber)
+				// we need to retrieve the project and ask for confirmation
+				uContract, err := database.RetrieveProject(oNumber)
 				if err != nil {
-					log.Fatal("Order with specified index not found in the database")
+					log.Println("Couldn't retrieve project, try again!")
+					continue
 				}
-				PrintOrder(uOrder)
 				fmt.Println(" HOW MUCH DO YOU WANT TO INVEST?")
 				investmentAmount, err := utils.ScanForStringWithCheckI()
 				if err != nil {
@@ -653,7 +627,7 @@ func main() {
 				if balance == "" {
 					// means we need to setup an account first
 					// Generating a keypair on stellar doesn't mean that you can send funds to it
-					// you need to call the CreateAccount method in order to be able to send funds
+					// you need to call the CreateAccount method in project to be able to send funds
 					// to it
 					log.Println("Investor balance empty, refilling: ", investor.U.PublicKey)
 					_, _, err = xlm.SendXLMCreateAccount(investor.U.PublicKey, consts.DonateBalance, platformSeed)
@@ -677,7 +651,7 @@ func main() {
 					}
 				}
 
-				recipient := uOrder.OrderRecipient
+				recipient := uContract.Params.ProjectRecipient
 				// from here on, reference recipient
 				balance, err = xlm.GetNativeBalance(recipient.U.PublicKey)
 				if err != nil {
@@ -686,7 +660,7 @@ func main() {
 				if balance == "" {
 					// means we need to setup an account first
 					// Generating a keypair on stellar doesn't mean that you can send funds to it
-					// you need to call the CreateAccount method in order to be able to send funds
+					// you need to call the CreateAccount method in project to be able to send funds
 					// to it
 					_, _, err = xlm.SendXLMCreateAccount(recipient.U.PublicKey, consts.DonateBalance, platformSeed)
 					if err != nil {
@@ -708,20 +682,19 @@ func main() {
 						log.Fatal(err)
 					}
 				}
-				log.Println("The issuer's public key and private key are: ", platformPublicKey, " ", platformSeed)
 				log.Println("The investor's public key and private key are: ", investor.U.PublicKey, " ", investor.U.Seed)
 				log.Println("The recipient's public key and private key are: ", recipient.U.PublicKey, " ", recipient.U.Seed)
 
-				log.Println(&investor, &recipient, investmentAmount, uOrder)
+				log.Println(&investor, &recipient, investmentAmount, uContract.Params)
 				// so now we have three entities setup, so we create the assets and invest in them
-				cOrder, err := assets.InvestInOrder(platformPublicKey, platformSeed, &investor, &recipient, investmentAmount, uOrder) // assume payback period is 5
+				cProject, err := assets.InvestInProject(platformPublicKey, platformSeed, &investor, &recipient, investmentAmount, uContract) // assume payback period is 5
 				if err != nil {
 					log.Println(err)
 					continue
 				}
 				fmt.Println("YOUR ORDER HAS BEEN CONFIRMED: ")
-				PrintOrder(cOrder)
-				fmt.Println("PLEASE CHECK A BLOCKHAIN EXPLORER TO CONFIRM BALANCES TO CONFIRM: ")
+				PrintParams(cProject)
+				fmt.Println("PLEASE CHECK A BLOCKCHAIN EXPLORER TO CONFIRM BALANCES: ")
 				fmt.Println("https://testnet.steexp.com/account/" + investor.U.PublicKey + "#balances")
 				break
 			case 4:
@@ -758,21 +731,21 @@ func main() {
 				}
 
 				log.Println("tx hash for sent xlm: ", hash, "pubkey: ", investor.U.PublicKey)
-				rpc.StartServer("8080") // run this in order to check whether the go routine is running
+				rpc.StartServer("8080") // run this in project to check whether the go routine is running
 				break
 			case 6:
 				// TODO: add voting scheme here
-				fmt.Println("LIST OF ALL ORIGINATED ORDERS: ")
-				originatedOrders, err := database.RetrieveAllOriginatedOrders()
+				fmt.Println("LIST OF ALL ORIGINATED Contracts: ")
+				originatedProjects, err := database.RetrieveOriginatedProjects()
 				if err != nil {
 					log.Println(err)
 					break
 				}
-				PrintOrders(originatedOrders)
+				PrintProjects(originatedProjects)
 			case 7:
-				// this is the case where an investor can vote on a particular proposed order
+				// this is the case where an investor can vote on a particular proposed project
 				fmt.Println("LIST OF ALL PROPOSED ORDERS: ")
-				// now the investor can only put his funds in one potential proposed order.
+				// now the investor can only put his funds in one potential proposed project.
 				// his voting weight will be the amount of stableUSD that he has.
 				// for testing, we assume that weights are 100 each.
 				allContractors, err := database.RetrieveAllContractEntities("contractor")
@@ -784,13 +757,13 @@ func main() {
 					log.Println("CONTRACTOR NAME: ", contractor.U.Name)
 					log.Println("CONTRACTOR INDEX: ", contractor.U.Index)
 					for _, contract := range allContractors[index].ProposedContracts {
-						PrintOrder(contract.O)
+						PrintParams(contract.Params)
 					}
 				}
 				// we need to get the vote of the investor here, but how do you get the vote?
 				// because you have two arrays, you need to have some kind of a common index
 				// between the two and then you can fetch the stuff back.
-				// lets ask for the user index, which will be unique and the order number,
+				// lets ask for the user index, which will be unique and the project number,
 				// which can get us the specific proposed contract
 				fmt.Println("WHICH INVESTOR DO YOU WANT TO VOTE TOWARDS?")
 				vote, err := utils.ScanForInt()
@@ -800,20 +773,20 @@ func main() {
 				}
 				log.Println("You have voted for user number: ", vote)
 				fmt.Println("WHICH PROPOSED ORDER OF HIS DO YOU WANT TO VOTE TOWARDS?")
-				pOrderN, err := utils.ScanForInt()
+				pProjectN, err := utils.ScanForInt()
 				if err != nil {
 					log.Println(err)
 					break
 				}
-				// we need to go through the contractor's proposed orders to find an order
-				// with index pOrderN
+				// we need to go through the contractor's proposed projects to find an project
+				// with index pProjectN
 				for _, elem := range allContractors {
 					if elem.U.Index == vote {
 						// we have the specific contractor
 						log.Println("FOUND CONTRACTOR!")
 						for i, pcs := range elem.ProposedContracts {
-							if pcs.O.Index == pOrderN {
-								// this is the order the user voted towards
+							if pcs.Params.Index == pProjectN {
+								// this is the project the user voted towards
 								// need to update the vote stuff
 								// check whether user has already voted
 								// now an investor can vote  up to a max of his balance in StableUSD
@@ -831,13 +804,13 @@ func main() {
 									log.Println("Can't vote with an amount greater than available balance")
 									break
 								}
-								pcs.O.Votes += votes
-								// an order's votes can exceed the total amount because it only shows
+								pcs.Params.Votes += votes
+								// an project's votes can exceed the total amount because it only shows
 								// that many people feel that contract to be doing the right thing
 								elem.ProposedContracts[i] = pcs
-								// and we need to update the contractor, not order, since these
-								// are not in the order database yet)
-								err = database.InsertContractEntity(elem)
+								// and we need to update the contractor, not project, since these
+								// are not in the project database yet)
+								err = database.InsertEntity(elem)
 								if err != nil {
 									log.Println(err)
 									break

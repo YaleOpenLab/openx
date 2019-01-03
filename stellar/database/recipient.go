@@ -15,8 +15,8 @@ import (
 )
 
 type Recipient struct {
-	ReceivedOrders []Order
-	// ReceivedOrders denotes the orders that have been received by the recipient
+	ReceivedProjects []DBParams
+	// ReceivedProjects denotes the projects that have been received by the recipient
 	// instead of storing the PaybackAssets and the DebtAssets, we store this
 	U User
 	// user related functions are called as an instance directly
@@ -35,7 +35,7 @@ func NewRecipient(uname string, pwd string, Name string) (Recipient, error) {
 
 // all operations are mostly similar to that of the Recipient class
 // TODO: merge where possible by adding an extra bucket param
-func InsertRecipient(a Recipient) error {
+func (a *Recipient) Save() error {
 	db, err := OpenDB()
 	if err != nil {
 		return err
@@ -120,28 +120,6 @@ func ValidateRecipient(name string, pwhash string) (Recipient, error) {
 	return RetrieveRecipient(user.Index)
 }
 
-// DeleteKeyFromBucket deletes a given key from the bucket _bucketName
-func DeleteKeyFromBucket(key int, bucketName []byte) error {
-	// deleting order might be dangerous since that would mess with the RetrieveAllOrders
-	// function, have it in here for now, don't do too much with it / fiox retrieve all
-	// to handle this case
-	db, err := OpenDB()
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-	err = db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(bucketName)
-		err := b.Delete(utils.ItoB(key))
-		if err != nil {
-			return err
-		}
-		log.Println("Deleted recipient with key: ", key)
-		return nil
-	})
-	return err
-}
-
 // SendAssetToIssuer sends back assets fromn an asset holder to the issuer of the asset.
 func (a *Recipient) SendAssetToIssuer(assetName string, issuerPubkey string, amount string) (int32, string, error) {
 	// SendAssetToIssuer is FROM recipient / investor to issuer
@@ -188,7 +166,7 @@ func (a *Recipient) SendAssetToIssuer(assetName string, issuerPubkey string, amo
 // The oracle price of
 // electricity cost is a lower bound (since the government would not like it if people
 // default on their payments). Anything below the lower bound gets a warning in
-// order for people to pay more, we could also have a threshold mechanism that says
+// project for people to pay more, we could also have a threshold mechanism that says
 // if a person constantly defaults for more than half the owed amount for three
 // consecutive months, we sell power directly to the grid. THis could also be used
 // for a rating system, where the frontend UI can have a rating based on whether
@@ -202,8 +180,9 @@ func (a *Recipient) SendAssetToIssuer(assetName string, issuerPubkey string, amo
 // that it sent and if not, raises the dispute since the forward DEBToken payment
 // is on chain and resolves the dispute itself using existing off chain legal frameworks
 // (issued bonds, agreements, etc)
-func (a *Recipient) Payback(uOrder Order, assetName string, issuerPubkey string, amount string) error {
+func (a *Recipient) Payback(uContract Project, assetName string, issuerPubkey string, amount string) error {
 	// once we have the stablecoin here, we can remove the assetName
+	uProject := uContract.Params
 	StableBalance, err := xlm.GetAssetBalance(a.U.PublicKey, "STABLEUSD")
 	// checks for the stablecoin asset
 	if err != nil {
@@ -218,7 +197,7 @@ func (a *Recipient) Payback(uOrder Order, assetName string, issuerPubkey string,
 	}
 
 	if utils.StoF(amount) > utils.StoF(StableBalance) {
-		// check whether the recipient has enough StableUSD tokens in order to make
+		// check whether the recipient has enough StableUSD tokens in project to make
 		// this happen
 		log.Println("YOU CAN'T SEND AN AMOUNT MORE THAN WHAT YOU HAVE")
 		return fmt.Errorf("YOU CAN'T SEND AN AMOUNT MORE THAN WHAT YOU HAVE")
@@ -269,15 +248,15 @@ func (a *Recipient) Payback(uOrder Order, assetName string, issuerPubkey string,
 		log.Println("You've paid exactly what is required for this month. Payback period remains as usual")
 	}
 	// we need to update the database here
-	// no need to retrieve this order again because we have it already
-	uOrder.BalLeft -= paidAmount
-	uOrder.DateLastPaid = utils.Timestamp()
-	if uOrder.BalLeft == 0 {
+	// no need to retrieve this project again because we have it already
+	uProject.BalLeft -= paidAmount
+	uProject.DateLastPaid = utils.Timestamp()
+	if uProject.BalLeft == 0 {
 		log.Println("YOU HAVE PAID OFF THIS ASSET, TRANSFERRING OWNERSHIP OF ASSET TO YOU")
 		// don't delete the asset from the received assets list, we still need it so
 		// that we c an look back and find out hwo many assets this particular
 		// enttiy has been invested in, have a leaderboard kind of thing, etc.
-		uOrder.PaidOff = true
+		uProject.PaidOff = true
 		// we should call neighbourly or some ohter partner here to transfer assets
 		// using the bond they provide us with
 		// the nice part here is that the recipient can not pay off more than what is
@@ -285,22 +264,23 @@ func (a *Recipient) Payback(uOrder Order, assetName string, issuerPubkey string,
 	}
 	// balLeft must be updated on the server side and can be challenged easily
 	// if there's some discrepancy since the tx's are on the blockchain
-	err = InsertOrder(uOrder)
+	uContract.Params = uProject // update this before saving
+	err = uContract.Save()
 	if err != nil {
 		return err
 	}
-	err = a.UpdateOrderSlice(uOrder)
+	err = a.UpdateProjectSlice(uProject)
 	if err != nil {
 		return err
 	}
-	fmt.Println("UPDATED ORDER: ", uOrder)
+	fmt.Println("UPDATED ORDER: ", uProject)
 	return err
 }
 
-func (a *Recipient) UpdateOrderSlice(order Order) error {
+func (a *Recipient) UpdateProjectSlice(project DBParams) error {
 	pos := -1
-	for i, mem := range a.ReceivedOrders {
-		if mem.DEBAssetCode == order.DEBAssetCode {
+	for i, mem := range a.ReceivedProjects {
+		if mem.DEBAssetCode == project.DEBAssetCode {
 			log.Println("Rewriting the thing in our copy")
 			// rewrite the thing in memory that we have
 			pos = i
@@ -309,8 +289,8 @@ func (a *Recipient) UpdateOrderSlice(order Order) error {
 	}
 	if pos != -1 {
 		// rewrite the thing in memory
-		a.ReceivedOrders[pos] = order
-		err := InsertRecipient(*a)
+		a.ReceivedProjects[pos] = project
+		err := a.Save()
 		return err
 	}
 	return fmt.Errorf("Not found")

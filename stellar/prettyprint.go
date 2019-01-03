@@ -7,36 +7,42 @@ import (
 	"github.com/stellar/go/protocols/horizon"
 )
 
-// PrintOrder pretty prints orders
-func PrintOrders(orders []database.Order) {
-	for _, order := range orders {
-		PrintOrder(order)
+func PrintProjects(projects []database.Project) {
+	for _, project := range projects {
+		PrintProject(project)
 	}
 }
 
-// PrintOrder pretty prints orders
-func PrintOrder(order database.Order) {
-	fmt.Println("    ORDER NUMBER: ", order.Index)
-	fmt.Println("          Panel Size: ", order.PanelSize)
-	fmt.Println("          Total Value: ", order.TotalValue)
-	fmt.Println("          Location: ", order.Location)
-	fmt.Println("          Money Raised: ", order.MoneyRaised)
-	fmt.Println("          Metadata: ", order.Metadata)
-	fmt.Println("          Years: ", order.Years)
-	// if order.Live {
-	fmt.Println("          Investor Asset Code: ", order.INVAssetCode)
-	fmt.Println("          Debt Asset Code: ", order.DEBAssetCode)
-	fmt.Println("          Payback Asset Code: ", order.PBAssetCode)
-	fmt.Println("          Balance Left: ", order.BalLeft)
+func PrintProject(project database.Project) {
+	PrintParams(project.Params)
+	fmt.Println(" PROJECT INDEX: ", project.Params.Index)
+	fmt.Println(" PROJECT ORIGINATOR: ", project.Originator)
+	fmt.Println(" PROJECT CONTRACTOR: ", project.Contractor)
+	fmt.Println(" PROJECT STAGE: ", project.Stage)
+}
+
+// PrintParams pretty prints projects
+func PrintParams(params database.DBParams) {
+	fmt.Println("    ORDER NUMBER: ", params.Index)
+	fmt.Println("          Panel Size: ", params.PanelSize)
+	fmt.Println("          Total Value: ", params.TotalValue)
+	fmt.Println("          Location: ", params.Location)
+	fmt.Println("          Money Raised: ", params.MoneyRaised)
+	fmt.Println("          Metadata: ", params.Metadata)
+	fmt.Println("          Years: ", params.Years)
+	// if project.Live {
+	fmt.Println("          Investor Asset Code: ", params.INVAssetCode)
+	fmt.Println("          Debt Asset Code: ", params.DEBAssetCode)
+	fmt.Println("          Payback Asset Code: ", params.PBAssetCode)
+	fmt.Println("          Balance Left: ", params.BalLeft)
 	// }
-	fmt.Println("          Date Initiated: ", order.DateInitiated)
-	// if order.Live {
-	fmt.Println("          Date Last Paid: ", order.DateLastPaid)
+	fmt.Println("          Date Initiated: ", params.DateInitiated)
+	// if project.Live {
+	fmt.Println("          Date Last Paid: ", params.DateLastPaid)
 	// }
-	fmt.Println("          Recipient: ", order.OrderRecipient)
-	fmt.Println("          Investors: ", order.OrderInvestors)
-	fmt.Println("          Votes: ", order.Votes)
-	fmt.Println("          Order Stage: ", order.Stage)
+	fmt.Println("          Recipient: ", params.ProjectRecipient)
+	fmt.Println("          Investors: ", params.ProjectInvestors)
+	fmt.Println("          Votes: ", params.Votes)
 }
 
 // PrintInvestor pretty prints investors
@@ -56,67 +62,54 @@ func PrintRecipient(recipient database.Recipient) {
 	fmt.Println("    WELCOME BACK ", recipient.U.Name)
 	fmt.Println("          Your Public Key is: ", recipient.U.PublicKey)
 	fmt.Println("          Your Seed is: ", recipient.U.Seed)
-	fmt.Println("          Your Received Assets are: ", recipient.ReceivedOrders)
+	fmt.Println("          Your Received Assets are: ", recipient.ReceivedProjects)
 	fmt.Println("          Your Username is: ", recipient.U.LoginUserName)
 	fmt.Println("          Your Password hash is: ", recipient.U.LoginPassword)
 }
 
-// PrintOrder pretty prints orders
-func PrintPBOrders(orders []database.Order) {
-	for _, order := range orders {
-		if !order.PaidOff {
-			fmt.Println("    ORDER NUMBER: ", order.Index)
-			fmt.Println("          Panel Size: ", order.PanelSize)
-			fmt.Println("          Total Value: ", order.TotalValue)
-			fmt.Println("          Location: ", order.Location)
-			fmt.Println("          Money Raised: ", order.MoneyRaised)
-			fmt.Println("          Metadata: ", order.Metadata)
-			fmt.Println("          Years: ", order.Years)
-			fmt.Println("          Investor Asset Code: ", order.INVAssetCode)
-			fmt.Println("          Debt Asset Code: ", order.DEBAssetCode)
-			fmt.Println("          Payback Asset Code: ", order.PBAssetCode)
-			fmt.Println("          Balance Left: ", order.BalLeft)
-			fmt.Println("          Date Initiated: ", order.DateInitiated)
-			fmt.Println("          Date Last Paid: ", order.DateLastPaid)
-			fmt.Println("          Investors: ", order.OrderInvestors)
+// PrintParams pretty prints projects
+func PrintPBProjects(projects []database.DBParams) {
+	for _, project := range projects {
+		if !project.PaidOff {
+			fmt.Println("    ORDER NUMBER: ", project.Index)
+			fmt.Println("          Panel Size: ", project.PanelSize)
+			fmt.Println("          Total Value: ", project.TotalValue)
+			fmt.Println("          Location: ", project.Location)
+			fmt.Println("          Money Raised: ", project.MoneyRaised)
+			fmt.Println("          Metadata: ", project.Metadata)
+			fmt.Println("          Years: ", project.Years)
+			fmt.Println("          Investor Asset Code: ", project.INVAssetCode)
+			fmt.Println("          Debt Asset Code: ", project.DEBAssetCode)
+			fmt.Println("          Payback Asset Code: ", project.PBAssetCode)
+			fmt.Println("          Balance Left: ", project.BalLeft)
+			fmt.Println("          Date Initiated: ", project.DateInitiated)
+			fmt.Println("          Date Last Paid: ", project.DateLastPaid)
+			fmt.Println("          Investors: ", project.ProjectInvestors)
 		}
 	}
 }
 
-// PrintOrder pretty prints orders
-func PrintPBOrder(order database.Order) {
-	fmt.Println("    ORDER NUMBER: ", order.Index)
-	fmt.Println("          Panel Size: ", order.PanelSize)
-	fmt.Println("          Total Value: ", order.TotalValue)
-	fmt.Println("          Location: ", order.Location)
-	fmt.Println("          Money Raised: ", order.MoneyRaised)
-	fmt.Println("          Metadata: ", order.Metadata)
-	fmt.Println("          Years: ", order.Years)
-	fmt.Println("          Investor Asset Code: ", order.INVAssetCode)
-	fmt.Println("          Debt Asset Code: ", order.DEBAssetCode)
-	fmt.Println("          Payback Asset Code: ", order.PBAssetCode)
-	fmt.Println("          Balance Left: ", order.BalLeft)
-	fmt.Println("          Date Initiated: ", order.DateInitiated)
-	fmt.Println("          Date Last Paid: ", order.DateLastPaid)
+// PrintParams pretty prints projects
+func PrintPBProject(project database.DBParams) {
+	fmt.Println("    ORDER NUMBER: ", project.Index)
+	fmt.Println("          Panel Size: ", project.PanelSize)
+	fmt.Println("          Total Value: ", project.TotalValue)
+	fmt.Println("          Location: ", project.Location)
+	fmt.Println("          Money Raised: ", project.MoneyRaised)
+	fmt.Println("          Metadata: ", project.Metadata)
+	fmt.Println("          Years: ", project.Years)
+	fmt.Println("          Investor Asset Code: ", project.INVAssetCode)
+	fmt.Println("          Debt Asset Code: ", project.DEBAssetCode)
+	fmt.Println("          Payback Asset Code: ", project.PBAssetCode)
+	fmt.Println("          Balance Left: ", project.BalLeft)
+	fmt.Println("          Date Initiated: ", project.DateInitiated)
+	fmt.Println("          Date Last Paid: ", project.DateLastPaid)
 }
 
-func PrintDEB(orders []database.Order) {
-	for _, order := range orders {
-		fmt.Println("          Debt Asset Code: ", order.DEBAssetCode)
+func PrintDEB(projects []database.DBParams) {
+	for _, project := range projects {
+		fmt.Println("          Debt Asset Code: ", project.DEBAssetCode)
 	}
-}
-
-// PrintOrder pretty prints orders
-func PrintProposedContract(order database.Order) {
-	fmt.Println("          Proposed Contract: ")
-	fmt.Println("          Panel Size: ", order.PanelSize)
-	fmt.Println("          Total Value: ", order.TotalValue)
-	fmt.Println("          Location: ", order.Location)
-	fmt.Println("          Metadata: ", order.Metadata)
-	fmt.Println("          Years: ", order.Years)
-	fmt.Println("          Date Initiated: ", order.DateInitiated)
-	fmt.Println("          Recipient: ", order.OrderRecipient)
-	fmt.Println("          Investors: ", order.OrderInvestors)
 }
 
 func PrintUser(user database.User) {
@@ -127,7 +120,7 @@ func PrintUser(user database.User) {
 	fmt.Println("          Your Password hash is: ", user.LoginPassword)
 }
 
-func PrintContractEntity(a database.ContractEntity) {
+func PrintEntity(a database.Entity) {
 	fmt.Println("    WELCOME BACK ", a.U.Name)
 	fmt.Println("    			 Your Index is ", a.U.Index)
 	fmt.Println("          Your Public Key is: ", a.U.PublicKey)

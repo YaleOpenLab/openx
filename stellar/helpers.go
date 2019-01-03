@@ -12,7 +12,7 @@ import (
 func ValidateInputs() {
 	if (opts.RecYears != 0) && !(opts.RecYears == 3 || opts.RecYears == 5 || opts.RecYears == 7) {
 		// right now payoff periods are limited, I guess they don't need to be,
-		// but in this case just are. Call this function later when orders are being
+		// but in this case just are. Call this function later when projects are being
 		// created. Maybe don't need to restrict this at all?
 		log.Fatal(fmt.Errorf("Number of years not supported"))
 	}
@@ -22,13 +22,13 @@ func StartPlatform() (string, string, error) {
 	var publicKey string
 	var seed string
 	ValidateInputs()
-	allOrders, err := database.RetrieveAllOrders()
+	allContracts, err := database.RetrieveAllProjects()
 	if err != nil {
-		log.Println("Error retrieving all orders from the database")
+		log.Println("Error retrieving all projects from the database")
 		return publicKey, seed, err
 	}
 
-	if len(allOrders) == 0 {
+	if len(allContracts) == 0 {
 		log.Println("Populating database with test values")
 		err = InsertDummyData()
 		if err != nil {
@@ -75,7 +75,7 @@ func NewInvestorPrompt() error {
 		log.Println("FAILED TO SETUP ACCOUNT, TRY AGAIN")
 		return err
 	}
-	err = database.InsertInvestor(investor)
+	err = investor.Save()
 	if err != nil {
 		log.Println("FAILED TO SETUP ACCOUNT, TRY AGAIN")
 		return err
@@ -95,7 +95,7 @@ func NewRecipientPrompt() error {
 		log.Println("FAILED TO SETUP ACCOUNT, TRY AGAIN")
 		return err
 	}
-	err = database.InsertRecipient(recipient)
+	err = recipient.Save()
 	if err != nil {
 		log.Println("FAILED TO SETUP ACCOUNT, TRY AGAIN")
 		return err
@@ -103,12 +103,12 @@ func NewRecipientPrompt() error {
 	return nil
 }
 
-func LoginPrompt() (database.Investor, database.Recipient, database.ContractEntity, bool, bool, error) {
+func LoginPrompt() (database.Investor, database.Recipient, database.Entity, bool, bool, error) {
 	rbool := false
 	cbool := false
 	var investor database.Investor
 	var recipient database.Recipient
-	var contractor database.ContractEntity
+	var contractor database.Entity
 	fmt.Println("---------SELECT YOUR ROLE---------")
 	fmt.Println(" i. INVESTOR")
 	fmt.Println(" r. RECIPIENT")
@@ -156,7 +156,7 @@ func LoginPrompt() (database.Investor, database.Recipient, database.ContractEnti
 			return investor, recipient, contractor, rbool, cbool, err
 		}
 	} else if cbool {
-		contractor, err = database.RetrieveContractEntity(user.Index)
+		contractor, err = database.RetrieveEntity(user.Index)
 		if err != nil {
 			return investor, recipient, contractor, rbool, cbool, err
 		}
@@ -169,7 +169,7 @@ func LoginPrompt() (database.Investor, database.Recipient, database.ContractEnti
 	return investor, recipient, contractor, rbool, cbool, nil
 }
 
-func OriginContractPrompt(contractor *database.ContractEntity) error {
+func OriginContractPrompt(contractor *database.Entity) error {
 	fmt.Println("YOU HAVE DECIDED TO PROPOSE A NEW CONTRACT")
 	fmt.Println("ENTER THE PANEL SIZE")
 	panelSize, err := utils.ScanForString()
@@ -205,40 +205,49 @@ func OriginContractPrompt(contractor *database.ContractEntity) error {
 	if err != nil {
 		return err
 	}
-	// order insertion is done by the  above function, so we needn't call the database to do it again for us
-	PrintOrder(originContract.O)
+	// project insertion is done by the  above function, so we needn't call the database to do it again for us
+	PrintProject(originContract)
 	return nil
 }
 
-func PrintAllOriginatedContracts(contractor *database.ContractEntity) error {
-	fmt.Println("LIST OF ALL ORIGINATED CONTRACTS: ")
+func PrintAllProposedContracts(contractor *database.Entity) error {
+	fmt.Println("LIST OF ALL PROPOSED CONTRACTS: ")
 	// the database would be updated each time the user has an originated
 	// contract, so we need to retrieve the contractor struct again
-	contractorDup, err := database.RetrieveContractEntity(contractor.U.Index)
+	contractorDup, err := database.RetrieveEntity(contractor.U.Index)
 	if err != nil {
 		return err
 	}
 	for _, elem := range contractor.ProposedContracts {
-		PrintOrder(elem.O)
+		PrintParams(elem.Params)
 	}
 	contractor = &contractorDup
 	return nil
 }
 
-func ProposeContractPrompt(contractor *database.ContractEntity) error {
+func ProposeContractPrompt(contractor *database.Entity) error {
 	fmt.Println("YOU HAVE DECIDED TO PROPOSE A NEW CONTRACT")
-	fmt.Println("ENTER THE PANEL SIZE")
-	panelSize, err := utils.ScanForString()
+	fmt.Println("ENTER THE PROJECT INDEX")
+	contractIndex, err := utils.ScanForInt()
 	if err != nil {
 		return err
 	}
+	// we need to check if this contract index exists and retrieve
+	rContract, err := database.RetrieveProject(contractIndex)
+	if err != nil {
+		return err
+	}
+	// TODO: PRint CONTRACTS HERE
+	log.Println("YOUR CONTRACT IS: ")
+	PrintProject(rContract)
+	if rContract.Params.Index == 0 || rContract.Stage != 1 {
+		// prevent people form porposing contracts for non originated contracts
+		return fmt.Errorf("Invalid contract index")
+	}
+	panelSize := rContract.Params.PanelSize
+	location := rContract.Params.Location
 	fmt.Println("ENTER THE COST OF PROJECT")
 	totalValue, err := utils.ScanForInt()
-	if err != nil {
-		return err
-	}
-	fmt.Println("ENTER THE LOCATION OF PROJECT")
-	location, err := utils.ScanForString()
 	if err != nil {
 		return err
 	}
@@ -257,16 +266,11 @@ func ProposeContractPrompt(contractor *database.ContractEntity) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("ENTER THE ORDER INDEX")
-	orderIndex, err := utils.ScanForInt()
+	originContract, err := contractor.ProposeContract(panelSize, totalValue, location, years, metadata, recIndex, contractIndex)
 	if err != nil {
 		return err
 	}
-	originContract, err := contractor.ProposeContract(panelSize, totalValue, location, years, metadata, recIndex, orderIndex)
-	if err != nil {
-		return err
-	}
-	// order insertion is done by the  above function, so we needn't call the database to do it again for us
-	PrintOrder(originContract.O)
+	// project insertion is done by the  above function, so we needn't call the database to do it again for us
+	PrintParams(originContract.Params)
 	return nil
 }
