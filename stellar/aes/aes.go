@@ -33,7 +33,10 @@ func Encrypt(data []byte, passphrase string) ([]byte, error) {
 
 // Decrypt decrypts a given data stream with a given passphrase
 func Decrypt(data []byte, passphrase string) ([]byte, error) {
-	key := []byte(utils.SHA3hash(passphrase)[96:128]) // last 32 characters in hash
+	tempParam := utils.SHA3hash(passphrase)
+	log.Println("TEMPPARS: ", tempParam)
+	key := []byte(tempParam[96:128]) // last 32 characters in hash
+	log.Println("KET: ", key)
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		log.Println("Error while initializing cipher decryption")

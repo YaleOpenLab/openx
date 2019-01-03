@@ -27,6 +27,7 @@ func TestAes(t *testing.T) {
 		t.Fatalf("Didn't catch error during decrpytion, exiting!")
 	}
 	data := []byte("This is test data")
+	log.Println("ULKBKPASQWEQWEQWE")
 	err = EncryptFile("test_files/text.txt", data, password)
 	if err != nil {
 		t.Fatal(err)

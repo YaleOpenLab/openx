@@ -166,10 +166,10 @@ func main() {
 			fmt.Println("  2. Display my Profile")
 			fmt.Println("  3. Payback towards an Project")
 			fmt.Println("  4. Exchange XLM for USD")
-			fmt.Println("  5. Finalize a specific contract")
-			fmt.Println("  6. View all Proposed Contracts")
-			fmt.Println("  7. View all Contracts")
-			fmt.Println("  8. View all Originated Contracts")
+			fmt.Println("  5. Finalize a specific Project")
+			fmt.Println("  6. View all Proposed Projects")
+			fmt.Println("  7. View all Projects")
+			fmt.Println("  8. View all Originated Projects")
 			fmt.Println("  default: Exit")
 			optI, err := utils.ScanForInt()
 			if err != nil {
@@ -178,7 +178,7 @@ func main() {
 			}
 			switch optI {
 			case 1:
-				fmt.Println("------------LIST OF ALL AVAILABLE ORDERS------------")
+				fmt.Println("------------LIST OF ALL AVAILABLE PROJECTS------------")
 				allProjects, err := database.RetrieveStage3Projects()
 				if err != nil {
 					log.Println("Error retrieving all projects from the database")
@@ -210,17 +210,17 @@ func main() {
 					log.Println(err)
 					break
 				}
-				fmt.Printf(" DO YOU WANT TO CONFIRM THAT YOU WANT TO PAYBACK %s TOWARDS THIS ORDER? (PRESS N IF YOU DON'T WANT TO)\n", paybackAmount)
+				fmt.Printf(" DO YOU WANT TO CONFIRM THAT YOU WANT TO PAYBACK %s TOWARDS THIS PROJECT? (PRESS N IF YOU DON'T WANT TO)\n", paybackAmount)
 				confirmOpt, err := utils.ScanForString()
 				if err != nil {
 					log.Println(err)
 					break
 				}
 				if confirmOpt == "N" || confirmOpt == "n" {
-					fmt.Println("YOU HAVE DECIDED TO CANCEL THIS ORDER")
+					fmt.Println("YOU HAVE DECIDED TO CANCEL THE PAYBACK ORDER")
 					break
 				}
-				fmt.Printf("PAYING BACK %s TOWARDS ORDER NUMBER: %d\n", paybackAmount, rtContract.Params.Index) // use the rtContract.Params here instead of using projectNumber from long ago
+				fmt.Printf("PAYING BACK %s TOWARDS PROJECT NUMBER: %d\n", paybackAmount, rtContract.Params.Index) // use the rtContract.Params here instead of using projectNumber from long ago
 				// now we need to call back the payback function to payback the asset
 				// Here, we will simply payback the DEBTokens that was sent to us earlier
 				if rtContract.Params.DEBAssetCode == "" {
@@ -374,7 +374,7 @@ func main() {
 					log.Println(err)
 					continue
 				}
-				fmt.Println("ENTER THE CONTRACT INDEX")
+				fmt.Println("ENTER THE PROJECT INDEX")
 				contractIndex, err := utils.ScanForInt()
 				if err != nil {
 					log.Println(err)
@@ -408,7 +408,7 @@ func main() {
 					}
 				}
 			case 7:
-				fmt.Println("PRINTING ALL CONTRACTS: ")
+				fmt.Println("PRINTING ALL PROJECTS: ")
 				allContracts, err := database.RetrieveAllProjects()
 				if err != nil {
 					log.Println(err)
@@ -416,7 +416,7 @@ func main() {
 				}
 				PrintProjects(allContracts)
 			case 8:
-				fmt.Println("PRINTING ALL ORIGINATED CONTRACTS: ")
+				fmt.Println("PRINTING ALL ORIGINATED PROJECTS: ")
 				x, err := database.RetrieveOriginatedProjects()
 				if err != nil {
 					log.Println(err)
@@ -457,9 +457,9 @@ func main() {
 			fmt.Println("-------------WELCOME BACK CONTRACTOR-------------")
 			for {
 				fmt.Println("WHAT WOULD YOU LIKE TO DO?")
-				fmt.Println("  1. VIEW ALL ORIGINATED CONTRACTS")
+				fmt.Println("  1. VIEW ALL ORIGINATED PROJECTS")
 				fmt.Println("  2. VIEW PROFILE")
-				fmt.Println("  3. CREATE A PROPOSED CONTRACT")
+				fmt.Println("  3. CREATE A PROPOSED PROJECT")
 				optI, err := utils.ScanForInt()
 				if err != nil {
 					log.Println(err)
@@ -468,7 +468,7 @@ func main() {
 				switch optI {
 				case 1:
 					// TODO: add voting scheme here
-					fmt.Println("LIST OF ALL ORIGINATED ORDERS: ")
+					fmt.Println("LIST OF ALL ORIGINATED PROJECTS: ")
 					originatedProjects, err := database.RetrieveOriginatedProjects()
 					if err != nil {
 						log.Println(err)
@@ -478,7 +478,7 @@ func main() {
 				case 2:
 					PrintEntity(contractor)
 				case 3:
-					fmt.Println("YOU HAVE CHOSEN TO CREATE A NEW PROPOSED CONTRACT")
+					fmt.Println("YOU HAVE CHOSEN TO CREATE A NEW PROPOSED PROJECT")
 					err = ProposeContractPrompt(&contractor)
 					if err != nil {
 						log.Println(err)
@@ -490,9 +490,9 @@ func main() {
 			fmt.Println("-------------WELCOME BACK ORIGINATOR-------------")
 			for {
 				fmt.Println("WHAT WOULD YOU LIKE TO DO?")
-				fmt.Println("  1. PROPOSE A CONTRACT TO A RECIPIENT")
+				fmt.Println("  1. PROPOSE A PROJECT TO A RECIPIENT")
 				fmt.Println("  2. VIEW PROFILE")
-				fmt.Println("  3. VIEW ALL MY PROPOSED CONTRACTS")
+				fmt.Println("  3. VIEW ALL MY PROPOSED PROJECTS")
 				optI, err = utils.ScanForInt()
 				if err != nil {
 					log.Println(err)
@@ -563,7 +563,7 @@ func main() {
 				PrintInvestor(investor)
 				break
 			case 3:
-				fmt.Println("----WHICH ORDER DO YOU WANT TO INVEST IN? (ENTER ORDER NUMBER WITHOUT SPACES)----")
+				fmt.Println("----WHICH PROJECT DO YOU WANT TO INVEST IN? (ENTER ORDER NUMBER WITHOUT SPACES)----")
 				oNumber, err := utils.ScanForInt()
 				if err != nil {
 					fmt.Println("Couldn't read user input")
@@ -576,6 +576,7 @@ func main() {
 					log.Println("Couldn't retrieve project, try again!")
 					continue
 				}
+				PrintProject(uContract)
 				fmt.Println(" HOW MUCH DO YOU WANT TO INVEST?")
 				investmentAmount, err := utils.ScanForStringWithCheckI()
 				if err != nil {
@@ -621,10 +622,7 @@ func main() {
 				fmt.Printf("Platform seed is: %s and platform's publicKey is %s", platformSeed, platformPublicKey)
 				log.Println("Investor's publickey is: ", investor.U.PublicKey)
 				balance, err = xlm.GetNativeBalance(investor.U.PublicKey)
-				if err != nil {
-					log.Fatal(err)
-				}
-				if balance == "" {
+				if balance == "" || err != nil {
 					// means we need to setup an account first
 					// Generating a keypair on stellar doesn't mean that you can send funds to it
 					// you need to call the CreateAccount method in project to be able to send funds
@@ -654,10 +652,7 @@ func main() {
 				recipient := uContract.Params.ProjectRecipient
 				// from here on, reference recipient
 				balance, err = xlm.GetNativeBalance(recipient.U.PublicKey)
-				if err != nil {
-					log.Fatal(err)
-				}
-				if balance == "" {
+				if balance == "" || err != nil {
 					// means we need to setup an account first
 					// Generating a keypair on stellar doesn't mean that you can send funds to it
 					// you need to call the CreateAccount method in project to be able to send funds
@@ -692,7 +687,7 @@ func main() {
 					log.Println(err)
 					continue
 				}
-				fmt.Println("YOUR ORDER HAS BEEN CONFIRMED: ")
+				fmt.Println("YOUR PROJECT INVESTMENT HAS BEEN CONFIRMED: ")
 				PrintParams(cProject)
 				fmt.Println("PLEASE CHECK A BLOCKCHAIN EXPLORER TO CONFIRM BALANCES: ")
 				fmt.Println("https://testnet.steexp.com/account/" + investor.U.PublicKey + "#balances")
@@ -735,7 +730,7 @@ func main() {
 				break
 			case 6:
 				// TODO: add voting scheme here
-				fmt.Println("LIST OF ALL ORIGINATED Contracts: ")
+				fmt.Println("LIST OF ALL ORIGINATED PROJECTS: ")
 				originatedProjects, err := database.RetrieveOriginatedProjects()
 				if err != nil {
 					log.Println(err)
@@ -765,14 +760,14 @@ func main() {
 				// between the two and then you can fetch the stuff back.
 				// lets ask for the user index, which will be unique and the project number,
 				// which can get us the specific proposed contract
-				fmt.Println("WHICH INVESTOR DO YOU WANT TO VOTE TOWARDS?")
+				fmt.Println("WHICH CONTRACTOR DO YOU WANT TO VOTE TOWARDS?")
 				vote, err := utils.ScanForInt()
 				if err != nil {
 					log.Println(err)
 					break
 				}
 				log.Println("You have voted for user number: ", vote)
-				fmt.Println("WHICH PROPOSED ORDER OF HIS DO YOU WANT TO VOTE TOWARDS?")
+				fmt.Println("WHICH PROPOSED CONTRACT OF HIS DO YOU WANT TO VOTE TOWARDS?")
 				pProjectN, err := utils.ScanForInt()
 				if err != nil {
 					log.Println(err)

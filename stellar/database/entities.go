@@ -240,23 +240,3 @@ func SearchForEntity(name string, pwhash string) (Entity, error) {
 	})
 	return a, err
 }
-
-// you need to have a lock in period beyond which contractors can not post what
-// stuff they want. now, how do you choose which contractor wins? Ideally,
-// the school would want the most stuff but you need to vet which contracts are good
-// and not. In this case, we use prive as the metric, but this can be anything
-// or even chosen by the school / demo bidding auction by investors and then
-// take the one which has the most demo votes
-// Also, in contracts, when contractors are proposing a contract towards something,
-// we need to be sure that they are not followign the price and are instead giving
-// their best quote possible. In this case, a blind auction method is the best
-// and that's what we have right now. If we want this to be an auction as well, we
-// need to have a specific date of sorts where all the contractors can propose
-// contracts immmediately, without latency.
-// Also, have some kind of deposit for Contractors (5% or something) so that they
-// don't go back on their investment and slash their ivnestment by 10% if this happens
-// and distribute that amount to the recipient directly and reduce everyone's bids
-// by that amount to account for the change in underlying Project
-// also, a given Contractor right now is allowed only for one final bid for blind
-// auction advantages (no price disvocery, etc). If we want to change this, we must
-// have an auction handler that will take care of this.

@@ -4,6 +4,11 @@ import (
 	"fmt"
 )
 
+// you need to have a lock in period beyond which contractors can not post what
+// stuff they want. now, how do you choose which contractor wins? Ideally,
+// the school would want the most stuff but you need to vet which contracts are good
+// and not.
+
 type ContractAuction struct {
 	// TODO: this struct isn't used yet as it needs handlers and stuff, but when
 	// we move off main.go for testinge, this must be  used in order to make stuff

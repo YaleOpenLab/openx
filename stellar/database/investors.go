@@ -70,10 +70,8 @@ func (a *Investor) Save() error {
 		return b.Put([]byte(utils.ItoB(a.U.Index)), encoded)
 		// but why do we index based on Index?
 		// this is because we do want to enumerate through all investors, which can not be done
-		// in a name based construction. But this makes search ahrder, since now you
-		// all entries to find something as simple as a password. But if this is the
-		// only use case that exists, we index by password hash and then get data only
-		// when the user requests it. Nice data protection as well
+		// in a name based construction. But this makes search harder, since now you
+		// all entries to find something as simple as a password.
 		// TODO: discuss indexing by pwd hash and implications. For small no of entries,
 		// we can s till tierate over all the entries.
 	})
@@ -99,7 +97,7 @@ func RetrieveInvestor(key int) (Investor, error) {
 	return inv, err
 }
 
-// RetrieveAllInvestors gets a list of all investor in the database
+// RetrieveAllInvestors gets a list of all investors in the database
 func RetrieveAllInvestors() ([]Investor, error) {
 	// this route is broken because it reads through keys sequentially
 	// need to see keys until the length of the users database
@@ -125,7 +123,6 @@ func RetrieveAllInvestors() ([]Investor, error) {
 				continue
 			}
 			err := json.Unmarshal(x, &rInvestor)
-			//if err != nil && rInvestor.Live == false {
 			if err != nil {
 				// we've reached the end of input, so this is not an error
 				// ideal error would be "unexpected JSON input" or something similar
@@ -190,23 +187,8 @@ func (a *Investor) TrustAsset(asset build.Asset, limit string) (string, error) {
 		return "", err
 	}
 
-	trustTxe, err := trustTx.Sign(a.U.Seed)
-	if err != nil {
-		return "", err
-	}
-
-	trustTxeB64, err := trustTxe.Base64()
-	if err != nil {
-		return "", err
-	}
-
-	tx, err := xlm.TestNetClient.SubmitTransaction(trustTxeB64)
-	if err != nil {
-		return "", err
-	}
-
-	log.Println("Trusted asset tx: ", tx.Hash)
-	return tx.Hash, nil
+	_, hash, err := xlm.SendTx(a.U.Seed, trustTx)
+	return hash, err
 }
 
 // CanInvest checks whether an investor has the required balance to invest in a project

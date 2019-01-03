@@ -8,12 +8,11 @@ import (
 )
 
 // defines the name of the buckets that we interact with.
-var ProjectsBucket = []byte("projects")
+var ProjectsBucket = []byte("Projects")
 var InvestorBucket = []byte("Investors")
 var RecipientBucket = []byte("Recipients")
 var PlatformBucket = []byte("Platforms")
 var ContractorBucket = []byte("Contractors")
-var ContractBucket = []byte("Contracts")
 var UserBucket = []byte("Users")
 
 // TODO: need locks over this to ensure no one's using the db while we are
@@ -45,10 +44,6 @@ func OpenDB() (*bolt.DB, error) {
 			return err
 		}
 		_, err = tx.CreateBucketIfNotExists(UserBucket) // the projects bucket contains all our projects
-		if err != nil {
-			return err
-		}
-		_, err = tx.CreateBucketIfNotExists(ContractBucket) // the projects bucket contains all our projects
 		if err != nil {
 			return err
 		}

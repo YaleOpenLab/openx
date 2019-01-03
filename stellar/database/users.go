@@ -10,7 +10,7 @@ import (
 	"github.com/boltdb/bolt"
 )
 
-// the user structure  houses all entities that are of type "User". This contains
+// the user structure houses all entities that are of type "User". This contains
 // commonly used functions so that we need not repeat the ssame thing for every instance.
 type User struct {
 	Index int

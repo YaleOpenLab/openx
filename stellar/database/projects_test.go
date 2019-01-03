@@ -9,7 +9,6 @@ import (
 )
 
 // go test --tags="all" -coverprofile=test.txt .
-// TODO: rework this entire thing after the merge between project and contract
 func TestDb(t *testing.T) {
 	var err error
 	db, err := OpenDB()
@@ -17,31 +16,87 @@ func TestDb(t *testing.T) {
 		t.Fatal(err)
 	}
 	db.Close() // close immmediately after check
-	dummy, err := NewProject("16 inches long, 36	inches wide", 14000, "Puerto Rico", 0, "This is a test entry and if present in the database, should be deleted")
+	var project1 DBParams
+	var dummy Project
+	// investors entity testing over, test recipients below in the same way
+	// now we repeat the same tests for all other entities
+	// connections and the other for non RPC connections
+	// now we repeat the same tests for all other entities
+	// connections and the other for non RPC connections
+	inv, err := NewInvestor("inv1", "blah", "cool")
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = inv.Save()
 	if err != nil {
 		t.Fatal(err)
 	}
 
+	recp, err := NewRecipient("user1", "blah", "cool")
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = recp.Save()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	newCE2, err := NewOriginator("OrigTest2", "pwd", "NameOrigTest2", "123 ABC Street", "OrigDescription2")
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = InsertEntity(newCE2)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// tests for contractors
+	newCE, err := NewContractor("ConTest", "pwd", "NameConTest", "123 ABC Street", "ConDescription") // use and test this as well
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = InsertEntity(newCE)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	project1.Index = 1
+	project1.PanelSize = "100 1000 sq.ft homes each with their own private spaces for luxury"
+	project1.TotalValue = 14000
+	project1.Location = "India Basin, San Francisco"
+	project1.MoneyRaised = 0
+	project1.Metadata = "India Basin is an upcoming creative project based in San Francisco that seeks to invite innovators from all around to participate"
+	project1.Funded = false
+	project1.INVAssetCode = ""
+	project1.DEBAssetCode = ""
+	project1.PBAssetCode = ""
+	project1.DateInitiated = ""
+	project1.Years = 3
+	project1.ProjectRecipient = recp
+	dummy.Params = project1
+	dummy.Contractor = newCE
+	dummy.Originator = newCE2
+	dummy.Stage = 3
 	err = dummy.Save()
 	if err != nil {
 		t.Errorf("Inserting an project into the database failed")
 		// shouldn't really fatal here, but this is in main, so we can't return
 	}
-	project, err := RetrieveProject(dummy.Index)
+	project, err := RetrieveProject(dummy.Params.Index)
 	if err != nil {
 		log.Println(err)
 		t.Errorf("Retrieving project from the database failed")
 		// again, shouldn't really fat a here, but we're in main
 	}
 	klx1, err := RetrieveProject(1000)
-	if klx1.Index != 0 {
+	if klx1.Params.Index != 0 {
 		t.Fatalf("REtrieved project which does not exist, quitting!")
 	}
 	log.Println("Retrieved project: ", project)
-	if project.Index != dummy.Index {
+	if project.Params.Index != dummy.Params.Index {
 		t.Fatalf("Indices don't match, quitting!")
 	}
-	dummy.Index = 2 // change index and try inserting another project
+	dummy.Params.Index = 2 // change index and try inserting another project
 	err = dummy.Save()
 	if err != nil {
 		log.Println(err)
@@ -53,7 +108,7 @@ func TestDb(t *testing.T) {
 		log.Println("Retrieve all error: ", err)
 		t.Errorf("Failed in retrieving all projects")
 	}
-	if projects[0].Index != 1 {
+	if projects[0].Params.Index != 1 {
 		t.Fatalf("Index of first element doesn't match, quitting!")
 	}
 	log.Println("Retrieved projects: ", projects)
@@ -65,29 +120,20 @@ func TestDb(t *testing.T) {
 	if len(oProjects) != 2 {
 		t.Fatalf("Originated projects present!")
 	}
-	err = DeleteProject(dummy.Index)
+	err = DeleteKeyFromBucket(dummy.Params.Index, ProjectsBucket)
 	if err != nil {
 		log.Println(err)
 		t.Errorf("Deleting an  roder from the db failed")
 	}
 	log.Println("Deleted project")
 	// err = DeleteProject(1000) this would work becuase the key will not be found and hence would not return an error
-	_, err = RetrieveProject(dummy.Index)
-	if err == nil {
+	pp1, err := RetrieveProject(dummy.Params.Index)
+	if err == nil && pp1.Params.Index != 0 {
 		log.Println(err)
 		// this should fail because we're trying to read an empty key value pair
 		t.Errorf("Found deleted entry, quitting!")
 	}
-	// now we repeat the same tests for all other entities
-	// connections and the other for non RPC connections
-	inv, err := NewInvestor("inv1", "blah", "cool")
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = inv.Save()
-	if err != nil {
-		t.Fatal(err)
-	}
+
 	rInv, err := RetrieveInvestor(1)
 	if err != nil {
 		t.Fatal(err)
@@ -97,6 +143,7 @@ func TestDb(t *testing.T) {
 		t.Fatalf("Invalid Investor exists")
 	}
 	if rInv.U.Name != inv.U.Name || rInv.U.LoginUserName != inv.U.LoginUserName || rInv.U.LoginPassword != inv.U.LoginPassword {
+		log.Println(rInv.U.Name , inv.U.Name)
 		t.Fatalf("Usernames don't match, quitting!")
 	}
 	inv, err = NewInvestor("inv2", "b921f75437050f0f7d2caba6303d165309614d524e3d7e6bccf313f39d113468d30e1e2ac01f91f6c9b66c083d393f49b3177345311849edb026bb86ee624be0", "cool")
@@ -122,17 +169,7 @@ func TestDb(t *testing.T) {
 	if allInvestors[0].U.Name != "cool" || allInvestors[0].U.LoginUserName != "inv1" {
 		t.Fatalf("UserNames don't match, quitting!")
 	}
-	// investors entity testing over, test recipients below in the same way
-	// now we repeat the same tests for all other entities
-	// connections and the other for non RPC connections
-	recp, err := NewRecipient("user1", "blah", "cool")
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = recp.Save()
-	if err != nil {
-		t.Fatal(err)
-	}
+
 	rRecp, err := RetrieveRecipient(recp.U.Index)
 	if err != nil {
 		t.Fatal(err)
@@ -168,7 +205,7 @@ func TestDb(t *testing.T) {
 		t.Fatalf("UserNames don't match, quitting!")
 	}
 	// tests for originators
-	newCE, err := NewEntity("OrigTest", "pwd", "NameOrigTest", "123 ABC Street", "OrigDescription", "originator")
+	newCE, err = NewEntity("OrigTest", "pwd", "NameOrigTest", "123 ABC Street", "OrigDescription", "originator")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -185,18 +222,10 @@ func TestDb(t *testing.T) {
 		log.Println(acz1)
 		t.Fatalf("Category which does not exist exists?")
 	}
-	if len(allOrigs) != 1 || allOrigs[0].U.Name != "NameOrigTest" {
+	if len(allOrigs) != 2 || allOrigs[0].U.Name != "NameOrigTest2" {
 		t.Fatal("Names don't match, quitting!")
 	}
-	// tests for contractors
-	newCE, err = NewContractor("ConTest", "pwd", "NameConTest", "123 ABC Street", "ConDescription") // use and test this as well
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = InsertEntity(newCE)
-	if err != nil {
-		t.Fatal(err)
-	}
+
 	allConts, err := RetrieveAllContractEntities("contractor")
 	if err != nil {
 		t.Fatal(err)
@@ -209,28 +238,33 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	// now try retrieving this proposed contract
-	rO, err := RetrieveProject(1)
+	rOx, err := RetrieveProject(2)
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, allPCs, err := RetrieveAllProposedContracts(1)
+	rOx.Params.ProjectRecipient = recp
+	err = rOx.Save()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	allPCs, err := RetrieveAllProposedProjects(6)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if len(allPCs) != 1 { // add check for stuff here
-		log.Println("LEN ASDASD", len(allPCs))
+		log.Println("LEN all proposed projects", len(allPCs))
 	}
-	rPC, err := FindInKey(1, allPCs)
+	rPC, err := FindInKey(2, allPCs)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if rPC.P.Index != rO.Index {
+	if rPC.Params.Index != rOx.Params.Index {
 		t.Fatal("Indices don't match")
 	}
 
 	// now come the failure cases which should fail and we shall catch the case when they don't
-	_, allPCs, err = RetrieveAllProposedContracts(2)
+	allPCs, err = RetrieveAllProposedProjects(2)
 	if len(allPCs) != 0 {
 		log.Println("LEBNGRG: ", len(allPCs))
 		t.Fatalf("Retrieving a missing contract succeeds, quitting!")
@@ -271,7 +305,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(allUs) != 7 {
+	if len(allUs) != 8 {
 		t.Fatal("Length of all users doesn't match")
 	}
 	// newCE, err = NewEntity("ConTest", "pwd", "NameConTest", "123 ABC Street", "ConDescription", "contractor")
@@ -283,23 +317,20 @@ func TestDb(t *testing.T) {
 		log.Println("THe reole: ", rCE.Contractor, rCE)
 		t.Fatal("Roles don't match!")
 	}
-	trC1, err := RetrieveEntity(6)
+	trC1, err := RetrieveEntity(7)
 	if err != nil || trC1.U.Index == 0 {
 		t.Fatal("Project Entity lookup failed")
 	}
-	newCE2, err := NewOriginator("OrigTest2", "pwd", "NameOrigTest2", "123 ABC Street", "OrigDescription2")
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = InsertEntity(newCE2)
-	if err != nil {
-		t.Fatal(err)
-	}
-	_, err = newCE2.OriginContract("100 16x24 panels on a solar rooftop", 14000, "Puerto Rico", 5, "ABC School in XYZ peninsula", 1) // 1 is the index for martin
+	tmpx1, err := newCE2.OriginContract("100 16x24 panels on a solar rooftop", 14000, "Puerto Rico", 5, "ABC School in XYZ peninsula", 1) // 1 is the index for martin
 	if err != nil {
 		log.Fatal(err)
 	}
-	allOOs, err := RetrieveAllOriginatedProjects()
+	tmpx1.Stage = 1
+	err = tmpx1.Save()
+	if err != nil {
+		t.Fatal(err)
+	}
+	allOOs, err := RetrieveOriginatedProjects() // this checks for stage 1 and not zero like the thing installed above
 	if err != nil {
 		t.Fatal(err)
 	}

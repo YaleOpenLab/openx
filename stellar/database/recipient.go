@@ -139,22 +139,7 @@ func (a *Recipient) SendAssetToIssuer(assetName string, issuerPubkey string, amo
 		return -11, "", err
 	}
 
-	paymentTxe, err := paymentTx.Sign(a.U.Seed)
-	if err != nil {
-		return -11, "", err
-	}
-
-	paymentTxeB64, err := paymentTxe.Base64()
-	if err != nil {
-		return -11, "", err
-	}
-
-	tx, err := xlm.TestNetClient.SubmitTransaction(paymentTxeB64)
-	if err != nil {
-		return -11, "", err
-	}
-
-	return tx.Ledger, tx.Hash, nil
+	return xlm.SendTx(a.U.Seed, paymentTx)
 }
 
 // Payback is called when the receiver of the DEBToken wants to pay a fixed amount
@@ -182,7 +167,6 @@ func (a *Recipient) SendAssetToIssuer(assetName string, issuerPubkey string, amo
 // (issued bonds, agreements, etc)
 func (a *Recipient) Payback(uContract Project, assetName string, issuerPubkey string, amount string) error {
 	// once we have the stablecoin here, we can remove the assetName
-	uProject := uContract.Params
 	StableBalance, err := xlm.GetAssetBalance(a.U.PublicKey, "STABLEUSD")
 	// checks for the stablecoin asset
 	if err != nil {
@@ -210,7 +194,7 @@ func (a *Recipient) Payback(uContract Project, assetName string, issuerPubkey st
 	}
 
 	log.Println("Retrieved average price from oracle: ", monthlyBill)
-	// the oracke needs to know the assetName so that it can find the other details
+	// the oracle needs to know the assetName so that it can find the other details
 	// about this asset from the db. This should run on the server side and must
 	// be split when we do run client side stuff.
 	// hardcode for now, need to add the oracle here so that we
@@ -249,14 +233,14 @@ func (a *Recipient) Payback(uContract Project, assetName string, issuerPubkey st
 	}
 	// we need to update the database here
 	// no need to retrieve this project again because we have it already
-	uProject.BalLeft -= paidAmount
-	uProject.DateLastPaid = utils.Timestamp()
-	if uProject.BalLeft == 0 {
+	uContract.Params.BalLeft -= paidAmount
+	uContract.Params.DateLastPaid = utils.Timestamp()
+	if uContract.Params.BalLeft == 0 {
 		log.Println("YOU HAVE PAID OFF THIS ASSET, TRANSFERRING OWNERSHIP OF ASSET TO YOU")
 		// don't delete the asset from the received assets list, we still need it so
-		// that we c an look back and find out hwo many assets this particular
+		// that we can look back and find out hwo many assets this particular
 		// enttiy has been invested in, have a leaderboard kind of thing, etc.
-		uProject.PaidOff = true
+		uContract.Params.PaidOff = true
 		// we should call neighbourly or some ohter partner here to transfer assets
 		// using the bond they provide us with
 		// the nice part here is that the recipient can not pay off more than what is
@@ -264,16 +248,15 @@ func (a *Recipient) Payback(uContract Project, assetName string, issuerPubkey st
 	}
 	// balLeft must be updated on the server side and can be challenged easily
 	// if there's some discrepancy since the tx's are on the blockchain
-	uContract.Params = uProject // update this before saving
+	err = a.UpdateProjectSlice(uContract.Params)
+	if err != nil {
+		return err
+	}
+	fmt.Println("UPDATED ORDER: ", uContract.Params)
 	err = uContract.Save()
 	if err != nil {
 		return err
 	}
-	err = a.UpdateProjectSlice(uProject)
-	if err != nil {
-		return err
-	}
-	fmt.Println("UPDATED ORDER: ", uProject)
 	return err
 }
 

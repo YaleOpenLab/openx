@@ -12,7 +12,7 @@ before_install:
   #- echo -e "Host *\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
   #- rm Gopkg.lock
   - dep ensure -v
-  - cd ${TRAVIS_HOME}/gopath/src/github.com/Varunram/smartPropertyMVP/stellar
+  - cd ${TRAVIS_HOME}/gopath/src/github.com/YaleOpenLab/smartPropertyMVP/stellar
 script:
   - go test --tags="travis" -race -coverprofile=coverage.txt -covermode=atomic ./...
 after_success:

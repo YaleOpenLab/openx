@@ -44,7 +44,7 @@ func DestinationExists(destination string) error {
 	return err
 }
 */
-func sendTx(Seed string, tx *build.TransactionBuilder) (int32, string, error) {
+func SendTx(Seed string, tx *build.TransactionBuilder) (int32, string, error) {
 	// Sign the transaction to prove you are actually the person sending it.
 	txe, err := tx.Sign(Seed)
 	if err != nil {
@@ -83,7 +83,7 @@ func SendXLMCreateAccount(destination string, amount string, Seed string) (int32
 		return -1, "", err
 	}
 
-	return sendTx(Seed, tx)
+	return SendTx(Seed, tx)
 }
 
 // SendXLM sends _amount_ number of native tokens (XLM) to the specified destination
@@ -105,5 +105,5 @@ func SendXLM(destination string, amount string, Seed string) (int32, string, err
 		return -1, "", err
 	}
 
-	return sendTx(Seed, tx)
+	return SendTx(Seed, tx)
 }
