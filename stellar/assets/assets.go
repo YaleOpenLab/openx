@@ -64,27 +64,8 @@ func TrustAsset(asset build.Asset, limit string, PublicKey string, Seed string) 
 		build.Trust(asset.Code, asset.Issuer, build.Limit(limit)),
 	)
 
-	if err != nil {
-		return "", err
-	}
-
-	trustTxe, err := trustTx.Sign(Seed)
-	if err != nil {
-		return "", err
-	}
-
-	trustTxeB64, err := trustTxe.Base64()
-	if err != nil {
-		return "", err
-	}
-
-	tx, err := xlm.TestNetClient.SubmitTransaction(trustTxeB64)
-	if err != nil {
-		return "", err
-	}
-
-	log.Println("Trusted asset tx: ", tx.Hash)
-	return tx.Hash, nil
+	_, txHash, err := xlm.SendTx(Seed, trustTx)
+	return txHash, err
 }
 
 // SendAsset transfers _amount_ number of assets from the caller to the destination
@@ -109,93 +90,75 @@ func SendAssetFromIssuer(assetName string, destination string, amount string, Se
 	if err != nil {
 		return -1, "", err
 	}
-
-	paymentTxe, err := paymentTx.Sign(Seed)
-	if err != nil {
-		return -1, "", err
-	}
-
-	paymentTxeB64, err := paymentTxe.Base64()
-	if err != nil {
-		return -1, "", err
-	}
-
-	tx, err := xlm.TestNetClient.SubmitTransaction(paymentTxeB64)
-	if err != nil {
-		return -1, "", err
-	}
-
-	return tx.Ledger, tx.Hash, nil
+	return xlm.SendTx(Seed, paymentTx)
 }
 
 // InvestInProject invests in a particular oder issued by _issuer_ with seed _issuerSeed_
 // the _investor_ decides to invest _investmentAmountS_ amount of USD Tokens in
-// a particular _uProject_. If the invested amount makes the money raised equal to
-// the total value of the _uProject_, we issue the PBTokens and DEBTokens to the
+// a particular _uContract.Params_. If the invested amount makes the money raised equal to
+// the total value of the _uContract.Params_, we issue the PBTokens and DEBTokens to the
 // _recipient_
-func InvestInProject(issuerPublicKey string, issuerSeed string, investor *database.Investor, recipient *database.Recipient, investmentAmountS string, uContract database.Project) (database.DBParams, error) {
-	uProject := uContract.Params
-	var partProject database.DBParams
+func InvestInProject(issuerPublicKey string, issuerSeed string, investor *database.Investor, recipient *database.Recipient, investmentAmountS string, uContract database.Project) (database.Project, error) {
 	var err error
 
 	// invest only in integer values as of now, TODO: change to float
 	investmentAmount := utils.StoI(investmentAmountS)
 	// check if investment amount is greater than or equal to the project requirements
-	amtLeft := uProject.TotalValue - uProject.MoneyRaised
+	amtLeft := uContract.Params.TotalValue - uContract.Params.MoneyRaised
 	if investmentAmount > amtLeft {
 		fmt.Println("User is trying to invest more than what is needed, print and exit")
-		return partProject, fmt.Errorf("User is trying to invest more than what is needed, print and exit")
+		return uContract, fmt.Errorf("User is trying to invest more than what is needed, print and exit")
 	}
 
 	// user has decided to invest in a part of the project (don't know if full yet)
 	// so if there has been no token codes assigned yet, we need to create them and
 	// assign them here
 	// you can retrieve these anywhere since the metadata will most likely be unique
-	assetName := AssetID(uProject.Metadata)
-	if uProject.INVAssetCode == "" {
+	assetName := AssetID(uContract.Params.Metadata)
+	if uContract.Params.INVAssetCode == "" {
 		// this person is the first investor, set the investor token name
 		INVAssetCode := AssetID(consts.INVAssetPrefix + assetName)
-		uProject.INVAssetCode = INVAssetCode           // set the investeor code
+		uContract.Params.INVAssetCode = INVAssetCode           // set the investeor code
 		_ = CreateAsset(INVAssetCode, issuerPublicKey) // create the asset itself, since it would not have bene created earlier
 	}
 	// we should check here whether the investor has enough USDTokens in project to be
 	// able to ivnest in the asset
 	if !investor.CanInvest(investor.U.PublicKey, investmentAmountS) {
 		log.Println("Investor has less balance than what is required to ivnest in this asset")
-		return uProject, err
+		return uContract, err
 	}
 	var INVAsset build.Asset
-	INVAsset.Code = uProject.INVAssetCode
+	INVAsset.Code = uContract.Params.INVAssetCode
 	INVAsset.Issuer = issuerPublicKey
 	// INVAsset is not a native token, so don't set that
 	// now we need to send the investor the INVAssets as proof of investment
-	txHash, err := TrustAsset(INVAsset, utils.ItoS(uProject.TotalValue), investor.U.PublicKey, investor.U.Seed)
+	txHash, err := TrustAsset(INVAsset, utils.ItoS(uContract.Params.TotalValue), investor.U.PublicKey, investor.U.Seed)
 	// trust upto the total value of the asset
 	if err != nil {
-		return uProject, err
+		return uContract, err
 	}
 	log.Println("Investor trusted asset: ", INVAsset.Code, " tx hash: ", txHash)
 	log.Println("Sending INVAsset: ", INVAsset.Code, "for: ", investmentAmount)
 	_, txHash, err = SendAssetFromIssuer(INVAsset.Code, investor.U.PublicKey, investmentAmountS, issuerSeed, issuerPublicKey)
 	if err != nil {
-		return uProject, err
+		return uContract, err
 	}
 	log.Printf("Sent INVAsset %s to investor %s with txhash %s", INVAsset.Code, investor.U.PublicKey, txHash)
-	// investor asset sent, update uProject's BalLeft
-	uProject.MoneyRaised += investmentAmount
+	// investor asset sent, update uContract.Params's BalLeft
+	uContract.Params.MoneyRaised += investmentAmount
 	fmt.Println("Updating investor to handle invested amounts and assets")
 	investor.AmountInvested += float64(investmentAmount)
-	investor.InvestedAssets = append(investor.InvestedAssets, uProject)
+	investor.InvestedAssets = append(investor.InvestedAssets, uContract.Params)
 	err = investor.Save() // save investor creds now that we're done
 	if err != nil {
-		return uProject, err
+		return uContract, err
 	}
 	fmt.Println("Updated investor database")
 	// append the investor class to the list of project investors
 	// if the same investor has invested twice, he will appear twice
 	// can be resolved on the UI side by requiring unique, so not doing that here
-	uProject.ProjectInvestors = append(uProject.ProjectInvestors, *investor)
-	if uProject.MoneyRaised == uProject.TotalValue {
+	uContract.Params.ProjectInvestors = append(uContract.Params.ProjectInvestors, *investor)
+	if uContract.Params.MoneyRaised == uContract.Params.TotalValue {
 		// this project covers up the amount nedeed for the project, so set the DEBAssetCode
 		// and PBAssetCodes, generate them and give to the recipient
 		DEBAssetCode := AssetID(consts.DEBAssetPrefix + assetName)
@@ -203,61 +166,59 @@ func InvestInProject(issuerPublicKey string, issuerSeed string, investor *databa
 		DEBasset := CreateAsset(DEBAssetCode, issuerPublicKey)
 		PBasset := CreateAsset(PBAssetCode, issuerPublicKey)
 		// and the school needs to trust me only for paybackTokens amount of PB tokens
-		pbAmtTrust := utils.ItoS(uProject.Years * 12 * 2) // two way exchange possible, to account for errors
+		pbAmtTrust := utils.ItoS(uContract.Params.Years * 12 * 2) // two way exchange possible, to account for errors
 		txHash, err = TrustAsset(PBasset, pbAmtTrust, recipient.U.PublicKey, recipient.U.Seed)
 		if err != nil {
-			return uProject, err
+			return uContract, err
 		}
 		log.Println("Recipient Trusted Payback asset: ", PBasset.Code, " tx hash: ", txHash)
 
-		txHash, err = TrustAsset(DEBasset, utils.ItoS(uProject.TotalValue*2), recipient.U.PublicKey, recipient.U.Seed) // since debt = invested amount
+		txHash, err = TrustAsset(DEBasset, utils.ItoS(uContract.Params.TotalValue*2), recipient.U.PublicKey, recipient.U.Seed) // since debt = invested amount
 		// *2 is for sending the amount back
 		if err != nil {
-			return uProject, err
+			return uContract, err
 		}
 		log.Println("Recipient Trusted Debt asset: ", DEBasset.Code, " tx hash: ", txHash)
 		log.Println("Sending DEBasset: ", DEBAssetCode)
-		_, txHash, err = SendAssetFromIssuer(DEBAssetCode, recipient.U.PublicKey, utils.ItoS(uProject.TotalValue), issuerSeed, issuerPublicKey) // same amount as debt
+		_, txHash, err = SendAssetFromIssuer(DEBAssetCode, recipient.U.PublicKey, utils.ItoS(uContract.Params.TotalValue), issuerSeed, issuerPublicKey) // same amount as debt
 		if err != nil {
-			return uProject, err
+			return uContract, err
 		}
 		log.Printf("Sent DEBasset to recipient %s with txhash %s", recipient.U.PublicKey, txHash)
-		uProject.Funded = true
-		uProject.DEBAssetCode = DEBAssetCode
-		uProject.PBAssetCode = PBAssetCode
-		uProject.BalLeft = float64(uProject.TotalValue)
-		recipient.ReceivedProjects = append(recipient.ReceivedProjects, uProject)
-		uProject.ProjectRecipient = *recipient // need to udpate uProject each time recipient is mutated
+		uContract.Params.DEBAssetCode = DEBAssetCode
+		uContract.Params.PBAssetCode = PBAssetCode
+		uContract.Params.BalLeft = float64(uContract.Params.TotalValue)
+		recipient.ReceivedProjects = append(recipient.ReceivedProjects, uContract.Params)
+		uContract.Params.ProjectRecipient = *recipient // need to udpate uContract.Params each time recipient is mutated
 		// only here does the recipient part change, so update it only here
 		// TODO: keep note of who all invested in this asset (even though it should be
 		// easy to get that from the blockchain)
-		log.Println("UORDER BEFORE DB: ", uProject.DEBAssetCode)
-		if uProject.DEBAssetCode == "" {
+		log.Println("UORDER BEFORE DB: ", uContract.Params.DEBAssetCode)
+		if uContract.Params.DEBAssetCode == "" {
 			log.Fatal("Empty debt asset code")
 		}
 		err = recipient.Save()
 		if err != nil {
-			return uProject, err
+			return uContract, err
 		}
-		uContract.Params = uProject
+		uContract.Stage = 4 // 4 is the funded stage
 		err = uContract.Save()
 		if err != nil {
 			log.Println("Couldn't insert project")
-			return uProject, err
+			return uContract, err
 		}
 		fmt.Println("Updated recipient bucket")
-		return uProject, nil
+		return uContract, nil
 	}
 	// update the project finally now that we have updated other databases
-	uContract.Params = uProject
 	err = uContract.Save()
-	return uProject, err
+	return uContract, err
 }
 
-func SendPBAsset(project database.DBParams, destination string, amount string, Seed string, PublicKey string) error {
+func SendPBAsset(project database.Project, destination string, amount string, Seed string, PublicKey string) error {
 	// need to calculate how much PBAsset we need to send back.
 	amountS := CalculatePayback(project, amount)
-	_, txHash, err := SendAssetFromIssuer(project.PBAssetCode, destination, amountS, Seed, PublicKey)
+	_, txHash, err := SendAssetFromIssuer(project.Params.PBAssetCode, destination, amountS, Seed, PublicKey)
 	log.Println("TXHASH for payback is: ", txHash)
 	return err
 }

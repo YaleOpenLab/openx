@@ -14,40 +14,41 @@ func PrintProjects(projects []database.Project) {
 }
 
 func PrintProject(project database.Project) {
-	PrintParams(project.Params)
-	fmt.Println(" PROJECT INDEX: ", project.Params.Index)
-	fmt.Println(" PROJECT ORIGINATOR: ", project.Originator)
-	fmt.Println(" PROJECT CONTRACTOR: ", project.Contractor)
-	fmt.Println(" PROJECT STAGE: ", project.Stage)
-}
-
-// PrintParams pretty prints projects
-func PrintParams(params database.DBParams) {
-	fmt.Println("    ORDER NUMBER: ", params.Index)
-	fmt.Println("          Panel Size: ", params.PanelSize)
-	fmt.Println("          Total Value: ", params.TotalValue)
-	fmt.Println("          Location: ", params.Location)
-	fmt.Println("          Money Raised: ", params.MoneyRaised)
-	fmt.Println("          Metadata: ", params.Metadata)
-	fmt.Println("          Years: ", params.Years)
-	// if project.Live {
-	fmt.Println("          Investor Asset Code: ", params.INVAssetCode)
-	fmt.Println("          Debt Asset Code: ", params.DEBAssetCode)
-	fmt.Println("          Payback Asset Code: ", params.PBAssetCode)
-	fmt.Println("          Balance Left: ", params.BalLeft)
-	// }
-	fmt.Println("          Date Initiated: ", params.DateInitiated)
-	// if project.Live {
-	fmt.Println("          Date Last Paid: ", params.DateLastPaid)
-	// }
-	fmt.Println("          Recipient: ", params.ProjectRecipient)
-	fmt.Println("          Investors: ", params.ProjectInvestors)
-	fmt.Println("          Votes: ", params.Votes)
+	fmt.Println("          PROJECT INDEX: ", project.Params.Index)
+	fmt.Println("          Panel Size: ", project.Params.PanelSize)
+	fmt.Println("          Total Value: ", project.Params.TotalValue)
+	fmt.Println("          Location: ", project.Params.Location)
+	fmt.Println("          Money Raised: ", project.Params.MoneyRaised)
+	fmt.Println("          Metadata: ", project.Params.Metadata)
+	fmt.Println("          Years: ", project.Params.Years)
+	fmt.Println("          PROJECT ORIGINATOR: ")
+	PrintEntity(project.Originator)
+	fmt.Println("          PROJECT STAGE: ", project.Stage)
+	fmt.Println("          RECIPIENT: ")
+	PrintRecipient(project.Params.ProjectRecipient)
+	if project.Stage >= 2 {
+		fmt.Println("          PROJECT CONTRACTOR: ")
+		PrintEntity(project.Contractor)
+		fmt.Println("          Votes: ", project.Params.Votes)
+	}
+	if project.Stage >= 3 {
+		fmt.Println("          Investor Asset Code: ", project.Params.INVAssetCode)
+		fmt.Println("          INVESTORS: ")
+		for _, investor := range project.Params.ProjectInvestors {
+			PrintInvestor(investor)
+		}
+	}
+	if project.Stage == 4 {
+		fmt.Println("          Debt Asset Code: ", project.Params.DEBAssetCode)
+		fmt.Println("          Payback Asset Code: ", project.Params.PBAssetCode)
+		fmt.Println("          Balance Left: ", project.Params.BalLeft)
+		fmt.Println("          Date Initiated: ", project.Params.DateInitiated)
+		fmt.Println("          Date Last Paid: ", project.Params.DateLastPaid)
+	}
 }
 
 // PrintInvestor pretty prints investors
 func PrintInvestor(investor database.Investor) {
-	fmt.Println("    WELCOME BACK ", investor.U.Name)
 	fmt.Println("          Your Public Key is: ", investor.U.PublicKey)
 	fmt.Println("          Your Seed is: ", investor.U.Seed)
 	fmt.Println("          Your Voting Balance is: ", investor.VotingBalance)
@@ -59,7 +60,6 @@ func PrintInvestor(investor database.Investor) {
 
 // PrintRecipient pretty prints recipients
 func PrintRecipient(recipient database.Recipient) {
-	fmt.Println("    WELCOME BACK ", recipient.U.Name)
 	fmt.Println("          Your Public Key is: ", recipient.U.PublicKey)
 	fmt.Println("          Your Seed is: ", recipient.U.Seed)
 	fmt.Println("          Your Received Assets are: ", recipient.ReceivedProjects)
@@ -68,47 +68,23 @@ func PrintRecipient(recipient database.Recipient) {
 }
 
 // PrintParams pretty prints projects
+// if this is a PB project, we must payback towards it
 func PrintPBProjects(projects []database.DBParams) {
 	for _, project := range projects {
-		if !project.PaidOff {
-			fmt.Println("    ORDER NUMBER: ", project.Index)
-			fmt.Println("          Panel Size: ", project.PanelSize)
-			fmt.Println("          Total Value: ", project.TotalValue)
-			fmt.Println("          Location: ", project.Location)
-			fmt.Println("          Money Raised: ", project.MoneyRaised)
-			fmt.Println("          Metadata: ", project.Metadata)
-			fmt.Println("          Years: ", project.Years)
-			fmt.Println("          Investor Asset Code: ", project.INVAssetCode)
-			fmt.Println("          Debt Asset Code: ", project.DEBAssetCode)
-			fmt.Println("          Payback Asset Code: ", project.PBAssetCode)
-			fmt.Println("          Balance Left: ", project.BalLeft)
-			fmt.Println("          Date Initiated: ", project.DateInitiated)
-			fmt.Println("          Date Last Paid: ", project.DateLastPaid)
-			fmt.Println("          Investors: ", project.ProjectInvestors)
-		}
-	}
-}
-
-// PrintParams pretty prints projects
-func PrintPBProject(project database.DBParams) {
-	fmt.Println("    ORDER NUMBER: ", project.Index)
-	fmt.Println("          Panel Size: ", project.PanelSize)
-	fmt.Println("          Total Value: ", project.TotalValue)
-	fmt.Println("          Location: ", project.Location)
-	fmt.Println("          Money Raised: ", project.MoneyRaised)
-	fmt.Println("          Metadata: ", project.Metadata)
-	fmt.Println("          Years: ", project.Years)
-	fmt.Println("          Investor Asset Code: ", project.INVAssetCode)
-	fmt.Println("          Debt Asset Code: ", project.DEBAssetCode)
-	fmt.Println("          Payback Asset Code: ", project.PBAssetCode)
-	fmt.Println("          Balance Left: ", project.BalLeft)
-	fmt.Println("          Date Initiated: ", project.DateInitiated)
-	fmt.Println("          Date Last Paid: ", project.DateLastPaid)
-}
-
-func PrintDEB(projects []database.DBParams) {
-	for _, project := range projects {
+		fmt.Println("    PROJECT NUMBER: ", project.Index)
+		fmt.Println("          Panel Size: ", project.PanelSize)
+		fmt.Println("          Total Value: ", project.TotalValue)
+		fmt.Println("          Location: ", project.Location)
+		fmt.Println("          Money Raised: ", project.MoneyRaised)
+		fmt.Println("          Metadata: ", project.Metadata)
+		fmt.Println("          Years: ", project.Years)
+		fmt.Println("          Investor Asset Code: ", project.INVAssetCode)
 		fmt.Println("          Debt Asset Code: ", project.DEBAssetCode)
+		fmt.Println("          Payback Asset Code: ", project.PBAssetCode)
+		fmt.Println("          Balance Left: ", project.BalLeft)
+		fmt.Println("          Date Initiated: ", project.DateInitiated)
+		fmt.Println("          Date Last Paid: ", project.DateLastPaid)
+		fmt.Println("          Investors: ", project.ProjectInvestors)
 	}
 }
 

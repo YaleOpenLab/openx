@@ -2,16 +2,32 @@
 
 This sub-repo contains the WIP Stellar Proof of Concept. This has some design
 tradeoffs compared to the Ethereum implementation, especially in the concept of
-"state" in Ethereum. This PoC takes the three major (actually two, but we implement three)
-state variables that are in Ethereum and creates assets on Stellar for each
-implementation:
+"state" in Ethereum.
 
-We define roughly three entities in the process of investing in a project:
-1. ISSUER - the issuer is the server on which the orders are advertised on
-2. INVESTOR - the investor is a person / group of persons who invest in a particular order
-3. RECIPIENT - the recipient is the school which receives funding from investors through an order
+There are various stages to a given solar contract, this can be expanded upon to furhter sub stages, but right now are defined to be  7 for convenience
 
-These three entities interact use the three tokens detailed below:
+ - Stage 0: A pre origin contract, which is given by an originator to a recipient
+ - Stage 1: An originated contract, which is the evolution of a pre origin contract at the behest of the recipient, who may require a legal contract to be signed by the originator for doing so
+ - Stage 2: A proposed contract, which is a contract given by a contractor who is willing to lend his services for the particular project at a fee that will be paid by the recipient and in turn, the investor as well
+ - Stage 3: A finalized contract, which is open for investor funds. A contract can be promtoed from stage 2 to 3 only by a recipient, who chooses the best contract that fits in with his needs and requirements
+ - Stage 4: A contract that has raised the money required for investment from investors and is ready to be installed. The control of the contract now passes over from the recipient to the developer, who is responsible to take this project to stage 5.
+ - Stage 5: the stage where the developer should install all the required devices and the contractor must do his job of supervising.
+ - Stage 6: Power Generation s tarts and the recipient starts to payback the investor in monthly instalments similar to an electricity bill
+ - Stage 7: The recipient has finished paying back the investors and can now own the solar panels installed in his space.
+
+Roughly, in the financing of a solar contract ,there are many entities involved who perform various roles in the entire system.
+ - ISSUER - the issuer is the server on which the orders are advertised on
+ - RECIPIENT - the recipient is the school which receives funding from investors through an order
+ - ORIGINATOR - the person who proposes a pre-origin contract to a recipient and requires approval from the recipient to originate the contract
+ - CONTRACTOR - takes in a originated order and proposes a contract which fits in with the requirements described in the originated contract
+ - INVESTOR - the investor is a person / group of persons who invest in a particular finalized order
+ - DEVELOPER - the person who is responsible for installing the hardware and making sure the solar panels work and produce electricity
+ - GUARANTOR - the person who is liable to make the recipient pay or pays itself in the case of a delayed payment from the recipient's side
+
+ The rough workflow for promotion of a contract is:
+ Originator proposes contract -> recipient reviews all proposed contracts -> recipient chooses a particular contract to originate for the project -> contractors see all originated contracts -> contractors propose contracts to install the systems -> recipient reviews all proposed contracts -> recipient chooses a particular proposed contract to be final -> finalize contract -> investors see all finalised contracts -> choose one -> contract ready to be invested in -> solar panels installed -> power generation -> full ownership
+
+These three entities interact use the three tokens detailed below for proofs of investment, proof of debt and proof of payback respectively:
 
 1. INVTokens - INVTokens are sent from the ISSUER to the INVESTOR one time, as proof of investment
 2. DEBTokens - DEBTokens are sent from the ISSUER to the RECIPIENT the time the order is created and then each month, the RECIPIENT pays back the ISSUER each month with a number of DEBTokens like an electricity bill. (This has to be capped at a minimum of the electricity bill in the future, along with an oracle that can attest to the price of electricity at the place)

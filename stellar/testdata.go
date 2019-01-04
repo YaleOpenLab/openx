@@ -64,7 +64,6 @@ func InsertDummyData() error {
 	project1.Location = "India Basin, San Francisco"
 	project1.MoneyRaised = 0
 	project1.Metadata = "India Basin is an upcoming creative project based in San Francisco that seeks to invite innovators from all around to participate"
-	project1.Funded = false
 	project1.INVAssetCode = ""
 	project1.DEBAssetCode = ""
 	project1.PBAssetCode = ""
@@ -86,7 +85,6 @@ func InsertDummyData() error {
 	project1.Location = "Kendall Square, Boston"
 	project1.MoneyRaised = 0
 	project1.Metadata = "Kendall Square is set in the heart of Cambridge and is a popular startup IT hub"
-	project1.Funded = false
 	project1.INVAssetCode = ""
 	project1.DEBAssetCode = ""
 	project1.PBAssetCode = ""
@@ -108,7 +106,6 @@ func InsertDummyData() error {
 	project1.Location = "Trafalgar Square, London"
 	project1.MoneyRaised = 0
 	project1.Metadata = "Trafalgar Square is set in the heart of London's financial district, with big banks all over"
-	project1.Funded = false
 	project1.INVAssetCode = ""
 	project1.DEBAssetCode = ""
 	project1.PBAssetCode = ""

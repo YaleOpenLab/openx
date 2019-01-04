@@ -136,14 +136,12 @@ func main() {
 	}
 	switch opt {
 	case 1:
-		log.Println("You have chosen to create a new investor account, welcome")
 		err := NewInvestorPrompt()
 		if err != nil {
 			log.Println(err)
 			return
 		}
 	case 2:
-		log.Println("You have chosen to create a new recipient account, welcome")
 		err := NewRecipientPrompt()
 		if err != nil {
 			log.Println(err)
@@ -157,6 +155,7 @@ func main() {
 		log.Println(err)
 		return
 	}
+	go rpc.StartServer("8080") // run as go routine for now
 	// check if the user is a recipient here
 	if isRecipient {
 		// we already have the recipient, so no need to make a call to the database
@@ -169,9 +168,10 @@ func main() {
 			fmt.Println("  3. Payback towards an Project (STAGE 6)")
 			fmt.Println("  4. Exchange XLM for USD")
 			fmt.Println("  5. Finalize a specific Project (STAGE 2->3)")
-			fmt.Println("  6. View all Pre Origin Projects (STAGE 0)")
+			fmt.Println("  6. Originate a specific Project (STAGE 0->1)")
 			fmt.Println("  7. View all Projects (ALL STAGES)")
 			fmt.Println("  8. View all Origin Projects (STAGE 1)")
+			fmt.Println("  9. View All Balances ")
 			fmt.Println("  default: Exit")
 			optI, err := utils.ScanForInt()
 			if err != nil {
@@ -180,19 +180,15 @@ func main() {
 			}
 			switch optI {
 			case 1:
-				fmt.Println("------------LIST OF ALL AVAILABLE PROJECTS------------")
-				allProjects, err := database.RetrieveStage3Projects()
-				if err != nil {
-					log.Println("Error retrieving all projects from the database")
-				}
-				PrintProjects(allProjects)
+				Stage3ProjectsDisplayPrompt()
 				break
 			case 2:
 				PrintRecipient(recipient)
 				break
 			case 3:
+				// TODO: migrate this to a contract model which is based off stages rather than using DBParams here
 				PrintPBProjects(recipient.ReceivedProjects)
-				fmt.Println("WHICH ORDER DO YOU WANT TO PAY BACK TOWARDS? (ENTER ORDER NUMBER)")
+				fmt.Println("WHICH PROJECT DO YOU WANT TO PAY BACK TOWARDS? (ENTER PROJECT NUMBER)")
 				projectNumber, err := utils.ScanForInt()
 				if err != nil {
 					log.Println("INPUT NOT AN INTEGER, TRY AGAIN")
@@ -205,7 +201,7 @@ func main() {
 					continue
 				}
 				// so we can retrieve the project using the project Index, nice
-				PrintPBProject(rtContract.Params)
+				PrintProject(rtContract)
 				fmt.Println("HOW MUCH DO YOU WANT TO PAYBACK?")
 				paybackAmount, err := utils.ScanForStringWithCheckI()
 				if err != nil {
@@ -237,7 +233,7 @@ func main() {
 				}
 				// now send back the PBToken from the platform to the issuer
 				// this function is optional and can be deleted in case we don't need PBAssets
-				err = assets.SendPBAsset(rtContract.Params, recipient.U.PublicKey, paybackAmount, platformSeed, platformPublicKey)
+				err = assets.SendPBAsset(rtContract, recipient.U.PublicKey, paybackAmount, platformSeed, platformPublicKey)
 				if err != nil {
 					log.Println("PBAsset sending back FAILED, PLEASE TRY AGAIN!")
 					break
@@ -250,7 +246,7 @@ func main() {
 				// we should update the local slice to keep track of the changes here
 				recipient.UpdateProjectSlice(rtContract.Params)
 				// so we can retrieve the project using the project Index, nice
-				PrintParams(rtContract.Params)
+				PrintProject(rtContract)
 				// print the project in a nice way
 				break
 			case 4:
@@ -273,7 +269,7 @@ func main() {
 				log.Println("tx hash for sent xlm: ", hash, "pubkey: ", recipient.U.PublicKey)
 				break
 			case 5:
-				// we shouild  finalize the contract that we want
+				// we shouild finalize the proposed contract that we want and promote it from stage 2 to 3
 				// can be imagined as some sort of voting mechanism to choose the winning
 				// contract.
 				// now we display a list of options for the recipient to choose which parameter
@@ -282,7 +278,7 @@ func main() {
 				// 2. Completion time
 				// 3. Select Manually
 				fmt.Println("CHOOSE THE METRIC BY WHICH YOU WANT TO SELECT THE WINNING BID: ")
-				allContracts, err := database.RetrieveProposedProjectsIR(recipient.U.Index)
+				allContracts, err := database.RetrieveProjectsR(database.ProposedProject, recipient.U.Index)
 				// retrieve all contracts towards the project
 				if err != nil {
 					log.Fatal(err)
@@ -344,15 +340,9 @@ func main() {
 				default:
 					break
 				}
-				// now we need to finalize this person, potentially
-				// move funds from the investor money to this person and so on.
-				// another question is that whether we raise money before and then we have a
-				// blind auction or whether we take in their feedback and then present this to
-				// investors. Investors would ideally want to know more about what they are
-				// investing in, so I guess the second option is better for now.
 			case 6:
 				fmt.Println("LIST OF ALL PRE ORIGIN PROJECTS BY ORIGINATORS (STAGE 0)")
-				allMyProjects, err := database.RetrievePreOriginProjects()
+				allMyProjects, err := database.RetrieveProjects(database.PreOriginProject)
 				if err != nil {
 					log.Println(err)
 					continue
@@ -365,13 +355,11 @@ func main() {
 					continue
 				}
 				// we need to upgrade the contract's whose index is contractIndex to stage 1
-				// we already have a contract, so just upgrade that part
-
 				for _, elem := range allMyProjects {
 					if elem.Params.Index == contractIndex {
 						// increase this contract's stage
 						log.Println("UPGRADING PROJECT INDEX", elem.Params.Index)
-						err = elem.SetOriginContractStage()
+						err = elem.SetOriginProject()
 						if err != nil {
 							log.Println(err)
 							break
@@ -388,36 +376,15 @@ func main() {
 				}
 				PrintProjects(allContracts)
 			case 8:
-				fmt.Println("PRINTING ALL ORIGINATED PROJECTS: ")
-				x, err := database.RetrieveOriginProjects()
-				if err != nil {
-					log.Println(err)
-					break
-				}
-				PrintProjects(x)
+				DisplayOriginProjects()
+			case 9:
+				BalanceDisplayPrompt(recipient.U.PublicKey)
 			default: // this default is for the larger switch case
-				// check whether he wants to go back to the display all screen again
-				fmt.Println("DO YOU REALLY WANT TO EXIT? (PRESS Y TO CONFIRM)")
-				exitOpt, err := utils.ScanForString()
-				if err != nil {
-					log.Println(err)
-					break
-				}
-				if exitOpt == "Y" || exitOpt == "y" {
-					fmt.Println("YOU HAVE DECIDED TO EXIT")
-					log.Fatal("")
-				}
-				break
+				ExitPrompt()
 			}
 		}
-		PrintRecipient(recipient)
 		return
 	} else if isContractor {
-		log.Println("WELCOME BACK!!")
-		fmt.Println("----------CONTRACTOR INTERFACE-------------")
-		fmt.Println("AVAILABLE ROLES: ")
-		fmt.Println("  1. CONTRACTOR")
-		fmt.Println("  2. ORIGINATOR")
 		var optI int
 		if contractor.Contractor {
 			optI = 1
@@ -440,14 +407,7 @@ func main() {
 				}
 				switch optI {
 				case 1:
-					// TODO: add voting scheme here
-					fmt.Println("LIST OF ALL ORIGINATED PROJECTS: ")
-					originatedProjects, err := database.RetrieveOriginProjects()
-					if err != nil {
-						log.Println(err)
-						break
-					}
-					PrintProjects(originatedProjects)
+					DisplayOriginProjects()
 				case 2:
 					PrintEntity(contractor)
 				case 3:
@@ -459,7 +419,7 @@ func main() {
 					}
 				case 4:
 					fmt.Println("LIST OF ALL PROPOSED CONTRACTS BY ME: ")
-					allMyProjects, err := database.RetrieveProposedProjectsIC(contractor.U.Index)
+					allMyProjects, err := database.RetrieveProjectsC(database.ProposedProject, contractor.U.Index)
 					if err != nil {
 						log.Println(err)
 						continue
@@ -484,40 +444,27 @@ func main() {
 				case 1:
 					err := OriginContractPrompt(&contractor)
 					if err != nil {
-						fmt.Println(err)
-						fmt.Println("RETURNING BACK TO THE MAIN LOOP")
+						fmt.Println("RETURNING BACK TO THE MAIN LOOP: ", err)
 						continue
 					}
 				case 2:
 					PrintEntity(contractor)
 				case 3:
-					allMyProjects, err := database.RetrievePreOriginProjectsI(contractor.U.Index)
+					allMyProjects, err := database.RetrieveProjectsO(database.PreOriginProject, contractor.U.Index)
 					if err != nil {
-						fmt.Println(err)
-						fmt.Println("RETURNING BACK TO THE MAIN LOOP")
+						fmt.Println("RETURNING BACK TO THE MAIN LOOP: ", err)
 						continue
 					}
 					PrintProjects(allMyProjects)
 				case 4:
-					allMyProjects, err := database.RetrieveOriginProjectsIO(contractor.U.Index)
+					allMyProjects, err := database.RetrieveProjectsO(database.OriginProject, contractor.U.Index)
 					if err != nil {
-						fmt.Println(err)
-						fmt.Println("RETURNING BACK TO THE MAIN LOOP")
+						fmt.Println("RETURNING BACK TO THE MAIN LOOP: ", err)
 						continue
 					}
 					PrintProjects(allMyProjects)
 				default:
-					// check whether he wants to go back to the display all screen again
-					fmt.Println("DO YOU REALLY WANT TO EXIT? (PRESS Y TO CONFIRM)")
-					exitOpt, err := utils.ScanForString()
-					if err != nil {
-						log.Println(err)
-						break
-					}
-					if exitOpt == "Y" || exitOpt == "y" {
-						fmt.Println("YOU HAVE DECIDED TO EXIT")
-						log.Fatal("")
-					}
+					ExitPrompt()
 				}
 			}
 		}
@@ -536,6 +483,7 @@ func main() {
 			fmt.Println("  6. Display all Origin (STAGE 1) Projects")
 			fmt.Println("  7. Vote towards a specific proposed project (STAGE 2)")
 			fmt.Println("  8. Get ipfs hash of a contract")
+			fmt.Println("  9. Display all Funded Projects")
 			fmt.Println("  default: Exit")
 			optI, err := utils.ScanForInt()
 			if err != nil {
@@ -544,12 +492,7 @@ func main() {
 			}
 			switch optI {
 			case 1:
-				fmt.Println("------------LIST OF ALL AVAILABLE ORDERS------------")
-				allProjects, err := database.RetrieveStage3Projects()
-				if err != nil {
-					log.Println("Error retrieving all projects from the database")
-				}
-				PrintProjects(allProjects)
+				Stage3ProjectsDisplayPrompt()
 				break
 			case 2:
 				PrintInvestor(investor)
@@ -680,17 +623,12 @@ func main() {
 					break
 				}
 				fmt.Println("YOUR PROJECT INVESTMENT HAS BEEN CONFIRMED: ")
-				PrintParams(cProject)
+				PrintProject(cProject)
 				fmt.Println("PLEASE CHECK A BLOCKCHAIN EXPLORER TO CONFIRM BALANCES: ")
 				fmt.Println("https://testnet.steexp.com/account/" + investor.U.PublicKey + "#balances")
 				break
 			case 4:
-				balances, err := xlm.GetAllBalances(investor.U.PublicKey)
-				if err != nil {
-					log.Fatal(err)
-				}
-				// need to pr etty print this, experiment out with stuff
-				PrintBalances(balances)
+				BalanceDisplayPrompt(investor.U.PublicKey)
 				break
 			case 5:
 				// this should be expanded in the future to make use of the inbuilt DEX
@@ -718,23 +656,15 @@ func main() {
 				}
 
 				log.Println("tx hash for sent xlm: ", hash, "pubkey: ", investor.U.PublicKey)
-				rpc.StartServer("8080") // run this in project to check whether the go routine is running
 				break
 			case 6:
-				// TODO: add voting scheme here
-				fmt.Println("LIST OF ALL ORIGINATED PROJECTS: ")
-				originatedProjects, err := database.RetrieveOriginProjects()
-				if err != nil {
-					log.Println(err)
-					break
-				}
-				PrintProjects(originatedProjects)
+				DisplayOriginProjects()
 			case 7:
 				// this is the case where an investor can vote on a particular proposed project
 				// ie stage 2 projects for the recipient to have an understanding about
 				// which contracts are popular and can receive more investor money
 				fmt.Println("LIST OF ALL PROPOSED ORDERS: ")
-				allProposedProjects, err := database.RetrieveProposedProjects()
+				allProposedProjects, err := database.RetrieveProjects(database.ProposedProject)
 				if err != nil {
 					log.Println(err)
 					break
@@ -772,27 +702,25 @@ func main() {
 				}
 				hashCheck, err := ipfs.GetStringFromIpfs(hash)
 				if err != nil || hashCheck != hashString {
-					fmt.Println("Hashed strings and retrieved strings don't match, don't use this hash!")
+					fmt.Println("Hashed strings and retrieved strings don't match, don't use this hash!", err)
 					break
 				}
 				// don't print this hash unless we can decrypt it and be sure that it behaves as expected
 				log.Println("THE HASH OF THE PROVIDED STRING IS: ", hash)
 				// try to retrieve the string back from ipfs and check if it works correctly
-			default:
-				// check whether he wants to go back to the display all screen again
-				fmt.Println("DO YOU REALLY WANT TO EXIT? (PRESS Y TO CONFIRM)")
-				exitOpt, err := utils.ScanForString()
+			case 9:
+				fmt.Println("LIST OF ALL FUNDED PROJECTS: ")
+				allFundedProjects, err := database.RetrieveProjects(database.FundedProject)
 				if err != nil {
-					log.Println(err)
+					fmt.Println(err)
 					break
 				}
-				if exitOpt == "Y" || exitOpt == "y" {
-					fmt.Println("YOU HAVE DECIDED TO EXIT")
-					log.Fatal("")
-				}
+				PrintProjects(allFundedProjects)
+			default:
+				ExitPrompt()
 			} // end of switch
 		}
-		log.Fatal("")
-		rpc.StartServer(opts.Port) // this must be towards the end
+		// it should never arrive here
+		return
 	}
 }

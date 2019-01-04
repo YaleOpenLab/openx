@@ -208,7 +208,6 @@ func parseProject(r *http.Request) (database.DBParams, error) {
 		prepProject.Metadata = r.FormValue("Metadata")
 	}
 
-	prepProject.Funded = true
 	// set the codes later while setting up stuff, need rpc calls for those as well
 	prepProject.BalLeft = float64(0)
 	prepProject.DateInitiated = utils.Timestamp()

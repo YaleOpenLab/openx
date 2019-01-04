@@ -245,7 +245,7 @@ func (a *Recipient) Payback(uContract Project, assetName string, issuerPubkey st
 		// don't delete the asset from the received assets list, we still need it so
 		// that we can look back and find out hwo many assets this particular
 		// enttiy has been invested in, have a leaderboard kind of thing, etc.
-		uContract.Params.PaidOff = true
+		uContract.Stage = 7
 		// we should call neighbourly or some ohter partner here to transfer assets
 		// using the bond they provide us with
 		// the nice part here is that the recipient can not pay off more than what is

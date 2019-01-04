@@ -7,6 +7,7 @@ import (
 	database "github.com/YaleOpenLab/smartPropertyMVP/stellar/database"
 	platform "github.com/YaleOpenLab/smartPropertyMVP/stellar/platform"
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
+	xlm "github.com/YaleOpenLab/smartPropertyMVP/stellar/xlm"
 )
 
 func ValidateInputs() {
@@ -62,6 +63,7 @@ func NewUserPrompt() (string, string, string, error) {
 }
 
 func NewInvestorPrompt() error {
+	log.Println("You have chosen to create a new investor account, welcome")
 	loginUserName, loginPassword, realName, err := NewUserPrompt()
 	if err != nil {
 		log.Println(err)
@@ -77,6 +79,7 @@ func NewInvestorPrompt() error {
 }
 
 func NewRecipientPrompt() error {
+	log.Println("You have chosen to create a new recipient account, welcome")
 	loginUserName, loginPassword, realName, err := NewUserPrompt()
 	if err != nil {
 		log.Println(err)
@@ -243,6 +246,48 @@ func ProposeContractPrompt(contractor *database.Entity) error {
 		return err
 	}
 	// project insertion is done by the  above function, so we needn't call the database to do it again for us
-	PrintParams(originContract.Params)
+	PrintProject(originContract)
 	return nil
+}
+
+func Stage3ProjectsDisplayPrompt() {
+	fmt.Println("------------LIST OF ALL AVAILABLE PROJECTS------------")
+	allProjects, err := database.RetrieveProjects(database.FinalizedProject)
+	if err != nil {
+		log.Println("Error retrieving all projects from the database")
+	} else {
+		PrintProjects(allProjects)
+	}
+}
+
+func DisplayOriginProjects() {
+	fmt.Println("PRINTING ALL ORIGINATED PROJECTS: ")
+	x, err := database.RetrieveProjects(database.OriginProject)
+	if err != nil {
+		log.Println(err)
+	} else {
+		PrintProjects(x)
+	}
+}
+
+func ExitPrompt() {
+	// check whether he wants to go back to the display all screen again
+	fmt.Println("DO YOU REALLY WANT TO EXIT? (PRESS Y TO CONFIRM)")
+	exitOpt, err := utils.ScanForString()
+	if err != nil {
+		log.Println(err)
+	}
+	if exitOpt == "Y" || exitOpt == "y" {
+		fmt.Println("YOU HAVE DECIDED TO EXIT")
+		log.Fatal("")
+	}
+}
+
+func BalanceDisplayPrompt(publicKey string) {
+	balances, err := xlm.GetAllBalances(publicKey)
+	if err != nil {
+		log.Println(err)
+	} else {
+		PrintBalances(balances)
+	}
 }

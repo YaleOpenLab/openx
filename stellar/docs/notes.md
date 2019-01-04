@@ -59,6 +59,20 @@ to grid directly
 
 have two contracts - investors and platforms, contractors' access for funds
 
+## Stuff to discuss for call 5:
+
+progress on stages, naming schemes and stuff, how external partners integrate into the whole
+system and planning calls with them when fit to see their timelines
+
+PoC, FE developer availability and whether we can get resources from the YBI to
+do something.
+
+Further progress, direction of PoC from a CLI based interface to a working model
+
+General code overview and changes since last call, sending people binaries that they
+can test out and run without problems and getting feedback. Also what to talk to Jase
+from neighborly about, who'd be around for that, etc
+
 ## TODOs copied from the Ethereum Smart Contract
 
 ### TODO TENDER PROCESS & REQUEST FOR PROPOSALS ###
