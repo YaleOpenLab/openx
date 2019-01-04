@@ -9,10 +9,10 @@ import (
 	assets "github.com/YaleOpenLab/smartPropertyMVP/stellar/assets"
 	consts "github.com/YaleOpenLab/smartPropertyMVP/stellar/consts"
 	database "github.com/YaleOpenLab/smartPropertyMVP/stellar/database"
+	ipfs "github.com/YaleOpenLab/smartPropertyMVP/stellar/ipfs"
 	rpc "github.com/YaleOpenLab/smartPropertyMVP/stellar/rpc"
 	stablecoin "github.com/YaleOpenLab/smartPropertyMVP/stellar/stablecoin"
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
-	// ipfs "github.com/YaleOpenLab/smartPropertyMVP/stellar/ipfs"
 	xlm "github.com/YaleOpenLab/smartPropertyMVP/stellar/xlm"
 	flags "github.com/jessevdk/go-flags"
 )
@@ -68,6 +68,8 @@ func main() {
 	// TODO: think of a reasonable way to hash the current state of the system with
 	// its hash in the memo field
 	// Open the database
+
+	database.CreateHomeDir()
 	platformPublicKey, platformSeed, err := StartPlatform()
 	if err != nil {
 		log.Fatal(err)
@@ -162,14 +164,14 @@ func main() {
 		for {
 			fmt.Println("------------RECIPIENT INTERFACE------------")
 			fmt.Println("----CHOOSE ONE OF THE FOLLOWING OPTIONS----")
-			fmt.Println("  1. Display all Open Projects")
+			fmt.Println("  1. Display all Open Projects (STAGE 3)")
 			fmt.Println("  2. Display my Profile")
-			fmt.Println("  3. Payback towards an Project")
+			fmt.Println("  3. Payback towards an Project (STAGE 6)")
 			fmt.Println("  4. Exchange XLM for USD")
-			fmt.Println("  5. Finalize a specific Project")
-			fmt.Println("  6. View all Proposed Projects")
-			fmt.Println("  7. View all Projects")
-			fmt.Println("  8. View all Originated Projects")
+			fmt.Println("  5. Finalize a specific Project (STAGE 2->3)")
+			fmt.Println("  6. View all Pre Origin Projects (STAGE 0)")
+			fmt.Println("  7. View all Projects (ALL STAGES)")
+			fmt.Println("  8. View all Origin Projects (STAGE 1)")
 			fmt.Println("  default: Exit")
 			optI, err := utils.ScanForInt()
 			if err != nil {
@@ -280,7 +282,7 @@ func main() {
 				// 2. Completion time
 				// 3. Select Manually
 				fmt.Println("CHOOSE THE METRIC BY WHICH YOU WANT TO SELECT THE WINNING BID: ")
-				allContracts, err := database.RetrieveAllProposedProjects(recipient.U.Index)
+				allContracts, err := database.RetrieveProposedProjectsIR(recipient.U.Index)
 				// retrieve all contracts towards the project
 				if err != nil {
 					log.Fatal(err)
@@ -349,62 +351,32 @@ func main() {
 				// investors. Investors would ideally want to know more about what they are
 				// investing in, so I guess the second option is better for now.
 			case 6:
-				fmt.Println("LIST OF ALL PROPOSED PROJECTS FOR US")
-				// first, we need to get all the contract entities
-				allOriginators, err := database.RetrieveAllContractEntities("originator")
+				fmt.Println("LIST OF ALL PRE ORIGIN PROJECTS BY ORIGINATORS (STAGE 0)")
+				allMyProjects, err := database.RetrievePreOriginProjects()
 				if err != nil {
 					log.Println(err)
 					continue
 				}
-				for _, originator := range allOriginators {
-					// we need to go through their proposed contracts
-					PrintEntity(originator)
-					// print info about hte originator
-					for _, oContract := range originator.ProposedContracts {
-						// print info about the originator's various proposed contracts
-						PrintParams(oContract.Params)
-					}
-				}
-				// now here, the person ahs had a chance to see all the proposed contracts
-				// allow him to choose one so that the contractors can then build on top
-				// of this proposed contract
-				fmt.Println("ENTER THE ORIGINATOR INDEX")
-				originatorIndex, err := utils.ScanForInt()
-				if err != nil {
-					log.Println(err)
-					continue
-				}
+				PrintProjects(allMyProjects)
 				fmt.Println("ENTER THE PROJECT INDEX")
 				contractIndex, err := utils.ScanForInt()
 				if err != nil {
 					log.Println(err)
 					continue
 				}
-				// TODO: spin the below thing into its own function so that we can have an RPC route for that
-				for _, originator := range allOriginators {
-					if originator.U.Index == originatorIndex {
-						// we have the correct originator
-						log.Println("Found originator")
-						for _, originatorProposedContract := range originator.ProposedContracts {
-							if originatorProposedContract.Params.Index == contractIndex {
-								// we found the correct contract as well, need to originate a contract now
-								// ie store this in the contractors database
-								log.Println("Found Project, creating a new origin contract now")
-								newContract, err := database.NewOriginProject(originatorProposedContract.Params, originator)
-								if err != nil {
-									fmt.Println(err)
-									break
-								}
-								err = newContract.Save()
-								if err != nil {
-									fmt.Println(err)
-									break
-								}
-								// TODO: we don't need to delete the originated projects since we
-								// mark this one to be the originated contract,  others are not
-								// displayed to the investors / contractors
-							}
+				// we need to upgrade the contract's whose index is contractIndex to stage 1
+				// we already have a contract, so just upgrade that part
+
+				for _, elem := range allMyProjects {
+					if elem.Params.Index == contractIndex {
+						// increase this contract's stage
+						log.Println("UPGRADING PROJECT INDEX", elem.Params.Index)
+						err = elem.SetOriginContractStage()
+						if err != nil {
+							log.Println(err)
+							break
 						}
+						break
 					}
 				}
 			case 7:
@@ -417,7 +389,7 @@ func main() {
 				PrintProjects(allContracts)
 			case 8:
 				fmt.Println("PRINTING ALL ORIGINATED PROJECTS: ")
-				x, err := database.RetrieveOriginatedProjects()
+				x, err := database.RetrieveOriginProjects()
 				if err != nil {
 					log.Println(err)
 					break
@@ -457,9 +429,10 @@ func main() {
 			fmt.Println("-------------WELCOME BACK CONTRACTOR-------------")
 			for {
 				fmt.Println("WHAT WOULD YOU LIKE TO DO?")
-				fmt.Println("  1. VIEW ALL ORIGINATED PROJECTS")
+				fmt.Println("  1. VIEW ALL ORIGINATED (STAGE 1) PROJECTS")
 				fmt.Println("  2. VIEW PROFILE")
-				fmt.Println("  3. CREATE A PROPOSED PROJECT")
+				fmt.Println("  3. CREATE A PROPOSED (STAGE 2) PROJECT")
+				fmt.Println("  4. VIEW ALL MY PROPOSED (STAGE 2) PROJECTS")
 				optI, err := utils.ScanForInt()
 				if err != nil {
 					log.Println(err)
@@ -469,7 +442,7 @@ func main() {
 				case 1:
 					// TODO: add voting scheme here
 					fmt.Println("LIST OF ALL ORIGINATED PROJECTS: ")
-					originatedProjects, err := database.RetrieveOriginatedProjects()
+					originatedProjects, err := database.RetrieveOriginProjects()
 					if err != nil {
 						log.Println(err)
 						break
@@ -484,15 +457,24 @@ func main() {
 						log.Println(err)
 						continue
 					}
+				case 4:
+					fmt.Println("LIST OF ALL PROPOSED CONTRACTS BY ME: ")
+					allMyProjects, err := database.RetrieveProposedProjectsIC(contractor.U.Index)
+					if err != nil {
+						log.Println(err)
+						continue
+					}
+					PrintProjects(allMyProjects)
 				}
 			}
 		case 2:
 			fmt.Println("-------------WELCOME BACK ORIGINATOR-------------")
 			for {
 				fmt.Println("WHAT WOULD YOU LIKE TO DO?")
-				fmt.Println("  1. PROPOSE A PROJECT TO A RECIPIENT")
+				fmt.Println("  1. PROPOSE A PRE-ORIGIN (STAGE 0) PROJECT TO A RECIPIENT")
 				fmt.Println("  2. VIEW PROFILE")
-				fmt.Println("  3. VIEW ALL MY PROPOSED PROJECTS")
+				fmt.Println("  3. VIEW ALL MY PRE-ORIGINATED (STAGE 0) PROJECTS")
+				fmt.Println("  4. VIEW ALL MY ORIGINATED (STAGE 1) PROJECTS")
 				optI, err = utils.ScanForInt()
 				if err != nil {
 					log.Println(err)
@@ -509,12 +491,21 @@ func main() {
 				case 2:
 					PrintEntity(contractor)
 				case 3:
-					err = PrintAllProposedContracts(&contractor)
+					allMyProjects, err := database.RetrievePreOriginProjectsI(contractor.U.Index)
 					if err != nil {
 						fmt.Println(err)
 						fmt.Println("RETURNING BACK TO THE MAIN LOOP")
 						continue
 					}
+					PrintProjects(allMyProjects)
+				case 4:
+					allMyProjects, err := database.RetrieveOriginProjectsIO(contractor.U.Index)
+					if err != nil {
+						fmt.Println(err)
+						fmt.Println("RETURNING BACK TO THE MAIN LOOP")
+						continue
+					}
+					PrintProjects(allMyProjects)
 				default:
 					// check whether he wants to go back to the display all screen again
 					fmt.Println("DO YOU REALLY WANT TO EXIT? (PRESS Y TO CONFIRM)")
@@ -537,13 +528,14 @@ func main() {
 			// Main investor loop
 			fmt.Println("------------INVESTOR INTERFACE------------")
 			fmt.Println("----CHOOSE ONE OF THE FOLLOWING OPTIONS----")
-			fmt.Println("  1. Display all Open Projects")
+			fmt.Println("  1. Display all Open Projects (STAGE 3)")
 			fmt.Println("  2. Display my Profile")
-			fmt.Println("  3. Invest in an Project")
+			fmt.Println("  3. Invest in an Project (STAGE 3)")
 			fmt.Println("  4. Display All Balances")
 			fmt.Println("  5. Exchange XLM for USD")
-			fmt.Println("  6. Display all Originated Projects")
-			fmt.Println("  7. Vote towards a specific proposed project")
+			fmt.Println("  6. Display all Origin (STAGE 1) Projects")
+			fmt.Println("  7. Vote towards a specific proposed project (STAGE 2)")
+			fmt.Println("  8. Get ipfs hash of a contract")
 			fmt.Println("  default: Exit")
 			optI, err := utils.ScanForInt()
 			if err != nil {
@@ -685,7 +677,7 @@ func main() {
 				cProject, err := assets.InvestInProject(platformPublicKey, platformSeed, &investor, &recipient, investmentAmount, uContract) // assume payback period is 5
 				if err != nil {
 					log.Println(err)
-					continue
+					break
 				}
 				fmt.Println("YOUR PROJECT INVESTMENT HAS BEEN CONFIRMED: ")
 				PrintParams(cProject)
@@ -731,7 +723,7 @@ func main() {
 			case 6:
 				// TODO: add voting scheme here
 				fmt.Println("LIST OF ALL ORIGINATED PROJECTS: ")
-				originatedProjects, err := database.RetrieveOriginatedProjects()
+				originatedProjects, err := database.RetrieveOriginProjects()
 				if err != nil {
 					log.Println(err)
 					break
@@ -739,88 +731,53 @@ func main() {
 				PrintProjects(originatedProjects)
 			case 7:
 				// this is the case where an investor can vote on a particular proposed project
+				// ie stage 2 projects for the recipient to have an understanding about
+				// which contracts are popular and can receive more investor money
 				fmt.Println("LIST OF ALL PROPOSED ORDERS: ")
-				// now the investor can only put his funds in one potential proposed project.
-				// his voting weight will be the amount of stableUSD that he has.
-				// for testing, we assume that weights are 100 each.
-				allContractors, err := database.RetrieveAllContractEntities("contractor")
+				allProposedProjects, err := database.RetrieveProposedProjects()
 				if err != nil {
 					log.Println(err)
 					break
 				}
-				for index, contractor := range allContractors {
-					log.Println("CONTRACTOR NAME: ", contractor.U.Name)
-					log.Println("CONTRACTOR INDEX: ", contractor.U.Index)
-					for _, contract := range allContractors[index].ProposedContracts {
-						PrintParams(contract.Params)
-					}
-				}
-				// we need to get the vote of the investor here, but how do you get the vote?
-				// because you have two arrays, you need to have some kind of a common index
-				// between the two and then you can fetch the stuff back.
-				// lets ask for the user index, which will be unique and the project number,
-				// which can get us the specific proposed contract
-				fmt.Println("WHICH CONTRACTOR DO YOU WANT TO VOTE TOWARDS?")
+				PrintProjects(allProposedProjects)
+				fmt.Println("WHICH CONTRACT DO YOU WANT TO VOTE TOWARDS?")
 				vote, err := utils.ScanForInt()
 				if err != nil {
 					log.Println(err)
 					break
 				}
-				log.Println("You have voted for user number: ", vote)
-				fmt.Println("WHICH PROPOSED CONTRACT OF HIS DO YOU WANT TO VOTE TOWARDS?")
-				pProjectN, err := utils.ScanForInt()
+				log.Println("You have voted for contract number: ", vote)
+				err = investor.VoteTowardsProposedProject(allProposedProjects, vote)
 				if err != nil {
 					log.Println(err)
 					break
 				}
-				// we need to go through the contractor's proposed projects to find an project
-				// with index pProjectN
-				for _, elem := range allContractors {
-					if elem.U.Index == vote {
-						// we have the specific contractor
-						log.Println("FOUND CONTRACTOR!")
-						for i, pcs := range elem.ProposedContracts {
-							if pcs.Params.Index == pProjectN {
-								// this is the project the user voted towards
-								// need to update the vote stuff
-								// check whether user has already voted
-								// now an investor can vote  up to a max of his balance in StableUSD
-								// the final call for selecting still falls on to the recipient, but
-								// the recipient can get some idea on which proposed contracts are
-								// popular.
-								fmt.Println("YOUR AVAILABLE VOTING BALANCE IS: ", investor.VotingBalance)
-								fmt.Println("HOW MANY VOTES DO YOU WANT TO DELEGATE TOWARDS THIS ORDER?")
-								votes, err := utils.ScanForInt()
-								if err != nil {
-									log.Println(err)
-									break
-								}
-								if votes > investor.VotingBalance {
-									log.Println("Can't vote with an amount greater than available balance")
-									break
-								}
-								pcs.Params.Votes += votes
-								// an project's votes can exceed the total amount because it only shows
-								// that many people feel that contract to be doing the right thing
-								elem.ProposedContracts[i] = pcs
-								// and we need to update the contractor, not project, since these
-								// are not in the project database yet)
-								err = database.InsertEntity(elem)
-								if err != nil {
-									log.Println(err)
-									break
-								}
-								err = investor.DeductVotingBalance(votes)
-								if err != nil {
-									// fatal since we need to exit if there's a bug in updating votes
-									log.Fatal(err)
-									break
-								}
-								log.Println("CASTING VOTE! ", pcs)
-							}
-						}
-					}
+			case 8:
+				fmt.Println("WELCOME TO THE IPFS HASHING INTERFACE")
+				fmt.Println("ENTER THE STRING THAT YOU WOULD LIKE THE IPFS HASH FOR")
+				// the UI should ideally have a menu that asks the user for a file and then
+				// produces the hash of it. In this case, we shall use a sample ipfs file
+				// and then hash it.
+				// this uses the platform's ipfs key though, not the user's. If the user
+				// wants to serve his own ipfs files, he is better off running a client on
+				// his own
+				hashString, err := utils.ScanForString()
+				if err != nil {
+					fmt.Println("Couldn't read user input, going back to the main loop")
 				}
+				hash, err := ipfs.AddStringToIpfs(hashString)
+				if err != nil {
+					fmt.Println("Couldn't hash user input, exiting to main menu", err)
+					break
+				}
+				hashCheck, err := ipfs.GetStringFromIpfs(hash)
+				if err != nil || hashCheck != hashString {
+					fmt.Println("Hashed strings and retrieved strings don't match, don't use this hash!")
+					break
+				}
+				// don't print this hash unless we can decrypt it and be sure that it behaves as expected
+				log.Println("THE HASH OF THE PROVIDED STRING IS: ", hash)
+				// try to retrieve the string back from ipfs and check if it works correctly
 			default:
 				// check whether he wants to go back to the display all screen again
 				fmt.Println("DO YOU REALLY WANT TO EXIT? (PRESS Y TO CONFIRM)")

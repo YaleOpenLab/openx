@@ -30,7 +30,12 @@ func NewRecipient(uname string, pwd string, Name string) (Recipient, error) {
 	if err != nil {
 		return a, err
 	}
-	return a, nil
+	err = a.U.GenKeys()
+	if err != nil {
+		return a, err
+	}
+	err = a.Save()
+	return a, err
 }
 
 // all operations are mostly similar to that of the Recipient class

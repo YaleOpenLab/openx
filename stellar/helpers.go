@@ -62,45 +62,32 @@ func NewUserPrompt() (string, string, string, error) {
 }
 
 func NewInvestorPrompt() error {
-	fmt.Printf("%s: ", "ENTER YOUR REAL NAME")
-
 	loginUserName, loginPassword, realName, err := NewUserPrompt()
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 
-	investor, err := database.NewInvestor(loginUserName, loginPassword, realName)
+	_, err = database.NewInvestor(loginUserName, loginPassword, realName)
 	if err != nil {
 		log.Println("FAILED TO SETUP ACCOUNT, TRY AGAIN")
 		return err
 	}
-	err = investor.Save()
-	if err != nil {
-		log.Println("FAILED TO SETUP ACCOUNT, TRY AGAIN")
-		return err
-	}
-	return nil
+	return err
 }
 
 func NewRecipientPrompt() error {
-
 	loginUserName, loginPassword, realName, err := NewUserPrompt()
 	if err != nil {
 		log.Println(err)
 		return err
 	}
-	recipient, err := database.NewRecipient(loginUserName, loginPassword, realName)
+	_, err = database.NewRecipient(loginUserName, loginPassword, realName)
 	if err != nil {
 		log.Println("FAILED TO SETUP ACCOUNT, TRY AGAIN")
 		return err
 	}
-	err = recipient.Save()
-	if err != nil {
-		log.Println("FAILED TO SETUP ACCOUNT, TRY AGAIN")
-		return err
-	}
-	return nil
+	return err
 }
 
 func LoginPrompt() (database.Investor, database.Recipient, database.Entity, bool, bool, error) {
@@ -207,21 +194,6 @@ func OriginContractPrompt(contractor *database.Entity) error {
 	}
 	// project insertion is done by the  above function, so we needn't call the database to do it again for us
 	PrintProject(originContract)
-	return nil
-}
-
-func PrintAllProposedContracts(contractor *database.Entity) error {
-	fmt.Println("LIST OF ALL PROPOSED CONTRACTS: ")
-	// the database would be updated each time the user has an originated
-	// contract, so we need to retrieve the contractor struct again
-	contractorDup, err := database.RetrieveEntity(contractor.U.Index)
-	if err != nil {
-		return err
-	}
-	for _, elem := range contractor.ProposedContracts {
-		PrintParams(elem.Params)
-	}
-	contractor = &contractorDup
 	return nil
 }
 

@@ -22,16 +22,9 @@ func InsertDummyData() error {
 		log.Fatal(err)
 	}
 	if len(allRecs) == 0 {
+		// there is no recipient right now, so create a dummy recipient
 		var err error
-		rec.U, err = database.NewUser("martin", "password", "Martin")
-		if err != nil {
-			log.Fatal(err)
-		}
-		err = rec.U.GenKeys()
-		if err != nil {
-			log.Fatal(err)
-		}
-		err = rec.Save()
+		rec, err = database.NewRecipient("martin", "p", "Martin")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -44,29 +37,23 @@ func InsertDummyData() error {
 	}
 	if len(allInvs) == 0 {
 		var err error
-		inv.U, err = database.NewUser("john", "password", "John")
+		inv, err = database.NewInvestor("john", "p", "John")
 		if err != nil {
 			log.Fatal(err)
 		}
-		inv.VotingBalance = 100000
-		err = inv.U.GenKeys()
-		if err != nil {
-			log.Fatal(err)
-		}
-		// TODO: this is being set as a constant now, but should be updated to check
-		// the stablecoin and adjust accordingly.
-		err = inv.Save()
+		err = inv.AddVotingBalance(100000)
+		// this function saves as well, so there's no need to save again
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 	// NewOriginator(uname string, pwd string, Name string, Address string, Description string)
-	newOriginator, err := database.NewOriginator("john", "password", "John Doe", "14 ABC Street London", "This is a sample originator")
+	newOriginator, err := database.NewOriginator("john", "p", "John Doe", "14 ABC Street London", "This is a sample originator")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	c1, err := database.NewContractor("john", "password", "John Doe", "14 ABC Street London", "This is a sample contractor")
+	c1, err := database.NewContractor("john", "p", "John Doe", "14 ABC Street London", "This is a sample contractor")
 	if err != nil {
 		log.Println(err)
 	}
@@ -158,7 +145,7 @@ func InsertDummyData() error {
 		}
 	*/
 	// competing contractor details follow
-	_, err = database.NewContractor("sam", "password", "Samuel Jackson", "14 ABC Street London", "This is a competing contractor")
+	_, err = database.NewContractor("sam", "p", "Samuel Jackson", "14 ABC Street London", "This is a competing contractor")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -169,7 +156,7 @@ func InsertDummyData() error {
 			log.Fatal(err)
 		}
 	*/
-	_, err = database.NewOriginator("samuel", "password", "Samuel L. Jackson", "ABC Street, London", "I am an originator")
+	_, err = database.NewOriginator("samuel", "p", "Samuel L. Jackson", "ABC Street, London", "I am an originator")
 	if err != nil {
 		log.Fatal(err)
 	}

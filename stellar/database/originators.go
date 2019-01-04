@@ -5,18 +5,7 @@ import (
 )
 
 func NewOriginator(uname string, pwd string, Name string, Address string, Description string) (Entity, error) {
-	newOriginator, err := NewEntity(uname, pwd, Name, Address, Description, "originator")
-	if err != nil {
-		return newOriginator, err
-	}
-
-	// insert the originator into the database
-	err = InsertEntity(newOriginator)
-	if err != nil {
-		return newOriginator, err
-	}
-
-	return newOriginator, err
+	return NewEntity(uname, pwd, Name, Address, Description, "originator")
 }
 
 func (contractor *Entity) OriginContract(panelSize string, totalValue int, location string, years int, metadata string, recIndex int) (Project, error) {
@@ -42,7 +31,7 @@ func (contractor *Entity) OriginContract(panelSize string, totalValue int, locat
 	}
 	pc.Params.ProjectRecipient = iRecipient
 	pc.Stage = 0 // 0 since we need to filter this out while retrieving the propsoed contracts
-	pc.Contractor = *contractor
+	pc.Originator = *contractor
 	// instead of storing in this proposedcontracts slice, store it as a project, but not a contract and retrieve by stage
 	err = pc.Save()
 	// don't insert the project since the contractor's projects are not final

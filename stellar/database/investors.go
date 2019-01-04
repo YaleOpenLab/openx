@@ -3,6 +3,7 @@ package database
 // contains the WIP Investor struct which will be stored in a separate bucket
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
@@ -48,9 +49,14 @@ func NewInvestor(uname string, pwd string, Name string) (Investor, error) {
 	if err != nil {
 		return a, err
 	}
+	err = a.U.GenKeys()
+	if err != nil {
+		return a, err
+	}
 	// new user creates keys, so don't create them here
 	a.AmountInvested = float64(0)
-	return a, nil
+	err = a.Save()
+	return a, err
 }
 
 // InsertInvestor inserts a passed Investor object into the database
@@ -149,26 +155,16 @@ func (a *Investor) DeductVotingBalance(votes int) error {
 	// balance or a user will have way less votes. This needs an aadditional field
 	// in the db to track past balance and then adjust the amoutn of votes he has
 	// accordingly
-	var err error
 	a.VotingBalance -= votes
-	err = a.Save()
-	if err != nil {
-		return err
-	}
-	return nil
+	return a.Save()
 }
 
 func (a *Investor) AddVotingBalance(votes int) error {
 	// this function is caled when we want to refund the user with the votes once
 	// an order has been finalized.
 	// TODO: use this
-	var err error
 	a.VotingBalance += votes
-	err = a.Save()
-	if err != nil {
-		return err
-	}
-	return nil
+	return a.Save()
 }
 
 // TrustAsset creates a trustline from the caller towards the specific asset
@@ -198,4 +194,37 @@ func (a *Investor) CanInvest(balance string, targetBalance string) bool {
 		return false
 	}
 	return balance >= targetBalance
+}
+
+func (a *Investor) VoteTowardsProposedProject(allProposedProjects []Project, vote int) error {
+	// split the coting stuff into a separate function
+	// we need to go through the contractor's proposed projects to find an project
+	// with index pProjectN
+	for _, elem := range allProposedProjects {
+		if elem.Params.Index == vote {
+			// we have the specific contract and need to upgrade the number of votes on this one
+			fmt.Println("YOUR AVAILABLE VOTING BALANCE IS: ", a.VotingBalance)
+			fmt.Println("HOW MANY VOTES DO YOU WANT TO DELEGATE TOWARDS THIS ORDER?")
+			votes, err := utils.ScanForInt()
+			if err != nil {
+				return err
+			}
+			if votes > a.VotingBalance {
+				return fmt.Errorf("Can't vote with an amount greater than available balance")
+			}
+			elem.Params.Votes += votes
+			err = elem.Save()
+			if err != nil {
+				return err
+			}
+			err = a.DeductVotingBalance(votes)
+			if err != nil {
+				return err
+			}
+			fmt.Println("CAST VOTE TOWARDS CONTRACT SUCCESSFULLY")
+			log.Println("FOUND CONTRACTOR!")
+			return nil
+		}
+	}
+	return fmt.Errorf("Index of project not found, returning")
 }

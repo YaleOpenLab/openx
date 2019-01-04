@@ -19,18 +19,7 @@ import (
 // have an auction handler that will take care of this.
 
 func NewContractor(uname string, pwd string, Name string, Address string, Description string) (Entity, error) {
-	newContractor, err := NewEntity(uname, pwd, Name, Address, Description, "contractor")
-	if err != nil {
-		return newContractor, err
-	}
-
-	// insert the contractor into the database
-	err = InsertEntity(newContractor)
-	if err != nil {
-		return newContractor, err
-	}
-
-	return newContractor, err
+	return NewEntity(uname, pwd, Name, Address, Description, "contractor")
 }
 
 func (contractor *Entity) ProposeContract(panelSize string, totalValue int, location string, years int, metadata string, recIndex int, projectIndex int) (Project, error) {

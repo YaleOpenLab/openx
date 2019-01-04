@@ -65,7 +65,7 @@ func NewUser(uname string, pwd string, Name string) (User, error) {
 	}
 
 	a.Name = Name
-	a.Seed, a.PublicKey, err = xlm.GetKeyPair()
+	err = a.GenKeys()
 	if err != nil {
 		return a, err
 	}

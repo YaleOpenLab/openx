@@ -77,6 +77,8 @@ type Project struct {
 }
 
 // TODO: get comments on the various stages involved here
+// TODO: currently only whole number stages supported, as applications increase,
+// we can add more stuff around here
 var (
 	OriginProposedContractStage = 0   // Stage 0: Originator approaches the recipient to originate an order
 	LegalContractStage          = 0.5 // Stage 0.5: Legal contract between the originator and the recipient, out of blockchain
@@ -104,6 +106,8 @@ func NewOriginProject(project DBParams, originator Entity) (Project, error) {
 
 // RecipientAuthorizeContract authorizes a specific project from the recipients side
 // if you already have the project and the recipient struct ready to pass.
+// this function is not used right now, but would be when we finalize the various
+// stages of a project
 func (project *Project) RecipientAuthorizeContract(recipient Recipient) error {
 	if project.Params.ProjectRecipient.U.Name != recipient.U.Name {
 		return fmt.Errorf("You can't authorize a project which is not assigned to you!")
@@ -165,6 +169,7 @@ func (a *Project) Save() error {
 	})
 	return err
 }
+
 // RetrieveProject retrieves the project with the specified index from the database
 func RetrieveProject(key int) (Project, error) {
 	var inv Project
@@ -212,9 +217,8 @@ func RetrieveAllProjects() ([]Project, error) {
 	return arr, err
 }
 
-// RetrieveAllProposedProjects retrieves all projects with the stage 2 ie contracts
-// have been proposed by a contractor
-func RetrieveAllProposedProjects(recpIndex int) ([]Project, error) {
+// STAGE 0 FUNCTIONS
+func RetrievePreOriginProjects() ([]Project, error) {
 	var arr []Project
 	db, err := OpenDB()
 	if err != nil {
@@ -233,10 +237,243 @@ func RetrieveAllProposedProjects(recpIndex int) ([]Project, error) {
 			if err != nil {
 				return err
 			}
-			log.Println("rProject: ", rProject.Stage, rProject.Params.ProjectRecipient.U.Index)
-			log.Println("ALL PROJECT Recipients: ", rProject.Params.ProjectRecipient)
-			if rProject.Stage == 2 && rProject.Params.ProjectRecipient.U.Index == recpIndex {
+			if rProject.Stage == 0 {
 				// append only those contracts with stage 2
+				arr = append(arr, rProject)
+			}
+		}
+		return nil
+	})
+	return arr, err
+}
+
+// RetrieveAllProposedProjects retrieves all projects with the stage 2 ie contracts
+// have been proposed by a contractor
+func RetrievePreOriginProjectsI(index int) ([]Project, error) {
+	var arr []Project
+	db, err := OpenDB()
+	if err != nil {
+		return arr, err
+	}
+	defer db.Close()
+	err = db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket(ProjectsBucket)
+		for i := 1; ; i++ {
+			var rProject Project
+			x := b.Get(utils.ItoB(i))
+			if x == nil {
+				break
+			}
+			err := json.Unmarshal(x, &rProject)
+			if err != nil {
+				return err
+			}
+			if rProject.Stage == 0 && rProject.Originator.U.Index == index {
+				// append only those contracts with stage 2
+				arr = append(arr, rProject)
+			}
+		}
+		return nil
+	})
+	return arr, err
+}
+
+// STAGE 1 functions
+// RetrieveOriginatedProjects retrieves all originated contracts ie contracts with state 1
+// , we don't bother about the other projects
+func RetrieveOriginProjects() ([]Project, error) {
+	var arr []Project
+	db, err := OpenDB()
+	if err != nil {
+		return arr, err
+	}
+	defer db.Close()
+	err = db.Update(func(tx *bolt.Tx) error {
+		// this is Update to cover the case where the  bucket doesn't exists and we're
+		// trying to retrieve a list of keys
+		b := tx.Bucket(ProjectsBucket)
+		for i := 1; ; i++ {
+			var rProject Project
+			x := b.Get(utils.ItoB(i))
+			if x == nil {
+				// this is where the key does not exist
+				return nil
+			}
+			err := json.Unmarshal(x, &rProject)
+			if err != nil {
+				// we've reached the end of input, so this is not an error
+				// ideal error would be "unexpected JSON input" or something similar
+				return nil
+			}
+			if rProject.Stage == 1 {
+				// return contracts which have been originated and are not final yet
+				arr = append(arr, rProject)
+			}
+		}
+		return nil
+	})
+	return arr, err
+}
+
+// RetrieveOriginProjectsIO is used when we want to display the list of originated
+// contracts to the originator
+func RetrieveOriginProjectsIO(index int) ([]Project, error) {
+	var arr []Project
+	db, err := OpenDB()
+	if err != nil {
+		return arr, err
+	}
+	defer db.Close()
+	err = db.Update(func(tx *bolt.Tx) error {
+		// this is Update to cover the case where the  bucket doesn't exists and we're
+		// trying to retrieve a list of keys
+		b := tx.Bucket(ProjectsBucket)
+		for i := 1; ; i++ {
+			var rProject Project
+			x := b.Get(utils.ItoB(i))
+			if x == nil {
+				// this is where the key does not exist
+				return nil
+			}
+			err := json.Unmarshal(x, &rProject)
+			if err != nil {
+				// we've reached the end of input, so this is not an error
+				// ideal error would be "unexpected JSON input" or something similar
+				return nil
+			}
+			if rProject.Stage == 1 && rProject.Originator.U.Index == index {
+				// return contracts which have been originated and are not final yet
+				arr = append(arr, rProject)
+			}
+		}
+		return nil
+	})
+	return arr, err
+}
+
+// STAGE 2 FUNCTIONS
+// RetrieveAllProposedProjects retrieves all projects with the stage 2 ie contracts
+// have been proposed by a contractor
+func RetrieveProposedProjects() ([]Project, error) {
+	var arr []Project
+	db, err := OpenDB()
+	if err != nil {
+		return arr, err
+	}
+	defer db.Close()
+	err = db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket(ProjectsBucket)
+		for i := 1; ; i++ {
+			var rProject Project
+			x := b.Get(utils.ItoB(i))
+			if x == nil {
+				break
+			}
+			err := json.Unmarshal(x, &rProject)
+			if err != nil {
+				return err
+			}
+			if rProject.Stage == 2 {
+				// append only those contracts with stage 2
+				arr = append(arr, rProject)
+			}
+		}
+		return nil
+	})
+	return arr, err
+}
+
+// RetrieveAllProposedProjects retrieves all projects with stage 2 ie contracts
+// have been proposed by a contractor and is addressed to the recipient
+func RetrieveProposedProjectsIR(index int) ([]Project, error) {
+	var arr []Project
+	db, err := OpenDB()
+	if err != nil {
+		return arr, err
+	}
+	defer db.Close()
+	err = db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket(ProjectsBucket)
+		for i := 1; ; i++ {
+			var rProject Project
+			x := b.Get(utils.ItoB(i))
+			if x == nil {
+				break
+			}
+			err := json.Unmarshal(x, &rProject)
+			if err != nil {
+				return err
+			}
+			if rProject.Stage == 2 && rProject.Params.ProjectRecipient.U.Index == index {
+				// append only those contracts with stage 2
+				arr = append(arr, rProject)
+			}
+		}
+		return nil
+	})
+	return arr, err
+}
+
+// RetrieveAllProposedProjects retrieves all projects with stage 2 ie contracts
+// have been proposed by a contractor and belongs to a specific contractor
+func RetrieveProposedProjectsIC(index int) ([]Project, error) {
+	var arr []Project
+	db, err := OpenDB()
+	if err != nil {
+		return arr, err
+	}
+	defer db.Close()
+	err = db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket(ProjectsBucket)
+		for i := 1; ; i++ {
+			var rProject Project
+			x := b.Get(utils.ItoB(i))
+			if x == nil {
+				break
+			}
+			err := json.Unmarshal(x, &rProject)
+			if err != nil {
+				return err
+			}
+			if rProject.Stage == 2 && rProject.Contractor.U.Index == index {
+				// append only those contracts with stage 2
+				arr = append(arr, rProject)
+			}
+		}
+		return nil
+	})
+	return arr, err
+}
+
+// STAGE 3 FUNCTIONS
+// RetrieveStage3Projects retrieves all the projects which are ready to be invested
+// in by investors
+func RetrieveStage3Projects() ([]Project, error) {
+	var arr []Project
+	db, err := OpenDB()
+	if err != nil {
+		return arr, err
+	}
+	defer db.Close()
+	err = db.Update(func(tx *bolt.Tx) error {
+		// this is Update to cover the case where the  bucket doesn't exists and we're
+		// trying to retrieve a list of keys
+		b := tx.Bucket(ProjectsBucket)
+		for i := 1; ; i++ {
+			var rProject Project
+			x := b.Get(utils.ItoB(i))
+			if x == nil {
+				// this is where the key does not exist
+				return nil
+			}
+			err := json.Unmarshal(x, &rProject)
+			if err != nil {
+				// we've reached the end of input, so this is not an error
+				// ideal error would be "unexpected JSON input" or something similar
+				return nil
+			}
+			if rProject.Stage == 3 {
+				// return contracts which have been originated and are not final yet
 				arr = append(arr, rProject)
 			}
 		}
@@ -292,78 +529,6 @@ func (a *Project) SetInstalledProjectStage() error {
 func (a *Project) SetPowerGenerationStage() error {
 	a.Stage = 6
 	return a.Save()
-}
-
-// RetrieveOriginatedProjects retrieves all originated contracts ie contracts with state 1
-// , we don't bother about the other projects
-func RetrieveOriginatedProjects() ([]Project, error) {
-	var arr []Project
-	db, err := OpenDB()
-	if err != nil {
-		return arr, err
-	}
-	defer db.Close()
-	err = db.Update(func(tx *bolt.Tx) error {
-		// this is Update to cover the case where the  bucket doesn't exists and we're
-		// trying to retrieve a list of keys
-		b := tx.Bucket(ProjectsBucket)
-		for i := 1; ; i++ {
-			var rProject Project
-			x := b.Get(utils.ItoB(i))
-			if x == nil {
-				// this is where the key does not exist
-				return nil
-			}
-			err := json.Unmarshal(x, &rProject)
-			if err != nil {
-				// we've reached the end of input, so this is not an error
-				// ideal error would be "unexpected JSON input" or something similar
-				return nil
-			}
-			if rProject.Stage == 1 {
-				// return contracts which have been originated and are not final yet
-				arr = append(arr, rProject)
-			}
-		}
-		return nil
-	})
-	return arr, err
-}
-
-// RetrieveStage3Projects retrieves all the projects which are ready to be invested
-// in by investors
-func RetrieveStage3Projects() ([]Project, error) {
-	var arr []Project
-	db, err := OpenDB()
-	if err != nil {
-		return arr, err
-	}
-	defer db.Close()
-	err = db.Update(func(tx *bolt.Tx) error {
-		// this is Update to cover the case where the  bucket doesn't exists and we're
-		// trying to retrieve a list of keys
-		b := tx.Bucket(ProjectsBucket)
-		for i := 1; ; i++ {
-			var rProject Project
-			x := b.Get(utils.ItoB(i))
-			if x == nil {
-				// this is where the key does not exist
-				return nil
-			}
-			err := json.Unmarshal(x, &rProject)
-			if err != nil {
-				// we've reached the end of input, so this is not an error
-				// ideal error would be "unexpected JSON input" or something similar
-				return nil
-			}
-			if rProject.Stage == 3 {
-				// return contracts which have been originated and are not final yet
-				arr = append(arr, rProject)
-			}
-		}
-		return nil
-	})
-	return arr, err
 }
 
 func FindInKey(key int, arr []Project) (Project, error) {

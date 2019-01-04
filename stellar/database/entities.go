@@ -28,7 +28,7 @@ type Entity struct {
 	// on time. This authority should be trusted and either should be vetted by the law
 	// or have a multisig paying out to the investors beyond a certain timeline if they
 	// don't get paid by the school. This way, the guarantor can be anonymous, like the
-	// nice Pineapple Fund guy. THis can also be an insurance company, who is willing to
+	// nice Pineapple Fund guy. This can also be an insurance company, who is willing to
 	// guarantee for specific school and the school can pay him out of chain / have
 	// that as fee within the contract the originator
 	Developer bool
@@ -77,6 +77,10 @@ func newEntityHelper(uname string, pwd string, Name string, Address string, Desc
 	if err != nil {
 		return a, err
 	}
+	err = a.U.GenKeys()
+	if err != nil {
+		return a, err
+	}
 	// set all auto fields above
 	a.U.Address = Address
 	a.U.Description = Description
@@ -93,10 +97,11 @@ func newEntityHelper(uname string, pwd string, Name string, Address string, Desc
 	default:
 		// nothing, since only we call this function internally, this shouldn't arrive here
 	}
-	return a, nil
+	err = a.Save()
+	return a, err
 }
 
-func InsertEntity(a Entity) error {
+func (a *Entity) Save() error {
 	db, err := OpenDB()
 	if err != nil {
 		return err

@@ -2,7 +2,9 @@ package database
 
 import (
 	"log"
+	"os"
 
+	consts "github.com/YaleOpenLab/smartPropertyMVP/stellar/consts"
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
 	"github.com/boltdb/bolt"
 )
@@ -15,9 +17,24 @@ var PlatformBucket = []byte("Platforms")
 var ContractorBucket = []byte("Contractors")
 var UserBucket = []byte("Users")
 
+func CreateHomeDir() {
+	if _, err := os.Stat(consts.HomeDir); os.IsNotExist(err) {
+		// directory does not exist, create one
+		log.Println("Creating home directory")
+		os.MkdirAll(consts.HomeDir, os.ModePerm)
+	}
+	if _, err := os.Stat(consts.DbDir); os.IsNotExist(err) {
+		os.MkdirAll(consts.DbDir, os.ModePerm)
+	}
+	if _, err := os.Stat(consts.StableCoinDir); os.IsNotExist(err) {
+		os.MkdirAll(consts.StableCoinDir, os.ModePerm)
+	}
+}
+
 // TODO: need locks over this to ensure no one's using the db while we are
 func OpenDB() (*bolt.DB, error) {
-	db, err := bolt.Open("yol.db", 0600, nil)
+	// we need to check and create this directory if it doesn't exist
+	db, err := bolt.Open(consts.DbDir+"/yol.db", 0600, nil) // store this in its ownd database
 	if err != nil {
 		log.Println("Couldn't open database, exiting!")
 		return db, err

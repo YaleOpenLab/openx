@@ -22,6 +22,7 @@ import (
 	"log"
 
 	assets "github.com/YaleOpenLab/smartPropertyMVP/stellar/assets"
+	consts "github.com/YaleOpenLab/smartPropertyMVP/stellar/consts"
 	oracle "github.com/YaleOpenLab/smartPropertyMVP/stellar/oracle"
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
 	xlm "github.com/YaleOpenLab/smartPropertyMVP/stellar/xlm"
@@ -54,7 +55,7 @@ func CreateStableCoin() build.Asset {
 // We use a different databse here because when we clean yol.db, we don't want to
 // generate a new stablecoin (which in theory should be pegged to the USD)
 func OpenDB() (*bolt.DB, error) {
-	db, err := bolt.Open("sbc.db", 0600, nil)
+	db, err := bolt.Open(consts.StableCoinDir+"/sbc.db", 0600, nil)
 	if err != nil {
 		log.Println("Couldn't open database, exiting!")
 		return db, err
@@ -207,17 +208,14 @@ func InitStableCoin() error {
 // for the amount deposited and then transfers the StableUSD asset to the payee
 // Prices are retrieved from an oracle.
 func ListenForPayments() {
-	// this will be started as a goroutine
-	// address := Issuer.PublicKey
-	const address = "GATCZGZEC363VABRKGRNTCQPGRIGFUBRION7KPNFV32X5PA47OBEBSV5"
-	// this thing above has to be hardcoded because stellar's APi wants it like so
-	// stupid stuff, but we need to go ahead with it. IN reality, this shouldn't
+	// the publicKey above has to be hardcoded as a constant because stellar's API wants it like so
+	// stupid stuff, but we need to go ahead with it. In reality, this shouldn't
 	// be much of a problem since we expect that the platform's seed will be
-	// remembered
+	// constant
 	ctx := context.Background() // start in the background context
 	cursor := horizon.Cursor("now")
 	fmt.Println("Waiting for a payment...")
-	err := xlm.TestNetClient.StreamPayments(ctx, address, &cursor, func(payment horizon.Payment) {
+	err := xlm.TestNetClient.StreamPayments(ctx, consts.StableCoinAddress, &cursor, func(payment horizon.Payment) {
 		/*
 			Sample Response:
 			Payment type payment
@@ -253,6 +251,7 @@ func ListenForPayments() {
 			_, hash, err := assets.SendAssetFromIssuer(StableUSD.Code, payee, utils.FtoS(xlmWorth), Issuer.Seed, Issuer.PublicKey)
 			if err != nil {
 				log.Println("Error while sending USD Assets back to payee: ", payee)
+				log.Println(err)
 				//  don't skip here, there's technically nothing we can do
 			}
 			log.Println("Successful payment, hash: ", hash)

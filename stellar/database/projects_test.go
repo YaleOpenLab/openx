@@ -45,21 +45,11 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = InsertEntity(newCE2)
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	// tests for contractors
 	newCE, err := NewContractor("ConTest", "pwd", "NameConTest", "123 ABC Street", "ConDescription") // use and test this as well
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = InsertEntity(newCE)
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	project1.Index = 1
 	project1.PanelSize = "100 1000 sq.ft homes each with their own private spaces for luxury"
 	project1.TotalValue = 14000
@@ -118,6 +108,7 @@ func TestDb(t *testing.T) {
 		t.Errorf("Failed in retrieving all originated projects")
 	}
 	if len(oProjects) != 2 {
+		log.Println("OPROJECTS: ", len(oProjects))
 		t.Fatalf("Originated projects present!")
 	}
 	err = DeleteKeyFromBucket(dummy.Params.Index, ProjectsBucket)
@@ -143,7 +134,7 @@ func TestDb(t *testing.T) {
 		t.Fatalf("Invalid Investor exists")
 	}
 	if rInv.U.Name != inv.U.Name || rInv.U.LoginUserName != inv.U.LoginUserName || rInv.U.LoginPassword != inv.U.LoginPassword {
-		log.Println(rInv.U.Name , inv.U.Name)
+		log.Println(rInv.U.Name, inv.U.Name)
 		t.Fatalf("Usernames don't match, quitting!")
 	}
 	inv, err = NewInvestor("inv2", "b921f75437050f0f7d2caba6303d165309614d524e3d7e6bccf313f39d113468d30e1e2ac01f91f6c9b66c083d393f49b3177345311849edb026bb86ee624be0", "cool")
@@ -209,10 +200,6 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = InsertEntity(newCE)
-	if err != nil {
-		t.Fatal(err)
-	}
 	allOrigs, err := RetrieveAllContractEntities("originator")
 	if err != nil {
 		t.Fatal(err)
@@ -248,7 +235,7 @@ func TestDb(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	allPCs, err := RetrieveAllProposedProjects(6)
+	allPCs, err := RetrieveProposedProjectsIR(6)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -264,7 +251,7 @@ func TestDb(t *testing.T) {
 	}
 
 	// now come the failure cases which should fail and we shall catch the case when they don't
-	allPCs, err = RetrieveAllProposedProjects(2)
+	allPCs, err = RetrieveProposedProjectsIC(2)
 	if len(allPCs) != 0 {
 		log.Println("LEBNGRG: ", len(allPCs))
 		t.Fatalf("Retrieving a missing contract succeeds, quitting!")
@@ -330,7 +317,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	allOOs, err := RetrieveOriginatedProjects() // this checks for stage 1 and not zero like the thing installed above
+	allOOs, err := RetrieveOriginProjects() // this checks for stage 1 and not zero like the thing installed above
 	if err != nil {
 		t.Fatal(err)
 	}
