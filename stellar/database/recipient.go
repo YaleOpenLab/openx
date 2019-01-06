@@ -23,14 +23,10 @@ type Recipient struct {
 	// TODO: better name? idk
 }
 
-func NewRecipient(uname string, pwd string, Name string) (Recipient, error) {
+func NewRecipient(uname string, pwd string, seedpwd string, Name string) (Recipient, error) {
 	var a Recipient
 	var err error
-	a.U, err = NewUser(uname, pwd, Name)
-	if err != nil {
-		return a, err
-	}
-	err = a.U.GenKeys()
+	a.U, err = NewUser(uname, pwd, seedpwd, Name)
 	if err != nil {
 		return a, err
 	}
@@ -126,7 +122,7 @@ func ValidateRecipient(name string, pwhash string) (Recipient, error) {
 }
 
 // SendAssetToIssuer sends back assets fromn an asset holder to the issuer of the asset.
-func (a *Recipient) SendAssetToIssuer(assetName string, issuerPubkey string, amount string) (int32, string, error) {
+func (a *Recipient) SendAssetToIssuer(assetName string, issuerPubkey string, amount string, seed string) (int32, string, error) {
 	// SendAssetToIssuer is FROM recipient / investor to issuer
 	// TODO: the platform / issuer doesn't send back the PBToken since PBTOkens are
 	// disabled as of now, can add back in later if needed.
@@ -144,7 +140,7 @@ func (a *Recipient) SendAssetToIssuer(assetName string, issuerPubkey string, amo
 		return -11, "", err
 	}
 
-	return xlm.SendTx(a.U.Seed, paymentTx)
+	return xlm.SendTx(seed, paymentTx)
 }
 
 // Payback is called when the receiver of the DEBToken wants to pay a fixed amount
@@ -170,7 +166,7 @@ func (a *Recipient) SendAssetToIssuer(assetName string, issuerPubkey string, amo
 // that it sent and if not, raises the dispute since the forward DEBToken payment
 // is on chain and resolves the dispute itself using existing off chain legal frameworks
 // (issued bonds, agreements, etc)
-func (a *Recipient) Payback(uContract Project, assetName string, issuerPubkey string, amount string) error {
+func (a *Recipient) Payback(uContract Project, assetName string, issuerPubkey string, amount string, seed string) error {
 	// once we have the stablecoin here, we can remove the assetName
 	StableBalance, err := xlm.GetAssetBalance(a.U.PublicKey, "STABLEUSD")
 	// checks for the stablecoin asset
@@ -205,7 +201,7 @@ func (a *Recipient) Payback(uContract Project, assetName string, issuerPubkey st
 	// hardcode for now, need to add the oracle here so that we
 	// can do this dynamically
 	// send amount worth DEBTokens back to issuer
-	confHeight, txHash, err := a.SendAssetToIssuer(assetName, issuerPubkey, amount)
+	confHeight, txHash, err := a.SendAssetToIssuer(assetName, issuerPubkey, amount, seed)
 	if err != nil {
 		log.Println(err)
 		return err

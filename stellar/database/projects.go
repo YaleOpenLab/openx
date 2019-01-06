@@ -140,8 +140,8 @@ func FinalizeProject(project Project) error {
 			dbProjects.Params = project.Params         // overwrite price related details
 			dbProjects.Contractor = project.Contractor // store the contractor for the given order
 			dbProjects.Guarantor = project.Guarantor   // add guarantor
-			dbProjects.SetFinalizedProject()                    // set the stage to be open for investors
-			dbProjects.Save()                                   // save in db
+			dbProjects.SetFinalizedProject()           // set the stage to be open for investors
+			dbProjects.Save()                          // save in db
 			return nil
 		}
 	}
@@ -350,6 +350,19 @@ func RetrieveProjectsR(stage float64, index int) ([]Project, error) {
 		return nil
 	})
 	return arr, err
+}
+
+func PromoteStage0To1Project(projects []Project, index int) error {
+	// we need to upgrade the contract's whose index is contractIndex to stage 1
+	for _, elem := range projects {
+		if elem.Params.Index == index {
+			// increase this contract's stage
+			log.Println("UPGRADING PROJECT INDEX", elem.Params.Index)
+			err := elem.SetOriginProject()
+			return err
+		}
+	}
+	return fmt.Errorf("Project not found, erroring!")
 }
 
 // the following functions are helper functions to set the stage for a specific

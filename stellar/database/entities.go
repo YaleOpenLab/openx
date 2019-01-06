@@ -68,16 +68,12 @@ type Entity struct {
 	// holding up his drivers' license or similar
 }
 
-func newEntityHelper(uname string, pwd string, Name string, Address string, Description string, role string) (Entity, error) {
+func newEntityHelper(uname string, pwd string, seedpwd string, Name string, Address string, Description string, role string) (Entity, error) {
 	// call this after the user has failled in username and password. Store hashed password
 	// in the database
 	var a Entity
 	var err error
-	a.U, err = NewUser(uname, pwd, Name)
-	if err != nil {
-		return a, err
-	}
-	err = a.U.GenKeys()
+	a.U, err = NewUser(uname, pwd, seedpwd, Name)
 	if err != nil {
 		return a, err
 	}
@@ -119,17 +115,17 @@ func (a *Entity) Save() error {
 	return err
 }
 
-func NewEntity(uname string, pwd string, Name string, Address string, Description string, role string) (Entity, error) {
+func NewEntity(uname string, pwd string, seedpwd string, Name string, Address string, Description string, role string) (Entity, error) {
 	var dummy Entity
 	switch role {
 	case "originator":
-		return newEntityHelper(uname, pwd, Name, Address, Description, "originator")
+		return newEntityHelper(uname, pwd, seedpwd, Name, Address, Description, "originator")
 	case "developer":
-		return newEntityHelper(uname, pwd, Name, Address, Description, "developer")
+		return newEntityHelper(uname, pwd, seedpwd, Name, Address, Description, "developer")
 	case "contractor":
-		return newEntityHelper(uname, pwd, Name, Address, Description, "contractor")
+		return newEntityHelper(uname, pwd, seedpwd, Name, Address, Description, "contractor")
 	case "guarantor":
-		return newEntityHelper(uname, pwd, Name, Address, Description, "guarantor")
+		return newEntityHelper(uname, pwd, seedpwd, Name, Address, Description, "guarantor")
 	}
 	return dummy, fmt.Errorf("Invalid entity passed, check again!")
 }

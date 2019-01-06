@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	aes "github.com/YaleOpenLab/smartPropertyMVP/stellar/aes"
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
 	xlm "github.com/YaleOpenLab/smartPropertyMVP/stellar/xlm"
 	"github.com/boltdb/bolt"
@@ -16,14 +17,9 @@ type User struct {
 	Index int
 	// default index, gets us easy stats on how many people are there and stuff,
 	// don't want to omit this
-	Seed string
-	// Seed is the equivalent of a private key in stellar (stellar doesn't expose private keys)
-	// do we make seed optional like that for the Recipient? Couple things to consider
-	// here: if the recipient loses the publickey, it can nver send DEBTokens back
-	// to the issuer, so it would be as if it reneged on the deal. Do we count on
-	// technically less sound people to hold their public keys safely? I suggest
-	// this would be  difficult in practice, so maybe enforce that they need to hold|
-	// their account on the platform?
+	EncryptedSeed []byte
+	// EncryptedSeed stores the AES-256 encrypted seed of the user. This way, even
+	// if the platform is hacked, the user's funds are still safe
 	Name string
 	// Name of the primary stakeholder involved (principal trustee of school, for eg.)
 	PublicKey string
@@ -47,7 +43,7 @@ type User struct {
 
 // User is a metastrucutre that contains commonyl used keys within a single umbrella
 // so that we can import it wherever needed.
-func NewUser(uname string, pwd string, Name string) (User, error) {
+func NewUser(uname string, pwd string, seedpwd string, Name string) (User, error) {
 	// call this after the user has failled in username and password.
 	// Store hashed password in the database
 	var a User
@@ -65,7 +61,7 @@ func NewUser(uname string, pwd string, Name string) (User, error) {
 	}
 
 	a.Name = Name
-	err = a.GenKeys()
+	err = a.GenKeys(seedpwd)
 	if err != nil {
 		return a, err
 	}
@@ -178,15 +174,15 @@ func ValidateUser(name string, pwhash string) (User, error) {
 	return inv, err
 }
 
-func (a *User) GenKeys() error {
+func (a *User) GenKeys(seedpwd string) error {
 	var err error
-	var dup User
-	dup = *a
-	dup.Seed, dup.PublicKey, err = xlm.GetKeyPair()
+	var seed string
+	seed, a.PublicKey, err = xlm.GetKeyPair()
 	if err != nil {
 		return err
 	}
-	err = dup.Save()
-	// a = &dup
+	// don't store the seed in the database
+	a.EncryptedSeed, err = aes.Encrypt([]byte(seed), seedpwd)
+	err = a.Save()
 	return err
 }

@@ -297,7 +297,7 @@ func parseInvestor(r *http.Request) (database.Investor, error) {
 		if err != nil {
 			return prepInvestor, fmt.Errorf("Error while generating keypair")
 		}
-		prepInvestor.U.Seed = pair.Seed()
+		// prepInvestorSeed := pair.Seed()
 		prepInvestor.U.PublicKey = pair.Address()
 	}
 
@@ -427,7 +427,7 @@ func parseRecipient(r *http.Request) (database.Recipient, error) {
 		return prepRecipient, fmt.Errorf("Error while generating keypair")
 	}
 	prepRecipient.U.PublicKey = pair.Address()
-	prepRecipient.U.Seed = pair.Seed()
+	// prepRecipient.U.Seed = pair.Seed()
 	prepRecipient.U.FirstSignedUp = utils.Timestamp()
 
 	if r.FormValue("LoginUserName") != "" {

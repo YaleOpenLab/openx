@@ -13,7 +13,6 @@ import (
 var ProjectsBucket = []byte("Projects")
 var InvestorBucket = []byte("Investors")
 var RecipientBucket = []byte("Recipients")
-var PlatformBucket = []byte("Platforms")
 var ContractorBucket = []byte("Contractors")
 var UserBucket = []byte("Users")
 
@@ -25,9 +24,6 @@ func CreateHomeDir() {
 	}
 	if _, err := os.Stat(consts.DbDir); os.IsNotExist(err) {
 		os.MkdirAll(consts.DbDir, os.ModePerm)
-	}
-	if _, err := os.Stat(consts.StableCoinDir); os.IsNotExist(err) {
-		os.MkdirAll(consts.StableCoinDir, os.ModePerm)
 	}
 }
 
@@ -49,10 +45,6 @@ func OpenDB() (*bolt.DB, error) {
 			return err
 		}
 		_, err = tx.CreateBucketIfNotExists(RecipientBucket) // the projects bucket contains all our projects
-		if err != nil {
-			return err
-		}
-		_, err = tx.CreateBucketIfNotExists(PlatformBucket) // the projects bucket contains all our projects
 		if err != nil {
 			return err
 		}

@@ -12,9 +12,6 @@ import (
 
 func ValidateInputs() {
 	if (opts.RecYears != 0) && !(opts.RecYears == 3 || opts.RecYears == 5 || opts.RecYears == 7) {
-		// right now payoff periods are limited, I guess they don't need to be,
-		// but in this case just are. Call this function later when projects are being
-		// created. Maybe don't need to restrict this at all?
 		log.Fatal(fmt.Errorf("Number of years not supported"))
 	}
 }
@@ -23,6 +20,7 @@ func StartPlatform() (string, string, error) {
 	var publicKey string
 	var seed string
 	ValidateInputs()
+	database.CreateHomeDir()
 	allContracts, err := database.RetrieveAllProjects()
 	if err != nil {
 		log.Println("Error retrieving all projects from the database")
@@ -40,37 +38,39 @@ func StartPlatform() (string, string, error) {
 	return publicKey, seed, err
 }
 
-func NewUserPrompt() (string, string, string, error) {
+func NewUserPrompt() (string, string, string, string, error) {
 	realName, err := utils.ScanForString()
 	if err != nil {
 		fmt.Println("Couldn't read user input")
-		return "", "", "", err
+		return "", "", "", "", err
 	}
 	fmt.Printf("%s: ", "ENTER YOUR USERNAME")
 	loginUserName, err := utils.ScanForString()
 	if err != nil {
 		fmt.Println("Couldn't read user input")
-		return "", "", "", err
+		return "", "", "", "", err
 	}
 
 	fmt.Printf("%s: ", "ENTER DESIRED PASSWORD, YOU WILL NOT BE ASKED TO CONFIRM THIS")
 	loginPassword, err := utils.ScanForPassword()
 	if err != nil {
 		fmt.Println("Couldn't read password")
-		return "", "", "", err
+		return "", "", "", "", err
 	}
-	return realName, loginUserName, loginPassword, err
+	fmt.Printf("%s: ", "ENTER SEED PASSWORD, YOU WILL NOT BE ASKED TO CONFIRM THIS")
+	seedPassword, err := utils.ScanForPassword()
+	return realName, loginUserName, loginPassword, seedPassword, err
 }
 
 func NewInvestorPrompt() error {
 	log.Println("You have chosen to create a new investor account, welcome")
-	loginUserName, loginPassword, realName, err := NewUserPrompt()
+	loginUserName, loginPassword, realName, seedpwd, err := NewUserPrompt()
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 
-	_, err = database.NewInvestor(loginUserName, loginPassword, realName)
+	_, err = database.NewInvestor(loginUserName, loginPassword, seedpwd, realName)
 	if err != nil {
 		log.Println("FAILED TO SETUP ACCOUNT, TRY AGAIN")
 		return err
@@ -80,12 +80,12 @@ func NewInvestorPrompt() error {
 
 func NewRecipientPrompt() error {
 	log.Println("You have chosen to create a new recipient account, welcome")
-	loginUserName, loginPassword, realName, err := NewUserPrompt()
+	loginUserName, loginPassword, realName, seedpwd, err := NewUserPrompt()
 	if err != nil {
 		log.Println(err)
 		return err
 	}
-	_, err = database.NewRecipient(loginUserName, loginPassword, realName)
+	_, err = database.NewRecipient(loginUserName, loginPassword, seedpwd, realName)
 	if err != nil {
 		log.Println("FAILED TO SETUP ACCOUNT, TRY AGAIN")
 		return err
@@ -139,7 +139,7 @@ func LoginPrompt() (database.Investor, database.Recipient, database.Entity, bool
 		fmt.Println("Couldn't read password")
 		return investor, recipient, contractor, rbool, cbool, err
 	}
-	log.Println("WATCH USER IDNEX: ", user.Index)
+	log.Println("WATCH USER INDEX: ", user.Index)
 	if rbool {
 		recipient, err = database.RetrieveRecipient(user.Index)
 		if err != nil {

@@ -7,6 +7,8 @@ import (
 	"log"
 	"net/http"
 
+	consts "github.com/YaleOpenLab/smartPropertyMVP/stellar/consts"
+	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
 	"github.com/stellar/go/build"
 	"github.com/stellar/go/keypair"
 	"github.com/stellar/go/network"
@@ -36,14 +38,16 @@ func GetXLM(PublicKey string) error {
 	return nil
 }
 
-/*
 // check whether an accoutn exists, not needed now since we do the check ourselves
 // in multiple places
-func DestinationExists(destination string) error {
-	_, err := TestNetClient.LoadAccount(destination)
-	return err
+func AccountExists(address string) bool {
+	_, err := TestNetClient.LoadAccount(address)
+	if err != nil {
+		return false
+	}
+	return true
 }
-*/
+
 func SendTx(Seed string, tx *build.TransactionBuilder) (int32, string, error) {
 	// Sign the transaction to prove you are actually the person sending it.
 	txe, err := tx.Sign(Seed)
@@ -65,6 +69,9 @@ func SendTx(Seed string, tx *build.TransactionBuilder) (int32, string, error) {
 	return resp.Ledger, resp.Hash, nil
 }
 
+// Generating a keypair on stellar doesn't mean that you can send funds to it
+// you need to call the CreateAccount method in project to be able to send funds
+// to it
 func SendXLMCreateAccount(destination string, amount string, Seed string) (int32, string, error) {
 	// destination will not exist yet, so don't check
 	passphrase := network.TestNetworkPassphrase
@@ -106,4 +113,32 @@ func SendXLM(destination string, amount string, Seed string) (int32, string, err
 	}
 
 	return SendTx(Seed, tx)
+}
+
+func RefillAccount(publicKey string, platformSeed string) error {
+	var err error
+	if !AccountExists(publicKey) {
+		// there is no account under the user's name
+		// means we need to setup an account first
+		log.Println("Account does not exist, creating: ", publicKey)
+		_, _, err = SendXLMCreateAccount(publicKey, consts.DonateBalance, platformSeed)
+		if err != nil {
+			log.Println("Account Could not be created")
+			return err
+		}
+	}
+	// balance is in string, convert to float
+	balance, err := GetNativeBalance(publicKey)
+	if err != nil {
+		return err
+	}
+	balanceI := utils.StoF(balance)
+	if balanceI < 3 { // to setup trustlines
+		_, _, err = SendXLM(publicKey, consts.DonateBalance, platformSeed)
+		if err != nil {
+			log.Println("Account doesn't have funds")
+			return err
+		}
+	}
+	return nil
 }

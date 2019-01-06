@@ -50,7 +50,7 @@ func PrintProject(project database.Project) {
 // PrintInvestor pretty prints investors
 func PrintInvestor(investor database.Investor) {
 	fmt.Println("          Your Public Key is: ", investor.U.PublicKey)
-	fmt.Println("          Your Seed is: ", investor.U.Seed)
+	fmt.Println("          Your Seed is: ", investor.U.EncryptedSeed)
 	fmt.Println("          Your Voting Balance is: ", investor.VotingBalance)
 	fmt.Println("          You have Invested: ", investor.AmountInvested)
 	fmt.Println("          Your Invested Assets are: ", investor.InvestedAssets)
@@ -61,7 +61,7 @@ func PrintInvestor(investor database.Investor) {
 // PrintRecipient pretty prints recipients
 func PrintRecipient(recipient database.Recipient) {
 	fmt.Println("          Your Public Key is: ", recipient.U.PublicKey)
-	fmt.Println("          Your Seed is: ", recipient.U.Seed)
+	fmt.Println("          Your Seed is: ", recipient.U.EncryptedSeed)
 	fmt.Println("          Your Received Assets are: ", recipient.ReceivedProjects)
 	fmt.Println("          Your Username is: ", recipient.U.LoginUserName)
 	fmt.Println("          Your Password hash is: ", recipient.U.LoginPassword)
@@ -91,7 +91,7 @@ func PrintPBProjects(projects []database.DBParams) {
 func PrintUser(user database.User) {
 	fmt.Println("    WELCOME BACK ", user.Name)
 	fmt.Println("          Your Public Key is: ", user.PublicKey)
-	fmt.Println("          Your Seed is: ", user.Seed)
+	fmt.Println("          Your Seed is: ", user.EncryptedSeed)
 	fmt.Println("          Your Username is: ", user.LoginUserName)
 	fmt.Println("          Your Password hash is: ", user.LoginPassword)
 }
@@ -100,7 +100,7 @@ func PrintEntity(a database.Entity) {
 	fmt.Println("    WELCOME BACK ", a.U.Name)
 	fmt.Println("    			 Your Index is ", a.U.Index)
 	fmt.Println("          Your Public Key is: ", a.U.PublicKey)
-	fmt.Println("          Your Seed is: ", a.U.Seed)
+	fmt.Println("          Your Seed is: ", a.U.EncryptedSeed)
 	fmt.Println("          Your Username is: ", a.U.LoginUserName)
 	fmt.Println("          Your Password hash is: ", a.U.LoginPassword)
 	fmt.Println("          Your Address is: ", a.U.Address)

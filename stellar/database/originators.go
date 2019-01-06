@@ -4,8 +4,8 @@ import (
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
 )
 
-func NewOriginator(uname string, pwd string, Name string, Address string, Description string) (Entity, error) {
-	return NewEntity(uname, pwd, Name, Address, Description, "originator")
+func NewOriginator(uname string, pwd string, seedpwd string, Name string, Address string, Description string) (Entity, error) {
+	return NewEntity(uname, pwd, seedpwd, Name, Address, Description, "originator")
 }
 
 func (contractor *Entity) OriginContract(panelSize string, totalValue int, location string, years int, metadata string, recIndex int) (Project, error) {

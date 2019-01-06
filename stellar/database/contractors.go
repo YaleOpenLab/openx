@@ -18,8 +18,8 @@ import (
 // auction advantages (no price disvocery, etc). If we want to change this, we must
 // have an auction handler that will take care of this.
 
-func NewContractor(uname string, pwd string, Name string, Address string, Description string) (Entity, error) {
-	return NewEntity(uname, pwd, Name, Address, Description, "contractor")
+func NewContractor(uname string, pwd string, seedpwd string, Name string, Address string, Description string) (Entity, error) {
+	return NewEntity(uname, pwd, seedpwd, Name, Address, Description, "contractor")
 }
 
 func (contractor *Entity) ProposeContract(panelSize string, totalValue int, location string, years int, metadata string, recIndex int, projectIndex int) (Project, error) {

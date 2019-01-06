@@ -24,7 +24,7 @@ func InsertDummyData() error {
 	if len(allRecs) == 0 {
 		// there is no recipient right now, so create a dummy recipient
 		var err error
-		rec, err = database.NewRecipient("martin", "p", "Martin")
+		rec, err = database.NewRecipient("martin", "p", "x", "Martin")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -37,23 +37,24 @@ func InsertDummyData() error {
 	}
 	if len(allInvs) == 0 {
 		var err error
-		inv, err = database.NewInvestor("john", "p", "John")
+		inv, err = database.NewInvestor("john", "p", "x", "John")
 		if err != nil {
 			log.Fatal(err)
 		}
 		err = inv.AddVotingBalance(100000)
+		log.Println("GENERATED PUBLICKEY AND SEED: ", inv.U.EncryptedSeed, inv.U.PublicKey)
 		// this function saves as well, so there's no need to save again
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 	// NewOriginator(uname string, pwd string, Name string, Address string, Description string)
-	newOriginator, err := database.NewOriginator("john", "p", "John Doe", "14 ABC Street London", "This is a sample originator")
+	newOriginator, err := database.NewOriginator("john", "p", "x", "John Doe", "14 ABC Street London", "This is a sample originator")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	c1, err := database.NewContractor("john", "p", "John Doe", "14 ABC Street London", "This is a sample contractor")
+	c1, err := database.NewContractor("john", "p", "x", "John Doe", "14 ABC Street London", "This is a sample contractor")
 	if err != nil {
 		log.Println(err)
 	}
@@ -142,7 +143,7 @@ func InsertDummyData() error {
 		}
 	*/
 	// competing contractor details follow
-	_, err = database.NewContractor("sam", "p", "Samuel Jackson", "14 ABC Street London", "This is a competing contractor")
+	_, err = database.NewContractor("sam", "p", "x", "Samuel Jackson", "14 ABC Street London", "This is a competing contractor")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -153,7 +154,7 @@ func InsertDummyData() error {
 			log.Fatal(err)
 		}
 	*/
-	_, err = database.NewOriginator("samuel", "p", "Samuel L. Jackson", "ABC Street, London", "I am an originator")
+	_, err = database.NewOriginator("samuel", "p", "x", "Samuel L. Jackson", "ABC Street, London", "I am an originator")
 	if err != nil {
 		log.Fatal(err)
 	}

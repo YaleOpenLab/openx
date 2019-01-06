@@ -10,9 +10,11 @@ import (
 	consts "github.com/YaleOpenLab/smartPropertyMVP/stellar/consts"
 	database "github.com/YaleOpenLab/smartPropertyMVP/stellar/database"
 	ipfs "github.com/YaleOpenLab/smartPropertyMVP/stellar/ipfs"
+	platform "github.com/YaleOpenLab/smartPropertyMVP/stellar/platform"
 	rpc "github.com/YaleOpenLab/smartPropertyMVP/stellar/rpc"
 	stablecoin "github.com/YaleOpenLab/smartPropertyMVP/stellar/stablecoin"
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
+	wallet "github.com/YaleOpenLab/smartPropertyMVP/stellar/wallet"
 	xlm "github.com/YaleOpenLab/smartPropertyMVP/stellar/xlm"
 	flags "github.com/jessevdk/go-flags"
 )
@@ -36,6 +38,8 @@ func main() {
 		log.Fatal(err)
 	}
 
+	var investorSeed string
+	var recipientSeed string
 	/*
 		fmt.Println("WHICH PLATFORM WOULD YOU IKE TO ENTER INTO?")
 		fmt.Println("1. Platform of Contracts")
@@ -67,9 +71,7 @@ func main() {
 	// in the system.
 	// TODO: think of a reasonable way to hash the current state of the system with
 	// its hash in the memo field
-	// Open the database
 
-	database.CreateHomeDir()
 	platformPublicKey, platformSeed, err := StartPlatform()
 	if err != nil {
 		log.Fatal(err)
@@ -102,8 +104,10 @@ func main() {
 	// recipients and the investors and the platform. Need to transition automatically
 	// and also cover breach scenarios in case the recipient doesn't pay for a specific
 	// period of time
-	// TODO: upgrade the RPC and tests to fit in with recent changes
+	// TODO: upgrade the RPC to fit in with recent changes
 	// TODO: also write a Makefile so that its easy for people to get started with stuff
+	// TODO: look into how flags are set and set flags on accounts - no documentation is around
+	// regarding this for go, so idk
 	fmt.Println("------------STELLAR HOUSE INVESTMENT CLI INTERFACE------------")
 
 	// init stablecoin stuff
@@ -112,19 +116,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// start a goroutine to listen for stablecoin payments and issuance
-	go stablecoin.ListenForPayments()
-	// don't have an error catching thing because if this fails, the platform should
-	// not initialize
-	// insert an investor with the relevant details
-	// add dummy investor and recipient data for the demo
-	// uname: john, password: password
-	// need to ask for user role as well here, to know whether the user is an investor
-	// or recipient so that we can show both sides
-	// After this, ask what the user wants to do - there are roughly three options:
-	// 1. Create a new investor account
-	// 2. Create a new recipient account
-	// 3. Login (Are you an investor / recipient)
 	fmt.Println("------WHAT DO YOU WANT TO DO?------")
 	fmt.Println("1. CREATE A NEW INVESTOR ACCOUNT")
 	fmt.Println("2. CREATE A NEW RECIPIENT ACCOUNT")
@@ -172,6 +163,7 @@ func main() {
 			fmt.Println("  7. View all Projects (ALL STAGES)")
 			fmt.Println("  8. View all Origin Projects (STAGE 1)")
 			fmt.Println("  9. View All Balances ")
+			fmt.Println("  10. Unlock Account")
 			fmt.Println("  default: Exit")
 			optI, err := utils.ScanForInt()
 			if err != nil {
@@ -225,7 +217,7 @@ func main() {
 					log.Fatal("Project not found")
 				}
 
-				err = recipient.Payback(rtContract, rtContract.Params.DEBAssetCode, platformPublicKey, paybackAmount)
+				err = recipient.Payback(rtContract, rtContract.Params.DEBAssetCode, platformPublicKey, paybackAmount, recipientSeed)
 				// TODO: right now, the payback asset directly sends back, change
 				if err != nil {
 					log.Println("PAYBACK TX FAILED, PLEASE TRY AGAIN!")
@@ -235,19 +227,9 @@ func main() {
 				// this function is optional and can be deleted in case we don't need PBAssets
 				err = assets.SendPBAsset(rtContract, recipient.U.PublicKey, paybackAmount, platformSeed, platformPublicKey)
 				if err != nil {
-					log.Println("PBAsset sending back FAILED, PLEASE TRY AGAIN!")
+					log.Println("PBAsset sending back FAILED, PLEASE TRY AGAIN!", err)
 					break
 				}
-				rtContract, err = database.RetrieveProject(projectNumber)
-				if err != nil {
-					log.Println("Couldn't retrieve updated project, check again!")
-					continue
-				}
-				// we should update the local slice to keep track of the changes here
-				recipient.UpdateProjectSlice(rtContract.Params)
-				// so we can retrieve the project using the project Index, nice
-				PrintProject(rtContract)
-				// print the project in a nice way
 				break
 			case 4:
 				log.Println("Enter the amount you want to convert into STABLEUSD")
@@ -256,34 +238,26 @@ func main() {
 					log.Println(err)
 					break
 				}
-				hash, err := assets.TrustAsset(stablecoin.StableUSD, consts.StablecoinTrustLimit, recipient.U.PublicKey, recipient.U.Seed)
+				hash, err := assets.TrustAsset(stablecoin.StableUSD, consts.StablecoinTrustLimit, recipient.U.PublicKey, recipientSeed)
 				if err != nil {
 					log.Fatal(err)
 				}
 				log.Println("tx hash for trusting stableUSD: ", hash)
 				// now send coins across and see if our tracker detects it
-				_, hash, err = xlm.SendXLM(stablecoin.Issuer.PublicKey, convAmount, recipient.U.Seed)
+				_, hash, err = xlm.SendXLM(stablecoin.PublicKey, convAmount, recipientSeed)
 				if err != nil {
 					log.Fatal(err)
 				}
 				log.Println("tx hash for sent xlm: ", hash, "pubkey: ", recipient.U.PublicKey)
 				break
 			case 5:
-				// we shouild finalize the proposed contract that we want and promote it from stage 2 to 3
-				// can be imagined as some sort of voting mechanism to choose the winning
-				// contract.
-				// now we display a list of options for the recipient to choose which parameter
-				// he would like to decide the winning contract
-				// 1. Price
-				// 2. Completion time
-				// 3. Select Manually
-				fmt.Println("CHOOSE THE METRIC BY WHICH YOU WANT TO SELECT THE WINNING BID: ")
 				allContracts, err := database.RetrieveProjectsR(database.ProposedProject, recipient.U.Index)
-				// retrieve all contracts towards the project
 				if err != nil {
 					log.Fatal(err)
 				}
 				PrintProjects(allContracts)
+
+				fmt.Println("CHOOSE THE METRIC BY WHICH YOU WANT TO SELECT THE WINNING BID: ")
 				fmt.Println("1. PRICE")
 				fmt.Println("2. COMPLETION TIME (IN YEARS)")
 				fmt.Println("3. SELECT MANUALLY")
@@ -354,18 +328,10 @@ func main() {
 					log.Println(err)
 					continue
 				}
-				// we need to upgrade the contract's whose index is contractIndex to stage 1
-				for _, elem := range allMyProjects {
-					if elem.Params.Index == contractIndex {
-						// increase this contract's stage
-						log.Println("UPGRADING PROJECT INDEX", elem.Params.Index)
-						err = elem.SetOriginProject()
-						if err != nil {
-							log.Println(err)
-							break
-						}
-						break
-					}
+				err = database.PromoteStage0To1Project(allMyProjects, contractIndex)
+				if err != nil {
+					log.Println(err)
+					break
 				}
 			case 7:
 				fmt.Println("PRINTING ALL PROJECTS: ")
@@ -379,6 +345,20 @@ func main() {
 				DisplayOriginProjects()
 			case 9:
 				BalanceDisplayPrompt(recipient.U.PublicKey)
+			case 10:
+				// need to unlock the recipient account
+				seedpwd, err := utils.ScanRawPassword()
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				seed, err := wallet.DecryptSeed(recipient.U.EncryptedSeed, seedpwd)
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				recipientSeed = seed
+				log.Println(" Seed successfully unlocked")
 			default: // this default is for the larger switch case
 				ExitPrompt()
 			}
@@ -484,6 +464,7 @@ func main() {
 			fmt.Println("  7. Vote towards a specific proposed project (STAGE 2)")
 			fmt.Println("  8. Get ipfs hash of a contract")
 			fmt.Println("  9. Display all Funded Projects")
+			fmt.Println("  10. Unlock account")
 			fmt.Println("  default: Exit")
 			optI, err := utils.ScanForInt()
 			if err != nil {
@@ -528,104 +509,60 @@ func main() {
 					fmt.Println("YOU HAVE DECIDED TO CANCEL THIS ORDER")
 					break
 				}
-				// when I am creating an account, I will have a PublicKey and Seed, so
-				// don't need them here
-				// check whether the investor has XLM already
-				balance, err := xlm.GetNativeBalance(platformPublicKey)
-				if err != nil {
-					log.Fatal(err)
-				}
-				// balance is in string, convert to int
-				balanceI := utils.StoF(balance)
-				log.Println("Platform's balance is: ", balanceI)
-				if balanceI < 21 { // 1 to account for fees
-					// get coins if balance is this low
-					log.Println("Refilling platform balance")
-					err := xlm.GetXLM(platformPublicKey)
-					// TODO: in future, need to refill platform sufficiently well and interact
-					// with a cold wallet that we have previously set
-					if err != nil {
-						log.Fatal(err)
-					}
-				}
 
-				balance, err = xlm.GetNativeBalance(platformPublicKey)
-				if err != nil {
-					log.Fatal(err)
-				}
-				log.Println("Platform balance updated is: ", balance)
-				fmt.Printf("Platform seed is: %s and platform's publicKey is %s", platformSeed, platformPublicKey)
-				log.Println("Investor's publickey is: ", investor.U.PublicKey)
-				balance, err = xlm.GetNativeBalance(investor.U.PublicKey)
-				if balance == "" || err != nil {
-					// means we need to setup an account first
-					// Generating a keypair on stellar doesn't mean that you can send funds to it
-					// you need to call the CreateAccount method in project to be able to send funds
-					// to it
-					log.Println("Investor balance empty, refilling: ", investor.U.PublicKey)
-					_, _, err = xlm.SendXLMCreateAccount(investor.U.PublicKey, consts.DonateBalance, platformSeed)
-					if err != nil {
-						log.Println("Investor Account doesn't have funds")
-						log.Fatal(err)
-					}
-				}
-				// balance is in string, convert to float
-				balance, err = xlm.GetNativeBalance(investor.U.PublicKey)
-				if err != nil {
-					log.Fatal(err)
-				}
-				balanceI = utils.StoF(balance)
-				log.Println("Investor balance is: ", balanceI)
-				if balanceI < 3 { // to setup trustlines
-					_, _, err = xlm.SendXLM(investor.U.PublicKey, consts.DonateBalance, platformSeed)
-					if err != nil {
-						log.Println("Investor Account doesn't have funds")
-						log.Fatal(err)
-					}
-				}
-
-				recipient := uContract.Params.ProjectRecipient
-				// from here on, reference recipient
-				balance, err = xlm.GetNativeBalance(recipient.U.PublicKey)
-				if balance == "" || err != nil {
-					// means we need to setup an account first
-					// Generating a keypair on stellar doesn't mean that you can send funds to it
-					// you need to call the CreateAccount method in project to be able to send funds
-					// to it
-					_, _, err = xlm.SendXLMCreateAccount(recipient.U.PublicKey, consts.DonateBalance, platformSeed)
-					if err != nil {
-						log.Println("Recipient Account doesn't have funds")
-						log.Fatal(err)
-					}
-				}
-				balance, err = xlm.GetNativeBalance(recipient.U.PublicKey)
-				if err != nil {
-					log.Fatal(err)
-				}
-				// balance is in string, convert to float
-				balanceI = utils.StoF(balance)
-				log.Println("Recipient balance is: ", balanceI)
-				if balanceI < 3 { // to setup trustlines
-					_, _, err = xlm.SendXLM(recipient.U.PublicKey, consts.DonateBalance, platformSeed)
-					if err != nil {
-						log.Println("Recipient Account doesn't have funds")
-						log.Fatal(err)
-					}
-				}
-				log.Println("The investor's public key and private key are: ", investor.U.PublicKey, " ", investor.U.Seed)
-				log.Println("The recipient's public key and private key are: ", recipient.U.PublicKey, " ", recipient.U.Seed)
-
-				log.Println(&investor, &recipient, investmentAmount, uContract.Params)
-				// so now we have three entities setup, so we create the assets and invest in them
-				cProject, err := assets.InvestInProject(platformPublicKey, platformSeed, &investor, &recipient, investmentAmount, uContract) // assume payback period is 5
+				err = platform.RefillPlatform(platformPublicKey)
 				if err != nil {
 					log.Println(err)
 					break
 				}
-				fmt.Println("YOUR PROJECT INVESTMENT HAS BEEN CONFIRMED: ")
-				PrintProject(cProject)
-				fmt.Println("PLEASE CHECK A BLOCKCHAIN EXPLORER TO CONFIRM BALANCES: ")
-				fmt.Println("https://testnet.steexp.com/account/" + investor.U.PublicKey + "#balances")
+				fmt.Printf("Platform seed is: %s and platform's publicKey is %s", platformSeed, platformPublicKey)
+				err = xlm.RefillAccount(investor.U.PublicKey, platformSeed)
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				recipient := uContract.Params.ProjectRecipient
+				// from here on, reference recipient
+				err = xlm.RefillAccount(recipient.U.PublicKey, platformSeed)
+				if err != nil {
+					log.Println(err)
+					break
+				}
+
+				platformBalance, err := xlm.GetNativeBalance(platformPublicKey)
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				// need the recipient's seed here as well
+				// need to unlock the recipient account
+				fmt.Println("ENTER THE RECIPIENT'S SEED PASSWORD")
+				// ideally we should ask the recipient for confirmation in case he wants to re4ceived the money or something
+				seedpwd, err := utils.ScanRawPassword()
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				seed, err := wallet.DecryptSeed(recipient.U.EncryptedSeed, seedpwd)
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				recipientSeed = seed
+				log.Println(" Seed successfully unlocked")
+				log.Println("Platform's updated balance is: ", platformBalance)
+				log.Println("The investor's public key and private key are: ", investor.U.PublicKey, " ", investorSeed)
+				log.Println("The recipient's public key and private key are: ", recipient.U.PublicKey, " ", recipientSeed)
+				// so now we have three entities setup, so we create the assets and invest in them
+				cProject, err := assets.InvestInProject(platformPublicKey, platformSeed, &investor, &recipient, investmentAmount, uContract, investorSeed, recipientSeed) // assume payback period is 5
+				if err != nil {
+					log.Println(err)
+				} else {
+					fmt.Println("YOUR PROJECT INVESTMENT HAS BEEN CONFIRMED: ")
+					PrintProject(cProject)
+					fmt.Println("PLEASE CHECK A BLOCKCHAIN EXPLORER TO CONFIRM BALANCES: ")
+					fmt.Println("https://testnet.steexp.com/account/" + investor.U.PublicKey + "#balances")
+				}
 				break
 			case 4:
 				BalanceDisplayPrompt(investor.U.PublicKey)
@@ -644,13 +581,13 @@ func main() {
 				// maybe don't trust asset again when you've trusted it already? check if that's
 				// possible and save on the tx fee for a single transaction. But I guess its
 				// difficult to retrieve trustlines, so we'll go ahead with it
-				hash, err := assets.TrustAsset(stablecoin.StableUSD, consts.StablecoinTrustLimit, investor.U.PublicKey, investor.U.Seed)
+				hash, err := assets.TrustAsset(stablecoin.StableUSD, consts.StablecoinTrustLimit, investor.U.PublicKey, investorSeed)
 				if err != nil {
 					log.Fatal(err)
 				}
 				log.Println("tx hash for trusting stableUSD: ", hash)
 				// now send coins across and see if our tracker detects it
-				_, hash, err = xlm.SendXLM(stablecoin.Issuer.PublicKey, convAmount, investor.U.Seed)
+				_, hash, err = xlm.SendXLM(stablecoin.PublicKey, convAmount, investorSeed)
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -716,6 +653,20 @@ func main() {
 					break
 				}
 				PrintProjects(allFundedProjects)
+			case 10:
+				// need to unlock the recipient account
+				seedpwd, err := utils.ScanRawPassword()
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				seed, err := wallet.DecryptSeed(investor.U.EncryptedSeed, seedpwd)
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				investorSeed = seed
+				log.Println(" Seed successfully unlocked: ", seed)
 			default:
 				ExitPrompt()
 			} // end of switch

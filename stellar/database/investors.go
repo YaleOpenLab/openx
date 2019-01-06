@@ -40,20 +40,13 @@ type Investor struct {
 // insert their publickey into the system and then have hanlders for them signing
 // transactions
 // TODO: add anonymous investor signing handlers
-func NewInvestor(uname string, pwd string, Name string) (Investor, error) {
-	// call this after the user has failled in username and password. Store hashed password
-	// in the database
+func NewInvestor(uname string, pwd string, seedpwd string, Name string) (Investor, error) {
 	var a Investor
 	var err error
-	a.U, err = NewUser(uname, pwd, Name)
+	a.U, err = NewUser(uname, pwd, seedpwd, Name)
 	if err != nil {
 		return a, err
 	}
-	err = a.U.GenKeys()
-	if err != nil {
-		return a, err
-	}
-	// new user creates keys, so don't create them here
 	a.AmountInvested = float64(0)
 	err = a.Save()
 	return a, err
@@ -170,7 +163,7 @@ func (a *Investor) AddVotingBalance(votes int) error {
 // TrustAsset creates a trustline from the caller towards the specific asset
 // and asset issuer with a _limit_ set on the maximum amount of tokens that can be sent
 // through the trust channel. Each trustline costs 0.5XLM.
-func (a *Investor) TrustAsset(asset build.Asset, limit string) (string, error) {
+func (a *Investor) TrustAsset(asset build.Asset, limit string, seed string) (string, error) {
 	// TRUST is FROM recipient TO issuer
 	trustTx, err := build.Transaction(
 		build.SourceAccount{a.U.PublicKey},
@@ -183,7 +176,7 @@ func (a *Investor) TrustAsset(asset build.Asset, limit string) (string, error) {
 		return "", err
 	}
 
-	_, hash, err := xlm.SendTx(a.U.Seed, trustTx)
+	_, hash, err := xlm.SendTx(seed, trustTx)
 	return hash, err
 }
 
