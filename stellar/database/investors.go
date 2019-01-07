@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 
+	scan "github.com/YaleOpenLab/smartPropertyMVP/stellar/scan"
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
 	xlm "github.com/YaleOpenLab/smartPropertyMVP/stellar/xlm"
 	"github.com/boltdb/bolt"
@@ -198,7 +199,7 @@ func (a *Investor) VoteTowardsProposedProject(allProposedProjects []Project, vot
 			// we have the specific contract and need to upgrade the number of votes on this one
 			fmt.Println("YOUR AVAILABLE VOTING BALANCE IS: ", a.VotingBalance)
 			fmt.Println("HOW MANY VOTES DO YOU WANT TO DELEGATE TOWARDS THIS ORDER?")
-			votes, err := utils.ScanForInt()
+			votes, err := scan.ScanForInt()
 			if err != nil {
 				return err
 			}

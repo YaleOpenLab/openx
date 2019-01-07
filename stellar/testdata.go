@@ -42,7 +42,6 @@ func InsertDummyData() error {
 			log.Fatal(err)
 		}
 		err = inv.AddVotingBalance(100000)
-		log.Println("GENERATED PUBLICKEY AND SEED: ", inv.U.EncryptedSeed, inv.U.PublicKey)
 		// this function saves as well, so there's no need to save again
 		if err != nil {
 			log.Fatal(err)
@@ -135,25 +134,12 @@ func InsertDummyData() error {
 	// Each contractor building off of this must reference the project index in their
 	// proposed contract to enable searchability of the bucket. And each contractor
 	// must build off of this in their proposed Contracts
-	// Contractor stuff below
-	/*
-		_, err = contractor1.ProposeContract(pc.P.PanelSize, 28000, "Puerto Rico", 6, pc.P.Metadata+" we supply our own devs and provide insurance guarantee as well. Dual audit maintenance upto 1 year. Returns capped as per defaults", 1, biddingProject.Index) // 1 for retrieving martin as the recipient
-		if err != nil {
-			log.Fatal(err)
-		}
-	*/
-	// competing contractor details follow
+	// Contractor stuff below, competing contractor details follow
 	_, err = database.NewContractor("sam", "p", "x", "Samuel Jackson", "14 ABC Street London", "This is a competing contractor")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	/*
-		_, err = contractor2.ProposeContract(pc.P.PanelSize, 35000, "Puerto Rico", 5, pc.P.Metadata+" free lifetime service, developers and insurance also provided", 1, biddingProject.Index) // 1 for retrieving martin as the recipient
-		if err != nil {
-			log.Fatal(err)
-		}
-	*/
 	_, err = database.NewOriginator("samuel", "p", "x", "Samuel L. Jackson", "ABC Street, London", "I am an originator")
 	if err != nil {
 		log.Fatal(err)

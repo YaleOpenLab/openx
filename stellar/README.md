@@ -37,6 +37,12 @@ These three entities interact use the three tokens detailed below for proofs of 
 
 Any disparity / failure on the ISSUER's part can be argued with, since the transactions are on chain. The PBToken simplifies this, since one doesn't need to go back in history and calculate how much a given school has paid a person. Percentage paid is simply `PBToken_balance / PBToken_total`.
 
+# Installing IPFS
+
+ipfs is used by some parts of the program to store legal contracts, files that the user might want to store permanently. Download a release from https://github.com/ipfs/go-ipfs/releases and run install.sh. In case you face an issue with migration between various ipfs versions, you might need to run [fs-repo-migrations](https://github.com/ipfs/fs-repo-migrations/blob/master/run.md) to migrate to a newer version. If you don't have anything valuable, you can delete the directory and run `ipfs init` again.
+
+You need to keep your peer key (`ipfs.key` usually) in a safe place for future reference. Start ipfs using `ipfs daemon` and you can test if it worked by creating a test file `test.txt` and run `ipfs add test.txt` to see if it succeeds. The resultant hash can be decrypted using `curl "http://127.0.0.1:8080/ipfs/hash"` where 8080 is the endpoint of the ipfs server or by doing `cat /ipfs/hash` directly. You can also refer to [this helpful tutorial](https://michalzalecki.com/set-up-ipfs-node-on-the-server/) in order to get easily started with ipfs.
+
 # Running the code in this repo
 
 In order to be able to run this, you need to have the latest version of go installed. [Here](https://medium.com/@patdhlk/how-to-install-go-1-9-1-on-ubuntu-16-04-ee64c073cd79) is a quick tutorial on how to get go installed on a Linux / macOS machine.
@@ -45,13 +51,12 @@ Once you have go installed, you need to get the packages in this repo. This can 
 
 Then you need to build the stellar package `go build` and then run the executable like `./stellar`.
 
-You will be faced with a CLI interface with which you can interact with.
+You will be faced with a CLI interface with which you can interact with
 
 # Running tests
 
 Running tests is mostly simple with `go test` but the tests have flags since some require running other software in the background (`ipfs`). There are two kinds of flags right now - `travis` and `all`. If you need the coverage stats as well, you need to
-
 ```
 go get golang.org/x/tools/cmd/cover
 ```
-if you already don't have the package. Then running `go test --tags="all" -coverprofile=test.txt ./...` should run all the tests and provide coverage data. Running with the tag `travis` will omit the tests in `ipfs/` which requires [a local `go-ipfs` node running](https://michalzalecki.com/set-up-ipfs-node-on-the-server/).
+if you already don't have the package. Then running `go test --tags="all" -coverprofile=test.txt ./...` should run all the tests and provide coverage data. Running with the tag `travis` will omit the tests in `ipfs/` which requires [a local `go-ipfs` node running](https://michalzalecki.com/set-up-ipfs-node-on-the-server/) as described above.

@@ -188,7 +188,7 @@ func (a *Recipient) Payback(uContract Project, assetName string, issuerPubkey st
 		return fmt.Errorf("YOU CAN'T SEND AN AMOUNT MORE THAN WHAT YOU HAVE")
 	}
 	// check balance in DEBAssetCode anmd
-	monthlyBill, err := oracle.MonthlyBill()
+	monthlyBill := oracle.MonthlyBill()
 	if err != nil {
 		log.Println("Unable to fetch oracle price, exiting")
 		return err

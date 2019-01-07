@@ -12,8 +12,8 @@ import (
 	ipfs "github.com/YaleOpenLab/smartPropertyMVP/stellar/ipfs"
 	platform "github.com/YaleOpenLab/smartPropertyMVP/stellar/platform"
 	rpc "github.com/YaleOpenLab/smartPropertyMVP/stellar/rpc"
+	scan "github.com/YaleOpenLab/smartPropertyMVP/stellar/scan"
 	stablecoin "github.com/YaleOpenLab/smartPropertyMVP/stellar/stablecoin"
-	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
 	wallet "github.com/YaleOpenLab/smartPropertyMVP/stellar/wallet"
 	xlm "github.com/YaleOpenLab/smartPropertyMVP/stellar/xlm"
 	flags "github.com/jessevdk/go-flags"
@@ -44,7 +44,7 @@ func main() {
 		fmt.Println("WHICH PLATFORM WOULD YOU IKE TO ENTER INTO?")
 		fmt.Println("1. Platform of Contracts")
 		fmt.Println("1. Platform of Platforms")
-		platformArg, err := utils.ScanForInt()
+		platformArg, err := scan.ScanForInt()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -120,7 +120,7 @@ func main() {
 	fmt.Println("1. CREATE A NEW INVESTOR ACCOUNT")
 	fmt.Println("2. CREATE A NEW RECIPIENT ACCOUNT")
 	fmt.Println("3: ALREADY HAVE AN ACCOUNT")
-	opt, err := utils.ScanForInt()
+	opt, err := scan.ScanForInt()
 	if err != nil {
 		fmt.Println("Couldn't read user input")
 		return
@@ -165,7 +165,7 @@ func main() {
 			fmt.Println("  9. View All Balances ")
 			fmt.Println("  10. Unlock Account")
 			fmt.Println("  default: Exit")
-			optI, err := utils.ScanForInt()
+			optI, err := scan.ScanForInt()
 			if err != nil {
 				fmt.Println("Couldn't read user input")
 				break
@@ -181,7 +181,7 @@ func main() {
 				// TODO: migrate this to a contract model which is based off stages rather than using DBParams here
 				PrintPBProjects(recipient.ReceivedProjects)
 				fmt.Println("WHICH PROJECT DO YOU WANT TO PAY BACK TOWARDS? (ENTER PROJECT NUMBER)")
-				projectNumber, err := utils.ScanForInt()
+				projectNumber, err := scan.ScanForInt()
 				if err != nil {
 					log.Println("INPUT NOT AN INTEGER, TRY AGAIN")
 					continue
@@ -195,13 +195,13 @@ func main() {
 				// so we can retrieve the project using the project Index, nice
 				PrintProject(rtContract)
 				fmt.Println("HOW MUCH DO YOU WANT TO PAYBACK?")
-				paybackAmount, err := utils.ScanForStringWithCheckI()
+				paybackAmount, err := scan.ScanForStringWithCheckI()
 				if err != nil {
 					log.Println(err)
 					break
 				}
 				fmt.Printf(" DO YOU WANT TO CONFIRM THAT YOU WANT TO PAYBACK %s TOWARDS THIS PROJECT? (PRESS N IF YOU DON'T WANT TO)\n", paybackAmount)
-				confirmOpt, err := utils.ScanForString()
+				confirmOpt, err := scan.ScanForString()
 				if err != nil {
 					log.Println(err)
 					break
@@ -233,7 +233,7 @@ func main() {
 				break
 			case 4:
 				log.Println("Enter the amount you want to convert into STABLEUSD")
-				convAmount, err := utils.ScanForStringWithCheckF()
+				convAmount, err := scan.ScanForStringWithCheckF()
 				if err != nil {
 					log.Println(err)
 					break
@@ -262,7 +262,7 @@ func main() {
 				fmt.Println("2. COMPLETION TIME (IN YEARS)")
 				fmt.Println("3. SELECT MANUALLY")
 				fmt.Println("ENTER YOUR CHOICE AS A NUMBER (1 / 2 / 3)")
-				opt, err := utils.ScanForInt()
+				opt, err := scan.ScanForInt()
 				if err != nil {
 					fmt.Println("Couldn't read user input")
 					break
@@ -302,7 +302,7 @@ func main() {
 						PrintProject(contract)
 					}
 					fmt.Println("ENTER YOUR OPTION AS A NUMBER")
-					opt, err := utils.ScanForInt()
+					opt, err := scan.ScanForInt()
 					if err != nil {
 						log.Println(err)
 						break
@@ -323,7 +323,7 @@ func main() {
 				}
 				PrintProjects(allMyProjects)
 				fmt.Println("ENTER THE PROJECT INDEX")
-				contractIndex, err := utils.ScanForInt()
+				contractIndex, err := scan.ScanForInt()
 				if err != nil {
 					log.Println(err)
 					continue
@@ -347,7 +347,7 @@ func main() {
 				BalanceDisplayPrompt(recipient.U.PublicKey)
 			case 10:
 				// need to unlock the recipient account
-				seedpwd, err := utils.ScanRawPassword()
+				seedpwd, err := scan.ScanRawPassword()
 				if err != nil {
 					log.Println(err)
 					break
@@ -380,7 +380,7 @@ func main() {
 				fmt.Println("  2. VIEW PROFILE")
 				fmt.Println("  3. CREATE A PROPOSED (STAGE 2) PROJECT")
 				fmt.Println("  4. VIEW ALL MY PROPOSED (STAGE 2) PROJECTS")
-				optI, err := utils.ScanForInt()
+				optI, err := scan.ScanForInt()
 				if err != nil {
 					log.Println(err)
 					continue
@@ -415,7 +415,7 @@ func main() {
 				fmt.Println("  2. VIEW PROFILE")
 				fmt.Println("  3. VIEW ALL MY PRE-ORIGINATED (STAGE 0) PROJECTS")
 				fmt.Println("  4. VIEW ALL MY ORIGINATED (STAGE 1) PROJECTS")
-				optI, err = utils.ScanForInt()
+				optI, err = scan.ScanForInt()
 				if err != nil {
 					log.Println(err)
 					continue
@@ -466,7 +466,7 @@ func main() {
 			fmt.Println("  9. Display all Funded Projects")
 			fmt.Println("  10. Unlock account")
 			fmt.Println("  default: Exit")
-			optI, err := utils.ScanForInt()
+			optI, err := scan.ScanForInt()
 			if err != nil {
 				fmt.Println("Couldn't read user input")
 				break
@@ -480,7 +480,7 @@ func main() {
 				break
 			case 3:
 				fmt.Println("----WHICH PROJECT DO YOU WANT TO INVEST IN? (ENTER ORDER NUMBER WITHOUT SPACES)----")
-				oNumber, err := utils.ScanForInt()
+				oNumber, err := scan.ScanForInt()
 				if err != nil {
 					fmt.Println("Couldn't read user input")
 					break
@@ -494,13 +494,13 @@ func main() {
 				}
 				PrintProject(uContract)
 				fmt.Println(" HOW MUCH DO YOU WANT TO INVEST?")
-				investmentAmount, err := utils.ScanForStringWithCheckI()
+				investmentAmount, err := scan.ScanForStringWithCheckI()
 				if err != nil {
 					log.Println(err)
 					break
 				}
 				fmt.Println(" DO YOU WANT TO CONFIRM THIS ORDER? (PRESS N IF YOU DON'T WANT TO)")
-				confirmOpt, err := utils.ScanForString()
+				confirmOpt, err := scan.ScanForString()
 				if err != nil {
 					log.Println(err)
 					break
@@ -538,7 +538,7 @@ func main() {
 				// need to unlock the recipient account
 				fmt.Println("ENTER THE RECIPIENT'S SEED PASSWORD")
 				// ideally we should ask the recipient for confirmation in case he wants to re4ceived the money or something
-				seedpwd, err := utils.ScanRawPassword()
+				seedpwd, err := scan.ScanRawPassword()
 				if err != nil {
 					log.Println(err)
 					break
@@ -573,7 +573,7 @@ func main() {
 				log.Println("Enter the amount you want to convert into STABLEUSD")
 				// this would also mean that you need to check whether we have the balance
 				// here and then proceed further
-				convAmount, err := utils.ScanForStringWithCheckF()
+				convAmount, err := scan.ScanForStringWithCheckF()
 				if err != nil {
 					log.Println(err)
 					return
@@ -608,7 +608,7 @@ func main() {
 				}
 				PrintProjects(allProposedProjects)
 				fmt.Println("WHICH CONTRACT DO YOU WANT TO VOTE TOWARDS?")
-				vote, err := utils.ScanForInt()
+				vote, err := scan.ScanForInt()
 				if err != nil {
 					log.Println(err)
 					break
@@ -628,7 +628,7 @@ func main() {
 				// this uses the platform's ipfs key though, not the user's. If the user
 				// wants to serve his own ipfs files, he is better off running a client on
 				// his own
-				hashString, err := utils.ScanForString()
+				hashString, err := scan.ScanForString()
 				if err != nil {
 					fmt.Println("Couldn't read user input, going back to the main loop")
 				}
@@ -655,7 +655,7 @@ func main() {
 				PrintProjects(allFundedProjects)
 			case 10:
 				// need to unlock the recipient account
-				seedpwd, err := utils.ScanRawPassword()
+				seedpwd, err := scan.ScanRawPassword()
 				if err != nil {
 					log.Println(err)
 					break

@@ -7,11 +7,12 @@ import (
 
 	consts "github.com/YaleOpenLab/smartPropertyMVP/stellar/consts"
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
+	scan "github.com/YaleOpenLab/smartPropertyMVP/stellar/scan"
 	wallet "github.com/YaleOpenLab/smartPropertyMVP/stellar/wallet"
 	xlm "github.com/YaleOpenLab/smartPropertyMVP/stellar/xlm"
 )
 
-// InitializePlatform returns the platform structure and the seed
+// InitializePlatform returns the platform publickey and seed
 func InitializePlatform() (string, string, error) {
 	var publicKey string
 	var seed string
@@ -21,7 +22,7 @@ func InitializePlatform() (string, string, error) {
 	if _, err := os.Stat(consts.PlatformSeedFile); !os.IsNotExist(err) {
 		// the seed exists
 		fmt.Println("ENTER YOUR PASSWORD TO DECRYPT THE SEED FILE")
-		password, err := utils.ScanRawPassword()
+		password, err := scan.ScanRawPassword()
 		if err != nil {
 			log.Println(err)
 			return publicKey, seed, err
@@ -31,14 +32,20 @@ func InitializePlatform() (string, string, error) {
 	}
 	// platform doesn't exist or user doesn't have encrypted file. Ask
 	fmt.Println("DO YOU HAVE YOUR RAW SEED? IF SO, ENTER SEED. ELSE ENTER N")
-	seed, err = utils.ScanForString()
+	seed, err = scan.ScanForString()
 	if err != nil {
 		log.Println(err)
 		return publicKey, seed, err
 	}
 	if seed == "N" || seed == "n" {
-		// no seed, no file, carete new keypair
-		publicKey, seed, err = wallet.NewSeed(consts.PlatformSeedFile)
+		// no seed, no file, create new keypair
+		// need to pass the password for the  eed file
+		fmt.Println("Enter a password to encrypt your master seed. Please store this in a very safe place. This prompt will not ask to confirm your password")
+		password, err := scan.ScanRawPassword()
+		if err != nil {
+			return publicKey, seed, err
+		}
+		publicKey, seed, err = wallet.NewSeed(consts.PlatformSeedFile, password)
 		if err != nil {
 			log.Println(err)
 			return publicKey, seed, err
@@ -47,7 +54,12 @@ func InitializePlatform() (string, string, error) {
 	} else {
 		// no file, retrieve pukbey
 		// user has given us a seed, validate
-		publicKey, err = wallet.RetrievePubkey(seed, consts.PlatformSeedFile)
+		log.Println("ENTER A PASSWORD TO DECRYPT YOUR SEED")
+		password, err := scan.ScanRawPassword()
+		if err != nil {
+			return publicKey, seed, err
+		}
+		publicKey, err = wallet.RetrievePubkey(seed, consts.PlatformSeedFile, password)
 		if err != nil {
 			log.Println(err)
 			return publicKey, seed, err
@@ -57,9 +69,9 @@ func InitializePlatform() (string, string, error) {
 	return publicKey, seed, err
 }
 
+// RefillPlatform checks whether the publicKey passed has any xlm and if its balance
+// is less than 21 XLM, it proceeds to ask the friendbot for more test xlm
 func RefillPlatform(publicKey string) error {
-	// when I am creating an account, I will have a PublicKey and Seed, so
-	// don't need them here
 	// check whether the investor has XLM already
 	balance, err := xlm.GetNativeBalance(publicKey)
 	if err != nil {

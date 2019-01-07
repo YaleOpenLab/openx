@@ -6,7 +6,7 @@ import (
 
 	database "github.com/YaleOpenLab/smartPropertyMVP/stellar/database"
 	platform "github.com/YaleOpenLab/smartPropertyMVP/stellar/platform"
-	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
+	scan "github.com/YaleOpenLab/smartPropertyMVP/stellar/scan"
 	xlm "github.com/YaleOpenLab/smartPropertyMVP/stellar/xlm"
 )
 
@@ -39,26 +39,26 @@ func StartPlatform() (string, string, error) {
 }
 
 func NewUserPrompt() (string, string, string, string, error) {
-	realName, err := utils.ScanForString()
+	realName, err := scan.ScanForString()
 	if err != nil {
 		fmt.Println("Couldn't read user input")
 		return "", "", "", "", err
 	}
 	fmt.Printf("%s: ", "ENTER YOUR USERNAME")
-	loginUserName, err := utils.ScanForString()
+	loginUserName, err := scan.ScanForString()
 	if err != nil {
 		fmt.Println("Couldn't read user input")
 		return "", "", "", "", err
 	}
 
 	fmt.Printf("%s: ", "ENTER DESIRED PASSWORD, YOU WILL NOT BE ASKED TO CONFIRM THIS")
-	loginPassword, err := utils.ScanForPassword()
+	loginPassword, err := scan.ScanForPassword()
 	if err != nil {
 		fmt.Println("Couldn't read password")
 		return "", "", "", "", err
 	}
 	fmt.Printf("%s: ", "ENTER SEED PASSWORD, YOU WILL NOT BE ASKED TO CONFIRM THIS")
-	seedPassword, err := utils.ScanForPassword()
+	seedPassword, err := scan.ScanForPassword()
 	return realName, loginUserName, loginPassword, seedPassword, err
 }
 
@@ -103,7 +103,7 @@ func LoginPrompt() (database.Investor, database.Recipient, database.Entity, bool
 	fmt.Println(" i. INVESTOR")
 	fmt.Println(" r. RECIPIENT")
 	fmt.Println(" c. CONTRACTOR")
-	optS, err := utils.ScanForString()
+	optS, err := scan.ScanForString()
 	if err != nil {
 		log.Println("Failed to read user input")
 		return investor, recipient, contractor, rbool, cbool, err
@@ -122,14 +122,14 @@ func LoginPrompt() (database.Investor, database.Recipient, database.Entity, bool
 	}
 	// ask for username and password combo here
 	fmt.Printf("%s: ", "ENTER YOUR USERNAME")
-	loginUserName, err := utils.ScanForString()
+	loginUserName, err := scan.ScanForString()
 	if err != nil {
 		fmt.Println("Couldn't read user input")
 		return investor, recipient, contractor, rbool, cbool, err
 	}
 
 	fmt.Printf("%s: ", "ENTER YOUR PASSWORD: ")
-	loginPassword, err := utils.ScanForPassword()
+	loginPassword, err := scan.ScanForPassword()
 	if err != nil {
 		fmt.Println("Couldn't read password")
 		return investor, recipient, contractor, rbool, cbool, err
@@ -162,32 +162,32 @@ func LoginPrompt() (database.Investor, database.Recipient, database.Entity, bool
 func OriginContractPrompt(contractor *database.Entity) error {
 	fmt.Println("YOU HAVE DECIDED TO PROPOSE A NEW CONTRACT")
 	fmt.Println("ENTER THE PANEL SIZE")
-	panelSize, err := utils.ScanForString()
+	panelSize, err := scan.ScanForString()
 	if err != nil {
 		return err
 	}
 	fmt.Println("ENTER THE COST OF PROJECT")
-	totalValue, err := utils.ScanForInt()
+	totalValue, err := scan.ScanForInt()
 	if err != nil {
 		return err
 	}
 	fmt.Println("ENTER THE LOCATION OF PROJECT")
-	location, err := utils.ScanForString()
+	location, err := scan.ScanForString()
 	if err != nil {
 		return err
 	}
 	fmt.Println("ENTER THE ESTIMATED NUMBER OF YEARS FOR COMPLETION")
-	years, err := utils.ScanForInt()
+	years, err := scan.ScanForInt()
 	if err != nil {
 		return err
 	}
 	fmt.Println("ENTER METADATA REGARDING THE PROJECT")
-	metadata, err := utils.ScanForString()
+	metadata, err := scan.ScanForString()
 	if err != nil {
 		return err
 	}
 	fmt.Println("ENTER THE RECIPIENT'S USER ID")
-	recIndex, err := utils.ScanForInt()
+	recIndex, err := scan.ScanForInt()
 	if err != nil {
 		return err
 	}
@@ -203,7 +203,7 @@ func OriginContractPrompt(contractor *database.Entity) error {
 func ProposeContractPrompt(contractor *database.Entity) error {
 	fmt.Println("YOU HAVE DECIDED TO PROPOSE A NEW CONTRACT")
 	fmt.Println("ENTER THE PROJECT INDEX")
-	contractIndex, err := utils.ScanForInt()
+	contractIndex, err := scan.ScanForInt()
 	if err != nil {
 		return err
 	}
@@ -222,22 +222,22 @@ func ProposeContractPrompt(contractor *database.Entity) error {
 	panelSize := rContract.Params.PanelSize
 	location := rContract.Params.Location
 	fmt.Println("ENTER THE COST OF PROJECT")
-	totalValue, err := utils.ScanForInt()
+	totalValue, err := scan.ScanForInt()
 	if err != nil {
 		return err
 	}
 	fmt.Println("ENTER THE ESTIMATED NUMBER OF YEARS FOR COMPLETION")
-	years, err := utils.ScanForInt()
+	years, err := scan.ScanForInt()
 	if err != nil {
 		return err
 	}
 	fmt.Println("ENTER METADATA REGARDING THE PROJECT")
-	metadata, err := utils.ScanForString()
+	metadata, err := scan.ScanForString()
 	if err != nil {
 		return err
 	}
 	fmt.Println("ENTER THE RECIPIENT'S USER ID")
-	recIndex, err := utils.ScanForInt()
+	recIndex, err := scan.ScanForInt()
 	if err != nil {
 		return err
 	}
@@ -273,7 +273,7 @@ func DisplayOriginProjects() {
 func ExitPrompt() {
 	// check whether he wants to go back to the display all screen again
 	fmt.Println("DO YOU REALLY WANT TO EXIT? (PRESS Y TO CONFIRM)")
-	exitOpt, err := utils.ScanForString()
+	exitOpt, err := scan.ScanForString()
 	if err != nil {
 		log.Println(err)
 	}

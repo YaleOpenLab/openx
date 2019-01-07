@@ -23,7 +23,7 @@ func TestDb(t *testing.T) {
 	// connections and the other for non RPC connections
 	// now we repeat the same tests for all other entities
 	// connections and the other for non RPC connections
-	inv, err := NewInvestor("inv1", "blah", "cool")
+	inv, err := NewInvestor("inv1", "blah", "blah", "cool")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -32,7 +32,7 @@ func TestDb(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	recp, err := NewRecipient("user1", "blah", "cool")
+	recp, err := NewRecipient("user1", "blah", "blah", "cool")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -41,12 +41,12 @@ func TestDb(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	newCE2, err := NewOriginator("OrigTest2", "pwd", "NameOrigTest2", "123 ABC Street", "OrigDescription2")
+	newCE2, err := NewOriginator("OrigTest2", "pwd", "blah", "NameOrigTest2", "123 ABC Street", "OrigDescription2")
 	if err != nil {
 		t.Fatal(err)
 	}
 	// tests for contractors
-	newCE, err := NewContractor("ConTest", "pwd", "NameConTest", "123 ABC Street", "ConDescription") // use and test this as well
+	newCE, err := NewContractor("ConTest", "pwd", "blah", "NameConTest", "123 ABC Street", "ConDescription") // use and test this as well
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -56,7 +56,6 @@ func TestDb(t *testing.T) {
 	project1.Location = "India Basin, San Francisco"
 	project1.MoneyRaised = 0
 	project1.Metadata = "India Basin is an upcoming creative project based in San Francisco that seeks to invite innovators from all around to participate"
-	project1.Funded = false
 	project1.INVAssetCode = ""
 	project1.DEBAssetCode = ""
 	project1.PBAssetCode = ""
@@ -137,7 +136,7 @@ func TestDb(t *testing.T) {
 		log.Println(rInv.U.Name, inv.U.Name)
 		t.Fatalf("Usernames don't match, quitting!")
 	}
-	inv, err = NewInvestor("inv2", "b921f75437050f0f7d2caba6303d165309614d524e3d7e6bccf313f39d113468d30e1e2ac01f91f6c9b66c083d393f49b3177345311849edb026bb86ee624be0", "cool")
+	inv, err = NewInvestor("inv2", "b921f75437050f0f7d2caba6303d165309614d524e3d7e6bccf313f39d113468d30e1e2ac01f91f6c9b66c083d393f49b3177345311849edb026bb86ee624be0", "blah", "cool")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -172,7 +171,7 @@ func TestDb(t *testing.T) {
 	if rRecp.U.Name != recp.U.Name || rRecp.U.LoginUserName != recp.U.LoginUserName || rRecp.U.LoginPassword != recp.U.LoginPassword {
 		t.Fatalf("Usernames don't match, quitting!")
 	}
-	recp, err = NewRecipient("user1", "b921f75437050f0f7d2caba6303d165309614d524e3d7e6bccf313f39d113468d30e1e2ac01f91f6c9b66c083d393f49b3177345311849edb026bb86ee624be0", "cool")
+	recp, err = NewRecipient("user1", "b921f75437050f0f7d2caba6303d165309614d524e3d7e6bccf313f39d113468d30e1e2ac01f91f6c9b66c083d393f49b3177345311849edb026bb86ee624be0", "blah", "cool")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -196,7 +195,7 @@ func TestDb(t *testing.T) {
 		t.Fatalf("UserNames don't match, quitting!")
 	}
 	// tests for originators
-	newCE, err = NewEntity("OrigTest", "pwd", "NameOrigTest", "123 ABC Street", "OrigDescription", "originator")
+	newCE, err = NewEntity("OrigTest", "pwd", "blah", "NameOrigTest", "123 ABC Street", "OrigDescription", "originator")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -235,7 +234,7 @@ func TestDb(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	allPCs, err := RetrieveProposedProjectsIR(6)
+	allPCs, err := RetrieveProjectsR(ProposedProject, 6)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -251,7 +250,7 @@ func TestDb(t *testing.T) {
 	}
 
 	// now come the failure cases which should fail and we shall catch the case when they don't
-	allPCs, err = RetrieveProposedProjectsIC(2)
+	allPCs, err = RetrieveProjectsC(ProposedProject, 2)
 	if len(allPCs) != 0 {
 		log.Println("LEBNGRG: ", len(allPCs))
 		t.Fatalf("Retrieving a missing contract succeeds, quitting!")
@@ -262,11 +261,7 @@ func TestDb(t *testing.T) {
 	}
 
 	// Checks for users
-	u1, err := NewUser("uname1", "pwd1", "NewUser")
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = u1.GenKeys()
+	u1, err := NewUser("uname1", "pwd1", "blah", "NewUser")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -317,7 +312,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	allOOs, err := RetrieveOriginProjects() // this checks for stage 1 and not zero like the thing installed above
+	allOOs, err := RetrieveProjects(OriginProject) // this checks for stage 1 and not zero like the thing installed above
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -5,6 +5,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -34,7 +35,9 @@ func Encrypt(data []byte, passphrase string) ([]byte, error) {
 
 // Decrypt decrypts a given data stream with a given passphrase
 func Decrypt(data []byte, passphrase string) ([]byte, error) {
-	log.Println("RANDOM DECRYPTION DATA IS: ", data, len(data))
+	if len(data) == 0 || len(passphrase) == 0 {
+		return data, fmt.Errorf("Length of data is zero, can't decrpyt!")
+	}
 	tempParam := utils.SHA3hash(passphrase)
 	key := []byte(tempParam[96:128]) // last 32 characters in hash
 	block, err := aes.NewCipher(key)
@@ -49,7 +52,6 @@ func Decrypt(data []byte, passphrase string) ([]byte, error) {
 	}
 	nonceSize := gcm.NonceSize()
 	nonce, ciphertext := data[:nonceSize], data[nonceSize:]
-	log.Println("RANDOM DECRYPTION NONCE IS: ", nonce)
 	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
 		log.Println("Failed to open gcm while decrypting", err)

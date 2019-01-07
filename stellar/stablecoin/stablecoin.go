@@ -24,6 +24,7 @@ import (
 	assets "github.com/YaleOpenLab/smartPropertyMVP/stellar/assets"
 	consts "github.com/YaleOpenLab/smartPropertyMVP/stellar/consts"
 	oracle "github.com/YaleOpenLab/smartPropertyMVP/stellar/oracle"
+	scan "github.com/YaleOpenLab/smartPropertyMVP/stellar/scan"
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
 	wallet "github.com/YaleOpenLab/smartPropertyMVP/stellar/wallet"
 	xlm "github.com/YaleOpenLab/smartPropertyMVP/stellar/xlm"
@@ -45,14 +46,19 @@ func InitStableCoin() error {
 	if _, err := os.Stat(consts.StableCoinSeedFile); !os.IsNotExist(err) {
 		// the seed exists
 		fmt.Println("ENTER YOUR PASSWORD TO DECRYPT THE STABLECOIN SEED FILE")
-		password, err := utils.ScanRawPassword()
+		password, err := scan.ScanRawPassword()
 		if err != nil {
 			log.Println(err)
 			return err
 		}
 		publicKey, seed, err = wallet.RetrieveSeed(consts.StableCoinSeedFile, password)
 	} else {
-		publicKey, seed, err = wallet.NewSeed(consts.StableCoinSeedFile)
+		fmt.Println("Enter a password to encrypt your stablecoin's master seed. Please store this in a very safe place. This prompt will not ask to confirm your password")
+		password, err := scan.ScanRawPassword()
+		if err != nil {
+			return err
+		}
+		publicKey, seed, err = wallet.NewSeed(consts.StableCoinSeedFile, password)
 		err = xlm.GetXLM(publicKey)
 	}
 	// the user doesn't have seed, so create a new platform

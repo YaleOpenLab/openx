@@ -46,6 +46,19 @@ import (
 	"github.com/stellar/go/build"
 )
 
+// AssetID assigns a unique assetID to each asset. We assume that there won't be more
+// than 68719476736 (16^9) assets that are created at any point, so we're good.
+// the total AssetID must be less than 12 characters in length, so we take the first
+// three for a human readable identifier and then the last 9 are random hex characaters
+// passed through SHA3
+func AssetID(inputString string) string {
+	// so the assetID right now is a hash of the asset name, concatenated investor public keys and nonces
+	x := utils.SHA3hash(inputString)
+	return "YOL" + x[64:73] // max length of an asset in stellar is 12
+	// log.Fatal(fmt.Errorf("All good"))
+	// return nil
+}
+
 // CreateAsset creates a new asset belonging to the public key referenced above
 func CreateAsset(assetName string, PublicKey string) build.Asset {
 	// need to set a couple flags here
@@ -215,7 +228,7 @@ func InvestInProject(issuerPublicKey string, issuerSeed string, investor *databa
 
 func SendPBAsset(project database.Project, destination string, amount string, Seed string, PublicKey string) error {
 	// need to calculate how much PBAsset we need to send back.
-	amountS := CalculatePayback(project, amount)
+	amountS := project.CalculatePayback(amount)
 	_, txHash, err := SendAssetFromIssuer(project.Params.PBAssetCode, destination, amountS, Seed, PublicKey)
 	log.Println("TXHASH for payback is: ", txHash)
 	return err
