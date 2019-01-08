@@ -5,25 +5,21 @@ import (
 	"fmt"
 	"log"
 
+	aes "github.com/YaleOpenLab/smartPropertyMVP/stellar/aes"
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
 	xlm "github.com/YaleOpenLab/smartPropertyMVP/stellar/xlm"
 	"github.com/boltdb/bolt"
 )
 
-// the user structure  houses all entities that are of type "User". This contains
+// the user structure houses all entities that are of type "User". This contains
 // commonly used functions so that we need not repeat the ssame thing for every instance.
 type User struct {
 	Index int
 	// default index, gets us easy stats on how many people are there and stuff,
 	// don't want to omit this
-	Seed string
-	// Seed is the equivalent of a private key in stellar (stellar doesn't expose private keys)
-	// do we make seed optional like that for the Recipient? Couple things to consider
-	// here: if the recipient loses the publickey, it can nver send DEBTokens back
-	// to the issuer, so it would be as if it reneged on the deal. Do we count on
-	// technically less sound people to hold their public keys safely? I suggest
-	// this would be  difficult in practice, so maybe enforce that they need to hold|
-	// their account on the platform?
+	EncryptedSeed []byte
+	// EncryptedSeed stores the AES-256 encrypted seed of the user. This way, even
+	// if the platform is hacked, the user's funds are still safe
 	Name string
 	// Name of the primary stakeholder involved (principal trustee of school, for eg.)
 	PublicKey string
@@ -47,7 +43,7 @@ type User struct {
 
 // User is a metastrucutre that contains commonyl used keys within a single umbrella
 // so that we can import it wherever needed.
-func NewUser(uname string, pwd string, Name string) (User, error) {
+func NewUser(uname string, pwd string, seedpwd string, Name string) (User, error) {
 	// call this after the user has failled in username and password.
 	// Store hashed password in the database
 	var a User
@@ -65,7 +61,7 @@ func NewUser(uname string, pwd string, Name string) (User, error) {
 	}
 
 	a.Name = Name
-	a.Seed, a.PublicKey, err = xlm.GetKeyPair()
+	err = a.GenKeys(seedpwd)
 	if err != nil {
 		return a, err
 	}
@@ -73,12 +69,12 @@ func NewUser(uname string, pwd string, Name string) (User, error) {
 	a.LoginPassword = utils.SHA3hash(pwd) // store tha sha3 hash
 	// now we have a new User, take this and then send this struct off to be stored in the database
 	a.FirstSignedUp = utils.Timestamp()
-	err = InsertUser(a)
+	err = a.Save()
 	return a, err // since user is a meta structure, insert it and then return the function
 }
 
 // InsertUser inserts a passed User object into the database
-func InsertUser(a User) error {
+func (a *User) Save() error {
 	db, err := OpenDB()
 	if err != nil {
 		return err
@@ -115,7 +111,7 @@ func RetrieveAllUsers() ([]User, error) {
 			}
 			err := json.Unmarshal(x, &rUser)
 			if err != nil {
-				return nil
+				return err
 			}
 			arr = append(arr, rUser)
 		}
@@ -145,6 +141,11 @@ func RetrieveUser(key int) (User, error) {
 
 func ValidateUser(name string, pwhash string) (User, error) {
 	var inv User
+	temp, err := RetrieveAllUsers()
+	if err != nil {
+		return inv, err
+	}
+	limit := len(temp) + 1
 	db, err := OpenDB()
 	if err != nil {
 		return inv, err
@@ -152,15 +153,15 @@ func ValidateUser(name string, pwhash string) (User, error) {
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(UserBucket)
-		for i := 1; ; i++ {
+		for i := 1; i < limit; i++ {
 			var rUser User
 			x := b.Get(utils.ItoB(i))
 			if x == nil {
-				return nil
+				continue
 			}
 			err := json.Unmarshal(x, &rUser)
 			if err != nil {
-				return nil
+				return err
 			}
 			// we have the User class, check names
 			if rUser.LoginUserName == name && rUser.LoginPassword == pwhash {
@@ -173,15 +174,15 @@ func ValidateUser(name string, pwhash string) (User, error) {
 	return inv, err
 }
 
-func (a *User) GenKeys() error {
+func (a *User) GenKeys(seedpwd string) error {
 	var err error
-	var dup User
-	dup = *a
-	dup.Seed, dup.PublicKey, err = xlm.GetKeyPair()
+	var seed string
+	seed, a.PublicKey, err = xlm.GetKeyPair()
 	if err != nil {
 		return err
 	}
-	err = InsertUser(dup)
-	// a = &dup
+	// don't store the seed in the database
+	a.EncryptedSeed, err = aes.Encrypt([]byte(seed), seedpwd)
+	err = a.Save()
 	return err
 }

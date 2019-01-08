@@ -1,113 +1,53 @@
 package database
 
 import (
-	"encoding/json"
-	"fmt"
-
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
-	"github.com/boltdb/bolt"
 )
 
-func NewContractor(uname string, pwd string, Name string, Address string, Description string) (ContractEntity, error) {
-	newContractor, err := NewContractEntity(uname, pwd, Name, Address, Description, "contractor")
-	if err != nil {
-		return newContractor, err
-	}
+// When contractors are proposing a contract towards something,
+// we need to be sure that they are not following the price and are instead giving
+// their best quote possible. In this case, a blind auction method is the best
+// and that's what we have right now. If we want this to be an auction as well, we
+// need to have a specific date of sorts where all the contractors can propose
+// contracts immmediately, without latency.
+// Also, have some kind of deposit for Contractors (5% or something) so that they
+// don't go back on their investment and slash their ivnestment by 10% if this happens
+// and distribute that amount to the recipient directly and reduce everyone's bids
+// by that amount to account for the change in underlying Project
+// also, a given Contractor right now is allowed only for one final bid for blind
+// auction advantages (no price disvocery, etc). If we want to change this, we must
+// have an auction handler that will take care of this.
 
-	// insert the contractor into the database
-	err = InsertContractEntity(newContractor)
-	if err != nil {
-		return newContractor, err
-	}
-
-	return newContractor, err
+func NewContractor(uname string, pwd string, seedpwd string, Name string, Address string, Description string) (Entity, error) {
+	return NewEntity(uname, pwd, seedpwd, Name, Address, Description, "contractor")
 }
 
-func (contractor *ContractEntity) ProposeContract(panelSize string, totalValue int, location string, years int, metadata string, recIndex int, orderIndex int) (Contract, error) {
-	var pc Contract
+func (contractor *Entity) ProposeContract(panelSize string, totalValue int, location string, years int, metadata string, recIndex int, projectIndex int) (Project, error) {
+	var pc Project
 	var err error
 
-	pc.O.Index = orderIndex
-	pc.O.PanelSize = panelSize
-	pc.O.TotalValue = totalValue
-	pc.O.Location = location
-	pc.O.Years = years
-	pc.O.Metadata = metadata
-	pc.O.DateInitiated = utils.Timestamp()
+	// for this, create a new contract and store in the contracts db. Wea re sorting
+	// by stage, so it shouldn't matter a whole lot
+	indexCheck, err := RetrieveAllProjects()
+	if err != nil {
+		return pc, err
+	}
+	pc.Params.Index = len(indexCheck) + 1
+	pc.Params.PanelSize = panelSize
+	pc.Params.TotalValue = totalValue
+	pc.Params.Location = location
+	pc.Params.Years = years
+	pc.Params.Metadata = metadata
+	pc.Params.DateInitiated = utils.Timestamp()
 	iRecipient, err := RetrieveRecipient(recIndex)
 	if err != nil {
 		return pc, err
 	}
-	pc.O.OrderRecipient = iRecipient
-	pc.O.Stage = 2
-	contractor.ProposedContracts = append(contractor.ProposedContracts, pc)
-
-	err = InsertContractEntity(*contractor)
-	if err != nil {
-		return pc, err
-	}
-
-	// don't insert the order since the contractor's orders are not final
+	pc.Params.ProjectRecipient = iRecipient
+	pc.Stage = 2 // 2 since we need to filter this out while retrieving the propsoed contracts
+	pc.Contractor = *contractor
+	// instead of storing in this proposedcontracts slice, store it as a project, but not a contract and retrieve by stage
+	err = pc.Save()
+	// don't insert the project since the contractor's projects are not final
 	return pc, err
-}
-
-// we go through each contract entity and retrieve orders specific to the boIndex
-// which is stored in their proposed contracts slice
-func RetrieveAllProposedContracts(boIndex int) ([]ContractEntity, []Contract, error) {
-	// boindex is the bidding order index which we should search for in all
-	// contractors' proposed contracts
-	var contractorsArr []ContractEntity
-	var contractsArr []Contract
-	temp, err := RetrieveAllUsers()
-	if err != nil {
-		return contractorsArr, contractsArr, err
-	}
-	limit := len(temp) + 1
-	db, err := OpenDB()
-	if err != nil {
-		return contractorsArr, contractsArr, err
-	}
-	defer db.Close()
-
-	err = db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(ContractorBucket)
-		for i := 1; i < limit; i++ {
-			var rContractor ContractEntity
-			x := b.Get(utils.ItoB(i))
-			if x == nil {
-				// might be some other user like an investor or recipient
-				continue
-			}
-			err := json.Unmarshal(x, &rContractor)
-			if err != nil {
-				return nil
-			}
-			if !rContractor.Contractor {
-				continue
-			}
-			// is a contractor, search for the index of his proposed contracts
-			contract1, err := FindInKey(boIndex, rContractor.ProposedContracts)
-			if err != nil {
-				// doesnt have a proposed contract for the specific recipient
-				continue
-			}
-			// contract1 is the specific contract which has a bid towards this order
-			// now we need to store the contractor and the contract for the bidding process
-			contractorsArr = append(contractorsArr, rContractor)
-			contractsArr = append(contractsArr, contract1)
-			// default is to add all contractentities to the array
-		}
-		return nil
-	})
-	return contractorsArr, contractsArr, err
-}
-
-func FindInKey(key int, arr []Contract) (Contract, error) {
-	var dummy Contract
-	for _, elem := range arr {
-		if elem.O.Index == key {
-			return elem, nil
-		}
-	}
-	return dummy, fmt.Errorf("Not found")
 }

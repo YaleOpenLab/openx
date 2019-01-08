@@ -14,7 +14,7 @@ import (
 // TODO: in some ways, the Name, LoginUserName and LoginPassword fields can be
 // devolved into a separate User struct, that would result in less duplication as
 // well
-type ContractEntity struct {
+type Entity struct {
 	// User defines common params such as name, seed, publickey
 	U User
 	// the name of the contractor / company that is contracting
@@ -28,13 +28,13 @@ type ContractEntity struct {
 	// on time. This authority should be trusted and either should be vetted by the law
 	// or have a multisig paying out to the investors beyond a certain timeline if they
 	// don't get paid by the school. This way, the guarantor can be anonymous, like the
-	// nice Pineapple Fund guy. THis can also be an insurance company, who is willing to
+	// nice Pineapple Fund guy. This can also be an insurance company, who is willing to
 	// guarantee for specific school and the school can pay him out of chain / have
 	// that as fee within the contract the originator
 	Developer bool
 	// A developer is someone who installs the required equipment (Raspberry Pi,
 	// network adapters, anti tamper installations and similar) In the initial
-	// orders, this will be us, since we'd be installign the pi ourselves, but in
+	// projects, this will be us, since we'd be installign the pi ourselves, but in
 	// the future, we expect third party developers / companies to do this for us
 	// and act in a decentralized fashion. This money can either be paid out of chain
 	// in fiat or can be a portion of the funds the investors chooses to invest in.
@@ -47,16 +47,19 @@ type ContractEntity struct {
 	// the responsibility of auditing the requirements of the project - panel size,
 	// location, number of panels needed, etc. He then should ideally be able to fill
 	// out some kind of form on the website so that the originator's proposal is live
-	// and shown to potential investors. The originators get paid only when the order
+	// and shown to potential investors. The originators get paid only when the project
 	// is live, else they can just spam, without any actual investment
-	Guarantor     bool
-	PastContracts []Contract
+	Guarantor bool
+	// A Guarantor is someone who can vouch for the recipient and fill in for them
+	// in case they default on payment. They can c harge a fee and this must be
+	// put inside the contract itself.
+	PastContracts []Project
 	// list of all the contracts that the contractor has won in the past
-	ProposedContracts []Contract
+	ProposedContracts []Project
 	// the Originator proposes a contract which will then be taken up
 	// by a contractor, who publishes his own copy of the proposed contract
 	// which will be the set of contracts that will be sent to auction
-	PresentContracts []Contract
+	PresentContracts []Project
 	// list of all contracts that the contractor is presently undertaking1
 	PastFeedback []Feedback
 	// feedback received on the contractor from parties involved in the past
@@ -65,19 +68,19 @@ type ContractEntity struct {
 	// holding up his drivers' license or similar
 }
 
-func newContractEntityHelper(uname string, pwd string, Name string, Address string, Description string, role string) (ContractEntity, error) {
+func newEntityHelper(uname string, pwd string, seedpwd string, Name string, Address string, Description string, role string) (Entity, error) {
 	// call this after the user has failled in username and password. Store hashed password
 	// in the database
-	var a ContractEntity
+	var a Entity
 	var err error
-	a.U, err = NewUser(uname, pwd, Name)
+	a.U, err = NewUser(uname, pwd, seedpwd, Name)
 	if err != nil {
 		return a, err
 	}
 	// set all auto fields above
 	a.U.Address = Address
 	a.U.Description = Description
-	// insertion into the database will be a separate handler, pass this ContractEntity there
+	// insertion into the database will be a separate handler, pass this Entity there
 	switch role {
 	case "contractor":
 		a.Contractor = true
@@ -90,10 +93,11 @@ func newContractEntityHelper(uname string, pwd string, Name string, Address stri
 	default:
 		// nothing, since only we call this function internally, this shouldn't arrive here
 	}
-	return a, nil
+	err = a.Save()
+	return a, err
 }
 
-func InsertContractEntity(a ContractEntity) error {
+func (a *Entity) Save() error {
 	db, err := OpenDB()
 	if err != nil {
 		return err
@@ -111,24 +115,24 @@ func InsertContractEntity(a ContractEntity) error {
 	return err
 }
 
-func NewContractEntity(uname string, pwd string, Name string, Address string, Description string, role string) (ContractEntity, error) {
-	var dummy ContractEntity
+func NewEntity(uname string, pwd string, seedpwd string, Name string, Address string, Description string, role string) (Entity, error) {
+	var dummy Entity
 	switch role {
 	case "originator":
-		return newContractEntityHelper(uname, pwd, Name, Address, Description, "originator")
+		return newEntityHelper(uname, pwd, seedpwd, Name, Address, Description, "originator")
 	case "developer":
-		return newContractEntityHelper(uname, pwd, Name, Address, Description, "developer")
+		return newEntityHelper(uname, pwd, seedpwd, Name, Address, Description, "developer")
 	case "contractor":
-		return newContractEntityHelper(uname, pwd, Name, Address, Description, "contractor")
+		return newEntityHelper(uname, pwd, seedpwd, Name, Address, Description, "contractor")
 	case "guarantor":
-		return newContractEntityHelper(uname, pwd, Name, Address, Description, "guarantor")
+		return newEntityHelper(uname, pwd, seedpwd, Name, Address, Description, "guarantor")
 	}
 	return dummy, fmt.Errorf("Invalid entity passed, check again!")
 }
 
 // gets all the proposed contracts for a particular recipient
-func RetrieveAllContractEntities(role string) ([]ContractEntity, error) {
-	var arr []ContractEntity
+func RetrieveAllContractEntities(role string) ([]Entity, error) {
+	var arr []Entity
 	temp, err := RetrieveAllUsers()
 	if err != nil {
 		return arr, err
@@ -143,7 +147,7 @@ func RetrieveAllContractEntities(role string) ([]ContractEntity, error) {
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(ContractorBucket)
 		for i := 1; i < limit; i++ {
-			var rContractor ContractEntity
+			var rContractor Entity
 			x := b.Get(utils.ItoB(i))
 			if x == nil {
 				// might be some other user like an investor or recipient
@@ -170,6 +174,8 @@ func RetrieveAllContractEntities(role string) ([]ContractEntity, error) {
 				if !rContractor.Guarantor {
 					continue
 				}
+			default:
+				continue
 				// default is to add all contractentities to the array
 			}
 			arr = append(arr, rContractor)
@@ -179,8 +185,8 @@ func RetrieveAllContractEntities(role string) ([]ContractEntity, error) {
 	return arr, err
 }
 
-func RetrieveContractEntity(key int) (ContractEntity, error) {
-	var a ContractEntity
+func RetrieveEntity(key int) (Entity, error) {
+	var a Entity
 	db, err := OpenDB()
 	if err != nil {
 		return a, err
@@ -200,8 +206,13 @@ func RetrieveContractEntity(key int) (ContractEntity, error) {
 // search by username for login stuff
 // TODO: if two people have the same username, bolt defaults to the alst inserted
 // one. So we need to have a function that prevents username collisions
-func SearchForContractEntity(name string, pwhash string) (ContractEntity, error) {
-	var a ContractEntity
+func SearchForEntity(name string, pwhash string) (Entity, error) {
+	var a Entity
+	temp, err := RetrieveAllUsers()
+	if err != nil {
+		return a, err
+	}
+	limit := len(temp) + 1
 	db, err := OpenDB()
 	if err != nil {
 		return a, err
@@ -210,11 +221,11 @@ func SearchForContractEntity(name string, pwhash string) (ContractEntity, error)
 	err = db.Update(func(tx *bolt.Tx) error {
 		// TODO: change all similar functions to db.View
 		b := tx.Bucket(ContractorBucket)
-		for i := 1; ; i++ {
-			var rContractor ContractEntity
+		for i := 1; i < limit; i++ {
+			var rContractor Entity
 			x := b.Get(utils.ItoB(i))
 			if x == nil {
-				return nil
+				continue
 			}
 			err := json.Unmarshal(x, &rContractor)
 			if err != nil {
@@ -223,29 +234,10 @@ func SearchForContractEntity(name string, pwhash string) (ContractEntity, error)
 			// we have the investor class, check names
 			if rContractor.U.LoginUserName == name && rContractor.U.LoginPassword == pwhash {
 				a = rContractor
+				return nil
 			}
 		}
 		return fmt.Errorf("Not Found")
 	})
 	return a, err
 }
-
-// you need to have a lock in period beyond which contractors can not post what
-// stuff they want. now, how do you choose which contractor wins? Ideally,
-// the school would want the most stuff but you need to vet which contracts are good
-// and not. In this case, we use prive as the metric, but this can be anything
-// or even chosen by the school / demo bidding auction by investors and then
-// take the one which has the most demo votes
-// Also, in contracts, when contractors are proposing a contract towards something,
-// we need to be sure that they are not followign the price and are instead giving
-// their best quote possible. In this case, a blind auction method is the best
-// and that's what we have right now. If we want this to be an auction as well, we
-// need to have a specific date of sorts where all the contractors can propose
-// contracts immmediately, without latency.
-// Also, have some kind of deposit for Contractors (5% or something) so that they
-// don't go back on their investment and slash their ivnestment by 10% if this happens
-// and distribute that amount to the recipient directly and reduce everyone's bids
-// by that amount to account for the change in underlying Order
-// also, a given Contractor right now is allowed only for one final bid for blind
-// auction advantages (no price disvocery, etc). If we want to change this, we must
-// have an auction handler that will take care of this.

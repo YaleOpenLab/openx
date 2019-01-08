@@ -6,14 +6,12 @@ import (
 
 	database "github.com/YaleOpenLab/smartPropertyMVP/stellar/database"
 	platform "github.com/YaleOpenLab/smartPropertyMVP/stellar/platform"
-	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
+	scan "github.com/YaleOpenLab/smartPropertyMVP/stellar/scan"
+	xlm "github.com/YaleOpenLab/smartPropertyMVP/stellar/xlm"
 )
 
 func ValidateInputs() {
 	if (opts.RecYears != 0) && !(opts.RecYears == 3 || opts.RecYears == 5 || opts.RecYears == 7) {
-		// right now payoff periods are limited, I guess they don't need to be,
-		// but in this case just are. Call this function later when orders are being
-		// created. Maybe don't need to restrict this at all?
 		log.Fatal(fmt.Errorf("Number of years not supported"))
 	}
 }
@@ -22,15 +20,16 @@ func StartPlatform() (string, string, error) {
 	var publicKey string
 	var seed string
 	ValidateInputs()
-	allOrders, err := database.RetrieveAllOrders()
+	database.CreateHomeDir()
+	allContracts, err := database.RetrieveAllProjects()
 	if err != nil {
-		log.Println("Error retrieving all orders from the database")
+		log.Println("Error retrieving all projects from the database")
 		return publicKey, seed, err
 	}
 
-	if len(allOrders) == 0 {
+	if len(allContracts) == 0 {
 		log.Println("Populating database with test values")
-		err = database.InsertDummyData()
+		err = InsertDummyData()
 		if err != nil {
 			return publicKey, seed, err
 		}
@@ -39,81 +38,72 @@ func StartPlatform() (string, string, error) {
 	return publicKey, seed, err
 }
 
-func NewUserPrompt() (string, string, string, error) {
-	realName, err := utils.ScanForString()
+func NewUserPrompt() (string, string, string, string, error) {
+	realName, err := scan.ScanForString()
 	if err != nil {
 		fmt.Println("Couldn't read user input")
-		return "", "", "", err
+		return "", "", "", "", err
 	}
 	fmt.Printf("%s: ", "ENTER YOUR USERNAME")
-	loginUserName, err := utils.ScanForString()
+	loginUserName, err := scan.ScanForString()
 	if err != nil {
 		fmt.Println("Couldn't read user input")
-		return "", "", "", err
+		return "", "", "", "", err
 	}
 
 	fmt.Printf("%s: ", "ENTER DESIRED PASSWORD, YOU WILL NOT BE ASKED TO CONFIRM THIS")
-	loginPassword, err := utils.ScanForPassword()
+	loginPassword, err := scan.ScanForPassword()
 	if err != nil {
 		fmt.Println("Couldn't read password")
-		return "", "", "", err
+		return "", "", "", "", err
 	}
-	return realName, loginUserName, loginPassword, err
+	fmt.Printf("%s: ", "ENTER SEED PASSWORD, YOU WILL NOT BE ASKED TO CONFIRM THIS")
+	seedPassword, err := scan.ScanForPassword()
+	return realName, loginUserName, loginPassword, seedPassword, err
 }
 
 func NewInvestorPrompt() error {
-	fmt.Printf("%s: ", "ENTER YOUR REAL NAME")
-
-	loginUserName, loginPassword, realName, err := NewUserPrompt()
+	log.Println("You have chosen to create a new investor account, welcome")
+	loginUserName, loginPassword, realName, seedpwd, err := NewUserPrompt()
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 
-	investor, err := database.NewInvestor(loginUserName, loginPassword, realName)
+	_, err = database.NewInvestor(loginUserName, loginPassword, seedpwd, realName)
 	if err != nil {
 		log.Println("FAILED TO SETUP ACCOUNT, TRY AGAIN")
 		return err
 	}
-	err = database.InsertInvestor(investor)
-	if err != nil {
-		log.Println("FAILED TO SETUP ACCOUNT, TRY AGAIN")
-		return err
-	}
-	return nil
+	return err
 }
 
 func NewRecipientPrompt() error {
-
-	loginUserName, loginPassword, realName, err := NewUserPrompt()
+	log.Println("You have chosen to create a new recipient account, welcome")
+	loginUserName, loginPassword, realName, seedpwd, err := NewUserPrompt()
 	if err != nil {
 		log.Println(err)
 		return err
 	}
-	recipient, err := database.NewRecipient(loginUserName, loginPassword, realName)
+	_, err = database.NewRecipient(loginUserName, loginPassword, seedpwd, realName)
 	if err != nil {
 		log.Println("FAILED TO SETUP ACCOUNT, TRY AGAIN")
 		return err
 	}
-	err = database.InsertRecipient(recipient)
-	if err != nil {
-		log.Println("FAILED TO SETUP ACCOUNT, TRY AGAIN")
-		return err
-	}
-	return nil
+	return err
 }
 
-func LoginPrompt() (database.Investor, database.Recipient, database.ContractEntity, bool, bool, error) {
+func LoginPrompt() (database.Investor, database.Recipient, database.Entity, bool, bool, error) {
 	rbool := false
 	cbool := false
 	var investor database.Investor
 	var recipient database.Recipient
-	var contractor database.ContractEntity
+	var contractor database.Entity
 	fmt.Println("---------SELECT YOUR ROLE---------")
 	fmt.Println(" i. INVESTOR")
 	fmt.Println(" r. RECIPIENT")
 	fmt.Println(" c. CONTRACTOR")
-	optS, err := utils.ScanForString()
+	optS, err := scan.ScanForString()
 	if err != nil {
 		log.Println("Failed to read user input")
 		return investor, recipient, contractor, rbool, cbool, err
@@ -132,14 +122,14 @@ func LoginPrompt() (database.Investor, database.Recipient, database.ContractEnti
 	}
 	// ask for username and password combo here
 	fmt.Printf("%s: ", "ENTER YOUR USERNAME")
-	loginUserName, err := utils.ScanForString()
+	loginUserName, err := scan.ScanForString()
 	if err != nil {
 		fmt.Println("Couldn't read user input")
 		return investor, recipient, contractor, rbool, cbool, err
 	}
 
 	fmt.Printf("%s: ", "ENTER YOUR PASSWORD: ")
-	loginPassword, err := utils.ScanForPassword()
+	loginPassword, err := scan.ScanForPassword()
 	if err != nil {
 		fmt.Println("Couldn't read password")
 		return investor, recipient, contractor, rbool, cbool, err
@@ -149,14 +139,14 @@ func LoginPrompt() (database.Investor, database.Recipient, database.ContractEnti
 		fmt.Println("Couldn't read password")
 		return investor, recipient, contractor, rbool, cbool, err
 	}
-	log.Println("WATCH USER IDNEX: ", user.Index)
+	log.Println("WATCH USER INDEX: ", user.Index)
 	if rbool {
 		recipient, err = database.RetrieveRecipient(user.Index)
 		if err != nil {
 			return investor, recipient, contractor, rbool, cbool, err
 		}
 	} else if cbool {
-		contractor, err = database.RetrieveContractEntity(user.Index)
+		contractor, err = database.RetrieveEntity(user.Index)
 		if err != nil {
 			return investor, recipient, contractor, rbool, cbool, err
 		}
@@ -169,35 +159,35 @@ func LoginPrompt() (database.Investor, database.Recipient, database.ContractEnti
 	return investor, recipient, contractor, rbool, cbool, nil
 }
 
-func OriginContractPrompt(contractor *database.ContractEntity) error {
+func OriginContractPrompt(contractor *database.Entity) error {
 	fmt.Println("YOU HAVE DECIDED TO PROPOSE A NEW CONTRACT")
 	fmt.Println("ENTER THE PANEL SIZE")
-	panelSize, err := utils.ScanForString()
+	panelSize, err := scan.ScanForString()
 	if err != nil {
 		return err
 	}
 	fmt.Println("ENTER THE COST OF PROJECT")
-	totalValue, err := utils.ScanForInt()
+	totalValue, err := scan.ScanForInt()
 	if err != nil {
 		return err
 	}
 	fmt.Println("ENTER THE LOCATION OF PROJECT")
-	location, err := utils.ScanForString()
+	location, err := scan.ScanForString()
 	if err != nil {
 		return err
 	}
 	fmt.Println("ENTER THE ESTIMATED NUMBER OF YEARS FOR COMPLETION")
-	years, err := utils.ScanForInt()
+	years, err := scan.ScanForInt()
 	if err != nil {
 		return err
 	}
 	fmt.Println("ENTER METADATA REGARDING THE PROJECT")
-	metadata, err := utils.ScanForString()
+	metadata, err := scan.ScanForString()
 	if err != nil {
 		return err
 	}
 	fmt.Println("ENTER THE RECIPIENT'S USER ID")
-	recIndex, err := utils.ScanForInt()
+	recIndex, err := scan.ScanForInt()
 	if err != nil {
 		return err
 	}
@@ -205,68 +195,99 @@ func OriginContractPrompt(contractor *database.ContractEntity) error {
 	if err != nil {
 		return err
 	}
-	// order insertion is done by the  above function, so we needn't call the database to do it again for us
-	database.PrintOrder(originContract.O)
+	// project insertion is done by the  above function, so we needn't call the database to do it again for us
+	PrintProject(originContract)
 	return nil
 }
 
-func PrintAllOriginatedContracts(contractor *database.ContractEntity) error {
-	fmt.Println("LIST OF ALL ORIGINATED CONTRACTS: ")
-	// the database would be updated each time the user has an originated
-	// contract, so we need to retrieve the contractor struct again
-	contractorDup, err := database.RetrieveContractEntity(contractor.U.Index)
-	if err != nil {
-		return err
-	}
-	for _, elem := range contractor.ProposedContracts {
-		database.PrintOrder(elem.O)
-	}
-	contractor = &contractorDup
-	return nil
-}
-
-func ProposeContractPrompt(contractor *database.ContractEntity) error {
+func ProposeContractPrompt(contractor *database.Entity) error {
 	fmt.Println("YOU HAVE DECIDED TO PROPOSE A NEW CONTRACT")
-	fmt.Println("ENTER THE PANEL SIZE")
-	panelSize, err := utils.ScanForString()
+	fmt.Println("ENTER THE PROJECT INDEX")
+	contractIndex, err := scan.ScanForInt()
 	if err != nil {
 		return err
 	}
+	// we need to check if this contract index exists and retrieve
+	rContract, err := database.RetrieveProject(contractIndex)
+	if err != nil {
+		return err
+	}
+	// TODO: PRint CONTRACTS HERE
+	log.Println("YOUR CONTRACT IS: ")
+	PrintProject(rContract)
+	if rContract.Params.Index == 0 || rContract.Stage != 1 {
+		// prevent people form porposing contracts for non originated contracts
+		return fmt.Errorf("Invalid contract index")
+	}
+	panelSize := rContract.Params.PanelSize
+	location := rContract.Params.Location
 	fmt.Println("ENTER THE COST OF PROJECT")
-	totalValue, err := utils.ScanForInt()
-	if err != nil {
-		return err
-	}
-	fmt.Println("ENTER THE LOCATION OF PROJECT")
-	location, err := utils.ScanForString()
+	totalValue, err := scan.ScanForInt()
 	if err != nil {
 		return err
 	}
 	fmt.Println("ENTER THE ESTIMATED NUMBER OF YEARS FOR COMPLETION")
-	years, err := utils.ScanForInt()
+	years, err := scan.ScanForInt()
 	if err != nil {
 		return err
 	}
 	fmt.Println("ENTER METADATA REGARDING THE PROJECT")
-	metadata, err := utils.ScanForString()
+	metadata, err := scan.ScanForString()
 	if err != nil {
 		return err
 	}
 	fmt.Println("ENTER THE RECIPIENT'S USER ID")
-	recIndex, err := utils.ScanForInt()
+	recIndex, err := scan.ScanForInt()
 	if err != nil {
 		return err
 	}
-	fmt.Println("ENTER THE ORDER INDEX")
-	orderIndex, err := utils.ScanForInt()
+	originContract, err := contractor.ProposeContract(panelSize, totalValue, location, years, metadata, recIndex, contractIndex)
 	if err != nil {
 		return err
 	}
-	originContract, err := contractor.ProposeContract(panelSize, totalValue, location, years, metadata, recIndex, orderIndex)
-	if err != nil {
-		return err
-	}
-	// order insertion is done by the  above function, so we needn't call the database to do it again for us
-	database.PrintOrder(originContract.O)
+	// project insertion is done by the  above function, so we needn't call the database to do it again for us
+	PrintProject(originContract)
 	return nil
+}
+
+func Stage3ProjectsDisplayPrompt() {
+	fmt.Println("------------LIST OF ALL AVAILABLE PROJECTS------------")
+	allProjects, err := database.RetrieveProjects(database.FinalizedProject)
+	if err != nil {
+		log.Println("Error retrieving all projects from the database")
+	} else {
+		PrintProjects(allProjects)
+	}
+}
+
+func DisplayOriginProjects() {
+	fmt.Println("PRINTING ALL ORIGINATED PROJECTS: ")
+	x, err := database.RetrieveProjects(database.OriginProject)
+	if err != nil {
+		log.Println(err)
+	} else {
+		PrintProjects(x)
+	}
+}
+
+func ExitPrompt() {
+	// check whether he wants to go back to the display all screen again
+	fmt.Println("DO YOU REALLY WANT TO EXIT? (PRESS Y TO CONFIRM)")
+	exitOpt, err := scan.ScanForString()
+	if err != nil {
+		log.Println(err)
+	}
+	if exitOpt == "Y" || exitOpt == "y" {
+		fmt.Println("YOU HAVE DECIDED TO EXIT")
+		log.Fatal("")
+	}
+}
+
+func BalanceDisplayPrompt(publicKey string) {
+	balances, err := xlm.GetAllBalances(publicKey)
+	if err != nil {
+		log.Println(err)
+	} else {
+		PrintBalances(balances)
+	}
 }

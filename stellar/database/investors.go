@@ -3,8 +3,10 @@ package database
 // contains the WIP Investor struct which will be stored in a separate bucket
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 
+	scan "github.com/YaleOpenLab/smartPropertyMVP/stellar/scan"
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
 	xlm "github.com/YaleOpenLab/smartPropertyMVP/stellar/xlm"
 	"github.com/boltdb/bolt"
@@ -25,7 +27,7 @@ type Investor struct {
 	AmountInvested float64
 	// total amount, would be nice to track to contact them,
 	// give them some kind of medals or something
-	InvestedAssets []Order
+	InvestedAssets []DBParams
 	// array of asset codes this user has invested in
 	// also I think we need a username + password for logging on to the platform itself
 	// linking it here for now
@@ -39,22 +41,20 @@ type Investor struct {
 // insert their publickey into the system and then have hanlders for them signing
 // transactions
 // TODO: add anonymous investor signing handlers
-func NewInvestor(uname string, pwd string, Name string) (Investor, error) {
-	// call this after the user has failled in username and password. Store hashed password
-	// in the database
+func NewInvestor(uname string, pwd string, seedpwd string, Name string) (Investor, error) {
 	var a Investor
 	var err error
-	a.U, err = NewUser(uname, pwd, Name)
+	a.U, err = NewUser(uname, pwd, seedpwd, Name)
 	if err != nil {
 		return a, err
 	}
-	// new user creates keys, so don't create them here
 	a.AmountInvested = float64(0)
-	return a, nil
+	err = a.Save()
+	return a, err
 }
 
 // InsertInvestor inserts a passed Investor object into the database
-func InsertInvestor(a Investor) error {
+func (a *Investor) Save() error {
 	db, err := OpenDB()
 	if err != nil {
 		return err
@@ -70,17 +70,34 @@ func InsertInvestor(a Investor) error {
 		return b.Put([]byte(utils.ItoB(a.U.Index)), encoded)
 		// but why do we index based on Index?
 		// this is because we do want to enumerate through all investors, which can not be done
-		// in a name based construction. But this makes search ahrder, since now you
-		// all entries to find something as simple as a password. But if this is the
-		// only use case that exists, we index by password hash and then get data only
-		// when the user requests it. Nice data protection as well
+		// in a name based construction. But this makes search harder, since now you
+		// all entries to find something as simple as a password.
 		// TODO: discuss indexing by pwd hash and implications. For small no of entries,
 		// we can s till tierate over all the entries.
 	})
 	return err
 }
 
-// RetrieveAllInvestors gets a list of all investor in the database
+// RetrieveInvestor retrieves a particular investor indexed by key from the database
+func RetrieveInvestor(key int) (Investor, error) {
+	var inv Investor
+	db, err := OpenDB()
+	if err != nil {
+		return inv, err
+	}
+	defer db.Close()
+	err = db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket(InvestorBucket)
+		x := b.Get(utils.ItoB(key))
+		if x == nil {
+			return nil
+		}
+		return json.Unmarshal(x, &inv)
+	})
+	return inv, err
+}
+
+// RetrieveAllInvestors gets a list of all investors in the database
 func RetrieveAllInvestors() ([]Investor, error) {
 	// this route is broken because it reads through keys sequentially
 	// need to see keys until the length of the users database
@@ -106,7 +123,6 @@ func RetrieveAllInvestors() ([]Investor, error) {
 				continue
 			}
 			err := json.Unmarshal(x, &rInvestor)
-			//if err != nil && rInvestor.Live == false {
 			if err != nil {
 				// we've reached the end of input, so this is not an error
 				// ideal error would be "unexpected JSON input" or something similar
@@ -117,25 +133,6 @@ func RetrieveAllInvestors() ([]Investor, error) {
 		return nil
 	})
 	return arr, err
-}
-
-// RetrieveInvestor retrieves a particular investor indexed by key from the database
-func RetrieveInvestor(key int) (Investor, error) {
-	var inv Investor
-	db, err := OpenDB()
-	if err != nil {
-		return inv, err
-	}
-	defer db.Close()
-	err = db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(InvestorBucket)
-		x := b.Get(utils.ItoB(key))
-		if x == nil {
-			return nil
-		}
-		return json.Unmarshal(x, &inv)
-	})
-	return inv, err
 }
 
 func ValidateInvestor(name string, pwhash string) (Investor, error) {
@@ -152,32 +149,22 @@ func (a *Investor) DeductVotingBalance(votes int) error {
 	// balance or a user will have way less votes. This needs an aadditional field
 	// in the db to track past balance and then adjust the amoutn of votes he has
 	// accordingly
-	var err error
 	a.VotingBalance -= votes
-	err = InsertInvestor(*a)
-	if err != nil {
-		return err
-	}
-	return nil
+	return a.Save()
 }
 
 func (a *Investor) AddVotingBalance(votes int) error {
 	// this function is caled when we want to refund the user with the votes once
 	// an order has been finalized.
 	// TODO: use this
-	var err error
 	a.VotingBalance += votes
-	err = InsertInvestor(*a)
-	if err != nil {
-		return err
-	}
-	return nil
+	return a.Save()
 }
 
 // TrustAsset creates a trustline from the caller towards the specific asset
 // and asset issuer with a _limit_ set on the maximum amount of tokens that can be sent
 // through the trust channel. Each trustline costs 0.5XLM.
-func (a *Investor) TrustAsset(asset build.Asset, limit string) (string, error) {
+func (a *Investor) TrustAsset(asset build.Asset, limit string, seed string) (string, error) {
 	// TRUST is FROM recipient TO issuer
 	trustTx, err := build.Transaction(
 		build.SourceAccount{a.U.PublicKey},
@@ -190,23 +177,8 @@ func (a *Investor) TrustAsset(asset build.Asset, limit string) (string, error) {
 		return "", err
 	}
 
-	trustTxe, err := trustTx.Sign(a.U.Seed)
-	if err != nil {
-		return "", err
-	}
-
-	trustTxeB64, err := trustTxe.Base64()
-	if err != nil {
-		return "", err
-	}
-
-	tx, err := xlm.TestNetClient.SubmitTransaction(trustTxeB64)
-	if err != nil {
-		return "", err
-	}
-
-	log.Println("Trusted asset tx: ", tx.Hash)
-	return tx.Hash, nil
+	_, hash, err := xlm.SendTx(seed, trustTx)
+	return hash, err
 }
 
 // CanInvest checks whether an investor has the required balance to invest in a project
@@ -216,4 +188,37 @@ func (a *Investor) CanInvest(balance string, targetBalance string) bool {
 		return false
 	}
 	return balance >= targetBalance
+}
+
+func (a *Investor) VoteTowardsProposedProject(allProposedProjects []Project, vote int) error {
+	// split the coting stuff into a separate function
+	// we need to go through the contractor's proposed projects to find an project
+	// with index pProjectN
+	for _, elem := range allProposedProjects {
+		if elem.Params.Index == vote {
+			// we have the specific contract and need to upgrade the number of votes on this one
+			fmt.Println("YOUR AVAILABLE VOTING BALANCE IS: ", a.VotingBalance)
+			fmt.Println("HOW MANY VOTES DO YOU WANT TO DELEGATE TOWARDS THIS ORDER?")
+			votes, err := scan.ScanForInt()
+			if err != nil {
+				return err
+			}
+			if votes > a.VotingBalance {
+				return fmt.Errorf("Can't vote with an amount greater than available balance")
+			}
+			elem.Params.Votes += votes
+			err = elem.Save()
+			if err != nil {
+				return err
+			}
+			err = a.DeductVotingBalance(votes)
+			if err != nil {
+				return err
+			}
+			fmt.Println("CAST VOTE TOWARDS CONTRACT SUCCESSFULLY")
+			log.Println("FOUND CONTRACTOR!")
+			return nil
+		}
+	}
+	return fmt.Errorf("Index of project not found, returning")
 }

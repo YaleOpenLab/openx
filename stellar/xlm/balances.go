@@ -59,6 +59,8 @@ func GetNativeBalance(publicKey string) (string, error) {
 	var err error
 	b, err := GetAccountData(publicKey)
 	if err != nil {
+		// error where account does not exist at all
+		// so don't return error and hope its caught later on
 		return balance, err
 	}
 	var x protocols.Account

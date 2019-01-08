@@ -1,3 +1,5 @@
+// +build all travis
+
 package xlm
 
 import (
@@ -9,6 +11,18 @@ func TestBalances(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	_, err = GetNativeBalance("blah")
+	if err == nil {
+		t.Fatalf("Account doesn't exist, quitting!")
+	}
+	_, err = GetAccountData("GC6Z2KKU4EDTIHAYTJC3Y3AER4ZS5GDSX7S5IKJRRTHLRMJIMCPKQY34")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = GetAccountData("blah")
+	if err == nil {
+		t.Fatalf("Account doesn't exist, quitting!")
+	}
 	if balance != "9.9999900" {
 		t.Fatalf("Balance doesn't match with remote API, quitting!")
 	}
@@ -16,12 +30,24 @@ func TestBalances(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	_, err = GetAssetBalance("blah", "YOL77fa301ef")
+	if err == nil {
+		t.Fatalf("Account doesn't exist, quitting!")
+	}
+	_, err = GetAssetBalance("GC6Z2KKU4EDTIHAYTJC3Y3AER4ZS5GDSX7S5IKJRRTHLRMJIMCPKQY34", "blah")
+	if err == nil {
+		t.Fatalf("Asset doesn't exist, quitting!")
+	}
 	if balance != "40000.0000000" {
 		t.Fatalf("Balance doesn't match with remote API, quitting!")
 	}
 	_, err = GetAllBalances("GC6Z2KKU4EDTIHAYTJC3Y3AER4ZS5GDSX7S5IKJRRTHLRMJIMCPKQY34")
 	if err != nil {
 		t.Fatal(err)
+	}
+	_, err = GetAllBalances("blah")
+	if err == nil {
+		t.Fatalf("Account doesn't exist, quitting!")
 	}
 	balance, err = GetUSDTokenBalance("GC6Z2KKU4EDTIHAYTJC3Y3AER4ZS5GDSX7S5IKJRRTHLRMJIMCPKQY34")
 	if err == nil {

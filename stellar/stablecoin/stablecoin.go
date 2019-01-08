@@ -17,189 +17,60 @@ package stablecoin
 // or can be something like a stablecoin or token
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 
 	assets "github.com/YaleOpenLab/smartPropertyMVP/stellar/assets"
+	consts "github.com/YaleOpenLab/smartPropertyMVP/stellar/consts"
 	oracle "github.com/YaleOpenLab/smartPropertyMVP/stellar/oracle"
+	scan "github.com/YaleOpenLab/smartPropertyMVP/stellar/scan"
 	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
+	wallet "github.com/YaleOpenLab/smartPropertyMVP/stellar/wallet"
 	xlm "github.com/YaleOpenLab/smartPropertyMVP/stellar/xlm"
-	"github.com/boltdb/bolt"
 	"github.com/stellar/go/build"
 	"github.com/stellar/go/clients/horizon"
 )
 
-// StableIssuer defines the structure for storing the publickey of the platform
-// in the database
-type StableIssuer struct {
-	Index     int
-	Seed      string
-	PublicKey string
-	// Fields are enough since this is a meta structure.
-}
-
 var StableUSD build.Asset
-var Issuer StableIssuer
+var PublicKey string
+var Seed string
+var Code = "STABLEUSD"
 
-// STABLECOIN SEED IS: SDEG3MRXNFXSZVSPBVIT3TJXVXTEALMMWZMPNXHH4RFL2QGCALJVJSY2 and STABLECOIN PUBLICKEY IS GBAACP6UUXZAB5ZAYAHWEYLNKORWB36WVBZBXWNPFXQTDY2AIQFM6D7Y
-var StableBucket = []byte("Stablecoins")
-
-// CreateStableCoin creates a stablecoin STABLEUSD assigned to the Issuer struct
-func CreateStableCoin() build.Asset {
-	// need to set a couple flags here
-	return build.CreditAsset(StableUSD.Code, Issuer.PublicKey)
-}
-
-// We use a different databse here because when we clean yol.db, we don't want to
-// generate a new stablecoin (which in theory should be pegged to the USD)
-func OpenDB() (*bolt.DB, error) {
-	db, err := bolt.Open("sbc.db", 0600, nil)
-	if err != nil {
-		log.Println("Couldn't open database, exiting!")
-		return db, err
-	}
-	err = db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists(StableBucket) // the orders bucket contains all our orders
-		if err != nil {
-			return err
-		}
-		return nil
-	})
-	return db, err
-}
-
-// InsertIssuer inserts the publicKey of the platform into the stablecoin db so that
-// we can use it in other places
-func InsertIssuer(a StableIssuer) error {
-	db, err := OpenDB()
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-	// check whether another issuer already exists. if so, quit
-	err = db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(StableBucket)
-		encoded, err := json.Marshal(a)
-		if err != nil {
-			log.Println("Failed to encode this data into json")
-			return err
-		}
-		return b.Put([]byte(utils.ItoB(a.Index)), encoded)
-	})
-	return err
-}
-
-// CheckStableIssuer checks whether we already have a stablecoin pubkey in the
-// database and if so, errors out, since we don't want people voerwriting the
-// stablecoin
-func CheckStableIssuer() error {
-	var rIssuer StableIssuer
-	db, err := OpenDB()
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-	err = db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(StableBucket)
-		x := b.Get(utils.ItoB(1)) // since there is only one
-		if x == nil {
-			log.Println("Deteceted no other Stable issuer, returning")
-			// this is where the key does not exist
-			// and this is what we want
-			return nil
-		}
-		err := json.Unmarshal(x, &rIssuer)
-		if err != nil {
-			return err
-		}
-		return nil
-	})
-	if rIssuer.Index != 0 {
-		// this is the case that we want, so catch this and return
-		fmt.Println("Found another stablecoin instance running, please remember the seed")
-		return fmt.Errorf("Found another stablecoin instance running, please remember the seed")
-	}
-	return err
-}
-
-// RetrieveStableIssuer retreives the publickey of the platform from the database
-func RetrieveStableIssuer() (StableIssuer, error) {
-	// retrieves the platforms (more like the publickey)
-	var rIssuer StableIssuer
-	db, err := OpenDB()
-	if err != nil {
-		return rIssuer, err
-	}
-	defer db.Close()
-
-	err = db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(StableBucket)
-		x := b.Get(utils.ItoB(1)) // only one
-		if x == nil {
-			// this is where the key does not exist
-			return nil
-		}
-		err := json.Unmarshal(x, &rIssuer)
-		if err != nil {
-			return nil
-		}
-		return nil
-	})
-	return rIssuer, err
-}
-
-// SetVals is a helper function to set default values and have the seed in RAM
-// so that we can use it in other packages wihtout writing to database.
-// TODO: there are some classes of attacks that can read from RAM, is there
-// some way to mitigate this wihtout retrieving the key each time?
-func SetVals(PublicKey string, Seed string) {
-	StableUSD.Code = "STABLEUSD"
-	// we assume that the assetCode of the USDToken is constant and doesn't change.
-	StableUSD.Issuer = PublicKey
-	Issuer.PublicKey = PublicKey
-	Issuer.Seed = Seed
-}
-
-// InitStableCoin sets up a stablecoin that can be used to server STABLEUSD
-// on the stellar testnet
+// InitStableCoin returns the platform structure and the seed
 func InitStableCoin() error {
-	var x StableIssuer
+	var publicKey string
+	var seed string
 	var err error
-
-	if err = CheckStableIssuer(); err != nil {
-		// there exits a stable issuer already,  retrieve and return publickey
-		sI, err := RetrieveStableIssuer()
+	// now we can be sure we have the directory, check for seed
+	if _, err := os.Stat(consts.StableCoinSeedFile); !os.IsNotExist(err) {
+		// the seed exists
+		fmt.Println("ENTER YOUR PASSWORD TO DECRYPT THE STABLECOIN SEED FILE")
+		password, err := scan.ScanRawPassword()
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		publicKey, seed, err = wallet.RetrieveSeed(consts.StableCoinSeedFile, password)
+	} else {
+		fmt.Println("Enter a password to encrypt your stablecoin's master seed. Please store this in a very safe place. This prompt will not ask to confirm your password")
+		password, err := scan.ScanRawPassword()
 		if err != nil {
 			return err
 		}
-		SetVals(sI.PublicKey, sI.Seed)
-		return nil
+		publicKey, seed, err = wallet.NewSeed(consts.StableCoinSeedFile, password)
+		err = xlm.GetXLM(publicKey)
 	}
-	// there is no instance of StableIssuer running, so instantiate one
-	x.Seed, x.PublicKey, err = xlm.GetKeyPair()
-	log.Printf("STABLECOIN SEED IS: %s and STABLECOIN PUBLICKEY IS %s", x.Seed, x.PublicKey)
+	// the user doesn't have seed, so create a new platform
 	if err != nil {
-		// don't return since we depend on this to work to continue further program
-		// runs
-		log.Fatal(err)
+		return err
 	}
-	x.Index = 1 // only one stable instance
-	err = InsertIssuer(x)
-	if err != nil {
-		// no way / need to continue after this
-		log.Fatal(err)
-	}
-	// set parameters for stablecoin ehre to avoid issues
-	SetVals(x.PublicKey, x.Seed)
-	err = xlm.GetXLM(x.PublicKey)
-	if err != nil {
-		// no way / need to continue after this
-		log.Fatal(err)
-	}
-	Issuer = x // set the local val to the global one
-	_ = CreateStableCoin()
-	return nil
+	PublicKey = publicKey
+	Seed = seed
+	StableUSD.Issuer = PublicKey
+	StableUSD.Code = "STABLEUSD"
+	go ListenForPayments()
+	return err
 }
 
 // ListenForPayments listens for payments to the stablecoin account and once it
@@ -207,17 +78,14 @@ func InitStableCoin() error {
 // for the amount deposited and then transfers the StableUSD asset to the payee
 // Prices are retrieved from an oracle.
 func ListenForPayments() {
-	// this will be started as a goroutine
-	// address := Issuer.PublicKey
-	const address = "GATCZGZEC363VABRKGRNTCQPGRIGFUBRION7KPNFV32X5PA47OBEBSV5"
-	// this thing above has to be hardcoded because stellar's APi wants it like so
-	// stupid stuff, but we need to go ahead with it. IN reality, this shouldn't
+	// the publicKey above has to be hardcoded as a constant because stellar's API wants it like so
+	// stupid stuff, but we need to go ahead with it. In reality, this shouldn't
 	// be much of a problem since we expect that the platform's seed will be
-	// remembered
+	// constant
 	ctx := context.Background() // start in the background context
 	cursor := horizon.Cursor("now")
 	fmt.Println("Waiting for a payment...")
-	err := xlm.TestNetClient.StreamPayments(ctx, address, &cursor, func(payment horizon.Payment) {
+	err := xlm.TestNetClient.StreamPayments(ctx, consts.StableCoinAddress, &cursor, func(payment horizon.Payment) {
 		/*
 			Sample Response:
 			Payment type payment
@@ -250,9 +118,10 @@ func ListenForPayments() {
 			xlmWorth := oracle.ExchangeXLMforUSD(amount)
 			log.Println("The deposited amount is worth: ", xlmWorth)
 			// now send the stableusd asset over to this guy
-			_, hash, err := assets.SendAssetFromIssuer(StableUSD.Code, payee, utils.FtoS(xlmWorth), Issuer.Seed, Issuer.PublicKey)
+			_, hash, err := assets.SendAssetFromIssuer(Code, payee, utils.FtoS(xlmWorth), Seed, PublicKey)
 			if err != nil {
 				log.Println("Error while sending USD Assets back to payee: ", payee)
+				log.Println(err)
 				//  don't skip here, there's technically nothing we can do
 			}
 			log.Println("Successful payment, hash: ", hash)

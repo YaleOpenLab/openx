@@ -20,11 +20,7 @@ var TestNetClient = &clients.Client{
 }
 
 func GetStateHash(a string) (string, error) {
-	var res string
-	var err error
-
-	_, err = GetBlockHash("1000000")
-	return res, err
+	return GetBlockHash("1000000")
 }
 
 /*

@@ -1,18 +1,6 @@
 package ipfs
 
 // this package contains the ipfs interacting parts
-// to install, ipfs, download a release from https://github.com/ipfs/go-ipfs/releases
-// and then run the install.sh script there.
-// In case you face an issue with migration, you might need to run fs-repo-migrations
-// from the ipfs github in order to migrate your existing ipfs files to a newer
-// version. If you don't have anything valuable there, you can go ahead and delete
-// the directory and then run ipfs init again. You need to keep your peer key
-// stored in a safe place for future reference
-// Then you need to start ipfs using ipfs daemon and then you can test if it worked
-// by creating a test file test.txt and then doing ipfs add test.txt. The resultant
-// hash van be decrypted using curl "http://127.0.0.1:8080/ipfs/hash" where 8080
-// is the endpoint of the ipfs server or by doing cat /ipfs/hash directly
-
 // when we are adding a file to ipfs, we either could use the javascript handler
 // to call the ipfs api and then use the hash ourselves to decrypt it. Or we need to
 // process a pdf file (ie build an xref table) and then convert that into an ipfs file
@@ -29,11 +17,15 @@ import (
 	shell "github.com/ipfs/go-ipfs-api"
 )
 
+// RetrieveShell retrieves the ipfs shell for use by other functions
+// the path must be set to the rpc port used by the local / remote host
 func RetrieveShell() *shell.Shell {
 	// this is the api endpoint of the ipfs daemon
 	return shell.NewShell("localhost:5001")
 }
 
+// AddStringToIpfs stores the given s tring in ipfs and returns
+// the hash of the string
 func AddStringToIpfs(a string) (string, error) {
 	sh := RetrieveShell()
 	hash, err := sh.Add(strings.NewReader(a)) // input must be an io.Reader
@@ -45,6 +37,10 @@ func AddStringToIpfs(a string) (string, error) {
 	return hash, nil
 }
 
+// GetFileFromIpfs gets back the contents of an ipfs hash and stores them
+// in the required extension format. This has to match with the extension
+// format that the original file had or else one would not be able to view
+// the file
 func GetFileFromIpfs(hash string, extension string) error {
 	// extension can be pdf, txt, ppt and others
 	sh := RetrieveShell()
@@ -54,6 +50,7 @@ func GetFileFromIpfs(hash string, extension string) error {
 	return sh.Get(hash, fileName)
 }
 
+// GetStringFromIpfs gets back the contents of an ipfs hash as a string
 func GetStringFromIpfs(hash string) (string, error) {
 	sh := RetrieveShell()
 	// since ipfs doesn't provide a method to read the string directly, we create a
@@ -69,11 +66,12 @@ func GetStringFromIpfs(hash string) (string, error) {
 	return string(data), nil
 }
 
-// Read from pdf reads the pdf and returns the datastream
+// ReadfromPdf reads a pdf and returns the datastream
 func ReadfromPdf(filepath string) ([]byte, error) {
 	return ioutil.ReadFile(filepath)
 }
 
+// IpfsHashPdf returns the ipfs hash of a pdf file
 func IpfsHashPdf(filepath string) (string, error) {
 	var dummy string
 	dataStream, err := ReadfromPdf(filepath)
@@ -89,7 +87,3 @@ func IpfsHashPdf(filepath string) (string, error) {
 	}
 	return hash, nil
 }
-
-/*
-useful for writing tests in the future:
-*/
