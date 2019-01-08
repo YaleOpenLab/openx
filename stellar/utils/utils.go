@@ -16,6 +16,14 @@ func Timestamp() string {
 	return time.Now().Format(time.RFC850)
 }
 
+func Unix() int64 {
+	return time.Now().Unix()
+}
+
+func I64toS(a int64) string {
+	return strconv.FormatInt(a, 10) // s == "97" (decimal)
+}
+
 func ItoB(a int) []byte {
 	// need to convert int to a byte array for indexing
 	string1 := strconv.Itoa(a)

@@ -71,6 +71,15 @@ func main() {
 	// in the system.
 	// TODO: think of a reasonable way to hash the current state of the system with
 	// its hash in the memo field
+	// TODO: write a receiver that can be run on the client (electricity generation thing)
+	// which can relay the information out to us. We do need to create public and privatekey
+	// pairs on the device, this is something that atonomi does well, so maybe talk to them
+	// regarding this.
+	// instead of fetching data after it passes through a 3rd party, it would be nice if we could
+	// get the data and then pass it on to them since it has to interface with our smart contract
+	// which interfaces with stellar. This is easier if we have a stellar client running on local,
+	// but I think that would not be possible on a small device (or maybe too much work, idk)
+	// does it need a remote stellar node running?
 
 	platformPublicKey, platformSeed, err := StartPlatform()
 	if err != nil {
@@ -244,7 +253,7 @@ func main() {
 				}
 				log.Println("tx hash for trusting stableUSD: ", hash)
 				// now send coins across and see if our tracker detects it
-				_, hash, err = xlm.SendXLM(stablecoin.PublicKey, convAmount, recipientSeed)
+				_, hash, err = xlm.SendXLM(stablecoin.PublicKey, convAmount, recipientSeed, "Sending XLM to bootstrap")
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -587,7 +596,7 @@ func main() {
 				}
 				log.Println("tx hash for trusting stableUSD: ", hash)
 				// now send coins across and see if our tracker detects it
-				_, hash, err = xlm.SendXLM(stablecoin.PublicKey, convAmount, investorSeed)
+				_, hash, err = xlm.SendXLM(stablecoin.PublicKey, convAmount, investorSeed, "sending xlm to bootstrap")
 				if err != nil {
 					log.Fatal(err)
 				}

@@ -15,3 +15,4 @@ var StableCoinSeedFile = HomeDir + "/stablecoinseed.hex"                        
 var DbDir = HomeDir + "/database"                                                    // the directory where the main assets of our platform are stored
 var IpfsFileLength = 10                                                              // the length of the hash that we want our ipfs hashes to have
 const StableCoinAddress = "GBY3DHWSN5CHJ5FDHD7PI5Q23NNMJAK7MGRSERKMOV6QBR7IMAI3IWK5" // the address of the stabellcoin must be a constant for the payment listener to work properly
+var TellerHomeDir = os.Getenv("HOME") + "/.opensolar/teller"                         // the hom directory of the teller executable

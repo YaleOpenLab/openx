@@ -61,7 +61,7 @@ func GetNativeBalance(publicKey string) (string, error) {
 	if err != nil {
 		// error where account does not exist at all
 		// so don't return error and hope its caught later on
-		return balance, err
+		return balance, fmt.Errorf("Account does not exist yet, get funds!")
 	}
 	var x protocols.Account
 	err = json.Unmarshal(b, &x)

@@ -97,13 +97,14 @@ func SendXLMCreateAccount(destination string, amount string, Seed string) (int32
 
 // SendXLM sends _amount_ number of native tokens (XLM) to the specified destination
 // address using the stellar testnet API
-func SendXLM(destination string, amount string, Seed string) (int32, string, error) {
+func SendXLM(destination string, amount string, Seed string, memo string) (int32, string, error) {
 	// don't check if the account exists or not, hopefully it does
 	passphrase := network.TestNetworkPassphrase
 	tx, err := build.Transaction(
 		build.SourceAccount{Seed},
 		build.AutoSequence{TestNetClient},
 		build.Network{passphrase},
+		build.MemoText{memo},
 		build.Payment(
 			build.Destination{destination},
 			build.NativeAmount{amount},
@@ -136,7 +137,7 @@ func RefillAccount(publicKey string, platformSeed string) error {
 	}
 	balanceI := utils.StoF(balance)
 	if balanceI < 3 { // to setup trustlines
-		_, _, err = SendXLM(publicKey, consts.DonateBalance, platformSeed)
+		_, _, err = SendXLM(publicKey, consts.DonateBalance, platformSeed, "Sending XLM to refill")
 		if err != nil {
 			log.Println("Account doesn't have funds")
 			return err
