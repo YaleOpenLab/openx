@@ -1,7 +1,7 @@
 package main
 
 import (
-  "github.com/fatih/color"
+	"github.com/fatih/color"
 )
 
 var (

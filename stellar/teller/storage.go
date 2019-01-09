@@ -5,9 +5,9 @@ import (
 	"log"
 	"os"
 
+	consts "github.com/YaleOpenLab/smartPropertyMVP/stellar/consts"
 	scan "github.com/YaleOpenLab/smartPropertyMVP/stellar/scan"
 	wallet "github.com/YaleOpenLab/smartPropertyMVP/stellar/wallet"
-	consts "github.com/YaleOpenLab/smartPropertyMVP/stellar/consts"
 	xlm "github.com/YaleOpenLab/smartPropertyMVP/stellar/xlm"
 )
 

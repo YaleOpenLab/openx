@@ -1,16 +1,16 @@
 package main
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"log"
 	"net/http"
-	"io/ioutil"
-	"encoding/json"
 
-	rpc "github.com/YaleOpenLab/smartPropertyMVP/stellar/rpc"
 	database "github.com/YaleOpenLab/smartPropertyMVP/stellar/database"
+	rpc "github.com/YaleOpenLab/smartPropertyMVP/stellar/rpc"
 )
 
-func GetRequest(url string) ([]byte,error) {
+func GetRequest(url string) ([]byte, error) {
 	// make a curl request out to lcoalhost and get the ping response
 	var dummy []byte
 	client := &http.Client{}

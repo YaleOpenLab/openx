@@ -73,6 +73,13 @@ General code overview and changes since last call, sending people binaries that 
 can test out and run without problems and getting feedback. Also what to talk to Jase
 from neighborly about, who'd be around for that, etc
 
+## Stuff discussed in meeting with Neighborly
+
+try to use ipfs for state commitments
+need to have a mechanism for sharing access with government institutions because they will ask you for data due to regulations
+commit the ipfs hash to the memo field in stellar
+carefully evaluate trust assumptions wrt platform and data
+
 ## TODOs copied from the Ethereum Smart Contract
 
 ### TODO TENDER PROCESS & REQUEST FOR PROPOSALS ###

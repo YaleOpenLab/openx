@@ -13,7 +13,7 @@ import (
 // were poeple erport this or certified authorities can timestamp this on chain
 // or similar. Web s craping government websites might work, but that seems too
 // overkill for what we're doing now.
-func MonthlyBill() (string) {
+func MonthlyBill() string {
 	// right now, community consensus look like the price of electricity is
 	// $0.2 per kWH in Puerto Rico, so hardcoding that here.
 	priceOfElectricity := 0.2

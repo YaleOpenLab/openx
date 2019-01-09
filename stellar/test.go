@@ -38,6 +38,7 @@ func main() {
 		log.Fatal(err)
 	}
 
+	go rpc.StartServer("8080") // run as go routine for now
 	var investorSeed string
 	var recipientSeed string
 	/*
@@ -155,7 +156,6 @@ func main() {
 		log.Println(err)
 		return
 	}
-	go rpc.StartServer("8080") // run as go routine for now
 	// check if the user is a recipient here
 	if isRecipient {
 		// we already have the recipient, so no need to make a call to the database

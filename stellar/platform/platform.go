@@ -6,8 +6,8 @@ import (
 	"os"
 
 	consts "github.com/YaleOpenLab/smartPropertyMVP/stellar/consts"
-	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
 	scan "github.com/YaleOpenLab/smartPropertyMVP/stellar/scan"
+	utils "github.com/YaleOpenLab/smartPropertyMVP/stellar/utils"
 	wallet "github.com/YaleOpenLab/smartPropertyMVP/stellar/wallet"
 	xlm "github.com/YaleOpenLab/smartPropertyMVP/stellar/xlm"
 )
