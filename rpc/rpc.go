@@ -40,6 +40,15 @@ func WriteToHandler(w http.ResponseWriter, jsonString []byte) {
 	w.Write(jsonString)
 }
 
+func MarshalSend(w http.ResponseWriter, r *http.Request, x interface{}) {
+	xJson, err := json.Marshal(x)
+	if err != nil {
+		errorHandler(w, r, http.StatusNotFound)
+		return
+	}
+	WriteToHandler(w, xJson)
+}
+
 func checkOrigin(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("Origin") != "localhost" { // allow only our frontend UI to connect to our RPC instance
 		http.Error(w, "404 page not found", http.StatusNotFound)
@@ -80,12 +89,7 @@ func setupPingHandler() {
 		checkGet(w, r)
 		var pr PingResponse
 		pr.Status = "Alive"
-		prJson, err := json.Marshal(pr)
-		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
-			return
-		}
-		WriteToHandler(w, prJson)
+		MarshalSend(w, r, pr)
 	})
 }
 

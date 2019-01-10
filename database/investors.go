@@ -28,8 +28,8 @@ type Investor struct {
 	// total amount, would be nice to track to contact them,
 	// give them some kind of medals or something
 	InvestedAssets []DBParams
-	InvestedBonds []string
-	InvestedCoops []string
+	InvestedBonds  []string
+	InvestedCoops  []string
 	// array of asset codes this user has invested in
 	// also I think we need a username + password for logging on to the platform itself
 	// linking it here for now

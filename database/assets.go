@@ -36,7 +36,6 @@ func TrustAsset(asset build.Asset, limit string, PublicKey string, Seed string) 
 	return txHash, err
 }
 
-
 // SendAsset transfers _amount_ number of assets from the caller to the destination
 // and returns an error if the destination doesn't have a trustline with the issuer
 // This method is called by the issuer of the asset

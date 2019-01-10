@@ -1,7 +1,6 @@
 package rpc
 
 import (
-	"encoding/json"
 	"fmt"
 	//"log"
 	"net/http"
@@ -78,12 +77,7 @@ func insertProject() {
 		}
 		var rt StatusResponse
 		rt.Status = 200
-		rtJson, err := json.Marshal(rt)
-		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
-			return
-		}
-		WriteToHandler(w, rtJson)
+		MarshalSend(w, r, rt)
 	})
 }
 
@@ -100,12 +94,7 @@ func getAllProjects() {
 			errorHandler(w, r, http.StatusNotFound)
 			return
 		}
-		projectsJson, err := json.Marshal(allProjects)
-		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
-			return
-		}
-		WriteToHandler(w, projectsJson)
+		MarshalSend(w, r, allProjects)
 	})
 }
 
@@ -124,29 +113,19 @@ func getProject() {
 			errorHandler(w, r, http.StatusNotFound)
 			return
 		}
-		projectJson, err := json.Marshal(contract.Params)
-		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
-			return
-		}
-		WriteToHandler(w, projectJson)
+		MarshalSend(w, r, contract)
 	})
 }
 
 func projectHandler(w http.ResponseWriter, r *http.Request, stage float64) {
-		checkOrigin(w, r)
-		checkGet(w, r)
-		allProjects, err := database.RetrieveProjects(stage)
-		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
-			return
-		}
-		projectsJson, err := json.Marshal(allProjects)
-		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
-			return
-		}
-		WriteToHandler(w, projectsJson)
+	checkOrigin(w, r)
+	checkGet(w, r)
+	allProjects, err := database.RetrieveProjects(stage)
+	if err != nil {
+		errorHandler(w, r, http.StatusNotFound)
+		return
+	}
+	MarshalSend(w, r, allProjects)
 }
 
 func getPreOriginProjects() {
