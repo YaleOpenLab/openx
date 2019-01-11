@@ -12,7 +12,7 @@ import (
 func TestDb(t *testing.T) {
 	var err error
 	os.Remove(os.Getenv("HOME") + "/.openfinancing/database/" + "/yol.db")
-	err = os.MkdirAll(os.Getenv("HOME") + "/.openfinancing/database", os.ModePerm)
+	err = os.MkdirAll(os.Getenv("HOME")+"/.openfinancing/database", os.ModePerm)
 	if err != nil {
 		t.Fatal(err)
 	}

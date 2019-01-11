@@ -1,7 +1,6 @@
 package rpc
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -47,12 +46,7 @@ func insertInvestor() {
 		}
 		var rt StatusResponse
 		rt.Status = 200
-		rtJson, err := json.Marshal(rt)
-		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
-			return
-		}
-		WriteToHandler(w, rtJson)
+		MarshalSend(w, r, rt)
 	})
 }
 
@@ -72,12 +66,7 @@ func validateInvestor() {
 			return
 		}
 		log.Println("Prepared Investor:", prepInvestor)
-		investorJson, err := json.Marshal(prepInvestor)
-		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
-			return
-		}
-		WriteToHandler(w, investorJson)
+		MarshalSend(w, r, prepInvestor)
 	})
 }
 
@@ -92,11 +81,6 @@ func getAllInvestors() {
 			errorHandler(w, r, http.StatusNotFound)
 			return
 		}
-		investorJson, err := json.Marshal(investors)
-		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
-			return
-		}
-		WriteToHandler(w, investorJson)
+		MarshalSend(w, r, investors)
 	})
 }

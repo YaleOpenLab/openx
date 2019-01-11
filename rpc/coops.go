@@ -48,7 +48,7 @@ func InvestInCoop() {
 		var iCoop database.Coop
 		// need to receive a whole lot of parameters here
 		// need the bond index passed so that we can retrieve the bond easily
-		if r.FormValue("MonthlyPayment") == "" || r.FormValue("CoopIndex") == "" || r.FormValue("InvIndex") == "" || r.FormValue("InvSeedPwd") == ""  {
+		if r.FormValue("MonthlyPayment") == "" || r.FormValue("CoopIndex") == "" || r.FormValue("InvIndex") == "" || r.FormValue("InvSeedPwd") == "" {
 			log.Println("missing params")
 			errorHandler(w, r, http.StatusNotFound)
 		}

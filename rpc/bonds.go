@@ -1,9 +1,9 @@
 package rpc
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
+	"strings"
 
 	database "github.com/OpenFinancing/openfinancing/database"
 	utils "github.com/OpenFinancing/openfinancing/utils"
@@ -13,6 +13,7 @@ import (
 func setupBondRPCs() {
 	InvestInBond()
 	getBondDetails()
+	Search()
 }
 
 func CreateBond() {
@@ -36,6 +37,8 @@ func CreateBond() {
 // curl -X POST -H "Content-Type: application/x-www-form-urlencoded" -H "Origin: localhost" -H "Cache-Control: no-cache" -d 'InvestmentAmount=1000&BondIndex=1&InvIndex=2&InvSeedPwd=x&RecSeedPwd=x' "http://localhost:8080/bond/invest"
 func InvestInBond() {
 	http.HandleFunc("/bond/invest", func(w http.ResponseWriter, r *http.Request) {
+		checkOrigin(w, r)
+		checkPost(w, r)
 		var err error
 		var iBond database.ConstructionBond
 		// need to receive a whole lot of parameters here
@@ -108,17 +111,14 @@ func InvestInBond() {
 			log.Println(err)
 		}
 		log.Println("UPDATED BOND: ", iBond)
-		bondJson, err := json.Marshal(iBond)
-		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
-			return
-		}
-		WriteToHandler(w, bondJson)
+		MarshalSend(w, r, iBond)
 	})
 }
 
 func getBondDetails() {
 	http.HandleFunc("/bond/detail", func(w http.ResponseWriter, r *http.Request) {
+		checkOrigin(w, r)
+		checkGet(w, r)
 		// get the details of a specific bond by key
 		if r.URL.Query()["index"] == nil {
 			errorHandler(w, r, http.StatusNotFound)
@@ -129,11 +129,39 @@ func getBondDetails() {
 		if err != nil {
 			log.Println(err)
 		}
-		bondJson, err := json.Marshal(bond)
-		if err != nil {
+		MarshalSend(w, r, bond)
+	})
+}
+
+func Search() {
+	http.HandleFunc("/openfinance/search", func(w http.ResponseWriter, r *http.Request) {
+		checkOrigin(w, r)
+		checkGet(w, r)
+		// search for coop / bond  and return accordingly
+		if r.URL.Query()["q"] == nil {
 			errorHandler(w, r, http.StatusNotFound)
 			return
 		}
-		WriteToHandler(w, bondJson)
+		searchString := r.URL.Query()["q"][0]
+		if strings.Contains(searchString, "bond") {
+			allBonds, err := database.RetrieveAllBonds()
+			if err != nil {
+				errorHandler(w, r, http.StatusNotFound)
+				return
+			}
+			MarshalSend(w, r, allBonds)
+			// do bond stuff
+		} else if strings.Contains(searchString, "coop") {
+			// do coop stuff
+			allCoops, err := database.RetrieveAllCoops()
+			if err != nil {
+				errorHandler(w, r, http.StatusNotFound)
+				return
+			}
+			MarshalSend(w, r, allCoops)
+		} else {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
 	})
 }
