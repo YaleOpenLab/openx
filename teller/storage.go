@@ -20,7 +20,7 @@ func CreateHomeDir() {
 }
 
 func CreateFile() {
-	seedPath := consts.TellerHomeDir + "/seed.hex"
+	seedPath := consts.TellerHomeDir + "/tellerseed.hex"
 	if _, err := os.Stat(seedPath); os.IsNotExist(err) {
 		// directory does not exist, create one
 		ColorOutput("Creating home directory for teller", RedColor)

@@ -94,9 +94,6 @@ func SendAssetFromIssuer(assetName string, destination string, amount string, Se
 		build.Payment(
 			build.Destination{AddressOrSeed: destination},
 			build.CreditAmount{assetName, PublicKey, amount},
-			build.SetOptions(
-				build.SetAuthRequired(),
-			),
 			// CreditAmount identifies the asset by asset Code and issuer pubkey
 		),
 	)
