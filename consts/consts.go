@@ -16,5 +16,5 @@ var PlatformSeedFile = HomeDir + "/platformseed.hex"                            
 var StableCoinSeedFile = HomeDir + "/stablecoinseed.hex"                             // the path where the stablecoin's seed is stored
 var DbDir = HomeDir + "/database"                                                    // the directory where the main assets of our platform are stored
 var IpfsFileLength = 10                                                              // the length of the hash that we want our ipfs hashes to have
-const StableCoinAddress = "GBY3DHWSN5CHJ5FDHD7PI5Q23NNMJAK7MGRSERKMOV6QBR7IMAI3IWK5" // the address of the stabellcoin must be a constant for the payment listener to work properly
+const StableCoinAddress = "GBGM6IJH6Z54NIIJE6K7KGWLSFKBFNWWAQBD4FMTN27NC7TNYKCF5CFY" // the address of the stabellcoin must be a constant for the payment listener to work properly
 var TellerHomeDir = os.Getenv("HOME") + "/.openfinancing/teller"                     // the hom directory of the teller executable

@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	bonds "github.com/OpenFinancing/openfinancing/platforms/bonds"
 	database "github.com/OpenFinancing/openfinancing/database"
 	utils "github.com/OpenFinancing/openfinancing/utils"
 	xlm "github.com/OpenFinancing/openfinancing/xlm"
@@ -24,7 +25,7 @@ func getCoopDetails() {
 			return
 		}
 		uKey := utils.StoI(r.URL.Query()["index"][0])
-		bond, err := database.RetrieveCoop(uKey)
+		bond, err := bonds.RetrieveCoop(uKey)
 		if err != nil {
 			log.Println(err)
 		}
@@ -43,7 +44,7 @@ func InvestInCoop() {
 	http.HandleFunc("/coop/invest", func(w http.ResponseWriter, r *http.Request) {
 		checkPost(w, r)
 		var err error
-		var iCoop database.Coop
+		var iCoop bonds.Coop
 		// need to receive a whole lot of parameters here
 		// need the bond index passed so that we can retrieve the bond easily
 		if r.FormValue("MonthlyPayment") == "" || r.FormValue("CoopIndex") == "" || r.FormValue("InvIndex") == "" || r.FormValue("InvSeedPwd") == "" {
@@ -68,7 +69,7 @@ func InvestInCoop() {
 		invIndex := utils.StoI(r.FormValue("InvIndex"))
 		invSeedPwd := r.FormValue("InvSeedPwd")
 
-		iCoop, err = database.RetrieveCoop(CoopIndex)
+		iCoop, err = bonds.RetrieveCoop(CoopIndex)
 		if err != nil {
 			log.Fatal(err)
 		}

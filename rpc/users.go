@@ -14,7 +14,7 @@ func setupUserRpcs() {
 // For this, we have an additional param called Role which we can use to classify
 // this information and return to the caller
 type ValidateParams struct {
-	Role string
+	Role   string
 	Entity interface{}
 }
 

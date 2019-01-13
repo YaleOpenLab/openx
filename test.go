@@ -8,11 +8,11 @@ import (
 
 	assets "github.com/OpenFinancing/openfinancing/assets"
 	consts "github.com/OpenFinancing/openfinancing/consts"
-	database "github.com/OpenFinancing/openfinancing/database"
 	ipfs "github.com/OpenFinancing/openfinancing/ipfs"
-	platform "github.com/OpenFinancing/openfinancing/platform"
+	platform "github.com/OpenFinancing/openfinancing/platforms"
 	rpc "github.com/OpenFinancing/openfinancing/rpc"
 	scan "github.com/OpenFinancing/openfinancing/scan"
+	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
 	stablecoin "github.com/OpenFinancing/openfinancing/stablecoin"
 	wallet "github.com/OpenFinancing/openfinancing/wallet"
 	xlm "github.com/OpenFinancing/openfinancing/xlm"
@@ -188,7 +188,7 @@ func main() {
 				break
 			case 3:
 				// TODO: migrate this to a contract model which is based off stages rather than using DBParams here
-				PrintPBProjects(recipient.ReceivedProjects)
+				log.Println(recipient.ReceivedSolarProjects)
 				fmt.Println("WHICH PROJECT DO YOU WANT TO PAY BACK TOWARDS? (ENTER PROJECT NUMBER)")
 				projectNumber, err := scan.ScanForInt()
 				if err != nil {
@@ -196,7 +196,7 @@ func main() {
 					continue
 				}
 				// check if we can get the project using the project number that we have here
-				rtContract, err := database.RetrieveProject(projectNumber)
+				rtContract, err := solar.RetrieveProject(projectNumber)
 				if err != nil {
 					log.Println("Couldn't retrieve project, try again!")
 					continue
@@ -226,7 +226,7 @@ func main() {
 					log.Fatal("Project not found")
 				}
 
-				err = recipient.Payback(rtContract, rtContract.Params.DEBAssetCode, platformPublicKey, paybackAmount, recipientSeed)
+				err = solar.Payback(&recipient, rtContract, rtContract.Params.DEBAssetCode, platformPublicKey, paybackAmount, recipientSeed)
 				// TODO: right now, the payback asset directly sends back, change
 				if err != nil {
 					log.Println("PAYBACK TX FAILED, PLEASE TRY AGAIN!")
@@ -247,20 +247,14 @@ func main() {
 					log.Println(err)
 					break
 				}
-				hash, err := assets.TrustAsset(stablecoin.StableUSD, consts.StablecoinTrustLimit, recipient.U.PublicKey, recipientSeed)
+				err = stablecoin.Exchange(recipient.U.PublicKey, recipientSeed, convAmount)
 				if err != nil {
-					log.Fatal(err)
+					log.Println(err)
+					break
 				}
-				log.Println("tx hash for trusting stableUSD: ", hash)
-				// now send coins across and see if our tracker detects it
-				_, hash, err = xlm.SendXLM(stablecoin.PublicKey, convAmount, recipientSeed, "Sending XLM to bootstrap")
-				if err != nil {
-					log.Fatal(err)
-				}
-				log.Println("tx hash for sent xlm: ", hash, "pubkey: ", recipient.U.PublicKey)
 				break
 			case 5:
-				allContracts, err := database.RetrieveProjectsR(database.ProposedProject, recipient.U.Index)
+				allContracts, err := solar.RetrieveProjectsR(solar.ProposedProject, recipient.U.Index)
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -286,24 +280,24 @@ func main() {
 					fmt.Println("YOU'VE CHOSEN TO SELECT BY LEAST PRICE")
 					// here we assume that the timeout period for the auction is up and that
 					// price is the winning metric of a specific bid, like in traditional contract
-					bestContract, err := database.SelectContractByPrice(allContracts)
+					bestContract, err := solar.SelectContractByPrice(allContracts)
 					if err != nil {
 						log.Fatal(err)
 					}
 					log.Println("BEST CONTRACT IS: ")
 					// we need the contractor who proposed this contract
-					database.FinalizeProject(bestContract)
+					solar.FinalizeProject(bestContract)
 					PrintProject(bestContract)
 					// now at this point, we need to mark this specific contract as completed.
 					// do we set a flag? db entry? how do we do that
 				case 2:
 					fmt.Println("YOU'VE CHOSEN TO SELECT BY NUMBER OF YEARS")
-					bestContract, err := database.SelectContractByTime(allContracts)
+					bestContract, err := solar.SelectContractByTime(allContracts)
 					if err != nil {
 						log.Fatal(err)
 					}
 					log.Println("BEST CONTRACT IS: ")
-					database.FinalizeProject(bestContract)
+					solar.FinalizeProject(bestContract)
 					PrintProject(bestContract)
 				case 3:
 					for i, contract := range allContracts {
@@ -318,14 +312,14 @@ func main() {
 					}
 					log.Println("BEST CONTRACT IS: ")
 					// we need the contractor who proposed this contract
-					database.FinalizeProject(allContracts[opt])
+					solar.FinalizeProject(allContracts[opt])
 					PrintProject(allContracts[opt])
 				default:
 					break
 				}
 			case 6:
 				fmt.Println("LIST OF ALL PRE ORIGIN PROJECTS BY ORIGINATORS (STAGE 0)")
-				allMyProjects, err := database.RetrieveProjects(database.PreOriginProject)
+				allMyProjects, err := solar.RetrieveProjects(solar.PreOriginProject)
 				if err != nil {
 					log.Println(err)
 					continue
@@ -337,14 +331,14 @@ func main() {
 					log.Println(err)
 					continue
 				}
-				err = database.PromoteStage0To1Project(allMyProjects, contractIndex)
+				err = solar.PromoteStage0To1Project(allMyProjects, contractIndex)
 				if err != nil {
 					log.Println(err)
 					break
 				}
 			case 7:
 				fmt.Println("PRINTING ALL PROJECTS: ")
-				allContracts, err := database.RetrieveAllProjects()
+				allContracts, err := solar.RetrieveAllProjects()
 				if err != nil {
 					log.Println(err)
 					break
@@ -408,7 +402,7 @@ func main() {
 					}
 				case 4:
 					fmt.Println("LIST OF ALL PROPOSED CONTRACTS BY ME: ")
-					allMyProjects, err := database.RetrieveProjectsC(database.ProposedProject, contractor.U.Index)
+					allMyProjects, err := solar.RetrieveProjectsC(solar.ProposedProject, contractor.U.Index)
 					if err != nil {
 						log.Println(err)
 						continue
@@ -439,14 +433,14 @@ func main() {
 				case 2:
 					PrintEntity(contractor)
 				case 3:
-					allMyProjects, err := database.RetrieveProjectsO(database.PreOriginProject, contractor.U.Index)
+					allMyProjects, err := solar.RetrieveProjectsO(solar.PreOriginProject, contractor.U.Index)
 					if err != nil {
 						fmt.Println("RETURNING BACK TO THE MAIN LOOP: ", err)
 						continue
 					}
 					PrintProjects(allMyProjects)
 				case 4:
-					allMyProjects, err := database.RetrieveProjectsO(database.OriginProject, contractor.U.Index)
+					allMyProjects, err := solar.RetrieveProjectsO(solar.OriginProject, contractor.U.Index)
 					if err != nil {
 						fmt.Println("RETURNING BACK TO THE MAIN LOOP: ", err)
 						continue
@@ -496,7 +490,7 @@ func main() {
 				}
 				// now the user has decided to invest in the asset with index uInput
 				// we need to retrieve the project and ask for confirmation
-				uContract, err := database.RetrieveProject(oNumber)
+				uContract, err := solar.RetrieveProject(oNumber)
 				if err != nil {
 					log.Println("Couldn't retrieve project, try again!")
 					continue
@@ -610,7 +604,7 @@ func main() {
 				// ie stage 2 projects for the recipient to have an understanding about
 				// which contracts are popular and can receive more investor money
 				fmt.Println("LIST OF ALL PROPOSED ORDERS: ")
-				allProposedProjects, err := database.RetrieveProjects(database.ProposedProject)
+				allProposedProjects, err := solar.RetrieveProjects(solar.ProposedProject)
 				if err != nil {
 					log.Println(err)
 					break
@@ -623,7 +617,7 @@ func main() {
 					break
 				}
 				log.Println("You have voted for contract number: ", vote)
-				err = investor.VoteTowardsProposedProject(allProposedProjects, vote)
+				err = solar.VoteTowardsProposedProject(&investor, allProposedProjects, vote)
 				if err != nil {
 					log.Println(err)
 					break
@@ -656,7 +650,7 @@ func main() {
 				// try to retrieve the string back from ipfs and check if it works correctly
 			case 9:
 				fmt.Println("LIST OF ALL FUNDED PROJECTS: ")
-				allFundedProjects, err := database.RetrieveProjects(database.FundedProject)
+				allFundedProjects, err := solar.RetrieveProjects(solar.FundedProject)
 				if err != nil {
 					fmt.Println(err)
 					break

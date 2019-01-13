@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	bonds "github.com/OpenFinancing/openfinancing/platforms/bonds"
 	database "github.com/OpenFinancing/openfinancing/database"
 	utils "github.com/OpenFinancing/openfinancing/utils"
 	xlm "github.com/OpenFinancing/openfinancing/xlm"
@@ -19,15 +20,15 @@ func setupBondRPCs() {
 func CreateBond() {
 	// newParams(mdate string, mrights string, stype string, intrate float64, rating string, bIssuer string, uWriter string
 	// unitCost float64, itype string, nUnits int, tax string
-	var bond1 database.ConstructionBond
+	var bond1 bonds.ConstructionBond
 	var err error
-	bond1, err = database.NewBond("Dec 21 2049", "Maturation Rights Link", "Security Type", 5.4, "AAA", "Bond Issuer", "underwriter.com",
+	bond1, err = bonds.NewBond("Dec 21 2049", "Maturation Rights Link", "Security Type", 5.4, "AAA", "Bond Issuer", "underwriter.com",
 		100000, "Instrument Type", 100, "No Fed tax for 10 years", 1)
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Println("BOND INDEX: ", bond1.Params.Index)
-	_, err = database.RetrieveBond(bond1.Params.Index)
+	_, err = bonds.RetrieveBond(bond1.Params.Index)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -39,7 +40,7 @@ func InvestInBond() {
 	http.HandleFunc("/bond/invest", func(w http.ResponseWriter, r *http.Request) {
 		checkPost(w, r)
 		var err error
-		var iBond database.ConstructionBond
+		var iBond bonds.ConstructionBond
 		// need to receive a whole lot of parameters here
 		// need the bond index passed so that we can retrieve the bond easily
 		if r.FormValue("InvestmentAmount") == "" || r.FormValue("BondIndex") == "" || r.FormValue("InvIndex") == "" || r.FormValue("InvSeedPwd") == "" || r.FormValue("RecSeedPwd") == "" {
@@ -65,7 +66,7 @@ func InvestInBond() {
 		invSeedPwd := r.FormValue("InvSeedPwd")
 		recSeedPwd := r.FormValue("RecSeedPwd")
 
-		iBond, err = database.RetrieveBond(bondIndex)
+		iBond, err = bonds.RetrieveBond(bondIndex)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -123,7 +124,7 @@ func getBondDetails() {
 			return
 		}
 		uKey := utils.StoI(r.URL.Query()["index"][0])
-		bond, err := database.RetrieveBond(uKey)
+		bond, err := bonds.RetrieveBond(uKey)
 		if err != nil {
 			log.Println(err)
 		}
@@ -141,7 +142,7 @@ func Search() {
 		}
 		searchString := r.URL.Query()["q"][0]
 		if strings.Contains(searchString, "bond") {
-			allBonds, err := database.RetrieveAllBonds()
+			allBonds, err := bonds.RetrieveAllBonds()
 			if err != nil {
 				errorHandler(w, r, http.StatusNotFound)
 				return
@@ -150,7 +151,7 @@ func Search() {
 			// do bond stuff
 		} else if strings.Contains(searchString, "coop") {
 			// do coop stuff
-			allCoops, err := database.RetrieveAllCoops()
+			allCoops, err := bonds.RetrieveAllCoops()
 			if err != nil {
 				errorHandler(w, r, http.StatusNotFound)
 				return

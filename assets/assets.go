@@ -41,6 +41,7 @@ import (
 
 	consts "github.com/OpenFinancing/openfinancing/consts"
 	database "github.com/OpenFinancing/openfinancing/database"
+	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
 	utils "github.com/OpenFinancing/openfinancing/utils"
 	xlm "github.com/OpenFinancing/openfinancing/xlm"
 	"github.com/stellar/go/build"
@@ -109,7 +110,7 @@ func SendAssetFromIssuer(assetName string, destination string, amount string, Se
 // a particular _uContract.Params_. If the invested amount makes the money raised equal to
 // the total value of the _uContract.Params_, we issue the PBTokens and DEBTokens to the
 // _recipient_
-func InvestInProject(issuerPublicKey string, issuerSeed string, investor *database.Investor, recipient *database.Recipient, investmentAmountS string, uContract database.Project, investorSeed string, recipientSeed string) (database.Project, error) {
+func InvestInProject(issuerPublicKey string, issuerSeed string, investor *database.Investor, recipient *database.Recipient, investmentAmountS string, uContract solar.SolarProject, investorSeed string, recipientSeed string) (solar.SolarProject, error) {
 	var err error
 
 	// invest only in integer values as of now, TODO: change to float
@@ -159,7 +160,7 @@ func InvestInProject(issuerPublicKey string, issuerSeed string, investor *databa
 	uContract.Params.MoneyRaised += investmentAmount
 	fmt.Println("Updating investor to handle invested amounts and assets")
 	investor.AmountInvested += float64(investmentAmount)
-	investor.InvestedAssets = append(investor.InvestedAssets, uContract.Params)
+	investor.InvestedAssets = append(investor.InvestedAssets, uContract.Params.DEBAssetCode)
 	err = investor.Save() // save investor creds now that we're done
 	if err != nil {
 		return uContract, err
@@ -197,7 +198,7 @@ func InvestInProject(issuerPublicKey string, issuerSeed string, investor *databa
 		}
 		log.Printf("Sent DEBasset to recipient %s with txhash %s", recipient.U.PublicKey, txHash)
 		uContract.Params.BalLeft = float64(uContract.Params.TotalValue)
-		recipient.ReceivedProjects = append(recipient.ReceivedProjects, uContract.Params)
+		recipient.ReceivedSolarProjects = append(recipient.ReceivedSolarProjects, uContract.Params.DEBAssetCode)
 		uContract.Params.ProjectRecipient = *recipient // need to udpate uContract.Params each time recipient is mutated
 		// only here does the recipient part change, so update it only here
 		// TODO: keep note of who all invested in this asset (even though it should be
@@ -223,7 +224,7 @@ func InvestInProject(issuerPublicKey string, issuerSeed string, investor *databa
 	return uContract, err
 }
 
-func SendPBAsset(project database.Project, destination string, amount string, Seed string, PublicKey string) error {
+func SendPBAsset(project solar.SolarProject, destination string, amount string, Seed string, PublicKey string) error {
 	// need to calculate how much PBAsset we need to send back.
 	amountS := project.CalculatePayback(amount)
 	_, txHash, err := SendAssetFromIssuer(project.Params.PBAssetCode, destination, amountS, Seed, PublicKey)

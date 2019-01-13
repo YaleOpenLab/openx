@@ -8,8 +8,11 @@ import (
 	utils "github.com/OpenFinancing/openfinancing/utils"
 	"github.com/boltdb/bolt"
 )
-
-// defines the name of the buckets that we interact with.
+// package database contains base level stuff that will be required by all the
+// sub platforms in the platform of platforms model. Currently contains Investors,
+// Recipients and Users, but can be expanded to contain even stages, if that's deemed
+// to be common across platforms
+// define the name of the buckets that we interact with.
 var ProjectsBucket = []byte("Projects")
 var InvestorBucket = []byte("Investors")
 var RecipientBucket = []byte("Recipients")

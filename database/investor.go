@@ -1,12 +1,10 @@
 package database
 
-// contains the WIP Investor struct which will be stored in a separate bucket
+// contains the Investor struct which will be stored in a separate bucket
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 
-	scan "github.com/OpenFinancing/openfinancing/scan"
 	utils "github.com/OpenFinancing/openfinancing/utils"
 	xlm "github.com/OpenFinancing/openfinancing/xlm"
 	"github.com/boltdb/bolt"
@@ -27,7 +25,7 @@ type Investor struct {
 	AmountInvested float64
 	// total amount, would be nice to track to contact them,
 	// give them some kind of medals or something
-	InvestedAssets []DBParams
+	InvestedAssets []string
 	InvestedBonds  []string
 	InvestedCoops  []string
 	// array of asset codes this user has invested in
@@ -190,37 +188,4 @@ func (a *Investor) CanInvest(balance string, targetBalance string) bool {
 		return false
 	}
 	return balance >= targetBalance
-}
-
-func (a *Investor) VoteTowardsProposedProject(allProposedProjects []Project, vote int) error {
-	// split the coting stuff into a separate function
-	// we need to go through the contractor's proposed projects to find an project
-	// with index pProjectN
-	for _, elem := range allProposedProjects {
-		if elem.Params.Index == vote {
-			// we have the specific contract and need to upgrade the number of votes on this one
-			fmt.Println("YOUR AVAILABLE VOTING BALANCE IS: ", a.VotingBalance)
-			fmt.Println("HOW MANY VOTES DO YOU WANT TO DELEGATE TOWARDS THIS ORDER?")
-			votes, err := scan.ScanForInt()
-			if err != nil {
-				return err
-			}
-			if votes > a.VotingBalance {
-				return fmt.Errorf("Can't vote with an amount greater than available balance")
-			}
-			elem.Params.Votes += votes
-			err = elem.Save()
-			if err != nil {
-				return err
-			}
-			err = a.DeductVotingBalance(votes)
-			if err != nil {
-				return err
-			}
-			fmt.Println("CAST VOTE TOWARDS CONTRACT SUCCESSFULLY")
-			log.Println("FOUND CONTRACTOR!")
-			return nil
-		}
-	}
-	return fmt.Errorf("Index of project not found, returning")
 }

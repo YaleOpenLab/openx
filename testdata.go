@@ -4,17 +4,19 @@ import (
 	"fmt"
 	"log"
 
+	bonds "github.com/OpenFinancing/openfinancing/platforms/bonds"
 	database "github.com/OpenFinancing/openfinancing/database"
+	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
 	utils "github.com/OpenFinancing/openfinancing/utils"
 )
 
 func InsertDummyData() error {
 	var err error
 	// populate database with dumym data
-	var project1 database.DBParams
-	var contract1 database.Project
-	var contract2 database.Project
-	var contract3 database.Project
+	var project1 solar.SolarParams
+	var contract1 solar.SolarProject
+	var contract2 solar.SolarProject
+	var contract3 solar.SolarProject
 	var rec database.Recipient
 	allRecs, err := database.RetrieveAllRecipients()
 	if err != nil {
@@ -47,7 +49,7 @@ func InsertDummyData() error {
 		}
 	}
 
-	_, err = database.NewBond("Dec 21 2049", "Maturation Rights Link", "Security Type", 5.4, "AAA", "Bond Issuer", "underwriter.com",
+	_, err = bonds.NewBond("Dec 21 2049", "Maturation Rights Link", "Security Type", 5.4, "AAA", "Bond Issuer", "underwriter.com",
 		100000, "Instrument Type", 100, "No Fed tax for 10 years", 1)
 	if err != nil {
 		log.Fatal(err)
@@ -55,23 +57,23 @@ func InsertDummyData() error {
 
 	// newParams(mdate string, mrights string, stype string, intrate float64, rating string, bIssuer string, uWriter string
 	// unitCost float64, itype string, nUnits int, tax string
-	coop, err := database.NewCoop("Dec 21 2049", "Maturation Rights Link", "Security Type", 5.4, "AAA", "Bond Issuer", "underwriter.com",
+	coop, err := bonds.NewCoop("Dec 21 2049", "Maturation Rights Link", "Security Type", 5.4, "AAA", "Bond Issuer", "underwriter.com",
 		100000, "Type of Unit", 1000)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	_, err = database.RetrieveCoop(coop.Params.Index)
+	_, err = bonds.RetrieveCoop(coop.Params.Index)
 	if err != nil {
 		log.Fatal(err)
 	}
 	// NewOriginator(uname string, pwd string, Name string, Address string, Description string)
-	newOriginator, err := database.NewOriginator("john", "p", "x", "John Doe", "14 ABC Street London", "This is a sample originator")
+	newOriginator, err := solar.NewOriginator("john", "p", "x", "John Doe", "14 ABC Street London", "This is a sample originator")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	c1, err := database.NewContractor("john", "p", "x", "John Doe", "14 ABC Street London", "This is a sample contractor")
+	c1, err := solar.NewContractor("john", "p", "x", "John Doe", "14 ABC Street London", "This is a sample contractor")
 	if err != nil {
 		log.Println(err)
 	}
@@ -144,7 +146,7 @@ func InsertDummyData() error {
 		log.Fatal(err)
 	}
 
-	_, err = database.RetrieveProject(pc.Params.Index)
+	_, err = solar.RetrieveProject(pc.Params.Index)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -153,21 +155,21 @@ func InsertDummyData() error {
 	// proposed contract to enable searchability of the bucket. And each contractor
 	// must build off of this in their proposed Contracts
 	// Contractor stuff below, competing contractor details follow
-	_, err = database.NewContractor("sam", "p", "x", "Samuel Jackson", "14 ABC Street London", "This is a competing contractor")
+	_, err = solar.NewContractor("sam", "p", "x", "Samuel Jackson", "14 ABC Street London", "This is a competing contractor")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	_, err = database.NewOriginator("samuel", "p", "x", "Samuel L. Jackson", "ABC Street, London", "I am an originator")
+	_, err = solar.NewOriginator("samuel", "p", "x", "Samuel L. Jackson", "ABC Street, London", "I am an originator")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	_, err = database.RetrieveAllContractEntities("originator")
+	_, err = solar.RetrieveAllContractEntities("originator")
 	if err != nil {
 		log.Fatal(err)
 	}
-	_, err = database.RetrieveAllContractEntities("contractor")
+	_, err = solar.RetrieveAllContractEntities("contractor")
 	if err != nil {
 		log.Fatal(err)
 	}

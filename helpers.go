@@ -5,8 +5,9 @@ import (
 	"log"
 
 	database "github.com/OpenFinancing/openfinancing/database"
-	platform "github.com/OpenFinancing/openfinancing/platform"
+	platform "github.com/OpenFinancing/openfinancing/platforms"
 	scan "github.com/OpenFinancing/openfinancing/scan"
+	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
 	xlm "github.com/OpenFinancing/openfinancing/xlm"
 )
 
@@ -21,7 +22,7 @@ func StartPlatform() (string, string, error) {
 	var seed string
 	ValidateInputs()
 	database.CreateHomeDir()
-	allContracts, err := database.RetrieveAllProjects()
+	allContracts, err := solar.RetrieveAllProjects()
 	if err != nil {
 		log.Println("Error retrieving all projects from the database")
 		return publicKey, seed, err
@@ -93,12 +94,12 @@ func NewRecipientPrompt() error {
 	return err
 }
 
-func LoginPrompt() (database.Investor, database.Recipient, database.Entity, bool, bool, error) {
+func LoginPrompt() (database.Investor, database.Recipient, solar.Entity, bool, bool, error) {
 	rbool := false
 	cbool := false
 	var investor database.Investor
 	var recipient database.Recipient
-	var contractor database.Entity
+	var contractor solar.Entity
 	fmt.Println("---------SELECT YOUR ROLE---------")
 	fmt.Println(" i. INVESTOR")
 	fmt.Println(" r. RECIPIENT")
@@ -146,7 +147,7 @@ func LoginPrompt() (database.Investor, database.Recipient, database.Entity, bool
 			return investor, recipient, contractor, rbool, cbool, err
 		}
 	} else if cbool {
-		contractor, err = database.RetrieveEntity(user.Index)
+		contractor, err = solar.RetrieveEntity(user.Index)
 		if err != nil {
 			return investor, recipient, contractor, rbool, cbool, err
 		}
@@ -159,7 +160,7 @@ func LoginPrompt() (database.Investor, database.Recipient, database.Entity, bool
 	return investor, recipient, contractor, rbool, cbool, nil
 }
 
-func OriginContractPrompt(contractor *database.Entity) error {
+func OriginContractPrompt(contractor *solar.Entity) error {
 	fmt.Println("YOU HAVE DECIDED TO PROPOSE A NEW CONTRACT")
 	fmt.Println("ENTER THE PANEL SIZE")
 	panelSize, err := scan.ScanForString()
@@ -200,7 +201,7 @@ func OriginContractPrompt(contractor *database.Entity) error {
 	return nil
 }
 
-func ProposeContractPrompt(contractor *database.Entity) error {
+func ProposeContractPrompt(contractor *solar.Entity) error {
 	fmt.Println("YOU HAVE DECIDED TO PROPOSE A NEW CONTRACT")
 	fmt.Println("ENTER THE PROJECT INDEX")
 	contractIndex, err := scan.ScanForInt()
@@ -208,7 +209,7 @@ func ProposeContractPrompt(contractor *database.Entity) error {
 		return err
 	}
 	// we need to check if this contract index exists and retrieve
-	rContract, err := database.RetrieveProject(contractIndex)
+	rContract, err := solar.RetrieveProject(contractIndex)
 	if err != nil {
 		return err
 	}
@@ -252,7 +253,7 @@ func ProposeContractPrompt(contractor *database.Entity) error {
 
 func Stage3ProjectsDisplayPrompt() {
 	fmt.Println("------------LIST OF ALL AVAILABLE PROJECTS------------")
-	allProjects, err := database.RetrieveProjects(database.FinalizedProject)
+	allProjects, err := solar.RetrieveProjects(solar.FinalizedProject)
 	if err != nil {
 		log.Println("Error retrieving all projects from the database")
 	} else {
@@ -262,7 +263,7 @@ func Stage3ProjectsDisplayPrompt() {
 
 func DisplayOriginProjects() {
 	fmt.Println("PRINTING ALL ORIGINATED PROJECTS: ")
-	x, err := database.RetrieveProjects(database.OriginProject)
+	x, err := solar.RetrieveProjects(solar.OriginProject)
 	if err != nil {
 		log.Println(err)
 	} else {

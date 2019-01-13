@@ -1,4 +1,4 @@
-// +build all travis
+// +build all
 
 package database
 
@@ -8,6 +8,7 @@ import (
 	"testing"
 )
 
+// TODO: rewrite how this works and split between platforms and database
 // go test --tags="all" -coverprofile=test.txt .
 func TestDb(t *testing.T) {
 	var err error
@@ -22,7 +23,7 @@ func TestDb(t *testing.T) {
 	}
 	db.Close() // close immmediately after check
 	var project1 DBParams
-	var dummy Project
+	var dummy SolarProject
 	// investors entity testing over, test recipients below in the same way
 	// now we repeat the same tests for all other entities
 	// connections and the other for non RPC connections
@@ -306,7 +307,7 @@ func TestDb(t *testing.T) {
 	}
 	trC1, err := RetrieveEntity(7)
 	if err != nil || trC1.U.Index == 0 {
-		t.Fatal("Project Entity lookup failed")
+		t.Fatal("SolarProject Entity lookup failed")
 	}
 	tmpx1, err := newCE2.OriginContract("100 16x24 panels on a solar rooftop", 14000, "Puerto Rico", 5, "ABC School in XYZ peninsula", 1) // 1 is the index for martin
 	if err != nil {
