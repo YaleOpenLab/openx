@@ -56,12 +56,14 @@ func checkOrigin(w http.ResponseWriter, r *http.Request) {
 }
 
 func checkGet(w http.ResponseWriter, r *http.Request) {
+	checkOrigin(w, r)
 	if r.Method != "GET" {
 		http.Error(w, "404 page not found", http.StatusNotFound)
 	}
 }
 
 func checkPost(w http.ResponseWriter, r *http.Request) {
+	checkOrigin(w, r)
 	log.Println("Checking POST")
 	if r.Method != "POST" {
 		http.Error(w, "404 page not found", http.StatusNotFound)
@@ -85,7 +87,6 @@ func setupDefaultHandler() {
 
 func setupPingHandler() {
 	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
-		checkOrigin(w, r)
 		checkGet(w, r)
 		var pr PingResponse
 		pr.Status = "Alive"
@@ -118,6 +119,7 @@ func StartServer(port string) {
 	// setup recipient related RPCs
 	setupBondRPCs()
 	setupCoopRPCs()
+	setupUserRpcs()
 	portString := ":" + port // weird construction, but this should work
 	log.Fatal(http.ListenAndServe(portString, nil))
 }

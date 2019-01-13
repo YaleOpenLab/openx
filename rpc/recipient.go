@@ -33,7 +33,6 @@ func parseRecipient(r *http.Request) (database.Recipient, error) {
 
 func getAllRecipients() {
 	http.HandleFunc("/recipient/all", func(w http.ResponseWriter, r *http.Request) {
-		checkOrigin(w, r)
 		checkGet(w, r)
 		recipients, err := database.RetrieveAllRecipients()
 		if err != nil {
@@ -49,7 +48,6 @@ func insertRecipient() {
 	// this should be a post method since you want to accept an project and then insert
 	// that into the database
 	http.HandleFunc("/recipient/insert", func(w http.ResponseWriter, r *http.Request) {
-		checkOrigin(w, r)
 		checkPost(w, r)
 		prepRecipient, err := parseRecipient(r)
 		if err != nil {
@@ -72,7 +70,6 @@ func insertRecipient() {
 
 func validateRecipient() {
 	http.HandleFunc("/recipient/validate", func(w http.ResponseWriter, r *http.Request) {
-		checkOrigin(w, r)
 		checkGet(w, r)
 		// need to pass the pwhash param here
 		if r.URL.Query() == nil || r.URL.Query()["LoginUserName"] == nil || len(r.URL.Query()["LoginPassword"][0]) != 128 {

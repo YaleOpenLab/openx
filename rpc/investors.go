@@ -31,7 +31,6 @@ func insertInvestor() {
 	// this should be a post method since you want to accetp an project and then insert
 	// that into the database
 	http.HandleFunc("/investor/insert", func(w http.ResponseWriter, r *http.Request) {
-		checkOrigin(w, r)
 		checkPost(w, r)
 		prepInvestor, err := parseInvestor(r)
 		if err != nil {
@@ -54,7 +53,6 @@ func insertInvestor() {
 // by checking the pwhash of the given investor with the stored one
 func validateInvestor() {
 	http.HandleFunc("/investor/validate", func(w http.ResponseWriter, r *http.Request) {
-		checkOrigin(w, r)
 		checkGet(w, r)
 		if r.URL.Query() == nil || r.URL.Query()["LoginUserName"] == nil || r.URL.Query()["LoginPassword"] == nil || len(r.URL.Query()["LoginPassword"][0]) != 128 { // sha 512 length
 			errorHandler(w, r, http.StatusNotFound)
@@ -74,7 +72,6 @@ func validateInvestor() {
 // display it to some entity that is interested to view such stats
 func getAllInvestors() {
 	http.HandleFunc("/investor/all", func(w http.ResponseWriter, r *http.Request) {
-		checkOrigin(w, r)
 		checkGet(w, r)
 		investors, err := database.RetrieveAllInvestors()
 		if err != nil {

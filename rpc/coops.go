@@ -17,7 +17,6 @@ func setupCoopRPCs() {
 
 func getCoopDetails() {
 	http.HandleFunc("/coop/get", func(w http.ResponseWriter, r *http.Request) {
-		checkOrigin(w, r)
 		checkGet(w, r)
 		// get the details of a specific bond by key
 		if r.URL.Query()["index"] == nil {
@@ -42,7 +41,6 @@ func getCoopDetails() {
 // curl -X POST -H "Content-Type: application/x-www-form-urlencoded" -H "Origin: localhost" -H "Cache-Control: no-cache" -d 'MonthlyPayment=1000&CoopIndex=1&InvIndex=2&InvSeedPwd=x' "http://localhost:8080/coop/invest"
 func InvestInCoop() {
 	http.HandleFunc("/coop/invest", func(w http.ResponseWriter, r *http.Request) {
-		checkOrigin(w, r)
 		checkPost(w, r)
 		var err error
 		var iCoop database.Coop

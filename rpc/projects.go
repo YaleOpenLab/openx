@@ -62,7 +62,6 @@ func insertProject() {
 	// this route does not define an originator and would mostly not be useful, should
 	// look into a way where we can define originators in the route as well
 	http.HandleFunc("/project/insert", func(w http.ResponseWriter, r *http.Request) {
-		checkOrigin(w, r)
 		checkPost(w, r)
 		var prepProject database.Project
 		prepProject, err := parseProject(r)
@@ -83,7 +82,6 @@ func insertProject() {
 
 func getAllProjects() {
 	http.HandleFunc("/project/all", func(w http.ResponseWriter, r *http.Request) {
-		checkOrigin(w, r)
 		checkGet(w, r)
 		// make a call to the db to get all projects
 		// while making this call, the rpc should not be aware of the db we are using
@@ -101,7 +99,6 @@ func getAllProjects() {
 func getProject() {
 	// we need to read passed the key from the URL that the user calls
 	http.HandleFunc("/project/get", func(w http.ResponseWriter, r *http.Request) {
-		checkOrigin(w, r)
 		checkGet(w, r)
 		if r.URL.Query()["index"] == nil {
 			errorHandler(w, r, http.StatusNotFound)
@@ -118,7 +115,6 @@ func getProject() {
 }
 
 func projectHandler(w http.ResponseWriter, r *http.Request, stage float64) {
-	checkOrigin(w, r)
 	checkGet(w, r)
 	allProjects, err := database.RetrieveProjects(stage)
 	if err != nil {

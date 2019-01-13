@@ -37,7 +37,6 @@ func CreateBond() {
 // curl -X POST -H "Content-Type: application/x-www-form-urlencoded" -H "Origin: localhost" -H "Cache-Control: no-cache" -d 'InvestmentAmount=1000&BondIndex=1&InvIndex=2&InvSeedPwd=x&RecSeedPwd=x' "http://localhost:8080/bond/invest"
 func InvestInBond() {
 	http.HandleFunc("/bond/invest", func(w http.ResponseWriter, r *http.Request) {
-		checkOrigin(w, r)
 		checkPost(w, r)
 		var err error
 		var iBond database.ConstructionBond
@@ -117,7 +116,6 @@ func InvestInBond() {
 
 func getBondDetails() {
 	http.HandleFunc("/bond/detail", func(w http.ResponseWriter, r *http.Request) {
-		checkOrigin(w, r)
 		checkGet(w, r)
 		// get the details of a specific bond by key
 		if r.URL.Query()["index"] == nil {
@@ -135,7 +133,6 @@ func getBondDetails() {
 
 func Search() {
 	http.HandleFunc("/openfinance/search", func(w http.ResponseWriter, r *http.Request) {
-		checkOrigin(w, r)
 		checkGet(w, r)
 		// search for coop / bond  and return accordingly
 		if r.URL.Query()["q"] == nil {
