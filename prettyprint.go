@@ -4,16 +4,17 @@ import (
 	"fmt"
 
 	database "github.com/OpenFinancing/openfinancing/database"
+	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
 	"github.com/stellar/go/protocols/horizon"
 )
 
-func PrintProjects(projects []database.Project) {
+func PrintProjects(projects []solar.SolarProject) {
 	for _, project := range projects {
 		PrintProject(project)
 	}
 }
 
-func PrintProject(project database.Project) {
+func PrintProject(project solar.SolarProject) {
 	fmt.Println("          PROJECT INDEX: ", project.Params.Index)
 	fmt.Println("          Panel Size: ", project.Params.PanelSize)
 	fmt.Println("          Total Value: ", project.Params.TotalValue)
@@ -62,30 +63,9 @@ func PrintInvestor(investor database.Investor) {
 func PrintRecipient(recipient database.Recipient) {
 	fmt.Println("          Your Public Key is: ", recipient.U.PublicKey)
 	fmt.Println("          Your Seed is: ", recipient.U.EncryptedSeed)
-	fmt.Println("          Your Received Assets are: ", recipient.ReceivedProjects)
+	fmt.Println("          Your Received Assets are: ", recipient.ReceivedSolarProjects)
 	fmt.Println("          Your Username is: ", recipient.U.LoginUserName)
 	fmt.Println("          Your Password hash is: ", recipient.U.LoginPassword)
-}
-
-// PrintParams pretty prints projects
-// if this is a PB project, we must payback towards it
-func PrintPBProjects(projects []database.DBParams) {
-	for _, project := range projects {
-		fmt.Println("    PROJECT NUMBER: ", project.Index)
-		fmt.Println("          Panel Size: ", project.PanelSize)
-		fmt.Println("          Total Value: ", project.TotalValue)
-		fmt.Println("          Location: ", project.Location)
-		fmt.Println("          Money Raised: ", project.MoneyRaised)
-		fmt.Println("          Metadata: ", project.Metadata)
-		fmt.Println("          Years: ", project.Years)
-		fmt.Println("          Investor Asset Code: ", project.INVAssetCode)
-		fmt.Println("          Debt Asset Code: ", project.DEBAssetCode)
-		fmt.Println("          Payback Asset Code: ", project.PBAssetCode)
-		fmt.Println("          Balance Left: ", project.BalLeft)
-		fmt.Println("          Date Initiated: ", project.DateInitiated)
-		fmt.Println("          Date Last Paid: ", project.DateLastPaid)
-		fmt.Println("          Investors: ", project.ProjectInvestors)
-	}
 }
 
 func PrintUser(user database.User) {
@@ -96,7 +76,7 @@ func PrintUser(user database.User) {
 	fmt.Println("          Your Password hash is: ", user.LoginPassword)
 }
 
-func PrintEntity(a database.Entity) {
+func PrintEntity(a solar.Entity) {
 	fmt.Println("    WELCOME BACK ", a.U.Name)
 	fmt.Println("    			 Your Index is ", a.U.Index)
 	fmt.Println("          Your Public Key is: ", a.U.PublicKey)

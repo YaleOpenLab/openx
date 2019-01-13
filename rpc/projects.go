@@ -2,10 +2,9 @@ package rpc
 
 import (
 	"fmt"
-	//"log"
 	"net/http"
 
-	database "github.com/OpenFinancing/openfinancing/database"
+	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
 	utils "github.com/OpenFinancing/openfinancing/utils"
 )
 
@@ -24,19 +23,19 @@ func setupProjectRPCs() {
 	getFundedProjects()
 }
 
-func parseProject(r *http.Request) (database.Project, error) {
-	// we need to create an instance of the Project
+func parseProject(r *http.Request) (solar.SolarProject, error) {
+	// we need to create an instance of the SolarProject
 	// and then map values if they do exist
 	// note that we just prepare the project here and don't invest in it
 	// for that, we need new a new investor struct and a recipient struct
-	var prepProject database.Project
+	var prepProject solar.SolarProject
 	err := r.ParseForm()
 	if err != nil {
 		return prepProject, err
 	}
 	// if we're inserting this in, we need to get the next index number
 	// so that we can set this without causing some weird bugs
-	allProjects, err := database.RetrieveAllProjects()
+	allProjects, err := solar.RetrieveAllProjects()
 	if err != nil {
 		return prepProject, fmt.Errorf("Error in assigning index")
 	}
@@ -62,9 +61,8 @@ func insertProject() {
 	// this route does not define an originator and would mostly not be useful, should
 	// look into a way where we can define originators in the route as well
 	http.HandleFunc("/project/insert", func(w http.ResponseWriter, r *http.Request) {
-		checkOrigin(w, r)
 		checkPost(w, r)
-		var prepProject database.Project
+		var prepProject solar.SolarProject
 		prepProject, err := parseProject(r)
 		if err != nil {
 			errorHandler(w, r, http.StatusNotFound)
@@ -83,13 +81,12 @@ func insertProject() {
 
 func getAllProjects() {
 	http.HandleFunc("/project/all", func(w http.ResponseWriter, r *http.Request) {
-		checkOrigin(w, r)
 		checkGet(w, r)
 		// make a call to the db to get all projects
 		// while making this call, the rpc should not be aware of the db we are using
 		// and stuff. So we need to have another route that would open the existing
 		// db, without asking for one
-		allProjects, err := database.RetrieveAllProjects()
+		allProjects, err := solar.RetrieveAllProjects()
 		if err != nil {
 			errorHandler(w, r, http.StatusNotFound)
 			return
@@ -101,14 +98,13 @@ func getAllProjects() {
 func getProject() {
 	// we need to read passed the key from the URL that the user calls
 	http.HandleFunc("/project/get", func(w http.ResponseWriter, r *http.Request) {
-		checkOrigin(w, r)
 		checkGet(w, r)
 		if r.URL.Query()["index"] == nil {
 			errorHandler(w, r, http.StatusNotFound)
 			return
 		}
 		uKey := utils.StoI(r.URL.Query()["index"][0])
-		contract, err := database.RetrieveProject(uKey)
+		contract, err := solar.RetrieveProject(uKey)
 		if err != nil {
 			errorHandler(w, r, http.StatusNotFound)
 			return
@@ -118,9 +114,8 @@ func getProject() {
 }
 
 func projectHandler(w http.ResponseWriter, r *http.Request, stage float64) {
-	checkOrigin(w, r)
 	checkGet(w, r)
-	allProjects, err := database.RetrieveProjects(stage)
+	allProjects, err := solar.RetrieveProjects(stage)
 	if err != nil {
 		errorHandler(w, r, http.StatusNotFound)
 		return

@@ -69,6 +69,7 @@ func InitStableCoin() error {
 	Seed = seed
 	StableUSD.Issuer = PublicKey
 	StableUSD.Code = "STABLEUSD"
+	log.Printf("STABLECOIN PUBLICKEY IS: %s, SEED is: %s", PublicKey, Seed)
 	go ListenForPayments()
 	return err
 }

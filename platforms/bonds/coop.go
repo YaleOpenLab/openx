@@ -1,19 +1,20 @@
-package database
+package bonds
 
 import (
-	"fmt"
-	consts "github.com/OpenFinancing/openfinancing/consts"
-
-	"github.com/stellar/go/build"
-
 	"encoding/json"
+	"fmt"
+	"log"
+
+	assets "github.com/OpenFinancing/openfinancing/assets"
+	consts "github.com/OpenFinancing/openfinancing/consts"
+	database "github.com/OpenFinancing/openfinancing/database"
 	utils "github.com/OpenFinancing/openfinancing/utils"
 	"github.com/boltdb/bolt"
-	"log"
+	"github.com/stellar/go/build"
 )
 
 /*
-type BondParams struct {
+type BondCoopParams struct {
 	Index          int
 	MaturationDate string
 	MemberRights   string
@@ -27,12 +28,12 @@ type BondParams struct {
 }
 */
 type Coop struct {
-	Params         BondParams
+	Params         BondCoopParams
 	UnitsSold      int
 	TotalAmount    float64
 	TypeOfUnit     string
 	MonthlyPayment float64
-	Residents      []Investor
+	Residents      []database.Investor
 }
 
 func NewCoop(mdate string, mrights string, stype string, intrate float64, rating string,
@@ -54,13 +55,13 @@ func NewCoop(mdate string, mrights string, stype string, intrate float64, rating
 }
 
 func (a *Coop) Save() error {
-	db, err := OpenDB()
+	db, err := database.OpenDB()
 	if err != nil {
 		return err
 	}
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(CoopBucket)
+		b := tx.Bucket(database.CoopBucket)
 		encoded, err := json.Marshal(a)
 		if err != nil {
 			log.Println("Failed to encode this data into json")
@@ -74,14 +75,14 @@ func (a *Coop) Save() error {
 // RetrieveAllBonds gets a list of all User in the database
 func RetrieveAllCoops() ([]Coop, error) {
 	var arr []Coop
-	db, err := OpenDB()
+	db, err := database.OpenDB()
 	if err != nil {
 		return arr, err
 	}
 	defer db.Close()
 
 	err = db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(CoopBucket)
+		b := tx.Bucket(database.CoopBucket)
 		for i := 1; ; i++ {
 			var rCoop Coop
 			x := b.Get(utils.ItoB(i))
@@ -101,14 +102,14 @@ func RetrieveAllCoops() ([]Coop, error) {
 
 func RetrieveCoop(key int) (Coop, error) {
 	var bond Coop
-	db, err := OpenDB()
+	db, err := database.OpenDB()
 	if err != nil {
 		return bond, err
 	}
 	defer db.Close()
 
 	err = db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(CoopBucket)
+		b := tx.Bucket(database.CoopBucket)
 		x := b.Get(utils.ItoB(key))
 		if x == nil {
 			return nil
@@ -119,7 +120,7 @@ func RetrieveCoop(key int) (Coop, error) {
 }
 
 /*
-type BondParams struct {
+type BondCoopParams struct {
 	Index          int
 	MaturationDate string
 	MemberRights   string
@@ -132,7 +133,7 @@ type BondParams struct {
 	INVAssetCode   string
 }
 type Coop struct {
-	Params         BondParams
+	Params         BondCoopParams
 	UnitsSold      int
 	TotalAmount    float64
 	TypeOfUnit     string
@@ -141,7 +142,7 @@ type Coop struct {
 */
 // for the demo, the publickey and seed must be hardcoded and  given as a binary I guess
 // or worse, hardcode the seed and pubkey in the functions themselves
-func (a *Coop) Invest(issuerPublicKey string, issuerSeed string, investor *Investor,
+func (a *Coop) Invest(issuerPublicKey string, issuerSeed string, investor *database.Investor,
 	investmentAmountS string, investorSeed string) error {
 	// we want to invest in this specific bond
 	var err error
@@ -151,13 +152,13 @@ func (a *Coop) Invest(issuerPublicKey string, issuerSeed string, investor *Inves
 		fmt.Println("You are trying to invest more or less than a month's payment")
 		return fmt.Errorf("You are trying to invest more or less than a month's payment")
 	}
-	assetName := AssetID(a.Params.MaturationDate + a.Params.SecurityType + a.Params.Rating + a.Params.BondIssuer) // get a unique assetID
+	assetName := assets.AssetID(a.Params.MaturationDate + a.Params.SecurityType + a.Params.Rating + a.Params.BondIssuer) // get a unique assetID
 
 	if a.Params.INVAssetCode == "" {
 		// this person is the first investor, set the investor token name
-		INVAssetCode := AssetID(consts.CoopAssetPrefix + assetName)
-		a.Params.INVAssetCode = INVAssetCode           // set the investeor code
-		_ = CreateAsset(INVAssetCode, issuerPublicKey) // create the asset itself, since it would not have bene created earlier
+		INVAssetCode := assets.AssetID(consts.CoopAssetPrefix + assetName)
+		a.Params.INVAssetCode = INVAssetCode                  // set the investeor code
+		_ = assets.CreateAsset(INVAssetCode, issuerPublicKey) // create the asset itself, since it would not have bene created earlier
 	}
 	/*
 		dont check stableUSD balance for now
@@ -170,14 +171,14 @@ func (a *Coop) Invest(issuerPublicKey string, issuerSeed string, investor *Inves
 	INVAsset.Code = a.Params.INVAssetCode
 	INVAsset.Issuer = issuerPublicKey
 	// make in v estor trust the asset that we provide
-	txHash, err := TrustAsset(INVAsset, utils.FtoS(a.TotalAmount), investor.U.PublicKey, investorSeed)
+	txHash, err := assets.TrustAsset(INVAsset, utils.FtoS(a.TotalAmount), investor.U.PublicKey, investorSeed)
 	// trust upto the total value of the asset
 	if err != nil {
 		return err
 	}
 	log.Println("Investor trusted asset: ", INVAsset.Code, " tx hash: ", txHash)
 	log.Println("Sending INVAsset: ", INVAsset.Code, "for: ", investmentAmount)
-	_, txHash, err = SendAssetFromIssuer(INVAsset.Code, investor.U.PublicKey, investmentAmountS, issuerSeed, issuerPublicKey)
+	_, txHash, err = assets.SendAssetFromIssuer(INVAsset.Code, investor.U.PublicKey, investmentAmountS, issuerSeed, issuerPublicKey)
 	if err != nil {
 		return err
 	}

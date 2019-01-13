@@ -87,3 +87,54 @@ func GetBlockHash(blockNumber string) (string, error) {
 	log.Printf("The block hash for block %d is: %s and the prev hash is %s", x.Sequence, hash, x.PrevHash)
 	return hash, err
 }
+
+func GetLatestBlock() ([]byte, error) {
+	var dummy []byte
+	url := "https://horizon-testnet.stellar.org/ledgers?cursor=now&order=desc"
+	resp, err := http.Get(url)
+	if err != nil {
+		return dummy, err
+	}
+	if resp.Status != "200 OK" {
+		return dummy, fmt.Errorf("API Request did not succeed")
+	}
+	defer resp.Body.Close()
+	return ioutil.ReadAll(resp.Body)
+}
+
+func GetLatestBlockHash() (string, error) {
+	// data, err := GetLatestBlock()
+	url := "https://horizon-testnet.stellar.org/ledgers?cursor=now&order=desc&limit=1"
+	resp, err := http.Get(url)
+	if err != nil {
+		return "", err
+	}
+	if resp.Status != "200 OK" {
+		return "", fmt.Errorf("API Request did not succeed")
+	}
+	defer resp.Body.Close()
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// hacks below follow because of stellar's incomplete go sdk support
+	var x map[string]*json.RawMessage
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return "", err
+	}
+
+	var y map[string]*json.RawMessage
+	err = json.Unmarshal(*x["_embedded"], &y)
+	if err != nil {
+		return "", err
+	}
+
+	var z []protocols.Ledger
+	err = json.Unmarshal(*y["records"], &z)
+	if err != nil {
+		return "", err
+	}
+
+	return z[0].Hash, nil
+}

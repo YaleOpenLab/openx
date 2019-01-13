@@ -1,11 +1,11 @@
-package database
+package solar
 
 // entities defines a list of all the entities involved in the system like
 // investor, recipient, order, etc
 // how does a contract evolve into an order? or do we make contracts orders?
 // but we want people to be able to bid on contracts, so is it better having both
 // as a single entity? ask during call and confirm so that we can do stuff. Maybe
-// the "project" struct that we use now can be a child struct of the Project struct
+// the "project" struct that we use now can be a child struct of the SolarProject struct
 
 type Feedback struct {
 	Content string
@@ -18,6 +18,6 @@ type Feedback struct {
 	// regarding whom is this feedback about
 	Date string
 	// time at which this feedback was written
-	RelatedContract []Project
+	RelatedContract []SolarProject
 	// the contract regarding which this feedback is directed at
 }

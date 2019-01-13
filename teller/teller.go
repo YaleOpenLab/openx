@@ -25,6 +25,7 @@ var Seed string
 func main() {
 	CreateHomeDir()
 	CreateFile()
+	Authenticate()
 	promptColor := color.New(color.FgHiYellow).SprintFunc()
 	whiteColor := color.New(color.FgHiWhite).SprintFunc()
 	rl, err := readline.NewEx(&readline.Config{
@@ -38,10 +39,15 @@ func main() {
 	}
 	defer rl.Close()
 	// main shell loop
+	var t Client
+	t.Info = "Console CLI Client for testing"
+	t.Location = "Location unknown. Scanning.."
+	t.UniqueId = "password" // the thing we need for unlocking the auth.txt file
 	for {
 		// setup reader with max 4K input chars
 		msg, err := rl.Readline()
 		if err != nil {
+			EndHandler(t) // error, user wants to quit
 			break
 		}
 		msg = strings.TrimSpace(msg)

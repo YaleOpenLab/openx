@@ -1,4 +1,4 @@
-package database
+package bonds
 
 import (
 	"encoding/json"
@@ -6,40 +6,28 @@ import (
 	"log"
 
 	consts "github.com/OpenFinancing/openfinancing/consts"
+	database "github.com/OpenFinancing/openfinancing/database"
 	utils "github.com/OpenFinancing/openfinancing/utils"
-	// assets "github.com/OpenFinancing/openfinancing/assets"
+	assets "github.com/OpenFinancing/openfinancing/assets"
 	"github.com/boltdb/bolt"
 	"github.com/stellar/go/build"
 )
 
-type BondParams struct {
-	Index          int
-	MaturationDate string
-	MemberRights   string
-	SecurityType   string
-	InterestRate   float64
-	Rating         string
-	BondIssuer     string
-	Underwriter    string
-	DateInitiated  string // date the project was created
-	INVAssetCode   string
-}
-
 type ConstructionBond struct {
-	Params BondParams
+	Params BondCoopParams
 	// common set of params that we need for openfinancing
 	AmountRaised   float64
 	CostOfUnit     float64
 	InstrumentType string
 	NoOfUnits      int
 	Tax            string
-	Investors      []Investor
+	Investors      []database.Investor
 	RecipientIndex int
 }
 
 func newParams(mdate string, mrights string, stype string, intrate float64, rating string,
-	bIssuer string, uWriter string) BondParams {
-	var rParams BondParams
+	bIssuer string, uWriter string) BondCoopParams {
+	var rParams BondCoopParams
 	rParams.MaturationDate = mdate
 	rParams.MemberRights = mrights
 	rParams.SecurityType = stype
@@ -71,13 +59,13 @@ func NewBond(mdate string, mrights string, stype string, intrate float64, rating
 }
 
 func (a *ConstructionBond) Save() error {
-	db, err := OpenDB()
+	db, err := database.OpenDB()
 	if err != nil {
 		return err
 	}
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(BondBucket)
+		b := tx.Bucket(database.BondBucket)
 		encoded, err := json.Marshal(a)
 		if err != nil {
 			log.Println("Failed to encode this data into json")
@@ -91,14 +79,14 @@ func (a *ConstructionBond) Save() error {
 // RetrieveAllBonds gets a list of all User in the database
 func RetrieveAllBonds() ([]ConstructionBond, error) {
 	var arr []ConstructionBond
-	db, err := OpenDB()
+	db, err := database.OpenDB()
 	if err != nil {
 		return arr, err
 	}
 	defer db.Close()
 
 	err = db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(BondBucket)
+		b := tx.Bucket(database.BondBucket)
 		for i := 1; ; i++ {
 			var rBond ConstructionBond
 			x := b.Get(utils.ItoB(i))
@@ -118,14 +106,14 @@ func RetrieveAllBonds() ([]ConstructionBond, error) {
 
 func RetrieveBond(key int) (ConstructionBond, error) {
 	var bond ConstructionBond
-	db, err := OpenDB()
+	db, err := database.OpenDB()
 	if err != nil {
 		return bond, err
 	}
 	defer db.Close()
 
 	err = db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(BondBucket)
+		b := tx.Bucket(database.BondBucket)
 		x := b.Get(utils.ItoB(key))
 		if x == nil {
 			return nil
@@ -137,8 +125,8 @@ func RetrieveBond(key int) (ConstructionBond, error) {
 
 // for the demo, the publickey and seed must be hardcoded and  given as a binary I guess
 // or worse, hardcode the seed and pubkey in the functions themselves
-func (a *ConstructionBond) Invest(issuerPublicKey string, issuerSeed string, investor *Investor,
-	recipient *Recipient, investmentAmountS string, investorSeed string, recipientSeed string) error {
+func (a *ConstructionBond) Invest(issuerPublicKey string, issuerSeed string, investor *database.Investor,
+	recipient *database.Recipient, investmentAmountS string, investorSeed string, recipientSeed string) error {
 	// we want to invest in this specific bond
 	var err error
 	investmentAmount := utils.StoI(investmentAmountS)
@@ -147,13 +135,13 @@ func (a *ConstructionBond) Invest(issuerPublicKey string, issuerSeed string, inv
 		fmt.Println("You are trying to invest more than a unit's cost, do you want to invest in two units?")
 		return fmt.Errorf("You are trying to invest more than a unit's cost, do you want to invest in two units?")
 	}
-	assetName := AssetID(a.Params.MaturationDate + a.Params.SecurityType + a.Params.Rating + a.Params.BondIssuer) // get a unique assetID
+	assetName := assets.AssetID(a.Params.MaturationDate + a.Params.SecurityType + a.Params.Rating + a.Params.BondIssuer) // get a unique assetID
 
 	if a.Params.INVAssetCode == "" {
 		// this person is the first investor, set the investor token name
-		INVAssetCode := AssetID(consts.BondAssetPrefix + assetName)
+		INVAssetCode := assets.AssetID(consts.BondAssetPrefix + assetName)
 		a.Params.INVAssetCode = INVAssetCode           // set the investeor code
-		_ = CreateAsset(INVAssetCode, issuerPublicKey) // create the asset itself, since it would not have bene created earlier
+		_ = assets.CreateAsset(INVAssetCode, issuerPublicKey) // create the asset itself, since it would not have bene created earlier
 	}
 	/*
 		dont check stableUSD balance for now
@@ -166,14 +154,14 @@ func (a *ConstructionBond) Invest(issuerPublicKey string, issuerSeed string, inv
 	INVAsset.Code = a.Params.INVAssetCode
 	INVAsset.Issuer = issuerPublicKey
 	// make in v estor trust the asset that we provide
-	txHash, err := TrustAsset(INVAsset, utils.FtoS(a.CostOfUnit*float64(a.NoOfUnits)), investor.U.PublicKey, investorSeed)
+	txHash, err := assets.TrustAsset(INVAsset, utils.FtoS(a.CostOfUnit*float64(a.NoOfUnits)), investor.U.PublicKey, investorSeed)
 	// trust upto the total value of the asset
 	if err != nil {
 		return err
 	}
 	log.Println("Investor trusted asset: ", INVAsset.Code, " tx hash: ", txHash)
 	log.Println("Sending INVAsset: ", INVAsset.Code, "for: ", investmentAmount)
-	_, txHash, err = SendAssetFromIssuer(INVAsset.Code, investor.U.PublicKey, investmentAmountS, issuerSeed, issuerPublicKey)
+	_, txHash, err = assets.SendAssetFromIssuer(INVAsset.Code, investor.U.PublicKey, investmentAmountS, issuerSeed, issuerPublicKey)
 	if err != nil {
 		return err
 	}

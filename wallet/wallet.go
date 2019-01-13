@@ -79,3 +79,8 @@ func DecryptSeed(encryptedSeed []byte, seedpwd string) (string, error) {
 	data, err := aes.Decrypt(encryptedSeed, seedpwd)
 	return string(data), err
 }
+
+func ReturnPubkey(seed string) (string, error) {
+	keyp, err := keypair.Parse(seed)
+	return keyp.Address(), err
+}

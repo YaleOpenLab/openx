@@ -1,6 +1,7 @@
-package database
+package solar
 
 import (
+	database "github.com/OpenFinancing/openfinancing/database"
 	utils "github.com/OpenFinancing/openfinancing/utils"
 )
 
@@ -8,8 +9,8 @@ func NewOriginator(uname string, pwd string, seedpwd string, Name string, Addres
 	return NewEntity(uname, pwd, seedpwd, Name, Address, Description, "originator")
 }
 
-func (contractor *Entity) OriginContract(panelSize string, totalValue int, location string, years int, metadata string, recIndex int) (Project, error) {
-	var pc Project
+func (contractor *Entity) OriginContract(panelSize string, totalValue int, location string, years int, metadata string, recIndex int) (SolarProject, error) {
+	var pc SolarProject
 	var err error
 
 	// for this, create a new  contract and store in the contracts db. Wea re sorting
@@ -25,7 +26,7 @@ func (contractor *Entity) OriginContract(panelSize string, totalValue int, locat
 	pc.Params.Years = years
 	pc.Params.Metadata = metadata
 	pc.Params.DateInitiated = utils.Timestamp()
-	iRecipient, err := RetrieveRecipient(recIndex)
+	iRecipient, err := database.RetrieveRecipient(recIndex)
 	if err != nil {
 		return pc, err
 	}

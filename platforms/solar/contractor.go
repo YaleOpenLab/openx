@@ -1,6 +1,7 @@
-package database
+package solar
 
 import (
+	database "github.com/OpenFinancing/openfinancing/database"
 	utils "github.com/OpenFinancing/openfinancing/utils"
 )
 
@@ -13,7 +14,7 @@ import (
 // Also, have some kind of deposit for Contractors (5% or something) so that they
 // don't go back on their investment and slash their ivnestment by 10% if this happens
 // and distribute that amount to the recipient directly and reduce everyone's bids
-// by that amount to account for the change in underlying Project
+// by that amount to account for the change in underlying SolarProject
 // also, a given Contractor right now is allowed only for one final bid for blind
 // auction advantages (no price disvocery, etc). If we want to change this, we must
 // have an auction handler that will take care of this.
@@ -22,8 +23,8 @@ func NewContractor(uname string, pwd string, seedpwd string, Name string, Addres
 	return NewEntity(uname, pwd, seedpwd, Name, Address, Description, "contractor")
 }
 
-func (contractor *Entity) ProposeContract(panelSize string, totalValue int, location string, years int, metadata string, recIndex int, projectIndex int) (Project, error) {
-	var pc Project
+func (contractor *Entity) ProposeContract(panelSize string, totalValue int, location string, years int, metadata string, recIndex int, projectIndex int) (SolarProject, error) {
+	var pc SolarProject
 	var err error
 
 	// for this, create a new contract and store in the contracts db. Wea re sorting
@@ -39,7 +40,7 @@ func (contractor *Entity) ProposeContract(panelSize string, totalValue int, loca
 	pc.Params.Years = years
 	pc.Params.Metadata = metadata
 	pc.Params.DateInitiated = utils.Timestamp()
-	iRecipient, err := RetrieveRecipient(recIndex)
+	iRecipient, err := database.RetrieveRecipient(recIndex)
 	if err != nil {
 		return pc, err
 	}

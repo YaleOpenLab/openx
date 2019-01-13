@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	bonds "github.com/OpenFinancing/openfinancing/platforms/bonds"
 	database "github.com/OpenFinancing/openfinancing/database"
 	utils "github.com/OpenFinancing/openfinancing/utils"
 	xlm "github.com/OpenFinancing/openfinancing/xlm"
@@ -17,7 +18,6 @@ func setupCoopRPCs() {
 
 func getCoopDetails() {
 	http.HandleFunc("/coop/get", func(w http.ResponseWriter, r *http.Request) {
-		checkOrigin(w, r)
 		checkGet(w, r)
 		// get the details of a specific bond by key
 		if r.URL.Query()["index"] == nil {
@@ -25,7 +25,7 @@ func getCoopDetails() {
 			return
 		}
 		uKey := utils.StoI(r.URL.Query()["index"][0])
-		bond, err := database.RetrieveCoop(uKey)
+		bond, err := bonds.RetrieveCoop(uKey)
 		if err != nil {
 			log.Println(err)
 		}
@@ -42,10 +42,9 @@ func getCoopDetails() {
 // curl -X POST -H "Content-Type: application/x-www-form-urlencoded" -H "Origin: localhost" -H "Cache-Control: no-cache" -d 'MonthlyPayment=1000&CoopIndex=1&InvIndex=2&InvSeedPwd=x' "http://localhost:8080/coop/invest"
 func InvestInCoop() {
 	http.HandleFunc("/coop/invest", func(w http.ResponseWriter, r *http.Request) {
-		checkOrigin(w, r)
 		checkPost(w, r)
 		var err error
-		var iCoop database.Coop
+		var iCoop bonds.Coop
 		// need to receive a whole lot of parameters here
 		// need the bond index passed so that we can retrieve the bond easily
 		if r.FormValue("MonthlyPayment") == "" || r.FormValue("CoopIndex") == "" || r.FormValue("InvIndex") == "" || r.FormValue("InvSeedPwd") == "" {
@@ -70,7 +69,7 @@ func InvestInCoop() {
 		invIndex := utils.StoI(r.FormValue("InvIndex"))
 		invSeedPwd := r.FormValue("InvSeedPwd")
 
-		iCoop, err = database.RetrieveCoop(CoopIndex)
+		iCoop, err = bonds.RetrieveCoop(CoopIndex)
 		if err != nil {
 			log.Fatal(err)
 		}

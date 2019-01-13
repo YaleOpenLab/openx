@@ -1,10 +1,11 @@
-package database
+package solar
 
 import (
 	"encoding/json"
 	"fmt"
 	"log"
 
+	database "github.com/OpenFinancing/openfinancing/database"
 	utils "github.com/OpenFinancing/openfinancing/utils"
 	"github.com/boltdb/bolt"
 )
@@ -16,7 +17,7 @@ import (
 // well
 type Entity struct {
 	// User defines common params such as name, seed, publickey
-	U User
+	U database.User
 	// the name of the contractor / company that is contracting
 	// A contractor is party who proposes a specific some of money towards a
 	// particular project. This is the actual amount that the investors invest in.
@@ -53,13 +54,13 @@ type Entity struct {
 	// A Guarantor is someone who can vouch for the recipient and fill in for them
 	// in case they default on payment. They can c harge a fee and this must be
 	// put inside the contract itself.
-	PastContracts []Project
+	PastContracts []SolarProject
 	// list of all the contracts that the contractor has won in the past
-	ProposedContracts []Project
+	ProposedContracts []SolarProject
 	// the Originator proposes a contract which will then be taken up
 	// by a contractor, who publishes his own copy of the proposed contract
 	// which will be the set of contracts that will be sent to auction
-	PresentContracts []Project
+	PresentContracts []SolarProject
 	// list of all contracts that the contractor is presently undertaking1
 	PastFeedback []Feedback
 	// feedback received on the contractor from parties involved in the past
@@ -73,7 +74,7 @@ func newEntityHelper(uname string, pwd string, seedpwd string, Name string, Addr
 	// in the database
 	var a Entity
 	var err error
-	a.U, err = NewUser(uname, pwd, seedpwd, Name)
+	a.U, err = database.NewUser(uname, pwd, seedpwd, Name)
 	if err != nil {
 		return a, err
 	}
@@ -98,13 +99,13 @@ func newEntityHelper(uname string, pwd string, seedpwd string, Name string, Addr
 }
 
 func (a *Entity) Save() error {
-	db, err := OpenDB()
+	db, err := database.OpenDB()
 	if err != nil {
 		return err
 	}
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(ContractorBucket)
+		b := tx.Bucket(database.ContractorBucket)
 		encoded, err := json.Marshal(a)
 		if err != nil {
 			log.Println("Failed to encode this data into json")
@@ -133,19 +134,19 @@ func NewEntity(uname string, pwd string, seedpwd string, Name string, Address st
 // gets all the proposed contracts for a particular recipient
 func RetrieveAllContractEntities(role string) ([]Entity, error) {
 	var arr []Entity
-	temp, err := RetrieveAllUsers()
+	temp, err := database.RetrieveAllUsers()
 	if err != nil {
 		return arr, err
 	}
 	limit := len(temp) + 1
-	db, err := OpenDB()
+	db, err := database.OpenDB()
 	if err != nil {
 		return arr, err
 	}
 	defer db.Close()
 
 	err = db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(ContractorBucket)
+		b := tx.Bucket(database.ContractorBucket)
 		for i := 1; i < limit; i++ {
 			var rContractor Entity
 			x := b.Get(utils.ItoB(i))
@@ -187,13 +188,13 @@ func RetrieveAllContractEntities(role string) ([]Entity, error) {
 
 func RetrieveEntity(key int) (Entity, error) {
 	var a Entity
-	db, err := OpenDB()
+	db, err := database.OpenDB()
 	if err != nil {
 		return a, err
 	}
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(ContractorBucket)
+		b := tx.Bucket(database.ContractorBucket)
 		x := b.Get(utils.ItoB(key))
 		if x == nil {
 			return nil
@@ -208,19 +209,19 @@ func RetrieveEntity(key int) (Entity, error) {
 // one. So we need to have a function that prevents username collisions
 func SearchForEntity(name string, pwhash string) (Entity, error) {
 	var a Entity
-	temp, err := RetrieveAllUsers()
+	temp, err := database.RetrieveAllUsers()
 	if err != nil {
 		return a, err
 	}
 	limit := len(temp) + 1
-	db, err := OpenDB()
+	db, err := database.OpenDB()
 	if err != nil {
 		return a, err
 	}
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
 		// TODO: change all similar functions to db.View
-		b := tx.Bucket(ContractorBucket)
+		b := tx.Bucket(database.ContractorBucket)
 		for i := 1; i < limit; i++ {
 			var rContractor Entity
 			x := b.Get(utils.ItoB(i))
