@@ -1,11 +1,13 @@
-// +build all
+// +build all travis
 
-package database
+package solar
 
 import (
 	"log"
 	"os"
 	"testing"
+
+	database "github.com/OpenFinancing/openfinancing/database"
 )
 
 // TODO: rewrite how this works and split between platforms and database
@@ -17,19 +19,19 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	db, err := OpenDB()
+	db, err := database.OpenDB()
 	if err != nil {
 		t.Fatal(err)
 	}
 	db.Close() // close immmediately after check
-	var project1 DBParams
+	var project1 SolarParams
 	var dummy SolarProject
 	// investors entity testing over, test recipients below in the same way
 	// now we repeat the same tests for all other entities
 	// connections and the other for non RPC connections
 	// now we repeat the same tests for all other entities
 	// connections and the other for non RPC connections
-	inv, err := NewInvestor("inv1", "blah", "blah", "cool")
+	inv, err := database.NewInvestor("inv1", "blah", "blah", "cool")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -38,7 +40,7 @@ func TestDb(t *testing.T) {
 		t.Fatal(err)
 	}
 	log.Println("INDEX IS: ", inv.U.Index)
-	recp, err := NewRecipient("user1", "blah", "blah", "cool")
+	recp, err := database.NewRecipient("user1", "blah", "blah", "cool")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -116,10 +118,10 @@ func TestDb(t *testing.T) {
 		log.Println("OPROJECTS: ", len(oProjects))
 		t.Fatalf("Originated projects present!")
 	}
-	err = DeleteKeyFromBucket(dummy.Params.Index, ProjectsBucket)
+	err = database.DeleteKeyFromBucket(dummy.Params.Index, database.ProjectsBucket)
 	if err != nil {
 		log.Println(err)
-		t.Errorf("Deleting an  roder from the db failed")
+		t.Errorf("Deleting an order from the db failed")
 	}
 	log.Println("Deleted project")
 	// err = DeleteProject(1000) this would work becuase the key will not be found and hence would not return an error
@@ -130,19 +132,7 @@ func TestDb(t *testing.T) {
 		t.Errorf("Found deleted entry, quitting!")
 	}
 
-	rInv, err := RetrieveInvestor(1)
-	if err != nil {
-		t.Fatal(err)
-	}
-	ix1, err := RetrieveInvestor(1000)
-	if ix1.U.Index != 0 {
-		t.Fatalf("Invalid Investor exists")
-	}
-	if rInv.U.Name != inv.U.Name || rInv.U.LoginUserName != inv.U.LoginUserName || rInv.U.LoginPassword != inv.U.LoginPassword {
-		log.Println(rInv.U.Name, inv.U.Name)
-		t.Fatalf("Usernames don't match, quitting!")
-	}
-	inv, err = NewInvestor("inv2", "b921f75437050f0f7d2caba6303d165309614d524e3d7e6bccf313f39d113468d30e1e2ac01f91f6c9b66c083d393f49b3177345311849edb026bb86ee624be0", "blah", "cool")
+	inv, err = database.NewInvestor("inv2", "b921f75437050f0f7d2caba6303d165309614d524e3d7e6bccf313f39d113468d30e1e2ac01f91f6c9b66c083d393f49b3177345311849edb026bb86ee624be0", "blah", "cool")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -150,55 +140,13 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = ValidateInvestor("inv2",
-		"f28f9cc1f8c415d5c43c5bef02afb9493c0ed4236b876bff0c3d98d31e134b5505a1401604f301077b8a8f7c2a482afec428fe04a4b8ada6ad1337e10c6ebb99")
-	if err != nil {
-		t.Fatal(err)
-	}
-	allInvestors, err := RetrieveAllInvestors()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(allInvestors) != 2 {
-		t.Fatalf("Lengths of invesotrs don't match, quitting!")
-	}
-	if allInvestors[0].U.Name != "cool" || allInvestors[0].U.LoginUserName != "inv1" {
-		t.Fatalf("UserNames don't match, quitting!")
-	}
-
-	rRecp, err := RetrieveRecipient(recp.U.Index)
-	if err != nil {
-		t.Fatal(err)
-	}
-	rx1, err := RetrieveRecipient(1000)
-	if rx1.U.Index != 0 {
-		t.Fatalf("Invalid Recipient exists")
-	}
-	if rRecp.U.Name != recp.U.Name || rRecp.U.LoginUserName != recp.U.LoginUserName || rRecp.U.LoginPassword != recp.U.LoginPassword {
-		t.Fatalf("Usernames don't match, quitting!")
-	}
-	recp, err = NewRecipient("user1", "b921f75437050f0f7d2caba6303d165309614d524e3d7e6bccf313f39d113468d30e1e2ac01f91f6c9b66c083d393f49b3177345311849edb026bb86ee624be0", "blah", "cool")
+	recp, err = database.NewRecipient("user1", "b921f75437050f0f7d2caba6303d165309614d524e3d7e6bccf313f39d113468d30e1e2ac01f91f6c9b66c083d393f49b3177345311849edb026bb86ee624be0", "blah", "cool")
 	if err != nil {
 		t.Fatal(err)
 	}
 	err = recp.Save()
 	if err != nil {
 		t.Fatal(err)
-	}
-	_, err = ValidateRecipient("user1",
-		"f28f9cc1f8c415d5c43c5bef02afb9493c0ed4236b876bff0c3d98d31e134b5505a1401604f301077b8a8f7c2a482afec428fe04a4b8ada6ad1337e10c6ebb99")
-	if err != nil {
-		t.Fatal(err)
-	}
-	allRecipients, err := RetrieveAllRecipients()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(allRecipients) != 2 {
-		t.Fatalf("Lengths of recipients don't match, quitting!")
-	}
-	if allRecipients[0].U.Name != "cool" || allRecipients[0].U.LoginUserName != "user1" {
-		t.Fatalf("UserNames don't match, quitting!")
 	}
 	// tests for originators
 	newCE, err = NewEntity("OrigTest", "pwd", "blah", "NameOrigTest", "123 ABC Street", "OrigDescription", "originator")
@@ -266,43 +214,13 @@ func TestDb(t *testing.T) {
 		t.Fatalf("Entity which should be missing exists!")
 	}
 
-	// Checks for users
-	u1, err := NewUser("uname1", "pwd1", "blah", "NewUser")
-	if err != nil {
-		t.Fatal(err)
-	}
-	rU1, err := RetrieveUser(u1.Index)
-	if err != nil {
-		t.Fatal(err)
-	}
-	ux1, err := RetrieveUser(1000)
-	if ux1.Index != 0 {
-		t.Fatalf("Retrieving invalid user succeeds, quitting!")
-	}
-	if rU1.Name != "NewUser" {
-		t.Fatalf("User Names don't match")
-	}
-	vU, err := ValidateUser("uname1", "01e2b5c87c9ecbad25df63f47098bd1b47a9ffbdce46967a0cca8922924fc009e8f7a41c45109b47982ee7b9b36f617cab3f1d029b17ff110fffa91ed4ab4d27")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if vU.Name != "NewUser" {
-		t.Fatalf("User Names don't match")
-	}
-	allUs, err := RetrieveAllUsers()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(allUs) != 8 {
-		t.Fatal("Length of all users doesn't match")
-	}
 	// newCE, err = NewEntity("ConTest", "pwd", "NameConTest", "123 ABC Street", "ConDescription", "contractor")
 	rCE, err := SearchForEntity("ConTest", "9f88a8d40b90616715f868ed195d24e5df994f56bce34eddb022c213484eb0f220d8907e4ecd8f64ddd364cb30bb5758b32ee26541f340b930f7e5bf756907a4")
 	if err != nil {
 		t.Fatal(err)
 	}
 	if rCE.Contractor != true {
-		log.Println("THe reole: ", rCE.Contractor, rCE)
+		log.Println("The role: ", rCE.Contractor, rCE)
 		t.Fatal("Roles don't match!")
 	}
 	trC1, err := RetrieveEntity(7)
@@ -325,10 +243,6 @@ func TestDb(t *testing.T) {
 	if len(allOOs) != 1 {
 		log.Println("Length of all Originated Projects: ", len(allOOs))
 		t.Fatalf("Length of all orignated projects doesn't match")
-	}
-	err = DeleteKeyFromBucket(recp.U.Index, RecipientBucket)
-	if err != nil {
-		t.Fatal(err)
 	}
 	// can't test the payback stuff since we need the recipient to have funds and stuff
 	// maybe test the investor sending funds and stuff as well? but that's imported
