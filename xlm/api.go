@@ -18,11 +18,6 @@ var TestNetClient = &clients.Client{
 	URL:  "https://horizon-testnet.stellar.org",
 	HTTP: http.DefaultClient,
 }
-
-func GetStateHash(a string) (string, error) {
-	return GetBlockHash("1000000")
-}
-
 /*
 type Ledger struct {
     Links struct {
@@ -57,17 +52,11 @@ func GetLedgerData(blockNumber string) ([]byte, error) {
 	var err error
 	var data []byte
 	resp, err := http.Get(TestNetClient.URL + "/ledgers/" + blockNumber)
-	if err != nil {
-		return data, err
-	}
-	if resp.Status != "200 OK" {
+	if err != nil || resp.Status != "200 OK" {
 		return data, fmt.Errorf("API Request did not succeed")
 	}
 	defer resp.Body.Close()
 	data, err = ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return data, err
-	}
 	return data, err
 }
 
@@ -80,30 +69,12 @@ func GetBlockHash(blockNumber string) (string, error) {
 	}
 	var x protocols.Ledger
 	err = json.Unmarshal(b, &x)
-	if err != nil {
-		return hash, err
-	}
 	hash = x.Hash
 	log.Printf("The block hash for block %d is: %s and the prev hash is %s", x.Sequence, hash, x.PrevHash)
 	return hash, err
 }
 
-func GetLatestBlock() ([]byte, error) {
-	var dummy []byte
-	url := "https://horizon-testnet.stellar.org/ledgers?cursor=now&order=desc"
-	resp, err := http.Get(url)
-	if err != nil {
-		return dummy, err
-	}
-	if resp.Status != "200 OK" {
-		return dummy, fmt.Errorf("API Request did not succeed")
-	}
-	defer resp.Body.Close()
-	return ioutil.ReadAll(resp.Body)
-}
-
 func GetLatestBlockHash() (string, error) {
-	// data, err := GetLatestBlock()
 	url := "https://horizon-testnet.stellar.org/ledgers?cursor=now&order=desc&limit=1"
 	resp, err := http.Get(url)
 	if err != nil {

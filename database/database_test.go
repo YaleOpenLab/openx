@@ -12,6 +12,7 @@ import (
 // go test --tags="all" -coverprofile=test.txt .
 func TestDb(t *testing.T) {
 	var err error
+	CreateHomeDir()
 	os.Remove(os.Getenv("HOME") + "/.openfinancing/database/" + "/yol.db")
 	err = os.MkdirAll(os.Getenv("HOME")+"/.openfinancing/database", os.ModePerm)
 	if err != nil {

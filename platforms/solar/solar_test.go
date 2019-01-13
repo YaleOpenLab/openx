@@ -173,10 +173,15 @@ func TestDb(t *testing.T) {
 	if len(allConts) != 1 || allConts[0].U.Name != "NameConTest" {
 		t.Fatal("Names don't match, quitting!")
 	}
-	_, err = newCE.ProposeContract("100 16x32 panels", 28000, "Puerto Rico", 6, "LEED+ Gold rated panels and this is random data out of nowhere and we supply our own devs and provide insurance guarantee as well. Dual audit maintenance upto 1 year. Returns capped as per defaults", 1, 1)
+	_, err = newCE.ProposeContract("100 16x32 panels", 28000, "Puerto Rico", 6, "LEED+ Gold rated panels and this is random data out of nowhere and we supply our own devs and provide insurance guarantee as well. Dual audit maintenance upto 1 year. Returns capped as per defaults", recp.U.Index, 1)
 	// 1 for retrieving martin as the recipient and 1 is the project Index
 	if err != nil {
 		log.Fatal(err)
+	}
+	_, err = newCE.ProposeContract("100 16x32 panels", 28000, "Puerto Rico", 6, "LEED+ Gold rated panels and this is random data out of nowhere and we supply our own devs and provide insurance guarantee as well. Dual audit maintenance upto 1 year. Returns capped as per defaults", 1000, 1)
+	// 1 for retrieving martin as the recipient and 1 is the project Index
+	if err == nil {
+		t.Fatal("Able to retrieve non existent recipient, quitting!")
 	}
 	rOx, err := RetrieveProject(2)
 	if err != nil {
@@ -227,9 +232,13 @@ func TestDb(t *testing.T) {
 	if err != nil || trC1.U.Index == 0 {
 		t.Fatal("SolarProject Entity lookup failed")
 	}
-	tmpx1, err := newCE2.OriginContract("100 16x24 panels on a solar rooftop", 14000, "Puerto Rico", 5, "ABC School in XYZ peninsula", 1) // 1 is the index for martin
+	tmpx1, err := newCE2.OriginContract("100 16x24 panels on a solar rooftop", 14000, "Puerto Rico", 5, "ABC School in XYZ peninsula", recp.U.Index) // 1 is the index for martin
 	if err != nil {
 		log.Fatal(err)
+	}
+	_, err = newCE2.OriginContract("100 16x24 panels on a solar rooftop", 14000, "Puerto Rico", 5, "ABC School in XYZ peninsula", 1000) // 1 is the index for martin
+	if err == nil {
+		t.Fatalf("Not quitting for invalid recipient index")
 	}
 	tmpx1.Stage = 1
 	err = tmpx1.Save()
@@ -247,4 +256,95 @@ func TestDb(t *testing.T) {
 	// can't test the payback stuff since we need the recipient to have funds and stuff
 	// maybe test the investor sending funds and stuff as well? but that's imported
 	// by main and we could have problems here related to that
+	project1.Index = 20
+	nOP, err := NewOriginProject(project1, newCE2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = nOP.SetPreOriginProject()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if nOP.Stage != 0 {
+		t.Fatalf("Stage doesn't match, quitting!")
+	}
+
+	err = nOP.SetLegalContractStage()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if nOP.Stage != 0.5 {
+		t.Fatalf("Stage doesn't match, quitting!")
+	}
+
+	err = nOP.SetOriginProject()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if nOP.Stage != 1 {
+		t.Fatalf("Stage doesn't match, quitting!")
+	}
+
+	err = nOP.SetOpenForMoneyStage()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if nOP.Stage != 1.5 {
+		t.Fatalf("Stage doesn't match, quitting!")
+	}
+
+	err = nOP.SetProposedProject()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if nOP.Stage != 2{
+		t.Fatalf("Stage doesn't match, quitting!")
+	}
+
+	err = nOP.SetFinalizedProject()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if nOP.Stage != 3{
+		t.Fatalf("Stage doesn't match, quitting!")
+	}
+
+	err = nOP.SetFundedProject()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if nOP.Stage != 4 {
+		t.Fatalf("Stage doesn't match, quitting!")
+	}
+
+	err = nOP.SetInstalledProjectStage()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if nOP.Stage != 5 {
+		t.Fatalf("Stage doesn't match, quitting!")
+	}
+
+	err = nOP.SetPowerGenerationStage()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if nOP.Stage != 6 {
+		t.Fatalf("Stage doesn't match, quitting!")
+	}
+
+	// cycle back to stage 0 and try using the other function to modify the stage
+	err = nOP.SetPreOriginProject()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if nOP.Stage != 0 {
+		t.Fatalf("Stage doesn't match, quitting!")
+	}
+
+	allProjs, err := RetrieveAllProjects()
+	if err != nil {
+		t.Fatal(err)
+	}
+	PromoteStage0To1Project(allProjs, 20)
 }

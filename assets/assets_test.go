@@ -1,4 +1,4 @@
-// +build all travis
+// +build all
 
 package assets
 

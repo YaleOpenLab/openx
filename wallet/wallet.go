@@ -1,7 +1,6 @@
 package wallet
 
 import (
-	"fmt"
 	"log"
 
 	aes "github.com/OpenFinancing/openfinancing/aes"
@@ -29,16 +28,8 @@ func StoreSeed(seed string, password string, path string) error {
 	// these can store the file ion any path passed to them
 	log.Println("ENCRYPTING AND STORING SEED IN: ", path)
 	aes.EncryptFile(path, []byte(seed), password)
-	decrypted, err := aes.DecryptFile(path, password)
-	if err != nil {
-		return err
-	}
-	if seed != string(decrypted) {
-		// something wrong with encryption, exit
-		log.Fatal("Encrypted and decrypted seeds don't match, exiting!")
-	}
-	fmt.Println("Successfully encrypted your seed at: ", path)
-	return nil
+	_, err := aes.DecryptFile(path, password)
+	return err
 }
 
 // RetrieveSeed retrieves the seed and the publicket when an encrypted file path
@@ -52,12 +43,7 @@ func RetrieveSeed(path string, password string) (string, string, error) {
 	}
 	seed = string(data)
 	keyp, err := keypair.Parse(seed)
-	if err != nil {
-		return publicKey, seed, err
-	} else {
-		publicKey = keyp.Address()
-	}
-	return publicKey, seed, nil
+	return keyp.Address(), seed, err
 }
 
 // RetrievePubkey restores the publicKey when passed a seed and stores the

@@ -1,6 +1,7 @@
 package solar
 
 import (
+	"fmt"
 	database "github.com/OpenFinancing/openfinancing/database"
 	utils "github.com/OpenFinancing/openfinancing/utils"
 )
@@ -31,7 +32,7 @@ func (contractor *Entity) ProposeContract(panelSize string, totalValue int, loca
 	// by stage, so it shouldn't matter a whole lot
 	indexCheck, err := RetrieveAllProjects()
 	if err != nil {
-		return pc, err
+		return pc, fmt.Errorf("Projects could not be retrieved!")
 	}
 	pc.Params.Index = len(indexCheck) + 1
 	pc.Params.PanelSize = panelSize
@@ -41,8 +42,8 @@ func (contractor *Entity) ProposeContract(panelSize string, totalValue int, loca
 	pc.Params.Metadata = metadata
 	pc.Params.DateInitiated = utils.Timestamp()
 	iRecipient, err := database.RetrieveRecipient(recIndex)
-	if err != nil {
-		return pc, err
+	if iRecipient.U.Index == 0 {
+		return pc, fmt.Errorf("Recipient not found!")
 	}
 	pc.Params.ProjectRecipient = iRecipient
 	pc.Stage = 2 // 2 since we need to filter this out while retrieving the propsoed contracts

@@ -90,14 +90,9 @@ func DeleteKeyFromBucket(key int, bucketName []byte) error {
 		return err
 	}
 	defer db.Close()
-	err = db.Update(func(tx *bolt.Tx) error {
+	return db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(bucketName)
-		err := b.Delete(utils.ItoB(key))
-		if err != nil {
-			return err
-		}
-		log.Printf("Deleted element with key: %d in bucket %s", key, string(bucketName))
+		b.Delete(utils.ItoB(key))
 		return nil
 	})
-	return err
 }
