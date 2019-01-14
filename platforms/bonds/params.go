@@ -12,4 +12,7 @@ type BondCoopParams struct {
 	Underwriter    string
 	DateInitiated  string // date the project was created
 	INVAssetCode   string
+	Title          string
+	Description    string
+	Location       string
 }

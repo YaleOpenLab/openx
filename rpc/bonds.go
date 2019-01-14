@@ -24,14 +24,14 @@ func CreateBond() {
 	var bond1 bonds.ConstructionBond
 	var err error
 	bond1, err = bonds.NewBond("Dec 21 2049", "Maturation Rights Link", "Security Type", 5.4, "AAA", "Bond Issuer", "underwriter.com",
-		100000, "Instrument Type", 100, "No Fed tax for 10 years", 1)
+		100000, "Instrument Type", 100, "No Fed tax for 10 years", 1, "title", "location", "string")
 	if err != nil {
-		log.Fatal(err)
+		return
 	}
 	log.Println("BOND INDEX: ", bond1.Params.Index)
 	_, err = bonds.RetrieveBond(bond1.Params.Index)
 	if err != nil {
-		log.Fatal(err)
+		return
 	}
 }
 
@@ -57,7 +57,8 @@ func InvestInBond() {
 		if err != nil {
 			err = xlm.GetXLM(issuerPk)
 			if err != nil {
-				log.Fatal(err)
+				errorHandler(w, r, http.StatusNotFound)
+				return
 			}
 		}
 
@@ -69,42 +70,49 @@ func InvestInBond() {
 
 		iBond, err = bonds.RetrieveBond(bondIndex)
 		if err != nil {
-			log.Fatal(err)
+			errorHandler(w, r, http.StatusNotFound)
+			return
 		}
 		iRec, err := database.RetrieveRecipient(iBond.RecipientIndex)
 		if err != nil {
-			log.Fatal(err)
+			errorHandler(w, r, http.StatusNotFound)
+			return
 		}
 		// pass the investor index, pk and seed
 		iInv, err := database.RetrieveInvestor(invIndex)
 		if err != nil {
-			log.Fatal(err)
+			errorHandler(w, r, http.StatusNotFound)
+			return
 		}
 
 		_, err = xlm.GetNativeBalance(iInv.U.PublicKey) // get testnet funds if their account is new
 		if err != nil {
 			err = xlm.GetXLM(iInv.U.PublicKey)
 			if err != nil {
-				log.Fatal(err)
+				errorHandler(w, r, http.StatusNotFound)
+				return
 			}
 		}
 		_, err = xlm.GetNativeBalance(iRec.U.PublicKey) // get testnet funds if their account is new
 		if err != nil {
 			err = xlm.GetXLM(iRec.U.PublicKey)
 			if err != nil {
-				log.Fatal(err)
+				errorHandler(w, r, http.StatusNotFound)
+				return
 			}
 		}
 
 		invSeed, err := iInv.U.GetSeed(invSeedPwd)
 		if err != nil {
 			log.Println("Error while getting seed, inv")
-			log.Fatal(err)
+			errorHandler(w, r, http.StatusNotFound)
+			return
 		}
 		recSeed, err := iRec.U.GetSeed(recSeedPwd)
 		if err != nil {
 			log.Println("Error while getting seed, rec")
-			log.Fatal(err)
+			errorHandler(w, r, http.StatusNotFound)
+			return
 		}
 
 		err = iBond.Invest(issuerPk, issuerSeed, &iInv, &iRec, invAmount, invSeed, recSeed)

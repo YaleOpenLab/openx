@@ -26,7 +26,7 @@ type ConstructionBond struct {
 }
 
 func newParams(mdate string, mrights string, stype string, intrate float64, rating string,
-	bIssuer string, uWriter string) BondCoopParams {
+	bIssuer string, uWriter string, title string, location string, description string) BondCoopParams {
 	var rParams BondCoopParams
 	rParams.MaturationDate = mdate
 	rParams.MemberRights = mrights
@@ -35,14 +35,18 @@ func newParams(mdate string, mrights string, stype string, intrate float64, rati
 	rParams.Rating = rating
 	rParams.BondIssuer = bIssuer
 	rParams.Underwriter = uWriter
+	rParams.Title = title
+	rParams.Location = location
+	rParams.Description = description
 	rParams.DateInitiated = utils.Timestamp()
 	return rParams
 }
 
 func NewBond(mdate string, mrights string, stype string, intrate float64, rating string,
-	bIssuer string, uWriter string, unitCost float64, itype string, nUnits int, tax string, recIndex int) (ConstructionBond, error) {
+	bIssuer string, uWriter string, unitCost float64, itype string, nUnits int, tax string, recIndex int,
+	title string, location string, description string) (ConstructionBond, error) {
 	var cBond ConstructionBond
-	cBond.Params = newParams(mdate, mrights, stype, intrate, rating, bIssuer, uWriter)
+	cBond.Params = newParams(mdate, mrights, stype, intrate, rating, bIssuer, uWriter, title, location, description)
 	x, err := RetrieveAllBonds()
 	if err != nil {
 		return cBond, err

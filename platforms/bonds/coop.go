@@ -37,9 +37,10 @@ type Coop struct {
 }
 
 func NewCoop(mdate string, mrights string, stype string, intrate float64, rating string,
-	bIssuer string, uWriter string, totalAmount float64, typeOfUnit string, monthlyPayment float64) (Coop, error) {
+	bIssuer string, uWriter string, totalAmount float64, typeOfUnit string, monthlyPayment float64,
+	title string, location string, description string) (Coop, error) {
 	var cCoop Coop
-	cCoop.Params = newParams(mdate, mrights, stype, intrate, rating, bIssuer, uWriter)
+	cCoop.Params = newParams(mdate, mrights, stype, intrate, rating, bIssuer, uWriter, title, location, description)
 	x, err := RetrieveAllCoops()
 	if err != nil {
 		return cCoop, err

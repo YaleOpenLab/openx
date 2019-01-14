@@ -73,7 +73,8 @@ func InvestInCoop() {
 		if err != nil {
 			err = xlm.GetXLM(issuerPk)
 			if err != nil {
-				log.Fatal(err)
+				errorHandler(w, r, http.StatusNotFound)
+				return
 			}
 		}
 
@@ -84,25 +85,29 @@ func InvestInCoop() {
 
 		iCoop, err = bonds.RetrieveCoop(CoopIndex)
 		if err != nil {
-			log.Fatal(err)
+			errorHandler(w, r, http.StatusNotFound)
+			return
 		}
 		// pass the investor index, pk and seed
 		iInv, err := database.RetrieveInvestor(invIndex)
 		if err != nil {
-			log.Fatal(err)
+			errorHandler(w, r, http.StatusNotFound)
+			return
 		}
 
 		_, err = xlm.GetNativeBalance(iInv.U.PublicKey) // get testnet funds if their account is new
 		if err != nil {
 			err = xlm.GetXLM(iInv.U.PublicKey)
 			if err != nil {
-				log.Fatal(err)
+				errorHandler(w, r, http.StatusNotFound)
+				return
 			}
 		}
 		invSeed, err := iInv.U.GetSeed(invSeedPwd)
 		if err != nil {
 			log.Println("Error while getting seed, inv")
-			log.Fatal(err)
+			errorHandler(w, r, http.StatusNotFound)
+			return
 		}
 		err = iCoop.Invest(issuerPk, issuerSeed, &iInv, invAmount, invSeed)
 		if err != nil {
