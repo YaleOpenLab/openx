@@ -331,7 +331,7 @@ func main() {
 					log.Println(err)
 					continue
 				}
-				err = solar.PromoteStage0To1Project(allMyProjects, contractIndex)
+				err = solar.PromoteStage0To1Project(contractIndex)
 				if err != nil {
 					log.Println(err)
 					break

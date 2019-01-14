@@ -261,6 +261,10 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	err = PromoteStage0To1Project(20)
+	if err == nil {
+		t.Fatalf("Able to promote project which doesn't exist!")
+	}
 	err = nOP.SetPreOriginProject()
 	if err != nil {
 		t.Fatal(err)
@@ -342,11 +346,10 @@ func TestDb(t *testing.T) {
 		t.Fatalf("Stage doesn't match, quitting!")
 	}
 
-	allProjs, err := RetrieveAllProjects()
-	if err != nil {
-		t.Fatal(err)
+	err = PromoteStage0To1Project(20)
+	if err == nil {
+		t.Fatalf("Able to promote project which doesn't exist!")
 	}
-	PromoteStage0To1Project(allProjs, 20)
 	allO, err := RetrieveProjectsO(OriginProject, newCE2.U.Index)
 	if err != nil {
 		t.Fatal(err)
@@ -417,4 +420,5 @@ func TestDb(t *testing.T) {
 	if y.Params.Index != nOP.Params.Index {
 		t.Fatalf("Indices don't match, quitting!")
 	}
+	os.Remove(os.Getenv("HOME") + "/.openfinancing/database/" + "/yol.db")
 }
