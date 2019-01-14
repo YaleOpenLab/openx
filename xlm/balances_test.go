@@ -49,13 +49,11 @@ func TestBalances(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Account doesn't exist, quitting!")
 	}
-	balance, err = GetUSDTokenBalance("GC6Z2KKU4EDTIHAYTJC3Y3AER4ZS5GDSX7S5IKJRRTHLRMJIMCPKQY34")
-	if err == nil {
-		// should error out because there is no stableUSD balance on this account
-		t.Fatal("There should be no stablecoin balance on this account")
-	}
 	if HasStableCoin("GC6Z2KKU4EDTIHAYTJC3Y3AER4ZS5GDSX7S5IKJRRTHLRMJIMCPKQY34") {
 		// no token balance, should error out
 		t.Fatal("Stablecoin present on an address which should have no stablecoin associated with it")
+	}
+	if HasStableCoin("blah") {
+		t.Fatalf("Balance exists on something that ideally shouldn't have balance!")
 	}
 }

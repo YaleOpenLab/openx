@@ -77,16 +77,13 @@ func GetBlockHash(blockNumber string) (string, error) {
 func GetLatestBlockHash() (string, error) {
 	url := "https://horizon-testnet.stellar.org/ledgers?cursor=now&order=desc&limit=1"
 	resp, err := http.Get(url)
-	if err != nil {
-		return "", err
-	}
-	if resp.Status != "200 OK" {
+	if err != nil || resp.Status != "200 OK" {
 		return "", fmt.Errorf("API Request did not succeed")
 	}
 	defer resp.Body.Close()
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 	// hacks below follow because of stellar's incomplete go sdk support
 	var x map[string]*json.RawMessage

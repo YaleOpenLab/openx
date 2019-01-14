@@ -73,6 +73,8 @@ func GetNativeBalance(publicKey string) (string, error) {
 			return balance.Balance, nil
 		}
 	}
+	// technically accounts on stellar can't exist without a balance, so it should
+	// never come here
 	return balance, fmt.Errorf("Native balance not found")
 }
 
@@ -121,25 +123,4 @@ func HasStableCoin(PublicKey string) bool {
 		}
 	}
 	return false
-}
-
-// GetUSDTokenBalance checks whether the publicKey has a balance in stableUSD
-// and retunrs the balance if the account has any
-func GetUSDTokenBalance(PublicKey string) (string, error) {
-
-	if !HasStableCoin(PublicKey) {
-		return "", fmt.Errorf("Account does not exist or STABLEUSD token not found on your account")
-	}
-
-	account, err := TestNetClient.LoadAccount(PublicKey)
-	if err != nil {
-		return "", err
-	}
-
-	for _, balance := range account.Balances {
-		if balance.Asset.Code == "STABLEUSD" { // stablecoin code is constnat for now, need to change with changes in issuing bank
-			return balance.Balance, nil
-		}
-	}
-	return "", fmt.Errorf("error while fetching usd token balance")
 }

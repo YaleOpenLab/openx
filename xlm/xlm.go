@@ -30,12 +30,8 @@ func GetXLM(PublicKey string) error {
 	// get some coins from the stellar robot for testing
 	// gives only a constant amount of stellar, so no need to pass it a coin param
 	resp, err := http.Get("https://friendbot.stellar.org/?addr=" + PublicKey)
-	if err != nil {
-		log.Println("ERRORED OUT while calling friendbot, no coins for us")
-		return err
-	}
-	if resp.Status != "200 OK" {
-		return fmt.Errorf("API Request did not succeed")
+	if err != nil || resp.Status != "200 OK" {
+		return fmt.Errorf("API Request did not succeed") // need this separately
 	}
 	return nil
 }
@@ -127,7 +123,7 @@ func RefillAccount(publicKey string, platformSeed string) error {
 		_, _, err = SendXLMCreateAccount(publicKey, consts.DonateBalance, platformSeed)
 		if err != nil {
 			log.Println("Account Could not be created")
-			return err
+			return fmt.Errorf("Account Could not be created")
 		}
 	}
 	// balance is in string, convert to float
@@ -140,7 +136,7 @@ func RefillAccount(publicKey string, platformSeed string) error {
 		_, _, err = SendXLM(publicKey, consts.DonateBalance, platformSeed, "Sending XLM to refill")
 		if err != nil {
 			log.Println("Account doesn't have funds")
-			return err
+			return fmt.Errorf("Account doesn't have funds or invalid seed")
 		}
 	}
 	return nil

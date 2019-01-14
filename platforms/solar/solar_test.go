@@ -297,7 +297,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if nOP.Stage != 2{
+	if nOP.Stage != 2 {
 		t.Fatalf("Stage doesn't match, quitting!")
 	}
 
@@ -305,7 +305,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if nOP.Stage != 3{
+	if nOP.Stage != 3 {
 		t.Fatalf("Stage doesn't match, quitting!")
 	}
 
@@ -347,4 +347,74 @@ func TestDb(t *testing.T) {
 		t.Fatal(err)
 	}
 	PromoteStage0To1Project(allProjs, 20)
+	allO, err := RetrieveProjectsO(OriginProject, newCE2.U.Index)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(allO) != 1 {
+		t.Fatalf("Multiple originated orders when there should be only one")
+	}
+	allProposedProjects, err := RetrieveProjects(ProposedProject)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = inv.AddVotingBalance(1000)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = nOP.SetProposedProject()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, elem := range allProposedProjects {
+		log.Println("SETHIS: ", elem.Params.Index)
+	}
+	err = VoteTowardsProposedProject(&inv, 100, 2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// func UpdateProjectSlice(a *database.Recipient, project SolarParams) error {
+	recp.ReceivedSolarProjects = append(recp.ReceivedSolarProjects, project1.DEBAssetCode)
+	// the above thing is to test the function itself and not the functionality since
+	// DEBAssetCode for project1 should be empty
+	err = recp.Save()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = UpdateProjectSlice(&recp, project1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = nOP.RecipientAuthorizeContract(recp) // again a placeholder for testing this function, not the flow itself
+	if err != nil {
+		t.Fatal(err)
+	}
+	chk := nOP.CalculatePayback("100")
+	if chk != "0.257143" {
+		t.Fatalf("Balance doesn't match , quitting!")
+	}
+	var arr []SolarProject
+	x, err := SelectContractByPrice(arr)
+	if err == nil {
+		t.Fatalf("Empty array returns choice")
+	}
+	y, err := SelectContractByTime(arr)
+	if err == nil {
+		t.Fatalf("Empty array returns choice")
+	}
+	arr = append(arr, nOP)
+	x, err = SelectContractByPrice(arr)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if x.Params.Index != nOP.Params.Index {
+		t.Fatalf("Indices don't match, quitting!")
+	}
+	y, err = SelectContractByTime(arr)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if y.Params.Index != nOP.Params.Index {
+		t.Fatalf("Indices don't match, quitting!")
+	}
 }

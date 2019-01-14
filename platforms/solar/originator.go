@@ -29,7 +29,6 @@ func (contractor *Entity) OriginContract(panelSize string, totalValue int, locat
 	pc.Params.DateInitiated = utils.Timestamp()
 	iRecipient, err := database.RetrieveRecipient(recIndex)
 	if iRecipient.U.Index == 0 { // recipient does not exist
-		fmt.Println("WTD?")
 		return pc, fmt.Errorf("Recipient does not exist!")
 	}
 	pc.Params.ProjectRecipient = iRecipient

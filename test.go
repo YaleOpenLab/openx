@@ -286,7 +286,7 @@ func main() {
 					}
 					log.Println("BEST CONTRACT IS: ")
 					// we need the contractor who proposed this contract
-					solar.FinalizeProject(bestContract)
+					bestContract.SetFinalizedProject()
 					PrintProject(bestContract)
 					// now at this point, we need to mark this specific contract as completed.
 					// do we set a flag? db entry? how do we do that
@@ -297,7 +297,7 @@ func main() {
 						log.Fatal(err)
 					}
 					log.Println("BEST CONTRACT IS: ")
-					solar.FinalizeProject(bestContract)
+					bestContract.SetFinalizedProject()
 					PrintProject(bestContract)
 				case 3:
 					for i, contract := range allContracts {
@@ -312,7 +312,7 @@ func main() {
 					}
 					log.Println("BEST CONTRACT IS: ")
 					// we need the contractor who proposed this contract
-					solar.FinalizeProject(allContracts[opt])
+					allContracts[opt].SetFinalizedProject()
 					PrintProject(allContracts[opt])
 				default:
 					break
@@ -616,12 +616,19 @@ func main() {
 					log.Println(err)
 					break
 				}
-				log.Println("You have voted for contract number: ", vote)
-				err = solar.VoteTowardsProposedProject(&investor, allProposedProjects, vote)
+				fmt.Println("YOUR AVAILABLE VOTING BALANCE IS: ", investor.VotingBalance)
+				fmt.Println("HOW MANY VOTES DO YOU WANT TO DELEGATE TOWARDS THIS ORDER?")
+				votes, err := scan.ScanForInt()
 				if err != nil {
 					log.Println(err)
 					break
 				}
+				err = solar.VoteTowardsProposedProject(&investor, votes, vote)
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				log.Println("You have voted for contract number: ", vote)
 			case 8:
 				fmt.Println("WELCOME TO THE IPFS HASHING INTERFACE")
 				fmt.Println("ENTER THE STRING THAT YOU WOULD LIKE THE IPFS HASH FOR")

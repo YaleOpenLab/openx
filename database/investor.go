@@ -183,7 +183,7 @@ func (a *Investor) TrustAsset(asset build.Asset, limit string, seed string) (str
 
 // CanInvest checks whether an investor has the required balance to invest in a project
 func (a *Investor) CanInvest(balance string, targetBalance string) bool {
-	balance, err := xlm.GetUSDTokenBalance(a.U.PublicKey)
+	balance, err := xlm.GetAssetBalance(a.U.PublicKey, "STABLEUSD")
 	if err != nil {
 		return false
 	}
