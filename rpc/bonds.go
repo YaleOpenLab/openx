@@ -15,6 +15,7 @@ func setupBondRPCs() {
 	InvestInBond()
 	getBondDetails()
 	Search()
+	GetAllBonds()
 }
 
 func CreateBond() {
@@ -116,7 +117,7 @@ func InvestInBond() {
 }
 
 func getBondDetails() {
-	http.HandleFunc("/bond/detail", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/bond/get", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
 		// get the details of a specific bond by key
 		if r.URL.Query()["index"] == nil {
@@ -132,8 +133,20 @@ func getBondDetails() {
 	})
 }
 
+func GetAllBonds() {
+	http.HandleFunc("/bond/all", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		allBonds, err := bonds.RetrieveAllBonds()
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+		MarshalSend(w, r, allBonds)
+	})
+}
+
 func Search() {
-	http.HandleFunc("/openfinance/search", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/search", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
 		// search for coop / bond  and return accordingly
 		if r.URL.Query()["q"] == nil {
