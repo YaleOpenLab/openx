@@ -3,7 +3,6 @@ package database
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 
 	aes "github.com/OpenFinancing/openfinancing/aes"
 	utils "github.com/OpenFinancing/openfinancing/utils"
@@ -85,7 +84,6 @@ func (a *User) Save() error {
 		b := tx.Bucket(UserBucket)
 		encoded, err := json.Marshal(a)
 		if err != nil {
-			log.Println("Failed to encode this data into json")
 			return err
 		}
 		return b.Put([]byte(utils.ItoB(a.Index)), encoded)
@@ -157,9 +155,7 @@ func ValidateUser(name string, pwhash string) (User, error) {
 		for i := 1; i < limit; i++ {
 			var rUser User
 			x := b.Get(utils.ItoB(i))
-			if x == nil {
-				continue
-			}
+			// don't continue here since the check for username and pwhash will catch the sutff anyway
 			err := json.Unmarshal(x, &rUser)
 			if err != nil {
 				return err

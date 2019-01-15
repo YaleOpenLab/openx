@@ -1,9 +1,7 @@
 package database
 
-// contains the Investor struct which will be stored in a separate bucket
 import (
 	"encoding/json"
-	"log"
 
 	utils "github.com/OpenFinancing/openfinancing/utils"
 	xlm "github.com/OpenFinancing/openfinancing/xlm"
@@ -64,7 +62,6 @@ func (a *Investor) Save() error {
 		b := tx.Bucket(InvestorBucket)
 		encoded, err := json.Marshal(a)
 		if err != nil {
-			log.Println("Failed to encode this data into json")
 			return err
 		}
 		return b.Put([]byte(utils.ItoB(a.U.Index)), encoded)

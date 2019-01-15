@@ -334,5 +334,18 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	pkSeed, pk, err := xlm.GetKeyPair()
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, _, err = recp.SendAssetToIssuer(testAsset.Code, pk, "1", pkSeed) // should fail because
+	if err == nil {
+		t.Fatalf("Invalid tx succeeds, quitting!")
+	}
+	testAsset2 := build.CreditAsset("blah2", pkSeed) // this account doesn't exist yet, so this should fail
+	_, err = inv.TrustAsset(testAsset2, "-1", "blah")
+	if err == nil {
+		t.Fatalf("can trust invalid asset")
+	}
 	os.Remove(consts.DbDir + "/yol.db")
 }
