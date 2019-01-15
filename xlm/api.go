@@ -18,6 +18,7 @@ var TestNetClient = &clients.Client{
 	URL:  "https://horizon-testnet.stellar.org",
 	HTTP: http.DefaultClient,
 }
+
 /*
 type Ledger struct {
     Links struct {

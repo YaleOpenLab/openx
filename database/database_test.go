@@ -17,9 +17,9 @@ import (
 // go test --tags="all" -coverprofile=test.txt .
 func TestDb(t *testing.T) {
 	var err error
-	CreateHomeDir() // create home directory if it doesn't exist yet
+	CreateHomeDir()                     // create home directory if it doesn't exist yet
 	os.Remove(consts.DbDir + "/yol.db") // remove the database file, if it exists
-	consts.DbDir = "blah" // set to a false db so that we can test errors arising from OpenDB()
+	consts.DbDir = "blah"               // set to a false db so that we can test errors arising from OpenDB()
 	_, err = OpenDB()
 	if err == nil { // wrong dir, so should error out
 		t.Fatalf("Able to open database with wrong path")

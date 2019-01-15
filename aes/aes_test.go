@@ -1,4 +1,4 @@
-// +build all
+// +build all travis
 
 package aes
 
@@ -6,6 +6,7 @@ package aes
 // TODO: fix this
 import (
 	"log"
+	"os"
 	"testing"
 )
 
@@ -33,10 +34,14 @@ func TestAes(t *testing.T) {
 		t.Fatalf("Didn't catch error during decrpytion, exiting!")
 	}
 	data := []byte("This is test data")
-	log.Println("ULKBKPASQWEQWEQWE")
+	os.MkdirAll("test_files", os.ModePerm)
 	err = EncryptFile("test_files/text.txt", data, password)
 	if err != nil {
 		t.Fatal(err)
+	}
+	err = EncryptFile("blah/blah.txt", data, password)
+	if err == nil {
+		t.Fatalf("not erroring out on file creation error, quitting!")
 	}
 	decryptedSlice, err := DecryptFile("test_files/text.txt", password)
 	if err != nil {
@@ -47,6 +52,10 @@ func TestAes(t *testing.T) {
 	}
 	_, err = DecryptFile("test_files/text.txt", "Notcool")
 	if err == nil {
+		t.Fatal(err)
+	}
+	err = os.RemoveAll("test_files")
+	if err != nil {
 		t.Fatal(err)
 	}
 }

@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"os"
 
 	utils "github.com/OpenFinancing/openfinancing/utils"
@@ -20,15 +19,12 @@ func Encrypt(data []byte, passphrase string) ([]byte, error) {
 	block, _ := aes.NewCipher(key)
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
-		log.Println("Failed to initialize a new AES GCM while encrypting", err)
 		return data, err
 	}
 	nonce := make([]byte, gcm.NonceSize())
 	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
-		log.Println("Error while reading gcm bytes", err)
 		return data, err
 	}
-	log.Println("RANDOM ENCRYPTION NONCE IS: ", nonce)
 	ciphertext := gcm.Seal(nonce, nonce, data, nil)
 	return ciphertext, nil
 }
@@ -42,19 +38,16 @@ func Decrypt(data []byte, passphrase string) ([]byte, error) {
 	key := []byte(tempParam[96:128]) // last 32 characters in hash
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		log.Println("Error while initializing cipher decryption")
 		return data, err
 	}
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
-		log.Println("Failed to initialize a new AES GCM while decrypting")
 		return data, err
 	}
 	nonceSize := gcm.NonceSize()
 	nonce, ciphertext := data[:nonceSize], data[nonceSize:]
 	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
-		log.Println("Failed to open gcm while decrypting", err)
 		return plaintext, err
 	}
 	return plaintext, nil
@@ -62,9 +55,12 @@ func Decrypt(data []byte, passphrase string) ([]byte, error) {
 
 // EncryptFile encrypts a given file with the given passphrase
 func EncryptFile(filename string, data []byte, passphrase string) error {
-	f, _ := os.Create(filename)
+	f, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
 	defer f.Close()
-	data, err := Encrypt(data, passphrase)
+	data, err = Encrypt(data, passphrase)
 	if err != nil {
 		return err
 	}
