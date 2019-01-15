@@ -11,7 +11,6 @@ import (
 	"log"
 
 	database "github.com/OpenFinancing/openfinancing/database"
-	scan "github.com/OpenFinancing/openfinancing/scan"
 	utils "github.com/OpenFinancing/openfinancing/utils"
 	"github.com/boltdb/bolt"
 )
@@ -56,34 +55,6 @@ func NewOriginProject(project SolarParams, originator Entity) (SolarProject, err
 	return proposedProject, err
 }
 
-// FinalizeProject finalizes a specific project proposed by contractors and sets the
-// stage to three and allows investors to f ormally invest. Investors can technically
-// invest after stage 1.5 with something like seed funding, but this is the main funding part
-// we are looking towards
-// select a contract here directly so that we avoid the extra db lookup if we accepted index
-func FinalizeProject(project SolarProject) error {
-	// now we need to search using the project's location and size field since a contractor
-	// can not change that while proposing a contract
-	// retrieve all contracts and check
-	allProjectsDB, err := RetrieveAllProjects()
-	if err != nil {
-		return err
-	}
-	for _, dbProjects := range allProjectsDB {
-		if dbProjects.Params.Location == project.Params.Location && dbProjects.Params.PanelSize == project.Params.PanelSize {
-			// this is the contract whose stage we need ot upgrade and whose thing we must add to the contract
-			// TODO: weak check, should have something better here
-			dbProjects.Params = project.Params         // overwrite price related details
-			dbProjects.Contractor = project.Contractor // store the contractor for the given order
-			dbProjects.Guarantor = project.Guarantor   // add guarantor
-			dbProjects.SetFinalizedProject()           // set the stage to be open for investors
-			dbProjects.Save()                          // save in db
-			return nil
-		}
-	}
-	return fmt.Errorf("Finalized SolarProject not found in db")
-}
-
 // Save or Insert inserts a specific SolarProject into the database
 func (a *SolarProject) Save() error {
 	db, err := database.OpenDB()
@@ -95,7 +66,6 @@ func (a *SolarProject) Save() error {
 		b := tx.Bucket(database.ProjectsBucket)
 		encoded, err := json.Marshal(a)
 		if err != nil {
-			log.Println("Failed to encode this data into json")
 			return err
 		}
 		return b.Put([]byte(utils.ItoB(a.Params.Index)), encoded)
@@ -165,14 +135,11 @@ func RetrieveProjects(stage float64) ([]SolarProject, error) {
 			var rProject SolarProject
 			x := b.Get(utils.ItoB(i))
 			if x == nil {
-				// this is where the key does not exist
-				return nil
+				return nil // this is where the key does not exist, so we exit
 			}
 			err := json.Unmarshal(x, &rProject)
 			if err != nil {
-				// we've reached the end of input, so this is not an error
-				// ideal error would be "unexpected JSON input" or something similar
-				return nil
+				return err // error out on a json unmarshalling error
 			}
 			if rProject.Stage == stage {
 				// return contracts which have been originated and are not final yet
@@ -235,14 +202,11 @@ func RetrieveProjectsO(stage float64, index int) ([]SolarProject, error) {
 			var rProject SolarProject
 			x := b.Get(utils.ItoB(i))
 			if x == nil {
-				// this is where the key does not exist
 				return nil
 			}
 			err := json.Unmarshal(x, &rProject)
 			if err != nil {
-				// we've reached the end of input, so this is not an error
-				// ideal error would be "unexpected JSON input" or something similar
-				return nil
+				return err
 			}
 			if rProject.Stage == stage && rProject.Originator.U.Index == index {
 				// return contracts which have been originated and are not final yet
@@ -269,13 +233,10 @@ func RetrieveProjectsR(stage float64, index int) ([]SolarProject, error) {
 			var rProject SolarProject
 			x := b.Get(utils.ItoB(i))
 			if x == nil {
-				// this is where the key does not exist
 				return nil
 			}
 			err := json.Unmarshal(x, &rProject)
 			if err != nil {
-				// we've reached the end of input, so this is not an error
-				// ideal error would be "unexpected JSON input" or something similar
 				return nil
 			}
 			if rProject.Stage == stage && rProject.Params.ProjectRecipient.U.Index == index {
@@ -318,19 +279,17 @@ func FindInKey(key int, arr []SolarProject) (SolarProject, error) {
 	return dummy, fmt.Errorf("Not found")
 }
 
-func VoteTowardsProposedProject(a *database.Investor, allProposedProjects []SolarProject, vote int) error {
+func VoteTowardsProposedProject(a *database.Investor, votes int, index int) error {
 	// split the coting stuff into a separate function
 	// we need to go through the contractor's proposed projects to find an project
 	// with index pProjectN
+	allProposedProjects, err := RetrieveProjects(ProposedProject)
+	if err != nil {
+		return err
+	}
 	for _, elem := range allProposedProjects {
-		if elem.Params.Index == vote {
+		if elem.Params.Index == index {
 			// we have the specific contract and need to upgrade the number of votes on this one
-			fmt.Println("YOUR AVAILABLE VOTING BALANCE IS: ", a.VotingBalance)
-			fmt.Println("HOW MANY VOTES DO YOU WANT TO DELEGATE TOWARDS THIS ORDER?")
-			votes, err := scan.ScanForInt()
-			if err != nil {
-				return err
-			}
 			if votes > a.VotingBalance {
 				return fmt.Errorf("Can't vote with an amount greater than available balance")
 			}

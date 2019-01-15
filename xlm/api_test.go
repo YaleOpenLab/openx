@@ -41,5 +41,9 @@ func TestApi(t *testing.T) {
 	if x.ID != "8267f8beb7c461bbc00af5e153d0d28fdf332b2b21c421d8423a59b995c958b1" {
 		t.Fatal(err)
 	}
+	_, err = GetLatestBlockHash()
+	if err != nil {
+		t.Fatal(err)
+	}
 	//t.Fatal(hash)
 }

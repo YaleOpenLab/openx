@@ -109,4 +109,12 @@ func TestUtils(t *testing.T) {
 	if time.Now().Format(time.RFC850) != Timestamp() {
 		t.Fatalf("Timestamps don't match, quitting!")
 	}
+
+	if time.Now().Unix() != Unix() {
+		t.Fatalf("Timestamps don't match, quitting!")
+	}
+
+	if I64toS(123412341234) != "123412341234" {
+		t.Fatalf("I64 to string doesn't work, quitting!")
+	}
 }

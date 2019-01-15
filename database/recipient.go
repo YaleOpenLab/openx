@@ -4,7 +4,6 @@ package database
 // the struct itself.
 import (
 	"encoding/json"
-	"log"
 
 	utils "github.com/OpenFinancing/openfinancing/utils"
 	xlm "github.com/OpenFinancing/openfinancing/xlm"
@@ -44,7 +43,6 @@ func (a *Recipient) Save() error {
 		b := tx.Bucket(RecipientBucket)
 		encoded, err := json.Marshal(a)
 		if err != nil {
-			log.Println("Failed to encode this data into json")
 			return err
 		}
 		return b.Put([]byte(utils.ItoB(a.U.Index)), encoded)

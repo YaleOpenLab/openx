@@ -52,6 +52,40 @@ func TestXLM(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Wrong pubkey, shouldn't work!")
 	}
+	if AccountExists("blah") {
+		t.Fatalf("Dummy account exists, shouldn't!")
+	}
+	if !AccountExists(destPubKey) {
+		t.Fatalf("Account which should exist doesn't, quitting!")
+	}
+	_, testPubKey, err := GetKeyPair()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = RefillAccount(testPubKey, seed)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = RefillAccount("blah", seed)
+	if err == nil {
+		t.Fatal("Not catching wrong pubkey error, quitting!")
+	}
 	// don't test the reverse becuase apparently there's some problem in catching the next block
 	// or something
+	testseed, pk, err :=  GetKeyPair()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = GetXLM(pk)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, _, err = SendXLM(destPubKey, "9998", testseed, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = RefillAccount(pk, seed)
+	if err != nil {
+		t.Fatal(err)
+	}
 }

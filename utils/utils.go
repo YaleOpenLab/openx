@@ -63,13 +63,8 @@ func SHA3hash(inputString string) string {
 }
 
 func GetHomeDir() (string, error) {
-	var homedir string
 	usr, err := user.Current()
-	if err != nil {
-		return homedir, err
-	}
-	homedir = usr.HomeDir
-	return homedir, nil
+	return usr.HomeDir, err
 }
 
 func GetRandomString(n int) string {

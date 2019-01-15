@@ -14,6 +14,19 @@ import (
 func setupCoopRPCs() {
 	getCoopDetails()
 	InvestInCoop()
+	GetAllCoops()
+}
+
+func GetAllCoops() {
+	http.HandleFunc("/coop/all", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		allBonds, err := bonds.RetrieveAllBonds()
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+		MarshalSend(w, r, allBonds)
+	})
 }
 
 func getCoopDetails() {

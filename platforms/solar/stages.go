@@ -2,7 +2,6 @@ package solar
 
 import (
 	"fmt"
-	"log"
 )
 
 // TODO: get comments on the various stages involved here
@@ -68,14 +67,15 @@ func (a *SolarProject) SetPowerGenerationStage() error {
 	return a.Save()
 }
 
-func PromoteStage0To1Project(projects []SolarProject, index int) error {
+func PromoteStage0To1Project(index int) error {
 	// we need to upgrade the contract's whose index is contractIndex to stage 1
+	projects, err := RetrieveProjects(PreOriginProject)
+	if err != nil {
+		return err
+	}
 	for _, elem := range projects {
 		if elem.Params.Index == index {
-			// increase this contract's stage
-			log.Println("UPGRADING PROJECT INDEX", elem.Params.Index)
-			err := elem.SetOriginProject()
-			return err
+			return elem.SetOriginProject() // upgrade stage of this project
 		}
 	}
 	return fmt.Errorf("SolarProject not found, erroring!")
