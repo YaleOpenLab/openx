@@ -17,13 +17,14 @@ import (
 // go test --tags="all" -coverprofile=test.txt .
 func TestDb(t *testing.T) {
 	var err error
-	CreateHomeDir()
-	os.Remove(consts.DbDir + "/yol.db")
-	consts.DbDir = "blah"
+	CreateHomeDir()                     // create home directory if it doesn't exist yet
+	os.Remove(consts.DbDir + "/yol.db") // remove the database file, if it exists
+	consts.DbDir = "blah"               // set to a false db so that we can test errors arising from OpenDB()
 	_, err = OpenDB()
-	if err == nil {
+	if err == nil { // wrong dir, so should error out
 		t.Fatalf("Able to open database with wrong path")
 	}
+	// The following tests should fail because the db path is invalid and OpenDB() would fail
 	err = DeleteKeyFromBucket(1, UserBucket)
 	if err == nil {
 		t.Fatalf("Able to delete from database with wrong path")
@@ -83,11 +84,15 @@ func TestDb(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Able to validate user in database with wrong path")
 	}
-	consts.DbDir = os.Getenv("HOME") + "/.openfinancing/database"                                                    // the directory where the main assets of our platform are stored
-	err = os.MkdirAll(consts.DbDir, os.ModePerm)
+	// set the db directory back to normal so that we can test stuff which goes inside the db
+	consts.DbDir = os.Getenv("HOME") + "/.openfinancing/database"
+	err = os.MkdirAll(consts.DbDir, os.ModePerm) // create the db
 	if err != nil {
 		t.Fatal(err)
 	}
+	// we need to check if we error out while creating buckets. The only way to do that
+	// is to set the bucket names to an invalid string so that boltdb errors out and
+	// we try to catch that error. Bit ugly, but no other wya than setting and unsetting names
 	ProjectsBucket = []byte("")
 	x, err := OpenDB()
 	if err == nil {
@@ -136,6 +141,9 @@ func TestDb(t *testing.T) {
 		t.Fatalf("Invalid bucket name")
 	}
 	x.Close()
+	// even though we set the names back to their originals above, ahve this snippet
+	// here so that its easier to audit the tests without having to worry about
+	// typos while setting the bucket names back to what they were
 	CoopBucket = []byte("Coop")
 	ProjectsBucket = []byte("Projects")
 	InvestorBucket = []byte("Investors")
@@ -157,33 +165,29 @@ func TestDb(t *testing.T) {
 	if len(xc) != 1 {
 		t.Fatalf("ERROR!")
 	}
-
 	// try retrieving existing stuff
 	inv1, err := RetrieveInvestor(1)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if inv1.U.Name != "Investor1" {
-		log.Println("XC=", xc)
-		log.Println("INV1: ", inv1)
-		log.Println("INV", inv)
-		log.Println("INV INDEX: ", inv.U.Index)
-		t.Fatalf(string(inv1.U.Index))
+		t.Fatalf("Investor names don't match, quitting!")
 	}
 	// func NewRecipient(uname string, pwd string, seedpwd string, Name string) (Recipient, error) {
 	recp, err = NewRecipient("recipient1", "blah", "blah", "Recipient1")
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	rec1, err := RetrieveRecipient(recp.U.Index)
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	if rec1.U.Name != "Recipient1" {
-		t.Fatalf("Usernames don't match. quitting!")
+		t.Fatalf("Recipient usernames don't match. quitting!")
 	}
 
-	// func NewUser(uname string, pwd string, seedpwd string, Name string) (User, error) {
 	user, err = NewUser("user1", "blah", "blah", "User1")
 	if err != nil {
 		t.Fatal(err)
@@ -238,6 +242,7 @@ func TestDb(t *testing.T) {
 		t.Fatalf("Unknown users existing, quitting!")
 	}
 
+	// check if each of the validate functions work
 	_, err = ValidateInvestor("investor1", "ed2df20bb16ecb0b4b149cf8e7d9819afd608b22999e707364196187fca0cf38544c9f3eb981ad81cef18562e4c818370eab068992639af7d70488945265197f")
 	if err != nil {
 		t.Fatalf("Data in bucket morphed, quitting!")
@@ -268,6 +273,7 @@ func TestDb(t *testing.T) {
 		t.Fatalf("Data in bucket morphed, quitting!")
 	}
 
+	// check voting balance routes
 	voteBalance := inv.VotingBalance
 	err = inv.AddVotingBalance(10000)
 	if err != nil {
@@ -283,7 +289,8 @@ func TestDb(t *testing.T) {
 	if inv.VotingBalance-voteBalance != 0 {
 		t.Fatalf("Voting Balance not added, quitting!")
 	}
-	// func (a *Investor) CanInvest(balance string, targetBalance string) bool {
+
+	// check CanInvest Route
 	if inv.CanInvest("100", "1000") {
 		t.Fatalf("CanInvest Returns true!")
 	}
@@ -293,7 +300,6 @@ func TestDb(t *testing.T) {
 		t.Fatalf("Not able to generate keys, quitting!")
 	}
 
-	// func (a *User) GetSeed(seedpwd string) (string, error) {
 	_, err = user.GetSeed("blah")
 	if err != nil {
 		t.Fatal(err)
@@ -303,7 +309,10 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	// Create a new asset with the recipient's publickey
+
+	// check the asset functions below. For some weird reason, placing these tests
+	// above confuses the other routes, so placing everything here so that we can
+	// isolate them from the other routes.
 	err = xlm.GetXLM(recp.U.PublicKey)
 	if err != nil {
 		t.Fatal(err)

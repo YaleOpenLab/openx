@@ -34,9 +34,9 @@ func setupBasicHandlers() {
 }
 
 func WriteToHandler(w http.ResponseWriter, jsonString []byte) {
-	w.Header().Add("Access-Control-Allow-Origin", "localhost")
-	w.Header().Add("Access-Control-Allow-Methods", "GET")
-	w.Header().Add("Content-Type", "application/json")
+	w.Header().Add("Access-Control-Allow-Headers", "Accept, Authorization, Cache-Control, Content-Type");
+	w.Header().Add("Access-Control-Allow-Methods", "*");
+	w.Header().Add("Access-Control-Allow-Origin", "*")
 	w.Write(jsonString)
 }
 
@@ -50,9 +50,9 @@ func MarshalSend(w http.ResponseWriter, r *http.Request, x interface{}) {
 }
 
 func checkOrigin(w http.ResponseWriter, r *http.Request) {
-	if r.Header.Get("Origin") != "localhost" { // allow only our frontend UI to connect to our RPC instance
-		http.Error(w, "404 page not found", http.StatusNotFound)
-	}
+	// if r.Header.Get("Origin") != "localhost" { // allow only our frontend UI to connect to our RPC instance
+	// 	http.Error(w, "404 page not found", http.StatusNotFound)
+	// }
 }
 
 func checkGet(w http.ResponseWriter, r *http.Request) {

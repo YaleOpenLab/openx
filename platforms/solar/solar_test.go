@@ -253,9 +253,6 @@ func TestDb(t *testing.T) {
 		log.Println("Length of all Originated Projects: ", len(allOOs))
 		t.Fatalf("Length of all orignated projects doesn't match")
 	}
-	// can't test the payback stuff since we need the recipient to have funds and stuff
-	// maybe test the investor sending funds and stuff as well? but that's imported
-	// by main and we could have problems here related to that
 	project1.Index = 20
 	nOP, err := NewOriginProject(project1, newCE2)
 	if err != nil {

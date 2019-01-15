@@ -72,7 +72,7 @@ func TestXLM(t *testing.T) {
 	}
 	// don't test the reverse becuase apparently there's some problem in catching the next block
 	// or something
-	testseed, pk, err :=  GetKeyPair()
+	testseed, pk, err := GetKeyPair()
 	if err != nil {
 		t.Fatal(err)
 	}
