@@ -74,7 +74,9 @@ func PromoteStage0To1Project(index int) error {
 	if err != nil {
 		return err
 	}
+	fmt.Println("WE GET HERE", projects)
 	for _, elem := range projects {
+		fmt.Println("ELEM INDEX: ", elem.Params.Index)
 		if elem.Params.Index == index {
 			return elem.SetOriginProject() // upgrade stage of this project
 		}
