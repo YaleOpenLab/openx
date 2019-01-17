@@ -18,7 +18,8 @@ import (
 // 1. Pay the issuer in DEBTokens with whatever amount desired.
 // The oracle price of
 // electricity cost is a lower bound (since the government would not like it if people
-// default on their payments). Anything below the lower bound gets a warning in
+// default on their payments). (MW: Explain this lower bound and default issue more)
+// Anything below the lower bound gets a warning in
 // project for people to pay more, we could also have a threshold mechanism that says
 // if a person constantly defaults for more than half the owed amount for three
 // consecutive months, we sell power directly to the grid. THis could also be used
@@ -131,11 +132,13 @@ func Payback(a *database.Recipient, uContract SolarProject, assetName string, is
 // CalculatePayback is a TODO function that should simply sum the PBToken
 // balance and then return them to the frontend UI for a nice display
 func (project SolarProject) CalculatePayback(amount string) string {
-	// the idea is that we should be able ot pass an assetId to this function
+	// the idea is that we should be able to pass an assetId to this function
 	// and it must calculate how much time we have left for payback. For this example
-	// until twe do the db stuff, lets pass a few params (although this could be done
+	// until we do the db stuff, lets pass a few params (although this could be done
 	// separately as well).
 	// TODO: this functon needs to be the payback function
+	// Consider not only the PBTokens amount, but also the rate of solar generation or consumption per year
+	// (Eg. PBTokens are 10'000 and the rate/yrs is 2000, thus 5 years is the estimated bond maturity and payback remaining time)
 	amountF := utils.StoF(amount)
 	amountPB := (amountF / float64(project.Params.TotalValue)) * float64(project.Params.Years*12)
 	amountPBString := utils.FtoS(amountPB)

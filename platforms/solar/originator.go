@@ -6,6 +6,9 @@ import (
 	utils "github.com/OpenFinancing/openfinancing/utils"
 )
 
+// TODO: Describe Originators role and properties
+// This function is returns a new entity with the bool "originator" as true
+// TODO: Consider any other information needed for originators that should be added to the Users/Entities struct, or create a new struct altogether
 func NewOriginator(uname string, pwd string, seedpwd string, Name string, Address string, Description string) (Entity, error) {
 	return NewEntity(uname, pwd, seedpwd, Name, Address, Description, "originator")
 }

@@ -17,7 +17,9 @@ type Recipient struct {
 	// instead of storing the PaybackAssets and the DebtAssets, we store this
 	U User
 	// user related functions are called as an instance directly
-	// TODO: better name? idk
+	// TODO: Consider how effective the name 'recipient' is. Consider more information about recipients to add in the struct,
+	// For example, recipients should be associated to sites eligible for projects (eg. a building or land where you can put panels),
+	// (and eventually need to show proof of this)
 }
 
 func NewRecipient(uname string, pwd string, seedpwd string, Name string) (Recipient, error) {

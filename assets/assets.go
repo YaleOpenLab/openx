@@ -3,6 +3,8 @@
 // passed
 // the entities in the system are described in the README file and this part
 // will explain how the PBTokens, INVTokens and DEBTokens work.
+// TODO: Consider removing the name token here, since all it does is issuing receipts and proofs of transactions, to keep track of balances
+// Token is a word that has been eroded in the blockchain space
 // 1. INVToken - An INVToken is issued by the issuer for every USD that the investor
 // has invested in the contract. This peg needs to be ensured maybe in protocol
 // with stablecoins on Stellar or we need to provide an easy onboarding scheme
@@ -17,6 +19,8 @@
 // we issue a DEBToken to the recipient of the assets so that they can pay us back.
 // DEBTokens are also lunked with PBTokens and they should be immutable as well,
 // so that the issuer can not change the amount of debt at any point in the future.
+// MW: Mention that DEBTokens are not equal to INVTokens since there must be an interest %
+// that needs to be paid to investors, which is also part of the DEBToken
 // 3. PBToken - each PBToken denoted a month of appropriate payback. A month's worth
 // of payback is decided by the recipient, who decides the payback period of the
 // given assets at the time of creation. PBTokens are non-fungible, it means
@@ -27,12 +31,16 @@
 // authorization_required needs to be set and a party without a trustline with
 // the issuer can not trade in this asset (and ideally, the issuer will not accept
 // trustlines in this new asset)
+// MW: Consider that the PBTokens in general are not an arbitrary decision of the recipient
+// rather its set by an agreement of utility or rent payment, tied to the information from
+// from an IoT device (i.e a powermeter in the case of solar).
 // The hard part is ensuring that the assets are pegged to the USD in a stable way.
 // we could ensure the peg ourselves by accepting USD off chain, but that's not provable
 // on chain and the investor has to trust the issuer with that. Also, in this case,
 // anonymous investors wouldn't be able to invest, which is something that would be
 // nice to have
 // TODO: Add flags to assets, onboarding
+// INVAsset and PBAssets are names used because Stellar calls these receipts and proofs 'Assets,' and we are calling them tokens (for now).
 package assets
 
 import (
@@ -55,7 +63,7 @@ import (
 func AssetID(inputString string) string {
 	// so the assetID right now is a hash of the asset name, concatenated investor public keys and nonces
 	x := utils.SHA3hash(inputString)
-	return "YOL" + x[64:73] // max length of an asset in stellar is 12
+	return "YOL" + x[64:73] // max length of an asset in stellar is 12 (YOL: Yale Open Lab)
 	// log.Fatal(fmt.Errorf("All good"))
 	// return nil
 }

@@ -34,8 +34,8 @@ func setupBasicHandlers() {
 }
 
 func WriteToHandler(w http.ResponseWriter, jsonString []byte) {
-	w.Header().Add("Access-Control-Allow-Headers", "Accept, Authorization, Cache-Control, Content-Type");
-	w.Header().Add("Access-Control-Allow-Methods", "*");
+	w.Header().Add("Access-Control-Allow-Headers", "Accept, Authorization, Cache-Control, Content-Type")
+	w.Header().Add("Access-Control-Allow-Methods", "*")
 	w.Header().Add("Access-Control-Allow-Origin", "*")
 	w.Write(jsonString)
 }

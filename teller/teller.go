@@ -22,8 +22,18 @@ import (
 // Polling interval would be 5 minutes, 1440/5 = 288 updates a day
 // MW Is this the amount of calls from the rasberry pi per day? This might be too much.
 // Not sure what the colors here mean.
-// SHould this be what is listening to a protected MQTT channel?
+// Should this be what is listening to a protected MQTT channel?
 
+// Polling interval would be an arbitrary 5 minutes, 1440/5 = 288 updates a day. These would be the calls from the Rasberry Pi.
+// These are also calls over a protected MQTT channel and TLS.
+
+// TODO: Figure out how to tie the actual IoT device and its ID with the project that it belongs, the contract, recipient, and eg. person who installed it.
+// Consider doing this with IoT partners, eg. Atonomi.
+
+// Right now, the teller just does a tamper resistance (so no one can stop the teller system, or tamper with the code).
+// TODO: Improve description of what Teller does now considering the whole sub repo and its packages.
+
+// Teller has its own public key and seed, allowing the devices to have a fully defined address in the network.
 var PublicKey string
 var Seed string
 
