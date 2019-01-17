@@ -19,6 +19,8 @@ import (
 	flags "github.com/jessevdk/go-flags"
 )
 
+// test.go drives the CLI interface. Will be removed once we have a funcitoning frontend
+// that supplements the backend in an effective way.
 var opts struct {
 	// Slice of bool will append 'true' each time the option
 	// is encountered (can be set multiple times, like -vvv)

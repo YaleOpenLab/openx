@@ -14,6 +14,7 @@ func PrintProjects(projects []solar.SolarProject) {
 	}
 }
 
+// this function pretty prints out some stuff that we need in main.go
 func PrintProject(project solar.SolarProject) {
 	fmt.Println("          PROJECT INDEX: ", project.Params.Index)
 	fmt.Println("          Panel Size: ", project.Params.PanelSize)

@@ -13,20 +13,7 @@ import (
 	"github.com/stellar/go/build"
 )
 
-/*
-type BondCoopParams struct {
-	Index          int
-	MaturationDate string
-	MemberRights   string
-	SecurityType   string
-	InterestRate   float64
-	Rating         string
-	BondIssuer     string
-	Underwriter    string
-	DateInitiated  string // date the project was created
-	INVAssetCode   string
-}
-*/
+// the coop struct uses the same base params as the bond model
 type Coop struct {
 	Params         BondCoopParams
 	UnitsSold      int
@@ -36,6 +23,7 @@ type Coop struct {
 	Residents      []database.Investor
 }
 
+// NewCoop returns a new living coop and automatically saves it
 func NewCoop(mdate string, mrights string, stype string, intrate float64, rating string,
 	bIssuer string, uWriter string, totalAmount float64, typeOfUnit string, monthlyPayment float64,
 	title string, location string, description string) (Coop, error) {
@@ -73,7 +61,7 @@ func (a *Coop) Save() error {
 	return err
 }
 
-// RetrieveAllBonds gets a list of all User in the database
+// RetrieveAllCoops gets a list of all User in the database
 func RetrieveAllCoops() ([]Coop, error) {
 	var arr []Coop
 	db, err := database.OpenDB()
@@ -101,6 +89,7 @@ func RetrieveAllCoops() ([]Coop, error) {
 	return arr, err
 }
 
+// RetrieveCoop retrieves a specifi coop from the database
 func RetrieveCoop(key int) (Coop, error) {
 	var bond Coop
 	db, err := database.OpenDB()
@@ -120,29 +109,9 @@ func RetrieveCoop(key int) (Coop, error) {
 	return bond, err
 }
 
-/*
-type BondCoopParams struct {
-	Index          int
-	MaturationDate string
-	MemberRights   string
-	SecurityType   string
-	InterestRate   float64
-	Rating         string
-	BondIssuer     string
-	Underwriter    string
-	DateInitiated  string // date the project was created
-	INVAssetCode   string
-}
-type Coop struct {
-	Params         BondCoopParams
-	UnitsSold      int
-	TotalAmount    float64
-	TypeOfUnit     string
-	MonthlyPayment float64
-}
-*/
 // for the demo, the publickey and seed must be hardcoded and  given as a binary I guess
 // or worse, hardcode the seed and pubkey in the functions themselves
+// TODO: add the recipient's roles here
 func (a *Coop) Invest(issuerPublicKey string, issuerSeed string, investor *database.Investor,
 	investmentAmountS string, investorSeed string) error {
 	// we want to invest in this specific bond
