@@ -1,11 +1,9 @@
 package solar
 
-// entities defines a list of all the entities involved in the system like
-// investor, recipient, order, etc
-// how does a contract evolve into an order? or do we make contracts orders?
-// but we want people to be able to bid on contracts, so is it better having both
-// as a single entity? ask during call and confirm so that we can do stuff. Maybe
-// the "project" struct that we use now can be a child struct of the SolarProject struct
+// General Concept:
+// This can be applied as a feedback system to actors that are part of projects (i.e. relate to Entities.go, such as contractors).
+// It allows investors and recipients to give comment son the services provided by these entities in the project.
+// TODO: build and improve this functionality and consider a reputation system to score services.
 
 type Feedback struct {
 	Content string

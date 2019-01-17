@@ -4,6 +4,16 @@ import (
 	"fmt"
 )
 
+// Contract auctions are specific for public infrastructure and for projects with multiple stakeholders
+// where transparency is important. The main point is to avoid corruption and produce positive competition
+// among providers. When funding solar project using international investor money, transparency and auditability
+// to them is  also a crucial aspect since they are often not close to the project, and want to make sure there
+// is a tobust due diligence prior to unlocking the funds.
+
+// Different Auctions or Tenders are designed based on the nature of the project.
+// In general, the criteria for selection is price, technical quality (eg. hardware), engineering model, development time
+// and other perks offered by developers (eg. extra guarantees).
+
 // you need to have a lock in period beyond which contractors can not post what
 // stuff they want. now, how do you choose which contractor wins? Ideally,
 // the school would want the most stuff but you need to vet which contracts are good

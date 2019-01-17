@@ -2,7 +2,7 @@ package solar
 
 // the database package maintains read / write operations to the orderbook
 // we need an orderbook because there is no state on Stellar which makes it
-// difficult for us to store this on the blockchain. We use boltdb no since we don't
+// difficult for us to store this on the blockchain. We use boltdb now since we don't
 // do that much relational mapping, but in the case we need that, we can modify
 // this package to do that.
 import (
@@ -31,7 +31,7 @@ import (
 // SolarParams is also what's needed by the assets and other stuff whereas the other fields
 // are needed in other parts, another nice distinction
 type SolarProject struct {
-	Params SolarParams // Params is the former Order struct improted into the new SolarProject structure
+	Params SolarParams // Params is the former Order struct imported into the new SolarProject structure
 
 	Originator    Entity // a specific contract must hold the person who originated it
 	Contractor    Entity // the person with the proposed contract
@@ -73,6 +73,7 @@ func (a *SolarProject) Save() error {
 	return err
 }
 
+// MW: Improve the funcion names (i.e. Retrieve Project, AllProjects, Projects)
 // RetrieveProject retrieves the project with the specified index from the database
 func RetrieveProject(key int) (SolarProject, error) {
 	var inv SolarProject
@@ -255,6 +256,8 @@ func RetrieveProjectsR(stage float64, index int) ([]SolarProject, error) {
 // stages of a project
 func (project *SolarProject) RecipientAuthorizeContract(recipient database.Recipient) error {
 	if project.Params.ProjectRecipient.U.Name != recipient.U.Name {
+		// TODO: COnsider that for this authorization to happen, there could be a verification requirement (eg. that the project is relatively feasible),
+		// and that it may need several approvals for it (eg. Recipient can be two figures here —the school entity (more visible) and the department of education (more admin) who is the actual issuer)
 		return fmt.Errorf("You can't authorize a project which is not assigned to you!")
 	}
 	// set the project as both originated and ready for investors' money
@@ -269,6 +272,7 @@ func (project *SolarProject) RecipientAuthorizeContract(recipient database.Recip
 	return nil
 }
 
+// A function to find a project within an array of projects, given the key or index
 func FindInKey(key int, arr []SolarProject) (SolarProject, error) {
 	var dummy SolarProject
 	for _, elem := range arr {
