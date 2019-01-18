@@ -92,6 +92,7 @@ func newEntityHelper(uname string, pwd string, seedpwd string, Name string, Addr
 	case "guarantor":
 		a.Guarantor = true
 	default:
+		return a, fmt.Errorf("invalid entity passed!")
 		// nothing, since only we call this function internally, this shouldn't arrive here
 	}
 	err = a.Save()

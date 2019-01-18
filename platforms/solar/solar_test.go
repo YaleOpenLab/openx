@@ -7,6 +7,7 @@ import (
 	"os"
 	"testing"
 
+	consts "github.com/OpenFinancing/openfinancing/consts"
 	database "github.com/OpenFinancing/openfinancing/database"
 )
 
@@ -19,6 +20,78 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	oldDbDir := consts.DbDir
+	consts.DbDir = "blah" // set to a false db so that we can test errors arising from OpenDB()
+	x1, err := NewEntity("OrigTest", "pwd", "blah", "NameOrigTest", "123 ABC Street", "OrigDescription", "originator")
+	if err == nil {
+		t.Fatalf("Able to create entity with invalid db, quitting!")
+	}
+
+	_, err = x1.ProposeContract("100 16x32 panels", 28000, "Puerto Rico", 6, "LEED+ Gold rated panels and this is random data out of nowhere and we supply our own devs and provide insurance guarantee as well. Dual audit maintenance upto 1 year. Returns capped as per defaults", 1, 1)
+	// 1 for retrieving martin as the recipient and 1 is the project Index
+	if err == nil {
+		t.Fatalf("Able to propose contract with invalid db, quitting!")
+	}
+	_, err = x1.OriginContract("100 16x24 panels on a solar rooftop", 14000, "Puerto Rico", 5, "ABC School in XYZ peninsula", 1) // 1 is the index for martin
+	if err == nil {
+		t.Fatal("Able to originate contract with invalid db, quitting!")
+	}
+	err = PromoteStage0To1Project(1)
+	if err == nil {
+		t.Fatalf("Able to promote contract even with invalid db, quitting!")
+	}
+	var y1 SolarProject
+	err = y1.Save()
+	if err == nil {
+		t.Fatalf("Able to save file even though no db is present, quitting!")
+	}
+	_, err = RetrieveProject(1)
+	if err == nil {
+		t.Fatalf("Able to retrieve project with invalid db, quitting!")
+	}
+	_, err = RetrieveAllProjects()
+	if err == nil {
+		t.Fatalf("Able to retrieve projects with invalid db, quitting!")
+	}
+	_, err = RetrieveProjects(1)
+	if err == nil {
+		t.Fatalf("Able to retrieve stage projects with invalid db, quitting!")
+	}
+	_, err = RetrieveProjectsC(1, 1)
+	if err == nil {
+		t.Fatalf("Able to retrieve contractor projects with invalid db, quitting!")
+	}
+	_, err = RetrieveProjectsO(1, 1)
+	if err == nil {
+		t.Fatalf("Able to retrieve originated projects with invalid db, quitting!")
+	}
+	_, err = RetrieveProjectsR(1, 1)
+	if err == nil {
+		t.Fatalf("Able to retrieve recipient projects with invalid db, quitting!")
+	}
+	var xy1 database.Investor
+	err = VoteTowardsProposedProject(&xy1, 1, 1)
+	if err == nil {
+		t.Fatalf("Can vote towards a non existent proposed project, quitting!")
+	}
+	var xyz1 Entity
+	err = xyz1.Save()
+	if err == nil {
+		t.Fatalf("Can save entity which doesn't exist?")
+	}
+	_, err = RetrieveAllContractEntities("guarantor")
+	if err == nil {
+		t.Fatalf("Can retreive contract entities from invalid db, quitting!")
+	}
+	_, err = RetrieveEntity(1)
+	if err == nil {
+		t.Fatalf("Can retrieve entity in invalid db, quitting!")
+	}
+	_, err = SearchForEntity("invalid", "invalid")
+	if err == nil {
+		t.Fatalf("Can search for enttiy in invalid db, quitting!")
+	}
+	consts.DbDir = oldDbDir
 	db, err := database.OpenDB()
 	if err != nil {
 		t.Fatal(err)
@@ -39,7 +112,6 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	log.Println("INDEX IS: ", inv.U.Index)
 	recp, err := database.NewRecipient("user1", "blah", "blah", "cool")
 	if err != nil {
 		t.Fatal(err)
@@ -89,7 +161,6 @@ func TestDb(t *testing.T) {
 	if klx1.Params.Index != 0 {
 		t.Fatalf("REtrieved project which does not exist, quitting!")
 	}
-	log.Println("Retrieved project: ", project)
 	if project.Params.Index != dummy.Params.Index {
 		t.Fatalf("Indices don't match, quitting!")
 	}
@@ -108,7 +179,6 @@ func TestDb(t *testing.T) {
 	if projects[0].Params.Index != 1 {
 		t.Fatalf("Index of first element doesn't match, quitting!")
 	}
-	log.Println("Retrieved projects: ", projects)
 	oProjects, err := RetrieveProjects(OriginProject)
 	if err != nil {
 		log.Println("Retrieve all error: ", err)
@@ -123,7 +193,6 @@ func TestDb(t *testing.T) {
 		log.Println(err)
 		t.Errorf("Deleting an order from the db failed")
 	}
-	log.Println("Deleted project")
 	// err = DeleteProject(1000) this would work becuase the key will not be found and hence would not return an error
 	pp1, err := RetrieveProject(dummy.Params.Index)
 	if err == nil && pp1.Params.Index != 0 {
@@ -165,7 +234,10 @@ func TestDb(t *testing.T) {
 	if len(allOrigs) != 2 || allOrigs[0].U.Name != "NameOrigTest2" {
 		t.Fatal("Names don't match, quitting!")
 	}
-
+	_, err = RetrieveAllContractEntities("guarantor")
+	if err != nil {
+		t.Fatal(err)
+	}
 	allConts, err := RetrieveAllContractEntities("contractor")
 	if err != nil {
 		t.Fatal(err)
@@ -176,7 +248,7 @@ func TestDb(t *testing.T) {
 	_, err = newCE.ProposeContract("100 16x32 panels", 28000, "Puerto Rico", 6, "LEED+ Gold rated panels and this is random data out of nowhere and we supply our own devs and provide insurance guarantee as well. Dual audit maintenance upto 1 year. Returns capped as per defaults", recp.U.Index, 1)
 	// 1 for retrieving martin as the recipient and 1 is the project Index
 	if err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	}
 	_, err = newCE.ProposeContract("100 16x32 panels", 28000, "Puerto Rico", 6, "LEED+ Gold rated panels and this is random data out of nowhere and we supply our own devs and provide insurance guarantee as well. Dual audit maintenance upto 1 year. Returns capped as per defaults", 1000, 1)
 	// 1 for retrieving martin as the recipient and 1 is the project Index
@@ -234,40 +306,37 @@ func TestDb(t *testing.T) {
 	}
 	tmpx1, err := newCE2.OriginContract("100 16x24 panels on a solar rooftop", 14000, "Puerto Rico", 5, "ABC School in XYZ peninsula", recp.U.Index) // 1 is the index for martin
 	if err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	}
 	_, err = newCE2.OriginContract("100 16x24 panels on a solar rooftop", 14000, "Puerto Rico", 5, "ABC School in XYZ peninsula", 1000) // 1 is the index for martin
 	if err == nil {
 		t.Fatalf("Not quitting for invalid recipient index")
 	}
-	tmpx1.Stage = 1
+	tmpx1.Stage = 6
 	err = tmpx1.Save()
 	if err != nil {
 		t.Fatal(err)
 	}
-	allOOs, err := RetrieveProjects(OriginProject) // this checks for stage 1 and not zero like the thing installed above
+	allOOs, err := RetrieveProjects(6) // this checks for stage 1 and not zero like the thing installed above
 	if err != nil {
 		t.Fatal(err)
 	}
 	if len(allOOs) != 1 {
-		log.Println("Length of all Originated Projects: ", len(allOOs))
-		t.Fatalf("Length of all orignated projects doesn't match")
+		log.Println("Length of all Stage 6 Projects: ", len(allOOs))
+		t.Fatalf("Length of all stage 6 projects doesn't match")
 	}
-	project1.Index = 20
+	indexCheck, err := RetrieveAllProjects()
+	if err != nil {
+		t.Fatalf("Projects could not be retrieved!")
+	}
+	project1.Index = len(indexCheck) + 1
 	nOP, err := NewOriginProject(project1, newCE2)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = PromoteStage0To1Project(20)
-	if err == nil {
-		t.Fatalf("Able to promote project which doesn't exist!")
-	}
 	err = nOP.SetPreOriginProject()
 	if err != nil {
 		t.Fatal(err)
-	}
-	if nOP.Stage != 0 {
-		t.Fatalf("Stage doesn't match, quitting!")
 	}
 
 	err = nOP.SetLegalContractStage()
@@ -342,10 +411,13 @@ func TestDb(t *testing.T) {
 	if nOP.Stage != 0 {
 		t.Fatalf("Stage doesn't match, quitting!")
 	}
-
-	err = PromoteStage0To1Project(20)
+	err = PromoteStage0To1Project(1000)
 	if err == nil {
 		t.Fatalf("Able to promote project which doesn't exist!")
+	}
+	err = PromoteStage0To1Project(nOP.Params.Index)
+	if err != nil {
+		t.Fatal(err)
 	}
 	allO, err := RetrieveProjectsO(OriginProject, newCE2.U.Index)
 	if err != nil {
@@ -354,10 +426,6 @@ func TestDb(t *testing.T) {
 	if len(allO) != 1 {
 		t.Fatalf("Multiple originated orders when there should be only one")
 	}
-	allProposedProjects, err := RetrieveProjects(ProposedProject)
-	if err != nil {
-		t.Fatal(err)
-	}
 	err = inv.AddVotingBalance(1000)
 	if err != nil {
 		t.Fatal(err)
@@ -365,9 +433,6 @@ func TestDb(t *testing.T) {
 	err = nOP.SetProposedProject()
 	if err != nil {
 		t.Fatal(err)
-	}
-	for _, elem := range allProposedProjects {
-		log.Println("SETHIS: ", elem.Params.Index)
 	}
 	err = VoteTowardsProposedProject(&inv, 100, 2)
 	if err != nil {
@@ -407,6 +472,27 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	sc1, err := RetrieveAllProjects()
+	if err != nil {
+		t.Fatal(err)
+	}
+	/*
+	sc1[0]: YEARS: 3, PRICE: 14000
+	sc1[1]: YEARS: 6, PRICE: 28000
+	sc1[2]: YEARS: 5, PRICE: 14000
+	sc1[3]: YEARS: 3, PRICE: 14000
+	*/
+	var arrx []SolarProject // (6, 28000), (3, 14000)
+	arrx = append(arr, sc1[1])
+	arrx = append(arr, sc1[0])
+	_, err = SelectContractByTime(arrx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = SelectContractByPrice(arrx)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if x.Params.Index != nOP.Params.Index {
 		t.Fatalf("Indices don't match, quitting!")
 	}
@@ -416,6 +502,41 @@ func TestDb(t *testing.T) {
 	}
 	if y.Params.Index != nOP.Params.Index {
 		t.Fatalf("Indices don't match, quitting!")
+	}
+	_, err = NewEntity("OrigTest", "pwd", "blah", "NameOrigTest", "123 ABC Street", "OrigDescription", "developer")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = NewEntity("OrigTest", "pwd", "blah", "NameOrigTest", "123 ABC Street", "OrigDescription", "guarantor")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = NewEntity("OrigTest", "pwd", "blah", "NameOrigTest", "123 ABC Street", "OrigDescription", "invalid")
+	if err == nil {
+		t.Fatalf("Not able to catch invalid contractor error, quitting!")
+	}
+	_, err = RetrieveAllContractEntities("developer")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = RetrieveAllContractEntities("gurantor")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = SearchForEntity("name", "invalid")
+	if err == nil {
+		t.Fatalf("Not able to catch invalid entity error, quitting!")
+	}
+	// func Payback(a *database.Recipient, uContract SolarProject, assetName string, issuerPubkey string, amount string, seed string) error
+	var ax1 database.Recipient
+	var uContract SolarProject
+	err = Payback(&ax1, uContract, "", "", "", "")
+	if err == nil {
+		t.Fatal("Invalid params not caught, exiting!")
+	}
+	_, err = newEntityHelper("x", "x", "x", "x", "123 ABC Street", "x", "random")
+	if err == nil {
+		t.Fatalf("not able to catch invalid entity error")
 	}
 	os.Remove(os.Getenv("HOME") + "/.openfinancing/database/" + "/yol.db")
 }

@@ -13,6 +13,10 @@ import (
 	"github.com/stellar/go/build"
 )
 
+// TODO: change name of bonds to something better. Add description of the bond platform below
+
+// ConstructionBond contains the paramters for the COnstruciton Bond model of the housing platform
+// paramters defined here are not exhaustive and more can be added if desired
 type ConstructionBond struct {
 	Params BondCoopParams
 	// common set of params that we need for openfinancing
@@ -25,6 +29,8 @@ type ConstructionBond struct {
 	RecipientIndex int
 }
 
+// newParams defiens a common function for all the sub parts of the open housing platform. Can be thoguht
+// of more like a common subset on which paramters for different models are defined on
 func newParams(mdate string, mrights string, stype string, intrate float64, rating string,
 	bIssuer string, uWriter string, title string, location string, description string) BondCoopParams {
 	var rParams BondCoopParams
@@ -42,6 +48,7 @@ func newParams(mdate string, mrights string, stype string, intrate float64, rati
 	return rParams
 }
 
+// NewBond returns a New Construction Bond and automatically stores it in the db
 func NewBond(mdate string, mrights string, stype string, intrate float64, rating string,
 	bIssuer string, uWriter string, unitCost float64, itype string, nUnits int, tax string, recIndex int,
 	title string, location string, description string) (ConstructionBond, error) {
@@ -127,8 +134,8 @@ func RetrieveBond(key int) (ConstructionBond, error) {
 	return bond, err
 }
 
-// for the demo, the publickey and seed must be hardcoded and  given as a binary I guess
-// or worse, hardcode the seed and pubkey in the functions themselves
+// DEMOSPECIFIC: for the demo, the publickey and seed must be hardcoded and given as a binary I guess
+// or worse, hardcode the seed and pubkey in the functions themselves.
 func (a *ConstructionBond) Invest(issuerPublicKey string, issuerSeed string, investor *database.Investor,
 	recipient *database.Recipient, investmentAmountS string, investorSeed string, recipientSeed string) error {
 	// we want to invest in this specific bond

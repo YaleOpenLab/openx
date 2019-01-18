@@ -11,6 +11,8 @@ import (
 	xlm "github.com/OpenFinancing/openfinancing/xlm"
 )
 
+// this function contains some helper functions that call s tuff in various parts of
+// the program. This file itself is majorly used by main.go
 func ValidateInputs() {
 	if (opts.RecYears != 0) && !(opts.RecYears == 3 || opts.RecYears == 5 || opts.RecYears == 7) {
 		log.Fatal(fmt.Errorf("Number of years not supported"))

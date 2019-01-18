@@ -51,7 +51,8 @@ func NewOriginProject(project SolarParams, originator Entity) (SolarProject, err
 	var proposedProject SolarProject
 	proposedProject.Params = project
 	proposedProject.Originator = originator
-	err := proposedProject.SetOriginProject()
+	proposedProject.Stage = 1
+	err := proposedProject.Save()
 	return proposedProject, err
 }
 
@@ -129,21 +130,19 @@ func RetrieveProjects(stage float64) ([]SolarProject, error) {
 	}
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
-		// this is Update to cover the case where the  bucket doesn't exists and we're
-		// trying to retrieve a list of keys
 		b := tx.Bucket(database.ProjectsBucket)
 		for i := 1; ; i++ {
 			var rProject SolarProject
 			x := b.Get(utils.ItoB(i))
 			if x == nil {
-				return nil // this is where the key does not exist, so we exit
+				break
 			}
 			err := json.Unmarshal(x, &rProject)
 			if err != nil {
-				return err // error out on a json unmarshalling error
+				return err
 			}
+			// append only contracts which are open for funding and below
 			if rProject.Stage == stage {
-				// return contracts which have been originated and are not final yet
 				arr = append(arr, rProject)
 			}
 		}
@@ -291,12 +290,12 @@ func VoteTowardsProposedProject(a *database.Investor, votes int, index int) erro
 	if err != nil {
 		return err
 	}
+	if votes > a.VotingBalance {
+		return fmt.Errorf("Can't vote with an amount greater than available balance")
+	}
 	for _, elem := range allProposedProjects {
 		if elem.Params.Index == index {
 			// we have the specific contract and need to upgrade the number of votes on this one
-			if votes > a.VotingBalance {
-				return fmt.Errorf("Can't vote with an amount greater than available balance")
-			}
 			elem.Params.Votes += votes
 			err = elem.Save()
 			if err != nil {
@@ -307,7 +306,6 @@ func VoteTowardsProposedProject(a *database.Investor, votes int, index int) erro
 				return err
 			}
 			fmt.Println("CAST VOTE TOWARDS CONTRACT SUCCESSFULLY")
-			log.Println("FOUND CONTRACTOR!")
 			return nil
 		}
 	}
