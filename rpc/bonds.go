@@ -49,8 +49,6 @@ func InvestInBond() {
 			errorHandler(w, r, http.StatusNotFound)
 		}
 
-		// TODO: change that this is hardcoded, there must be a nicer way to do this
-		// maybe read from the seed and try to decrypt?
 		issuerSeed := "SBBYVEI4YNKZANRQEFH35U5GPEJ27MBLL7XHEKX5VC75QLJZWAXGX36Y"
 		issuerPk := "GAEY5TVFYWBIIHF7PQCQVNIFTNIF7QSG4IH27HRW3DH476RI4NA2BPV3"
 		_, err = xlm.GetNativeBalance(issuerPk)

@@ -38,15 +38,15 @@ func TestWallet(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Decrpytion succeeds with incorrect path")
 	}
-	pk, err := RetrievePubkey(seed, filepathdup, "password")
+	pk, err := RetrieveAndStorePubkey(seed, filepathdup, "password")
 	// this password is to store this file again, but we delete the file anyway
 	if err != nil {
 		t.Fatal(err)
 	}
 	if pk != pubkey {
-		t.Fatalf("RetrievePubkey returns the wrong pubkey, quitting!")
+		t.Fatalf("RetrieveAndStorePubkey returns the wrong pubkey, quitting!")
 	}
-	_, err = RetrievePubkey("blah", filepathdup, "password")
+	_, err = RetrieveAndStorePubkey("blah", filepathdup, "password")
 	// this password is to store this file again, but we delete the file anyway
 	if err == nil {
 		t.Fatal(err)

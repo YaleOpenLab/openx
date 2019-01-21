@@ -1,6 +1,6 @@
 package solar
 
-// TODO: add more paramters here that would help identify a given solar project
+// TODO: add more parameters here that would help identify a given solar project
 type SolarParams struct {
 	Index int // an Index to keep quick track of how many projects exist
 

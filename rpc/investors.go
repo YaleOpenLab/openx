@@ -58,7 +58,7 @@ func validateInvestor() {
 			errorHandler(w, r, http.StatusNotFound)
 			return
 		}
-		prepInvestor, err := database.ValidateInvestor(r.URL.Query()["LoginUserName"][0], r.URL.Query()["LoginPassword"][0]) // TODO: Change this
+		prepInvestor, err := database.ValidateInvestor(r.URL.Query()["LoginUserName"][0], r.URL.Query()["LoginPassword"][0])
 		if err != nil {
 			errorHandler(w, r, http.StatusNotFound)
 			return

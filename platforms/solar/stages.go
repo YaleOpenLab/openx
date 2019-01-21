@@ -1,7 +1,7 @@
 package solar
 
 import (
-	// "fmt"
+// "fmt"
 )
 
 var (

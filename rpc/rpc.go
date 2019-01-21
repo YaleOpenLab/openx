@@ -2,7 +2,6 @@ package rpc
 
 // the rpc package contains functions related to the server which will be interacting
 // with the frontend. Not expanding on this too much since this will be changing quite often
-// TODO: update RPC package in line with recent changes on master
 // also evaluate on how easy it would be to rewrite this in nodeJS since the
 // frontend is in react. Not many advantages per se and this works fine, so I guess
 // we'll stay with this one for a while

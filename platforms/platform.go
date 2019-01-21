@@ -63,13 +63,19 @@ func InitializePlatform() (string, string, error) {
 		if err != nil {
 			return publicKey, seed, err
 		}
-		publicKey, err = wallet.RetrievePubkey(seed, consts.PlatformSeedFile, password)
+		publicKey, err = wallet.RetrieveAndStorePubkey(seed, consts.PlatformSeedFile, password)
 		if err != nil {
 			log.Println(err)
 			return publicKey, seed, err
 		}
 	}
-	err = xlm.GetXLM(publicKey)
+	_ = xlm.GetXLM(publicKey) // the API request errors out even on success, so
+	// don't catch this error
+	_, txhash, err := xlm.SetPlatformFlags("1", seed)
+	log.Println("TX HASH FOR SETOPTIONS: ", txhash)
+	if err != nil {
+		log.Println("ERROR WHILE SETTING OPTIONS")
+	}
 	return publicKey, seed, err
 }
 

@@ -149,7 +149,7 @@ func (project Project) CalculatePayback(amount string) string {
 	// and it must calculate how much time we have left for payback. For this example
 	// until we do the db stuff, lets pass a few params (although this could be done
 	// separately as well).
-	// TODO: this functon needs to be the function which calls the oracle
+	// TODO: this function needs to be the function which calls the oracle
 	// Consider not only the PaybackAssets amount, but also the rate of solar generation or consumption per year
 	// (Eg. PaybackAssets are 10'000 and the rate/yrs is 2000, thus 5 years is the estimated bond maturity and payback remaining time)
 	amountF := utils.StoF(amount)

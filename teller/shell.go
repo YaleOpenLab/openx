@@ -65,8 +65,8 @@ func ParseInput(input []string) error {
 			// 1 XLM
 			// memo field restricted to 28 bytes - AAAAAAAAAAAAAAAAAAAAAAAAAAAA
 			// we can take the first 28 bytes of the hash and then feed it.
-			// TODO: we only have 56 bit security, but we the cost of breaking 56 bit security is higher
-			// than payment per month, so we should be good.
+			// we only have 56 bit security, but we e cost of breaking 56 bit security is higher
+			// than the payment required per month, so we should be good
 			x := utils.Timestamp()
 			shaHash := strings.ToUpper(utils.SHA3hash(x))
 			// we could ideally send the smallest amoutn of 1 stroop but stellar allows you to

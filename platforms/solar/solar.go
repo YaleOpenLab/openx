@@ -252,7 +252,7 @@ func VerifyBeforeAuthorizing(projIndex int) bool {
 	}
 	// print out the originator's name here. In the future, this would involve
 	// the kyc operator to check the originator's credentials
-	fmt.Printf("ORIGINATOR'S NAME IS: %s and PROJECT's METADATA IS: %s", project.Originator, project.Params.Metadata)
+	fmt.Printf("ORIGINATOR'S NAME IS: %s and PROJECT's METADATA IS: %s", project.Originator.U.Name, project.Params.Metadata)
 	return true
 }
 

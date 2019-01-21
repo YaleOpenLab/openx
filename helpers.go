@@ -219,7 +219,6 @@ func ProposeContractPrompt(contractor *solar.Entity) error {
 	if err != nil {
 		return err
 	}
-	// TODO: PRint CONTRACTS HERE
 	log.Println("YOUR CONTRACT IS: ")
 	PrintProject(rContract)
 	if rContract.Params.Index == 0 || rContract.Stage != 1 {

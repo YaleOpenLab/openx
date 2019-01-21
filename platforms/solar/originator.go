@@ -18,13 +18,13 @@ import (
 // TODO: Consider any other information needed for originators that should be added
 // to the Users/Entities struct, or create a new struct altogether
 func NewOriginator(uname string, pwd string, seedpwd string, Name string,
-		Address string, Description string) (Entity, error) {
+	Address string, Description string) (Entity, error) {
 	return newEntity(uname, pwd, seedpwd, Name, Address, Description, "originator")
 }
 
 // Originate creates and saves a new origin contract
 func (contractor *Entity) Originate(panelSize string, totalValue float64, location string,
-		years int, metadata string, recIndex int, auctionType string) (Project, error) {
+	years int, metadata string, recIndex int, auctionType string) (Project, error) {
 
 	var pc Project
 	var err error

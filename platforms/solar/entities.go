@@ -72,7 +72,7 @@ type Entity struct {
 	CollateralData []string
 	// the specific thing(s) which the contractor wants to hold as collateral described
 	// as a string (for eg, if a cash bond worht 5000 USD is held as collaterlal,
-// collateral would be set to 5000 USD and CollateralData would be "Cash Bond")
+	// collateral would be set to 5000 USD and CollateralData would be "Cash Bond")
 }
 
 func (a *Entity) Save() error {

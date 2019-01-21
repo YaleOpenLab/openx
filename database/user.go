@@ -189,7 +189,7 @@ func (a *User) GetSeed(seedpwd string) (string, error) {
 
 // CheckUsernameCollision checks if a username is available to a new user who
 // wants to signup on the platform
-func CheckUsernameCollision(uname string) (error) {
+func CheckUsernameCollision(uname string) error {
 	temp, err := RetrieveAllUsers()
 	if err != nil {
 		return err

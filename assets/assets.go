@@ -83,7 +83,8 @@ func TrustAsset(asset build.Asset, limit string, PublicKey string, Seed string) 
 // SendAsset transfers _amount_ number of assets from the caller to the destination
 // and returns an error if the destination doesn't have a trustline with the issuer
 // This method is called by the issuer of the asset
-func SendAssetFromIssuer(assetName string, destination string, amount string, issuerSeed string, issuerPubkey string) (int32, string, error) {
+func SendAssetFromIssuer(assetName string, destination string, amount string,
+	issuerSeed string, issuerPubkey string) (int32, string, error) {
 	// this transaction is FROM issuer TO recipient
 	paymentTx, err := build.Transaction(
 		build.SourceAccount{issuerPubkey},

@@ -26,16 +26,16 @@ func TestDb(t *testing.T) {
 		t.Fatalf("Able to create entity with invalid db, quitting!")
 	}
 
-	_, err = x1.Propose("100 16x32 panels", 28000, "Puerto Rico", 6, "LEED+ Gold rated panels and this is random data out of nowhere and we supply our own devs and provide insurance guarantee as well. Dual audit maintenance upto 1 year. Returns capped as per defaults", 1, 1)
+	_, err = x1.Propose("100 16x32 panels", 28000, "Puerto Rico", 6, "LEED+ Gold rated panels and this is random data out of nowhere and we supply our own devs and provide insurance guarantee as well. Dual audit maintenance upto 1 year. Returns capped as per defaults", 1, 1, "blind")
 	// 1 for retrieving martin as the recipient and 1 is the project Index
 	if err == nil {
 		t.Fatalf("Able to propose contract with invalid db, quitting!")
 	}
-	_, err = x1.Originate("100 16x24 panels on a solar rooftop", 14000, "Puerto Rico", 5, "ABC School in XYZ peninsula", 1) // 1 is the index for martin
+	_, err = x1.Originate("100 16x24 panels on a solar rooftop", 14000, "Puerto Rico", 5, "ABC School in XYZ peninsula", 1, "blind") // 1 is the index for martin
 	if err == nil {
 		t.Fatal("Able to originate contract with invalid db, quitting!")
 	}
-	err = PromoteStage0To1Project(1)
+	err = RecipientAuthorize(1, 1)
 	if err == nil {
 		t.Fatalf("Able to promote contract even with invalid db, quitting!")
 	}
@@ -85,10 +85,6 @@ func TestDb(t *testing.T) {
 	_, err = RetrieveEntity(1)
 	if err == nil {
 		t.Fatalf("Can retrieve entity in invalid db, quitting!")
-	}
-	_, err = SearchForEntity("invalid", "invalid")
-	if err == nil {
-		t.Fatalf("Can search for enttiy in invalid db, quitting!")
 	}
 	consts.DbDir = oldDbDir
 	db, err := database.OpenDB()
@@ -244,12 +240,12 @@ func TestDb(t *testing.T) {
 	if len(allConts) != 1 || allConts[0].U.Name != "NameConTest" {
 		t.Fatal("Names don't match, quitting!")
 	}
-	_, err = newCE.Propose("100 16x32 panels", 28000, "Puerto Rico", 6, "LEED+ Gold rated panels and this is random data out of nowhere and we supply our own devs and provide insurance guarantee as well. Dual audit maintenance upto 1 year. Returns capped as per defaults", recp.U.Index, 1)
+	_, err = newCE.Propose("100 16x32 panels", 28000, "Puerto Rico", 6, "LEED+ Gold rated panels and this is random data out of nowhere and we supply our own devs and provide insurance guarantee as well. Dual audit maintenance upto 1 year. Returns capped as per defaults", recp.U.Index, 1, "blind")
 	// 1 for retrieving martin as the recipient and 1 is the project Index
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = newCE.Propose("100 16x32 panels", 28000, "Puerto Rico", 6, "LEED+ Gold rated panels and this is random data out of nowhere and we supply our own devs and provide insurance guarantee as well. Dual audit maintenance upto 1 year. Returns capped as per defaults", 1000, 1)
+	_, err = newCE.Propose("100 16x32 panels", 28000, "Puerto Rico", 6, "LEED+ Gold rated panels and this is random data out of nowhere and we supply our own devs and provide insurance guarantee as well. Dual audit maintenance upto 1 year. Returns capped as per defaults", 1000, 1, "blind")
 	// 1 for retrieving martin as the recipient and 1 is the project Index
 	if err == nil {
 		t.Fatal("Able to retrieve non existent recipient, quitting!")
@@ -290,24 +286,15 @@ func TestDb(t *testing.T) {
 		t.Fatalf("Entity which should be missing exists!")
 	}
 
-	// newCE, err = newEntity("ConTest", "pwd", "NameConTest", "123 ABC Street", "ConDescription", "contractor")
-	rCE, err := SearchForEntity("ConTest", "9f88a8d40b90616715f868ed195d24e5df994f56bce34eddb022c213484eb0f220d8907e4ecd8f64ddd364cb30bb5758b32ee26541f340b930f7e5bf756907a4")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if rCE.Contractor != true {
-		log.Println("The role: ", rCE.Contractor, rCE)
-		t.Fatal("Roles don't match!")
-	}
 	trC1, err := RetrieveEntity(7)
 	if err != nil || trC1.U.Index == 0 {
 		t.Fatal("Project Entity lookup failed")
 	}
-	tmpx1, err := newCE2.Originate("100 16x24 panels on a solar rooftop", 14000, "Puerto Rico", 5, "ABC School in XYZ peninsula", recp.U.Index) // 1 is the index for martin
+	tmpx1, err := newCE2.Originate("100 16x24 panels on a solar rooftop", 14000, "Puerto Rico", 5, "ABC School in XYZ peninsula", recp.U.Index, "blind") // 1 is the index for martin
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = newCE2.Originate("100 16x24 panels on a solar rooftop", 14000, "Puerto Rico", 5, "ABC School in XYZ peninsula", 1000) // 1 is the index for martin
+	_, err = newCE2.Originate("100 16x24 panels on a solar rooftop", 14000, "Puerto Rico", 5, "ABC School in XYZ peninsula", 1000, "blind") // 1 is the index for martin
 	if err == nil {
 		t.Fatalf("Not quitting for invalid recipient index")
 	}
@@ -415,11 +402,7 @@ func TestDb(t *testing.T) {
 	if nOP.Stage != 0 {
 		t.Fatalf("Stage doesn't match, quitting!")
 	}
-	err = PromoteStage0To1Project(1000)
-	if err == nil {
-		t.Fatalf("Able to promote project which doesn't exist!")
-	}
-	err = PromoteStage0To1Project(nOP.Params.Index)
+	err = nOP.SetOriginProject()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -449,25 +432,21 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = RecipientAuthorize(nOP.Params.Index, recp) // again a placeholder for testing this function, not the flow itself
-	if err != nil {
-		t.Fatal(err)
-	}
 	chk := nOP.CalculatePayback("100")
 	if chk != "0.257143" {
 		t.Fatalf("Balance doesn't match , quitting!")
 	}
 	var arr []Project
-	x, err := SelectContractByPrice(arr)
+	x, err := SelectContractBlind(arr)
 	if err == nil {
 		t.Fatalf("Empty array returns choice")
 	}
-	y, err := SelectContractByTime(arr)
+	y, err := SelectContractTime(arr)
 	if err == nil {
 		t.Fatalf("Empty array returns choice")
 	}
 	arr = append(arr, nOP)
-	x, err = SelectContractByPrice(arr)
+	x, err = SelectContractBlind(arr)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -484,18 +463,18 @@ func TestDb(t *testing.T) {
 	var arrx []Project // (6, 28000), (3, 14000)
 	arrx = append(arr, sc1[1])
 	arrx = append(arr, sc1[0])
-	_, err = SelectContractByTime(arrx)
+	_, err = SelectContractTime(arrx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = SelectContractByPrice(arrx)
+	_, err = SelectContractBlind(arrx)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if x.Params.Index != nOP.Params.Index {
 		t.Fatalf("Indices don't match, quitting!")
 	}
-	y, err = SelectContractByTime(arr)
+	y, err = SelectContractTime(arr)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -521,10 +500,6 @@ func TestDb(t *testing.T) {
 	_, err = RetrieveAllEntities("gurantor")
 	if err != nil {
 		t.Fatal(err)
-	}
-	_, err = SearchForEntity("name", "invalid")
-	if err == nil {
-		t.Fatalf("Not able to catch invalid entity error, quitting!")
 	}
 	// func Payback(a *database.Recipient, project Project, assetName string, issuerPubkey string, amount string, seed string) error
 	err = Payback(1, 1, "", "", "", "", "")

@@ -100,7 +100,7 @@ func SelectContractTime(arr []Project) (Project, error) {
 
 func (project *Project) SetAuctionType(auctionType string) error {
 	// see https://en.wikipedia.org/wiki/Auction for primary auction types
-	switch(auctionType) {
+	switch auctionType {
 	case "blind":
 		project.AuctionType = "blind"
 	case "vickrey":
