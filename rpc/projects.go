@@ -45,7 +45,7 @@ func parseProject(r *http.Request) (solar.Project, error) {
 	}
 
 	prepProject.Params.PanelSize = r.FormValue("PanelSize")
-	prepProject.Params.TotalValue = utils.StoI(r.FormValue("TotalValue"))
+	prepProject.Params.TotalValue = utils.StoF(r.FormValue("TotalValue"))
 	prepProject.Params.Location = r.FormValue("Location")
 	prepProject.Params.Metadata = r.FormValue("Metadata")
 	prepProject.Stage = utils.StoF(r.FormValue("Stage"))

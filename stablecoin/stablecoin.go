@@ -5,16 +5,16 @@ package stablecoin
 // provider should be stored in a different database because we will not be migrating
 // this.
 
-// The idea is to issue a single USD token for every USD t hat we receive on our
+// The idea is to issue a single USD asset for every USD that we receive on our
 // account, this should be automated and we must not have any kind of user interaction that is in
 // place here. We also need a stablecoin Code, which we shall call as "STABLEUSD"
 // for easy reference. Most functions would be similar to the one in assets.go,
 // but need to be tailored to suit our requirements
 
-// the USD token defined here is what is issued by the speciifc bank. Ideally, we
+// the USD asset defined here is what is issued by the speciifc bank. Ideally, we
 // could accept a tx hash and check it as well, but since we can query balances,
 // much easier to do it this way.
-// or can be something like a stablecoin or token
+// or can be something like a stablecoin or asset
 import (
 	"context"
 	"fmt"
@@ -90,7 +90,6 @@ func ListenForPayments() {
 		/*
 			Sample Response:
 			Payment type payment
-			Payment Paging Token 5424212982374401
 			Payment From GC76MINOSNQUMDBNONBARFYFCCQA5QLNQSJOVANR5RNQVHQRB5B46B6I
 			Payment To GBAACP6UUXZAB5ZAYAHWEYLNKORWB36WVBZBXWNPFXQTDY2AIQFM6D7Y
 			Payment Asset Type native
@@ -102,7 +101,6 @@ func ListenForPayments() {
 		*/
 		log.Println("Stablecoin payment to/from detected")
 		log.Println("Payment type", payment.Type)
-		log.Println("Payment Paging Token", payment.PagingToken)
 		log.Println("Payment From", payment.From)
 		log.Println("Payment To", payment.To)
 		log.Println("Payment Asset Type", payment.AssetType)

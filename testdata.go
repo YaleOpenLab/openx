@@ -116,6 +116,7 @@ func InsertDummyData() error {
 	contract1.Contractor = c1
 	contract1.Originator = newOriginator
 	contract1.Stage = 3
+	contract1.AuctionType = "blind"
 	err = contract1.Save()
 	if err != nil {
 		return fmt.Errorf("Error inserting project into db")
@@ -137,6 +138,7 @@ func InsertDummyData() error {
 	contract2.Contractor = c1
 	contract2.Originator = newOriginator
 	contract2.Stage = 3
+	contract2.AuctionType = "blind"
 	err = contract2.Save()
 	if err != nil {
 		return fmt.Errorf("Error inserting project into db")
@@ -158,12 +160,13 @@ func InsertDummyData() error {
 	contract3.Contractor = c1
 	contract3.Originator = newOriginator
 	contract3.Stage = 3
+	contract3.AuctionType = "blind"
 	err = contract3.Save()
 	if err != nil {
 		return fmt.Errorf("Error inserting project into db")
 	}
 
-	pc, err := newOriginator.Originate("100 16x24 panels on a solar rooftop", 14000, "Puerto Rico", 5, "ABC School in XYZ peninsula", 1) // 1 is the idnex for martin
+	pc, err := newOriginator.Originate("100 16x24 panels on a solar rooftop", 14000, "Puerto Rico", 5, "ABC School in XYZ peninsula", 1, "blind") // 1 is the idnex for martin
 	if err != nil {
 		log.Fatal(err)
 	}

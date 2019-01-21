@@ -48,7 +48,7 @@ func RetrieveSeed(path string, password string) (string, string, error) {
 
 // RetrievePubkey restores the publicKey when passed a seed and stores the
 // seed in an encrypted format in the specified path
-func RetrievePubkey(seed string, path string, password string) (string, error) {
+func RetrieveAndStorePubkey(seed string, path string, password string) (string, error) {
 	var publicKey string
 	keyp, err := keypair.Parse(seed)
 	if err != nil {

@@ -100,7 +100,7 @@ func RetrieveAllUsers() ([]User, error) {
 	}
 	defer db.Close()
 
-	err = db.Update(func(tx *bolt.Tx) error {
+	err = db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket(UserBucket)
 		for i := 1; ; i++ {
 			var rUser User
@@ -127,11 +127,11 @@ func RetrieveUser(key int) (User, error) {
 		return inv, err
 	}
 	defer db.Close()
-	err = db.Update(func(tx *bolt.Tx) error {
+	err = db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket(UserBucket)
 		x := b.Get(utils.ItoB(key))
 		if x == nil {
-			return nil
+			return fmt.Errorf("Retrieved user nil, quitting!")
 		}
 		return json.Unmarshal(x, &inv)
 	})
@@ -150,17 +150,16 @@ func ValidateUser(name string, pwhash string) (User, error) {
 		return inv, err
 	}
 	defer db.Close()
-	err = db.Update(func(tx *bolt.Tx) error {
+	err = db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket(UserBucket)
 		for i := 1; i < limit; i++ {
 			var rUser User
 			x := b.Get(utils.ItoB(i))
-			// don't continue here since the check for username and pwhash will catch the sutff anyway
 			err := json.Unmarshal(x, &rUser)
 			if err != nil {
 				return err
 			}
-			// we have the User class, check names
+			// check names
 			if rUser.LoginUserName == name && rUser.LoginPassword == pwhash {
 				inv = rUser
 				return nil
@@ -186,4 +185,36 @@ func (a *User) GenKeys(seedpwd string) error {
 
 func (a *User) GetSeed(seedpwd string) (string, error) {
 	return wallet.DecryptSeed(a.EncryptedSeed, seedpwd)
+}
+
+// CheckUsernameCollision checks if a username is available to a new user who
+// wants to signup on the platform
+func CheckUsernameCollision(uname string) error {
+	temp, err := RetrieveAllUsers()
+	if err != nil {
+		return err
+	}
+	limit := len(temp) + 1
+	db, err := OpenDB()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	err = db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket(UserBucket)
+		for i := 1; i < limit; i++ {
+			var rUser User
+			x := b.Get(utils.ItoB(i))
+			err := json.Unmarshal(x, &rUser)
+			if err != nil {
+				return err
+			}
+			// check names
+			if rUser.LoginUserName == uname {
+				return fmt.Errorf("Username collision")
+			}
+		}
+		return nil
+	})
+	return err
 }

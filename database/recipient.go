@@ -18,11 +18,13 @@ type Recipient struct {
 	// instead of storing the PaybackAssets and the DebtAssets, we store this
 	U User
 	// user related functions are called as an instance directly
-	// TODO: Consider how effective the name 'recipient' is. Consider more information about recipients to add in the struct,
-	// For example, recipients should be associated to sites eligible for projects (eg. a building or land where you can put panels),
+	// TODO: Consider how effective the name 'recipient' is. Consider more information
+	// about recipients to add in the struct, For example, recipients should be associated
+	// to sites eligible for projects (eg. a building or land where you can put panels),
 	// (and eventually need to show proof of this)
 }
 
+// NewRecipient returns a new recipient provided with the function parameters
 func NewRecipient(uname string, pwd string, seedpwd string, Name string) (Recipient, error) {
 	var a Recipient
 	var err error
@@ -34,8 +36,7 @@ func NewRecipient(uname string, pwd string, seedpwd string, Name string) (Recipi
 	return a, err
 }
 
-// all operations are mostly similar to that of the Recipient class
-// TODO: merge where possible by adding an extra bucket param
+// Save() saves a given recipient's details
 func (a *Recipient) Save() error {
 	db, err := OpenDB()
 	if err != nil {
@@ -67,7 +68,7 @@ func RetrieveAllRecipients() ([]Recipient, error) {
 	}
 	defer db.Close()
 
-	err = db.Update(func(tx *bolt.Tx) error {
+	err = db.View(func(tx *bolt.Tx) error {
 		// this is Update to cover the case where the  bucket doesn't exists and we're
 		// trying to retrieve a list of keys
 		b := tx.Bucket(RecipientBucket)
@@ -80,11 +81,8 @@ func RetrieveAllRecipients() ([]Recipient, error) {
 				continue
 			}
 			err := json.Unmarshal(x, &rRecipient)
-			//if err != nil && rRecipient.Live == false {
 			if err != nil {
-				// we've reached the end of input, so this is not an error
-				// ideal error would be "unexpected JSON input" or something similar
-				return nil
+				return err
 			}
 			arr = append(arr, rRecipient)
 		}
@@ -93,6 +91,7 @@ func RetrieveAllRecipients() ([]Recipient, error) {
 	return arr, err
 }
 
+// RetrieveRecipient retrieves a specific recipient from the database
 func RetrieveRecipient(key int) (Recipient, error) {
 	var inv Recipient
 	db, err := OpenDB()
@@ -100,7 +99,7 @@ func RetrieveRecipient(key int) (Recipient, error) {
 		return inv, err
 	}
 	defer db.Close()
-	err = db.Update(func(tx *bolt.Tx) error {
+	err = db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket(RecipientBucket)
 		x := b.Get(utils.ItoB(key))
 		if x == nil {

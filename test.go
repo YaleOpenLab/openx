@@ -24,13 +24,10 @@ import (
 var opts struct {
 	// Slice of bool will append 'true' each time the option
 	// is encountered (can be set multiple times, like -vvv)
-	// TODO: define default values for each and then use them if not passed
-	Verbose []bool `short:"v" long:"verbose" description:"Show verbose debug information"`
-	// InvAmount int    `short:"i" description:"Desired investment" required:"true"`
-	InvAmount int `short:"i" description:"Desired investment"`
-	// RecYears  int    `short:"r" description:"Number of years the recipient wants to repay in. Can be 3, 5 or 7 years." required:"true"`
-	RecYears int    `short:"r" description:"Number of years the recipient wants to repay in. Can be 3, 5 or 7 years."`
-	Port     string `short:"p" description:"The port on which the server runs on"`
+	Verbose   []bool `short:"v" long:"verbose" description:"Show verbose debug information"`
+	InvAmount int    `short:"i" description:"Desired investment"`
+	RecYears  int    `short:"r" description:"Number of years the recipient wants to repay in. Can be 3, 5 or 7 years."`
+	Port      string `short:"p" description:"The port on which the server runs on"`
 }
 
 func main() {
@@ -43,47 +40,16 @@ func main() {
 	go rpc.StartServer("8080") // run as go routine for now
 	var investorSeed string
 	var recipientSeed string
-	/*
-		fmt.Println("WHICH PLATFORM WOULD YOU IKE TO ENTER INTO?")
-		fmt.Println("1. Platform of Contracts")
-		fmt.Println("1. Platform of Platforms")
-		platformArg, err := scan.ScanForInt()
-		if err != nil {
-			log.Fatal(err)
-		}
-		switch platformArg {
-		case 1:
-			fmt.Println("WELCOME TO THE PLATFORM OF CONTRACTS IDEA")
-			// the platform of contracts idea is the idea of having an open platform with
-			// various stakeholders and optimizing their game theoretic objectives. Specific
-			// conttracts coud emulate the function of platforms themselves but in this case,
-			// we handle all aspects of game theory within what we have and ecnourage people
-			// to tak part in the system.
-			// TODO: think of how to implement this in a nice way
-		case 2:
-			fmt.Println("WELCOME TO THE PLATFORM OF PLATFORMS IDEA")
-			// the platform of platforms idea is similar to what we want in the opensolar
-			// project where we can implement various partners as entities in the system
-			// TODO: emulate different partners in the system that we have now.
-		}
-	*/
 	// the memo field in stellar is particularly interesting for us wrt preserving state
 	// as shown in the preliminary pdf example. We need to test out whether we can commit
 	// more state in the memo field and find a way for third party clients to be able
 	// to replicate this state so that this is verifiable and not just an entry of state
 	// in the system.
-	// TODO: think of a reasonable way to hash the current state of the system with
-	// its hash in the memo field
-	// TODO: write a receiver that can be run on the client (electricity generation thing)
-	// which can relay the information out to us. We do need to create public and privatekey
-	// pairs on the device, this is something that atonomi does well, so maybe talk to them
-	// regarding this.
 	// instead of fetching data after it passes through a 3rd party, it would be nice if we could
 	// get the data and then pass it on to them since it has to interface with our smart contract
 	// which interfaces with stellar. This is easier if we have a stellar client running on local,
 	// but I think that would not be possible on a small device (or maybe too much work, idk)
 	// does it need a remote stellar node running?
-
 	platformPublicKey, platformSeed, err := StartPlatform()
 	if err != nil {
 		log.Fatal(err)
@@ -99,27 +65,13 @@ func main() {
 	// more suitable for a model like affordable housing.
 	// look into what kind of data we get from the pi and checkout pi specific code
 	// to see if we can get something from there.
-
-	// TODO: so the idea would be to split the current PoC into two parts, one
-	// focused on the platform of platform ideas and one on the platform of contracts
-	// ideas. The current implementation that we have is focused more on the platform
-	// of platforms idea, with ideas to integrate various partners at differnet stages
-	// to use their input in some parts, but we could do it in an automated way with
-	// assets and tokens for everything as well, which is similar to the platform
-	// of contracts idea.
-	// TODO: how do we emulate various partners? need to get input / have some stuff
-	// that we presume they do and then fill in the rest.
-	// also need to implement stages in contracts based on finalization
-	// need to integrate ipfs into the workflow so that we can store copies of the
-	// specific contract and then reference it when needed using the ipfs hash.
-	// need to start working on the base contract that connects investors and
-	// recipients and the investors and the platform. Need to transition automatically
-	// and also cover breach scenarios in case the recipient doesn't pay for a specific
-	// period of time
-	// TODO: upgrade the RPC to fit in with recent changes
+	// TODO: Need to automatically cover breach scenarios in case the recipient doesn't
+	// pay for a specific period of time
 	// TODO: also write a Makefile so that its easy for people to get started with stuff
 	// TODO: look into how flags are set and set flags on accounts - no documentation is around
 	// regarding this for go, so idk
+	// TODO: implement a dummy KYC inspector so that we can view what the role
+	// of that entity would be as well
 	fmt.Println("------------STELLAR HOUSE INVESTMENT CLI INTERFACE------------")
 
 	// init stablecoin stuff
@@ -189,7 +141,6 @@ func main() {
 				PrintRecipient(recipient)
 				break
 			case 3:
-				// TODO: migrate this to a contract model which is based off stages rather than using DBParams here
 				log.Println(recipient.ReceivedSolarProjects)
 				fmt.Println("WHICH PROJECT DO YOU WANT TO PAY BACK TOWARDS? (ENTER PROJECT NUMBER)")
 				projectNumber, err := scan.ScanForInt()
@@ -225,11 +176,11 @@ func main() {
 				// now we need to call back the payback function to payback the asset
 				// Here, we will simply payback the DEBTokens that was sent to us earlier
 				if rtContract.Params.DebtAssetCode == "" {
-					log.Fatal("Project not found")
+					log.Println("Project not found")
+					break
 				}
 
 				err = solar.Payback(recipient.U.Index, rtContract.Params.Index, rtContract.Params.DebtAssetCode, platformPublicKey, platformSeed, paybackAmount, recipientSeed)
-				// TODO: right now, the payback asset directly sends back, change
 				if err != nil {
 					log.Println("PAYBACK TX FAILED, PLEASE TRY AGAIN!")
 					break
@@ -251,14 +202,16 @@ func main() {
 			case 5:
 				allContracts, err := solar.RetrieveRecipientProjects(solar.ProposedProject, recipient.U.Index)
 				if err != nil {
-					log.Fatal(err)
+					log.Println(err)
+					continue
 				}
 				PrintProjects(allContracts)
 
 				fmt.Println("CHOOSE THE METRIC BY WHICH YOU WANT TO SELECT THE WINNING BID: ")
-				fmt.Println("1. PRICE")
+				fmt.Println("1. PRICE (BLIND)")
 				fmt.Println("2. COMPLETION TIME (IN YEARS)")
 				fmt.Println("3. SELECT MANUALLY")
+				fmt.Println("4. PRICE (VICKREY)")
 				fmt.Println("ENTER YOUR CHOICE AS A NUMBER (1 / 2 / 3)")
 				opt, err := scan.ScanForInt()
 				if err != nil {
@@ -272,12 +225,13 @@ func main() {
 				}
 				switch opt {
 				case 1:
-					fmt.Println("YOU'VE CHOSEN TO SELECT BY LEAST PRICE")
+					fmt.Println("YOU'VE CHOSEN TO SELECT BY BLIND AUCTION RULES")
 					// here we assume that the timeout period for the auction is up and that
 					// price is the winning metric of a specific bid, like in traditional contract
-					bestContract, err := solar.SelectContractByPrice(allContracts)
+					bestContract, err := solar.SelectContractBlind(allContracts)
 					if err != nil {
-						log.Fatal(err)
+						log.Println(err)
+						continue
 					}
 					log.Println("BEST CONTRACT IS: ")
 					// we need the contractor who proposed this contract
@@ -287,9 +241,10 @@ func main() {
 					// do we set a flag? db entry? how do we do that
 				case 2:
 					fmt.Println("YOU'VE CHOSEN TO SELECT BY NUMBER OF YEARS")
-					bestContract, err := solar.SelectContractByTime(allContracts)
+					bestContract, err := solar.SelectContractTime(allContracts)
 					if err != nil {
-						log.Fatal(err)
+						log.Println(err)
+						continue
 					}
 					log.Println("BEST CONTRACT IS: ")
 					bestContract.SetFinalizedProject()
@@ -309,6 +264,21 @@ func main() {
 					// we need the contractor who proposed this contract
 					allContracts[opt].SetFinalizedProject()
 					PrintProject(allContracts[opt])
+				case 4:
+					fmt.Println("YOU'VE CHOSEN TO SELECT BY VICKREY AUCTION RULES")
+					// here we assume that the timeout period for the auction is up and that
+					// price is the winning metric of a specific bid, like in traditional contract
+					bestContract, err := solar.SelectContractVickrey(allContracts)
+					if err != nil {
+						log.Println(err)
+						continue
+					}
+					log.Println("BEST CONTRACT IS: ")
+					// we need the contractor who proposed this contract
+					bestContract.SetFinalizedProject()
+					PrintProject(bestContract)
+					// now at this point, we need to mark this specific contract as completed.
+					// do we set a flag? db entry? how do we do that
 				default:
 					break
 				}
@@ -321,12 +291,12 @@ func main() {
 				}
 				PrintProjects(allMyProjects)
 				fmt.Println("ENTER THE PROJECT INDEX")
-				contractIndex, err := scan.ScanForInt()
+				projectIndex, err := scan.ScanForInt()
 				if err != nil {
 					log.Println(err)
 					continue
 				}
-				err = solar.PromoteStage0To1Project(contractIndex)
+				err = solar.RecipientAuthorize(projectIndex, recipient.U.Index)
 				if err != nil {
 					log.Println(err)
 					break
@@ -378,6 +348,7 @@ func main() {
 				fmt.Println("  2. VIEW PROFILE")
 				fmt.Println("  3. CREATE A PROPOSED (STAGE 2) PROJECT")
 				fmt.Println("  4. VIEW ALL MY PROPOSED (STAGE 2) PROJECTS")
+				fmt.Println("  5. CREATE NEW TYPE OF COLLATERAL")
 				optI, err := scan.ScanForInt()
 				if err != nil {
 					log.Println(err)
@@ -403,6 +374,26 @@ func main() {
 						continue
 					}
 					PrintProjects(allMyProjects)
+				case 5:
+					fmt.Println("YOU HAVE CHOSEN TO ADD A NEW TYPE OF COLLATERAL")
+					fmt.Println("Enter collateral amount")
+					colAmount, err := scan.ScanForFloat()
+					if err != nil {
+						fmt.Println(err)
+						continue
+					}
+					fmt.Println("Enter collateral data")
+					colData, err := scan.ScanForString()
+					if err != nil {
+						fmt.Println(err)
+						continue
+					}
+					err = contractor.AddCollateral(colAmount, colData)
+					if err != nil {
+						fmt.Println(err)
+						continue
+					}
+					fmt.Println("Please upload documents for verification with KYC inspector")
 				}
 			}
 		case 2:
@@ -529,7 +520,8 @@ func main() {
 
 				platformBalance, err := xlm.GetNativeBalance(platformPublicKey)
 				if err != nil {
-					log.Fatal(err)
+					log.Println(err)
+					break
 				}
 
 				// need the recipient's seed here as well
@@ -581,13 +573,15 @@ func main() {
 				// difficult to retrieve trustlines, so we'll go ahead with it
 				hash, err := assets.TrustAsset(stablecoin.StableUSD, consts.StablecoinTrustLimit, investor.U.PublicKey, investorSeed)
 				if err != nil {
-					log.Fatal(err)
+					log.Println(err)
+					break
 				}
 				log.Println("tx hash for trusting stableUSD: ", hash)
 				// now send coins across and see if our tracker detects it
 				_, hash, err = xlm.SendXLM(stablecoin.PublicKey, convAmount, investorSeed, "sending xlm to bootstrap")
 				if err != nil {
-					log.Fatal(err)
+					log.Println(err)
+					break
 				}
 
 				log.Println("tx hash for sent xlm: ", hash, "pubkey: ", investor.U.PublicKey)

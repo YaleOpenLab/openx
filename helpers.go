@@ -54,6 +54,11 @@ func NewUserPrompt() (string, string, string, string, error) {
 		return "", "", "", "", err
 	}
 
+	err = database.CheckUsernameCollision(loginUserName)
+	if err != nil {
+		fmt.Printf("%s", "username already taken, please choose a different one")
+		return "", "", "", "", fmt.Errorf("username already taken, please choose a different one")
+	}
 	fmt.Printf("%s: ", "ENTER DESIRED PASSWORD, YOU WILL NOT BE ASKED TO CONFIRM THIS")
 	loginPassword, err := scan.ScanForPassword()
 	if err != nil {
@@ -142,7 +147,6 @@ func LoginPrompt() (database.Investor, database.Recipient, solar.Entity, bool, b
 		fmt.Println("Couldn't read password")
 		return investor, recipient, contractor, rbool, cbool, err
 	}
-	log.Println("WATCH USER INDEX: ", user.Index)
 	if rbool {
 		recipient, err = database.RetrieveRecipient(user.Index)
 		if err != nil {
@@ -170,7 +174,7 @@ func OriginContractPrompt(contractor *solar.Entity) error {
 		return err
 	}
 	fmt.Println("ENTER THE COST OF PROJECT")
-	totalValue, err := scan.ScanForInt()
+	totalValue, err := scan.ScanForFloat()
 	if err != nil {
 		return err
 	}
@@ -194,7 +198,7 @@ func OriginContractPrompt(contractor *solar.Entity) error {
 	if err != nil {
 		return err
 	}
-	originContract, err := contractor.Originate(panelSize, totalValue, location, years, metadata, recIndex)
+	originContract, err := contractor.Originate(panelSize, totalValue, location, years, metadata, recIndex, "blind")
 	if err != nil {
 		return err
 	}
@@ -215,7 +219,6 @@ func ProposeContractPrompt(contractor *solar.Entity) error {
 	if err != nil {
 		return err
 	}
-	// TODO: PRint CONTRACTS HERE
 	log.Println("YOUR CONTRACT IS: ")
 	PrintProject(rContract)
 	if rContract.Params.Index == 0 || rContract.Stage != 1 {
@@ -225,7 +228,7 @@ func ProposeContractPrompt(contractor *solar.Entity) error {
 	panelSize := rContract.Params.PanelSize
 	location := rContract.Params.Location
 	fmt.Println("ENTER THE COST OF PROJECT")
-	totalValue, err := scan.ScanForInt()
+	totalValue, err := scan.ScanForFloat()
 	if err != nil {
 		return err
 	}
@@ -244,7 +247,7 @@ func ProposeContractPrompt(contractor *solar.Entity) error {
 	if err != nil {
 		return err
 	}
-	originContract, err := contractor.Propose(panelSize, totalValue, location, years, metadata, recIndex, contractIndex)
+	originContract, err := contractor.Propose(panelSize, totalValue, location, years, metadata, recIndex, contractIndex, "blind")
 	if err != nil {
 		return err
 	}

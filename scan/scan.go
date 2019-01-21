@@ -29,6 +29,18 @@ func ScanForInt() (int, error) {
 	return numI, nil
 }
 
+func ScanForFloat() (float64, error) {
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Scan()
+	if scanner.Err() != nil {
+		return -1, fmt.Errorf("Couldn't read user input")
+	}
+	num := scanner.Text()
+	x, err := strconv.ParseFloat(num, 32)
+	// ignore this error since we hopefully call this in the right place
+	return x, err
+}
+
 func ScanForString() (string, error) {
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Scan()

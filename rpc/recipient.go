@@ -77,7 +77,7 @@ func validateRecipient() {
 			return
 		}
 
-		prepRecipient, err := database.ValidateRecipient(r.URL.Query()["LoginUserName"][0], r.URL.Query()["LoginPassword"][0]) // TODO: change this
+		prepRecipient, err := database.ValidateRecipient(r.URL.Query()["LoginUserName"][0], r.URL.Query()["LoginPassword"][0])
 		if err != nil {
 			errorHandler(w, r, http.StatusNotFound)
 			return

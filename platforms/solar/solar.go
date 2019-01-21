@@ -19,7 +19,6 @@ import (
 // A contract has six Stages (right now an order has 6 stages and later both will be merged)
 // seed funding and seed assets are also TODOs, though investors can see the assets
 // now and can transfer funds if they really want to
-// TODO: propagate one transaction for ever major state change
 
 // A legal contract should ideally be stored on ipfs and we must keep track of the
 // ipfs hash so that we can retrieve it later when required
@@ -41,6 +40,7 @@ type Project struct {
 	ProjectRecipient database.Recipient
 	ProjectInvestors []database.Investor
 	Stage            float64 // the stage at which the contract is at, float due to potential support of 0.5 state changes in the future
+	AuctionType      string  // the type of the auction in question. Default is blind auction unless explicitly mentioned
 }
 
 // so a contract's rough workflow is like
@@ -72,11 +72,11 @@ func RetrieveProject(key int) (Project, error) {
 		return inv, err
 	}
 	defer db.Close()
-	err = db.Update(func(tx *bolt.Tx) error {
+	err = db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket(database.ProjectsBucket)
 		x := b.Get(utils.ItoB(key))
 		if x == nil {
-			return nil
+			return fmt.Errorf("Retrieved project nil")
 		}
 		return json.Unmarshal(x, &inv)
 	})
@@ -91,7 +91,7 @@ func RetrieveAllProjects() ([]Project, error) {
 		return arr, err
 	}
 	defer db.Close()
-	err = db.Update(func(tx *bolt.Tx) error {
+	err = db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket(database.ProjectsBucket)
 		for i := 1; ; i++ {
 			var rProject Project
@@ -118,7 +118,7 @@ func RetrieveProjectsAtStage(stage float64) ([]Project, error) {
 		return arr, err
 	}
 	defer db.Close()
-	err = db.Update(func(tx *bolt.Tx) error {
+	err = db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket(database.ProjectsBucket)
 		for i := 1; ; i++ {
 			var rProject Project
@@ -147,7 +147,7 @@ func RetrieveContractorProjects(stage float64, index int) ([]Project, error) {
 		return arr, err
 	}
 	defer db.Close()
-	err = db.Update(func(tx *bolt.Tx) error {
+	err = db.View(func(tx *bolt.Tx) error {
 		// this is Update to cover the case where the  bucket doesn't exists and we're
 		// trying to retrieve a list of keys
 		b := tx.Bucket(database.ProjectsBucket)
@@ -183,7 +183,7 @@ func RetrieveOriginatorProjects(stage float64, index int) ([]Project, error) {
 		return arr, err
 	}
 	defer db.Close()
-	err = db.Update(func(tx *bolt.Tx) error {
+	err = db.View(func(tx *bolt.Tx) error {
 		// this is Update to cover the case where the  bucket doesn't exists and we're
 		// trying to retrieve a list of keys
 		b := tx.Bucket(database.ProjectsBucket)
@@ -214,7 +214,7 @@ func RetrieveRecipientProjects(stage float64, index int) ([]Project, error) {
 		return arr, err
 	}
 	defer db.Close()
-	err = db.Update(func(tx *bolt.Tx) error {
+	err = db.View(func(tx *bolt.Tx) error {
 		// this is Update to cover the case where the  bucket doesn't exists and we're
 		// trying to retrieve a list of keys
 		b := tx.Bucket(database.ProjectsBucket)
@@ -238,18 +238,45 @@ func RetrieveRecipientProjects(stage float64, index int) ([]Project, error) {
 	return arr, err
 }
 
+// TODO: Consider that for this authorization to happen, there could be a
+// verification requirement (eg. that the project is relatively feasible),
+// and that it may need several approvals for it (eg. Recipient can be two
+// figures here — the school entity (more visible) and the department of
+// education (more admin) who is the actual issuer) along with a validation
+// requirement
+func VerifyBeforeAuthorizing(projIndex int) bool {
+	// here we verify some information related to the originator
+	project, err := RetrieveProject(projIndex)
+	if err != nil {
+		return false
+	}
+	// print out the originator's name here. In the future, this would involve
+	// the kyc operator to check the originator's credentials
+	fmt.Printf("ORIGINATOR'S NAME IS: %s and PROJECT's METADATA IS: %s", project.Originator.U.Name, project.Params.Metadata)
+	return true
+}
+
 // RecipientAuthorizeContract authorizes a specific project from the recipients side
 // if you already have the project and the recipient struct ready to pass.
 // this function is not used right now, but would be when we finalize the various
 // stages of a project
-func RecipientAuthorize(projIndex int, recipient database.Recipient) error {
+func RecipientAuthorize(projIndex int, recpIndex int) error {
 	project, err := RetrieveProject(projIndex)
 	if err != nil {
 		return err
 	}
+	if project.Params.Index != 0 { // project stage not at zero, shouldn't be called here
+		return fmt.Errorf("Project stage not zero")
+	}
+	if !VerifyBeforeAuthorizing(projIndex) {
+		// not verified, quit Here
+		return fmt.Errorf("Originator not verified")
+	}
+	recipient, err := database.RetrieveRecipient(recpIndex)
+	if err != nil {
+		return err
+	}
 	if project.ProjectRecipient.U.Name != recipient.U.Name {
-		// TODO: COnsider that for this authorization to happen, there could be a verification requirement (eg. that the project is relatively feasible),
-		// and that it may need several approvals for it (eg. Recipient can be two figures here —the school entity (more visible) and the department of education (more admin) who is the actual issuer)
 		return fmt.Errorf("You can't authorize a project which is not assigned to you!")
 	}
 	// set the project as both originated and ready for investors' money
@@ -257,10 +284,12 @@ func RecipientAuthorize(projIndex int, recipient database.Recipient) error {
 	if err != nil {
 		return err
 	}
-	err = project.SetOpenForMoneyStage()
-	if err != nil {
-		return err
-	}
+	/*
+		err = project.SetOpenForMoneyStage()
+		if err != nil {
+			return err
+		}
+	*/
 	return nil
 }
 

@@ -70,7 +70,7 @@ func RetrieveAllCoops() ([]Coop, error) {
 	}
 	defer db.Close()
 
-	err = db.Update(func(tx *bolt.Tx) error {
+	err = db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket(database.CoopBucket)
 		for i := 1; ; i++ {
 			var rCoop Coop
@@ -102,7 +102,7 @@ func RetrieveCoop(key int) (Coop, error) {
 		b := tx.Bucket(database.CoopBucket)
 		x := b.Get(utils.ItoB(key))
 		if x == nil {
-			return nil
+			return fmt.Errorf("Retrieved Coop nil")
 		}
 		return json.Unmarshal(x, &bond)
 	})
@@ -111,7 +111,7 @@ func RetrieveCoop(key int) (Coop, error) {
 
 // for the demo, the publickey and seed must be hardcoded and  given as a binary I guess
 // or worse, hardcode the seed and pubkey in the functions themselves
-// TODO: add the recipient's roles here
+// TODO: add the recipient's role here, whether to give him an asset or do nothing
 func (a *Coop) Invest(issuerPublicKey string, issuerSeed string, investor *database.Investor,
 	investmentAmountS string, investorSeed string) error {
 	// we want to invest in this specific bond
@@ -140,7 +140,7 @@ func (a *Coop) Invest(issuerPublicKey string, issuerSeed string, investor *datab
 	var INVAsset build.Asset
 	INVAsset.Code = a.Params.InvestorAssetCode
 	INVAsset.Issuer = issuerPublicKey
-	// make in v estor trust the asset that we provide
+	// make investor trust the asset that we provide
 	txHash, err := assets.TrustAsset(INVAsset, utils.FtoS(a.TotalAmount), investor.U.PublicKey, investorSeed)
 	// trust upto the total value of the asset
 	if err != nil {

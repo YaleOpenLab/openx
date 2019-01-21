@@ -12,9 +12,6 @@ import (
 
 // the contractor super struct comprises of various entities within it. Its a
 // super class because combining them results in less duplication of code
-// TODO: in some ways, the Name, LoginUserName and LoginPassword fields can be
-// devolved into a separate User struct, that would result in less duplication as
-// well
 type Entity struct {
 	// User defines common params such as name, seed, publickey
 	U database.User
@@ -67,6 +64,15 @@ type Entity struct {
 	// What kind of proof do we want from the company? KYC?
 	// maybe we could have a photo op like exchanges do these days, with the owner
 	// holding up his drivers' license or similar
+	Collateral float64
+	// the amount of collateral that the entity is willing to hold in case it reneges
+	// on a specific contract's details. This is an optional parameter but having collateral
+	// would increase investor confidence that a particular entity will keep its word
+	// regarding a particular contract.
+	CollateralData []string
+	// the specific thing(s) which the contractor wants to hold as collateral described
+	// as a string (for eg, if a cash bond worht 5000 USD is held as collaterlal,
+	// collateral would be set to 5000 USD and CollateralData would be "Cash Bond")
 }
 
 func (a *Entity) Save() error {
@@ -101,7 +107,7 @@ func RetrieveAllEntities(role string) ([]Entity, error) {
 	}
 	defer db.Close()
 
-	err = db.Update(func(tx *bolt.Tx) error {
+	err = db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket(database.ContractorBucket)
 		for i := 1; i < limit; i++ {
 			var rContractor Entity
@@ -149,52 +155,13 @@ func RetrieveEntity(key int) (Entity, error) {
 		return a, err
 	}
 	defer db.Close()
-	err = db.Update(func(tx *bolt.Tx) error {
+	err = db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket(database.ContractorBucket)
 		x := b.Get(utils.ItoB(key))
 		if x == nil {
-			return nil
+			return fmt.Errorf("Retrieving entity returns nil, quitting!")
 		}
 		return json.Unmarshal(x, &a)
-	})
-	return a, err
-}
-
-// search by username for login stuff
-// TODO: if two people have the same username, bolt defaults to the alst inserted
-// one. So we need to have a function that prevents username collisions
-func SearchForEntity(name string, pwhash string) (Entity, error) {
-	var a Entity
-	temp, err := database.RetrieveAllUsers()
-	if err != nil {
-		return a, err
-	}
-	limit := len(temp) + 1
-	db, err := database.OpenDB()
-	if err != nil {
-		return a, err
-	}
-	defer db.Close()
-	err = db.Update(func(tx *bolt.Tx) error {
-		// TODO: change all similar functions to db.View
-		b := tx.Bucket(database.ContractorBucket)
-		for i := 1; i < limit; i++ {
-			var rContractor Entity
-			x := b.Get(utils.ItoB(i))
-			if x == nil {
-				continue
-			}
-			err := json.Unmarshal(x, &rContractor)
-			if err != nil {
-				return nil
-			}
-			// we have the investor class, check names
-			if rContractor.U.LoginUserName == name && rContractor.U.LoginPassword == pwhash {
-				a = rContractor
-				return nil
-			}
-		}
-		return fmt.Errorf("Not Found")
 	})
 	return a, err
 }
