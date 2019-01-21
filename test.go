@@ -225,7 +225,8 @@ func main() {
 				// now we need to call back the payback function to payback the asset
 				// Here, we will simply payback the DEBTokens that was sent to us earlier
 				if rtContract.Params.DebtAssetCode == "" {
-					log.Fatal("Project not found")
+					log.Println("Project not found")
+					break
 				}
 
 				err = solar.Payback(recipient.U.Index, rtContract.Params.Index, rtContract.Params.DebtAssetCode, platformPublicKey, platformSeed, paybackAmount, recipientSeed)
@@ -251,14 +252,16 @@ func main() {
 			case 5:
 				allContracts, err := solar.RetrieveRecipientProjects(solar.ProposedProject, recipient.U.Index)
 				if err != nil {
-					log.Fatal(err)
+					log.Println(err)
+					continue
 				}
 				PrintProjects(allContracts)
 
 				fmt.Println("CHOOSE THE METRIC BY WHICH YOU WANT TO SELECT THE WINNING BID: ")
-				fmt.Println("1. PRICE")
+				fmt.Println("1. PRICE (BLIND)")
 				fmt.Println("2. COMPLETION TIME (IN YEARS)")
 				fmt.Println("3. SELECT MANUALLY")
+				fmt.Println("4. PRICE (VICKREY)")
 				fmt.Println("ENTER YOUR CHOICE AS A NUMBER (1 / 2 / 3)")
 				opt, err := scan.ScanForInt()
 				if err != nil {
@@ -272,12 +275,13 @@ func main() {
 				}
 				switch opt {
 				case 1:
-					fmt.Println("YOU'VE CHOSEN TO SELECT BY LEAST PRICE")
+					fmt.Println("YOU'VE CHOSEN TO SELECT BY BLIND AUCTION RULES")
 					// here we assume that the timeout period for the auction is up and that
 					// price is the winning metric of a specific bid, like in traditional contract
-					bestContract, err := solar.SelectContractByPrice(allContracts)
+					bestContract, err := solar.SelectContractBlind(allContracts)
 					if err != nil {
-						log.Fatal(err)
+						log.Println(err)
+						continue
 					}
 					log.Println("BEST CONTRACT IS: ")
 					// we need the contractor who proposed this contract
@@ -287,9 +291,10 @@ func main() {
 					// do we set a flag? db entry? how do we do that
 				case 2:
 					fmt.Println("YOU'VE CHOSEN TO SELECT BY NUMBER OF YEARS")
-					bestContract, err := solar.SelectContractByTime(allContracts)
+					bestContract, err := solar.SelectContractTime(allContracts)
 					if err != nil {
-						log.Fatal(err)
+						log.Println(err)
+						continue
 					}
 					log.Println("BEST CONTRACT IS: ")
 					bestContract.SetFinalizedProject()
@@ -309,6 +314,21 @@ func main() {
 					// we need the contractor who proposed this contract
 					allContracts[opt].SetFinalizedProject()
 					PrintProject(allContracts[opt])
+				case 4:
+					fmt.Println("YOU'VE CHOSEN TO SELECT BY VICKREY AUCTION RULES")
+					// here we assume that the timeout period for the auction is up and that
+					// price is the winning metric of a specific bid, like in traditional contract
+					bestContract, err := solar.SelectContractVickrey(allContracts)
+					if err != nil {
+						log.Println(err)
+						continue
+					}
+					log.Println("BEST CONTRACT IS: ")
+					// we need the contractor who proposed this contract
+					bestContract.SetFinalizedProject()
+					PrintProject(bestContract)
+					// now at this point, we need to mark this specific contract as completed.
+					// do we set a flag? db entry? how do we do that
 				default:
 					break
 				}
@@ -321,12 +341,12 @@ func main() {
 				}
 				PrintProjects(allMyProjects)
 				fmt.Println("ENTER THE PROJECT INDEX")
-				contractIndex, err := scan.ScanForInt()
+				projectIndex, err := scan.ScanForInt()
 				if err != nil {
 					log.Println(err)
 					continue
 				}
-				err = solar.PromoteStage0To1Project(contractIndex)
+				err = solar.RecipientAuthorize(projectIndex, recipient.U.Index)
 				if err != nil {
 					log.Println(err)
 					break
@@ -378,6 +398,7 @@ func main() {
 				fmt.Println("  2. VIEW PROFILE")
 				fmt.Println("  3. CREATE A PROPOSED (STAGE 2) PROJECT")
 				fmt.Println("  4. VIEW ALL MY PROPOSED (STAGE 2) PROJECTS")
+				fmt.Println("  5. CREATE NEW TYPE OF COLLATERAL")
 				optI, err := scan.ScanForInt()
 				if err != nil {
 					log.Println(err)
@@ -403,6 +424,28 @@ func main() {
 						continue
 					}
 					PrintProjects(allMyProjects)
+				case 5:
+					fmt.Println("YOU HAVE CHOSEN TO ADD A NEW TYPE OF COLLATERAL")
+					fmt.Println("Enter collateral amount")
+					colAmount, err := scan.ScanForFloat()
+					if err != nil {
+						fmt.Println(err)
+						continue
+					}
+					fmt.Println("Enter collateral data")
+					colData, err := scan.ScanForString()
+					if err != nil {
+						fmt.Println(err)
+						continue
+					}
+					err = contractor.AddCollateral(colAmount, colData)
+					if err != nil {
+						fmt.Println(err)
+						continue
+					}
+					fmt.Println("Please upload documents for verification with KYC inspector")
+					// TODO: implement a dummy KYC inspector so that we can view what the role
+					// of that entity would be as well
 				}
 			}
 		case 2:
@@ -529,7 +572,8 @@ func main() {
 
 				platformBalance, err := xlm.GetNativeBalance(platformPublicKey)
 				if err != nil {
-					log.Fatal(err)
+					log.Println(err)
+					break
 				}
 
 				// need the recipient's seed here as well
@@ -581,13 +625,15 @@ func main() {
 				// difficult to retrieve trustlines, so we'll go ahead with it
 				hash, err := assets.TrustAsset(stablecoin.StableUSD, consts.StablecoinTrustLimit, investor.U.PublicKey, investorSeed)
 				if err != nil {
-					log.Fatal(err)
+					log.Println(err)
+					break
 				}
 				log.Println("tx hash for trusting stableUSD: ", hash)
 				// now send coins across and see if our tracker detects it
 				_, hash, err = xlm.SendXLM(stablecoin.PublicKey, convAmount, investorSeed, "sending xlm to bootstrap")
 				if err != nil {
-					log.Fatal(err)
+					log.Println(err)
+					break
 				}
 
 				log.Println("tx hash for sent xlm: ", hash, "pubkey: ", investor.U.PublicKey)

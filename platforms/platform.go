@@ -12,7 +12,10 @@ import (
 	xlm "github.com/OpenFinancing/openfinancing/xlm"
 )
 
-// TODO: Describe what the platform entity is and what it does here.
+// the platform structure is the backend representation of the frontend UI.
+// on a very low level, this should just be a pubkey + seed pair. Each platform
+// needs to be hosted somewhere, so it is necessary that each platform should have
+// its own pubkey and seed pair
 // InitializePlatform returns the platform publickey and seed
 func InitializePlatform() (string, string, error) {
 	var publicKey string

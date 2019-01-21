@@ -33,7 +33,9 @@ func checkPost(w http.ResponseWriter, r *http.Request) {
 
 func errorHandler(w http.ResponseWriter, r *http.Request, status int) {
 	w.WriteHeader(status)
-	// TODO, tweak this part
+	// don't return custom error methods for now. In the future once we define what
+	// we need to communicate with the frontend, we can have custom error handlers
+	// which are cooler
 	if status == http.StatusNotFound {
 		fmt.Fprint(w, "Invalid request params")
 	}

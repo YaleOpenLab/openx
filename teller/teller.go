@@ -27,7 +27,8 @@ import (
 // Polling interval would be an arbitrary 5 minutes, 1440/5 = 288 updates a day. These would be the calls from the Rasberry Pi.
 // These are also calls over a protected MQTT channel and TLS.
 
-// TODO: Figure out how to tie the actual IoT device and its ID with the project that it belongs, the contract, recipient, and eg. person who installed it.
+// TODO: Figure out how to tie the actual IoT device and its ID with the project
+// that it belongs, the contract, recipient, and eg. person who installed it.
 // Consider doing this with IoT partners, eg. Atonomi.
 
 // Right now, the teller just does a tamper resistance (so no one can stop the teller system, or tamper with the code).

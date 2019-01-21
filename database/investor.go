@@ -35,7 +35,8 @@ type Investor struct {
 	// linking it here for now
 	U User
 	// user related functions are called as an instance directly
-	// TODO: Consider other information and fields required by the investor struct, eg. like name, unique ID, metadata
+	// TODO: Consider other information and fields required by the investor struct,
+	// eg. like unique ID, metadata
 	// TODO: Consider the banking onboarding problem (see notes in Anchor.md and define general banking strategy)
 }
 
@@ -72,12 +73,6 @@ func (a *Investor) Save() error {
 			return err
 		}
 		return b.Put([]byte(utils.ItoB(a.U.Index)), encoded)
-		// but why do we index based on Index?
-		// this is because we do want to enumerate through all investors, which can not be done
-		// in a name based construction. But this makes search harder, since now you
-		// all entries to find something as simple as a password.
-		// TODO: discuss indexing by pwd hash and implications. For small no of entries,
-		// we can s till tierate over all the entries.
 	})
 	return err
 }
@@ -90,7 +85,7 @@ func RetrieveInvestor(key int) (Investor, error) {
 		return inv, err
 	}
 	defer db.Close()
-	err = db.Update(func(tx *bolt.Tx) error {
+	err = db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket(InvestorBucket)
 		x := b.Get(utils.ItoB(key))
 		if x == nil {
@@ -118,20 +113,19 @@ func RetrieveAllInvestors() ([]Investor, error) {
 	}
 	defer db.Close()
 
-	err = db.Update(func(tx *bolt.Tx) error {
+	err = db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket(InvestorBucket)
 		for i := 1; i < limit; i++ {
 			var rInvestor Investor
 			x := b.Get(utils.ItoB(i))
 			if x == nil {
-				// this is where the key does not exist
+				// this is where the key does not exist, we search until limit, so don't error out
 				continue
 			}
 			err := json.Unmarshal(x, &rInvestor)
 			if err != nil {
-				// we've reached the end of input, so this is not an error
-				// ideal error would be "unexpected JSON input" or something similar
-				return nil
+				// error in unmarshalling this struct, error out
+				return err
 			}
 			arr = append(arr, rInvestor)
 		}
@@ -152,10 +146,8 @@ func ValidateInvestor(name string, pwhash string) (Investor, error) {
 }
 
 func (a *Investor) DeductVotingBalance(votes int) error {
-	// TODO: we need to update the voting balance often in accordance with the stablecoin
-	// balance or a user will have way less votes. This needs an aadditional field
-	// in the db to track past balance and then adjust the amoutn of votes he has
-	// accordingly
+	// maybe once the user can presses the vote button manually, we can fetch balance
+	// and show him available votes onthe frontend
 	a.VotingBalance -= votes
 	return a.Save()
 }
@@ -163,13 +155,12 @@ func (a *Investor) DeductVotingBalance(votes int) error {
 func (a *Investor) AddVotingBalance(votes int) error {
 	// this function is caled when we want to refund the user with the votes once
 	// an order has been finalized.
-	// TODO: use this
 	a.VotingBalance += votes
 	return a.Save()
 }
 
-// TrustAsset creates a trustline from the investor towards the specific asset (eg. INVToken)
-// and asset issuer (i.e. the platform) with a _limit_ set on the maximum amount of tokens that can be sent
+// TrustAsset creates a trustline from the investor towards the specific asset (eg. InvestorAsset)
+// and asset issuer (i.e. the platform) with a _limit_ set on the maximum amount of assets that can be sent
 // through the trust channel. Each trustline costs 0.5XLM.
 func (a *Investor) TrustAsset(asset build.Asset, limit string, seed string) (string, error) {
 	return assets.TrustAsset(asset, limit, a.U.PublicKey, seed)

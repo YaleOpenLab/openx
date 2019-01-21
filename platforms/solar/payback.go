@@ -10,12 +10,12 @@ import (
 	xlm "github.com/OpenFinancing/openfinancing/xlm"
 )
 
-// Payback is called when the receiver of the DEBToken wants to pay a fixed amount
-// of money back to the issuer of the DEBTokens. One way to imagine this would be
+// Payback is called when the receiver of the DebtAsset wants to pay a fixed amount
+// of money back to the issuer of the DebtAssets. One way to imagine this would be
 // like an electricity bill, something that people pay monthly but only that in this
 // case, the electricity is free, so they pay directly towards the solar panels.
 // The process of Payback roughly involves the followign steps:
-// 1. Pay the issuer in DEBTokens with whatever amount desired.
+// 1. Pay the issuer in DebtAssets with whatever amount desired.
 // The oracle price of
 // electricity cost is a lower bound (since the government would not like it if people
 // default on their payments). (MW: Explain this lower bound and default issue more)
@@ -26,12 +26,12 @@ import (
 // for a rating system, where the frontend UI can have a rating based on whether
 // the recipient has defaulted or not in the past.
 // 2. The receiver checks whether the amount is greater than Oracle Threshold and
-// if so, sends back PBTokens, which stand for the month equivalent of payments.
+// if so, sends back PaybackAssets, which stand for the month equivalent of payments.
 // eg. the school has opted for a 5 year payback period, the school owes the issuer
-// 60 PBTokens and the issuer sends back 1PBToken every month if the school pays
-// invested_amount/60 DEBTokens back to the issuer
-// 3. The recipient checks whether the PBTokens received correlate to the amount
-// that it sent and if not, raises the dispute since the forward DEBToken payment
+// 60 PaybackAssets and the issuer sends back 1PaybackAsset every month if the school pays
+// invested_amount/60 DebtAssets back to the issuer
+// 3. The recipient checks whether the PaybackAssets received correlate to the amount
+// that it sent and if not, raises the dispute since the forward DebtAsset payment
 // is on chain and resolves the dispute itself using existing off chain legal frameworks
 // (issued bonds, agreements, etc)
 func Payback(recpIndex int, projIndex int, assetName string, issuerPubkey string, issuerSeed string, amount string, seed string) error {
@@ -58,8 +58,7 @@ func Payback(recpIndex int, projIndex int, assetName string, issuerPubkey string
 	}
 
 	if utils.StoF(amount) > utils.StoF(StableBalance) {
-		// check whether the recipient has enough StableUSD tokens in project to make
-		// this happen
+		// check whether the recipient has enough StableUSD to make this happen
 		log.Println("YOU CAN'T SEND AN AMOUNT MORE THAN WHAT YOU HAVE")
 		return fmt.Errorf("YOU CAN'T SEND AN AMOUNT MORE THAN WHAT YOU HAVE")
 	}
@@ -76,7 +75,7 @@ func Payback(recpIndex int, projIndex int, assetName string, issuerPubkey string
 	// be split when we do run client side stuff.
 	// hardcode for now, need to add the oracle here so that we
 	// can do this dynamically
-	// send amount worth DEBTokens back to issuer
+	// send amount worth DebtAssets back to issuer
 	confHeight, txHash, err := recipient.SendAssetToIssuer(assetName, issuerPubkey, amount, seed)
 	if err != nil {
 		log.Println(err)
@@ -143,16 +142,16 @@ func Payback(recpIndex int, projIndex int, assetName string, issuerPubkey string
 	return err
 }
 
-// CalculatePayback is a TODO function that should simply sum the PBToken
-// balance and then return them to the frontend UI for a nice display
+// CalculatePayback is a function that simply sums the PaybackAsset
+// balance and returns them to the frontend UI for a nice display
 func (project Project) CalculatePayback(amount string) string {
 	// the idea is that we should be able to pass an assetId to this function
 	// and it must calculate how much time we have left for payback. For this example
 	// until we do the db stuff, lets pass a few params (although this could be done
 	// separately as well).
-	// TODO: this functon needs to be the payback function
-	// Consider not only the PBTokens amount, but also the rate of solar generation or consumption per year
-	// (Eg. PBTokens are 10'000 and the rate/yrs is 2000, thus 5 years is the estimated bond maturity and payback remaining time)
+	// TODO: this functon needs to be the function which calls the oracle
+	// Consider not only the PaybackAssets amount, but also the rate of solar generation or consumption per year
+	// (Eg. PaybackAssets are 10'000 and the rate/yrs is 2000, thus 5 years is the estimated bond maturity and payback remaining time)
 	amountF := utils.StoF(amount)
 	amountPB := (amountF / float64(project.Params.TotalValue)) * float64(project.Params.Years*12)
 	amountPBString := utils.FtoS(amountPB)

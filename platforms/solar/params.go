@@ -4,12 +4,12 @@ package solar
 type SolarParams struct {
 	Index int // an Index to keep quick track of how many projects exist
 
-	PanelSize   string // size of the given panel, for diplsaying to the user who wants to bid stuff
-	TotalValue  int    // the total money that we need from investors
-	Location    string // where this specific solar panel is located
-	MoneyRaised int    // total money that has been raised until now
-	Years       int    // number of years the recipient has chosen to opt for
-	Metadata    string // any other metadata can be stored here
+	PanelSize   string  // size of the given panel, for diplsaying to the user who wants to bid stuff
+	TotalValue  float64 // the total money that we need from investors
+	Location    string  // where this specific solar panel is located
+	MoneyRaised float64 // total money that has been raised until now
+	Years       int     // number of years the recipient has chosen to opt for
+	Metadata    string  // any other metadata can be stored here
 
 	// once all funds have been raised, we need to set assetCodes
 	InvestorAssetCode string

@@ -14,7 +14,8 @@ import (
 )
 
 // TODO: change name of bonds to something better. Add description of the bond platform below
-
+// TODO: also consider an architecture design which has the various models as the
+// base layer and imports them into a platform wherever needed.
 // ConstructionBond contains the paramters for the COnstruciton Bond model of the housing platform
 // paramters defined here are not exhaustive and more can be added if desired
 type ConstructionBond struct {
@@ -96,7 +97,7 @@ func RetrieveAllBonds() ([]ConstructionBond, error) {
 	}
 	defer db.Close()
 
-	err = db.Update(func(tx *bolt.Tx) error {
+	err = db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket(database.BondBucket)
 		for i := 1; ; i++ {
 			var rBond ConstructionBond
@@ -123,11 +124,11 @@ func RetrieveBond(key int) (ConstructionBond, error) {
 	}
 	defer db.Close()
 
-	err = db.Update(func(tx *bolt.Tx) error {
+	err = db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket(database.BondBucket)
 		x := b.Get(utils.ItoB(key))
 		if x == nil {
-			return nil
+			return fmt.Errorf("Retreived Bond returns nil")
 		}
 		return json.Unmarshal(x, &bond)
 	})
@@ -143,7 +144,6 @@ func (a *ConstructionBond) Invest(issuerPublicKey string, issuerSeed string, inv
 	investmentAmount := utils.StoI(investmentAmountS)
 	// check if investment amount is greater than the cost of a unit
 	if float64(investmentAmount) > a.CostOfUnit {
-		fmt.Println("You are trying to invest more than a unit's cost, do you want to invest in two units?")
 		return fmt.Errorf("You are trying to invest more than a unit's cost, do you want to invest in two units?")
 	}
 	assetName := assets.AssetID(a.Params.MaturationDate + a.Params.SecurityType + a.Params.Rating + a.Params.BondIssuer) // get a unique assetID

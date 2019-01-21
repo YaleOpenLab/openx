@@ -33,7 +33,8 @@ func CreateHomeDir() {
 	}
 }
 
-// TODO: need locks over this to ensure no one's using the db while we are
+// don't lock since boltdb can only process one operation at a time. As the application
+// grows bigger, this would be a major reason to search for a new db system
 func OpenDB() (*bolt.DB, error) {
 	// we need to check and create this directory if it doesn't exist
 	db, err := bolt.Open(consts.DbDir+"/yol.db", 0600, nil) // store this in its ownd database
@@ -79,8 +80,8 @@ func OpenDB() (*bolt.DB, error) {
 // DeleteProject should be used only in cases where something is wrong from our side
 // while creating an project. For other cases, we should set Live to False and edit
 // the project
-// TODO: make delete not mess up with indices, which it currently does
-// DeleteKeyFromBucket deletes a given key from the bucket _bucketName
+// DeleteKeyFromBucket deletes a given key from the bucket bucketName but doesn
+// not shift indices of elements succeeding the deleted element's index
 func DeleteKeyFromBucket(key int, bucketName []byte) error {
 	// deleting project might be dangerous since that would mess with the other
 	// functions, have it in here for now, don't do too much with it / fiox retrieve all

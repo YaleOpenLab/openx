@@ -11,7 +11,6 @@ import (
 	database "github.com/OpenFinancing/openfinancing/database"
 )
 
-// TODO: rewrite how this works and split between platforms and database
 // go test --tags="all" -coverprofile=test.txt .
 func TestDb(t *testing.T) {
 	var err error
