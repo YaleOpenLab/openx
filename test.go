@@ -8,6 +8,7 @@ import (
 
 	assets "github.com/OpenFinancing/openfinancing/assets"
 	consts "github.com/OpenFinancing/openfinancing/consts"
+	database "github.com/OpenFinancing/openfinancing/database"
 	ipfs "github.com/OpenFinancing/openfinancing/ipfs"
 	platform "github.com/OpenFinancing/openfinancing/platforms"
 	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
@@ -446,6 +447,7 @@ func main() {
 			fmt.Println("  8. Get ipfs hash of a contract")
 			fmt.Println("  9. Display all Funded Projects")
 			fmt.Println("  10. Unlock account")
+			fmt.Println("  11. KYC users (admin only)")
 			fmt.Println("  default: Exit")
 			optI, err := scan.ScanForInt()
 			if err != nil {
@@ -658,6 +660,52 @@ func main() {
 				}
 				investorSeed = seed
 				log.Println(" Seed successfully unlocked: ", seed)
+			case 11:
+				if !investor.U.Inspector {
+					fmt.Println("You do not have access to this page")
+					break
+				}
+				fmt.Println("WELCOME TO THE KYC INTERFACE!!")
+				fmt.Println("CHOOSE AN OPTION FROM THE FOLLOWING MENU")
+				fmt.Println("1. VIEW ALL KYC'D USERS")
+				fmt.Println("2. VIEW ALL NON KYC'D USERS")
+				sInput, err := scan.ScanForInt()
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				switch sInput {
+				case 1:
+					allUsers, err := database.RetrieveAllUsersWithKyc()
+					if err != nil {
+						log.Println(err)
+						break
+					}
+					PrintUsers(allUsers)
+					break
+				case 2:
+					allUsers, err := database.RetrieveAllUsersWithoutKyc()
+					if err != nil {
+						log.Println(err)
+						break
+					}
+					PrintUsers(allUsers)
+					fmt.Println("WHICH USER DO YOU WANT TO AUTHENTICATE WITH KYC?")
+					uInput, err := scan.ScanForInt()
+					if err != nil {
+						log.Println(err)
+						break
+					}
+					err = investor.U.Authorize(uInput)
+					if err != nil {
+						log.Println(err)
+						break
+					}
+					break
+				default:
+					log.Println("Invalid input, please enter valid input")
+					break
+				}
 			default:
 				ExitPrompt()
 			} // end of switch

@@ -59,6 +59,23 @@ func PrintInvestor(investor database.Investor) {
 	fmt.Println("          Your Invested Assets are: ", investor.InvestedSolarProjects)
 	fmt.Println("          Your Username is: ", investor.U.LoginUserName)
 	fmt.Println("          Your Password hash is: ", investor.U.LoginPassword)
+	fmt.Println("          Your Inspector status is: ", investor.U.Inspector)
+}
+
+func PrintUsers(users []database.User) {
+	for _, elem := range users {
+		PrintUser(elem)
+	}
+}
+
+func PrintUser(user database.User) {
+	fmt.Println("    WELCOME BACK ", user.Name)
+	fmt.Println("          Your user index is: ", user.Index)
+	fmt.Println("          Your Public Key is: ", user.PublicKey)
+	fmt.Println("          Your Encrypted Seed is: ", user.EncryptedSeed)
+	fmt.Println("          Your Username is: ", user.LoginUserName)
+	fmt.Println("          Your Password hash is: ", user.LoginPassword)
+	fmt.Println("          Your KYC status is: ", user.Kyc)
 }
 
 // PrintRecipient pretty prints recipients
@@ -68,14 +85,6 @@ func PrintRecipient(recipient database.Recipient) {
 	fmt.Println("          Your Received Assets are: ", recipient.ReceivedSolarProjects)
 	fmt.Println("          Your Username is: ", recipient.U.LoginUserName)
 	fmt.Println("          Your Password hash is: ", recipient.U.LoginPassword)
-}
-
-func PrintUser(user database.User) {
-	fmt.Println("    WELCOME BACK ", user.Name)
-	fmt.Println("          Your Public Key is: ", user.PublicKey)
-	fmt.Println("          Your Encrypted Seed is: ", user.EncryptedSeed)
-	fmt.Println("          Your Username is: ", user.LoginUserName)
-	fmt.Println("          Your Password hash is: ", user.LoginPassword)
 }
 
 func PrintEntity(a solar.Entity) {

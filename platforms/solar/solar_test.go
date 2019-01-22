@@ -501,8 +501,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	// func Payback(a *database.Recipient, project Project, assetName string, issuerPubkey string, amount string, seed string) error
-	err = Payback(1, 1, "", "", "", "", "")
+	err = Payback(1, 1, "", "", "")
 	if err == nil {
 		t.Fatal("Invalid params not caught, exiting!")
 	}

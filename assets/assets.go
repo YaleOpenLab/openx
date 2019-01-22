@@ -34,7 +34,6 @@
 // on chain and the investor has to trust the issuer with that. Also, in this case,
 // anonymous investors wouldn't be able to invest, which is something that would be
 // nice to have
-// TODO: Add flags to assets
 package assets
 
 import (
