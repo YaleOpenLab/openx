@@ -8,7 +8,7 @@ import (
 )
 
 func Exchange(recipientPK string, recipientSeed string, convAmount string) error {
-	hash, err := assets.TrustAsset(StableUSD, consts.StablecoinTrustLimit, recipientPK, recipientSeed)
+	hash, err := assets.TrustAsset(Code, consts.StableCoinAddress, consts.StablecoinTrustLimit, recipientPK, recipientSeed)
 	if err != nil {
 		return err
 	}

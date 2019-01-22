@@ -26,9 +26,11 @@ func NewSeed(path string, password string) (string, string, error) {
 // StoreSeed encrypts and stores the seed in a file
 func StoreSeed(seed string, password string, path string) error {
 	// these can store the file ion any path passed to them
-	log.Println("ENCRYPTING AND STORING SEED IN: ", path)
-	aes.EncryptFile(path, []byte(seed), password)
-	_, err := aes.DecryptFile(path, password)
+	err := aes.EncryptFile(path, []byte(seed), password)
+	if err != nil {
+		return err
+	}
+	_, err = aes.DecryptFile(path, password)
 	return err
 }
 

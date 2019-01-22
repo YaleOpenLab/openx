@@ -163,7 +163,7 @@ func (a *Investor) AddVotingBalance(votes int) error {
 // and asset issuer (i.e. the platform) with a _limit_ set on the maximum amount of assets that can be sent
 // through the trust channel. Each trustline costs 0.5XLM.
 func (a *Investor) TrustAsset(asset build.Asset, limit string, seed string) (string, error) {
-	return assets.TrustAsset(asset, limit, a.U.PublicKey, seed)
+	return assets.TrustAsset(asset.Code, asset.Issuer, limit, a.U.PublicKey, seed)
 }
 
 // CanInvest checks whether an investor has the required balance to invest in a project

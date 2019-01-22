@@ -11,7 +11,6 @@ import (
 
 	consts "github.com/OpenFinancing/openfinancing/consts"
 	utils "github.com/OpenFinancing/openfinancing/utils"
-	wallet "github.com/OpenFinancing/openfinancing/wallet"
 	"github.com/stellar/go/build"
 	"github.com/stellar/go/keypair"
 	"github.com/stellar/go/network"
@@ -64,72 +63,43 @@ func SendTx(Seed string, tx *build.TransactionBuilder) (int32, string, error) {
 		return -1, "", err
 	}
 
-	fmt.Printf("Propagated Transaction: %s, sequence: %d", resp.Hash, resp.Ledger)
+	fmt.Printf("Propagated Transaction: %s, sequence: %d\n", resp.Hash, resp.Ledger)
 	return resp.Ledger, resp.Hash, nil
 }
 
-//SetFlags is used to set flags on ourselves and needs a transaction to do that
-func SetPlatformFlags(amount, seed string) (int32, string, error) {
-	destination, err := wallet.ReturnPubkey(seed)
-	if err != nil {
-		return -1, "", err
-	}
-	passphrase := network.TestNetworkPassphrase
-	tx, err := build.Transaction(
-		build.SourceAccount{seed},
-		build.AutoSequence{TestNetClient},
-		build.Network{passphrase},
-		build.MemoText{"Changing Account Flags"},
-		build.Payment(
-			build.Destination{destination},
-			build.NativeAmount{amount},
-		),
-		// set flag immutable so that the issuing account can never be deleted and the
-		// asset can persist to whomever we send it to
-		build.SetOptions(
-			build.SetAuthImmutable(),
-		),
-		/*
-			SETOPTIONS DOCUMENTATION
-			having this here because stellar doesn't have it and it takes some time to
-			see their repo and fetch these. SetOptions is quite powerful and can do
-			operations on a given accoutn by the same account
-			1. Freeze Issuance - this can be done by setting all 4 weights to zero and locking
-			the issuing account. This would however mean that we can never send a tx from
-			the account, we need to have a new platform struct for each proejct that is advertised
-			on the platform
-			2. Set Flags - Call the helper functions in order to set flags on the accounts.
-					A. Immutable - can't delete the account
-					B. Required - need issuing account's permission before they can hold the
-					issuing account's credit.
-					C. Revocable - can revoke credit held by other accounts
-			Based on the descriptions above, it is clear that we need A and B. But having 2
-			would mean that secondary speculation markets cant flourish (sicne they would
-			require our authorization) and hence we don't set the required flag
+/*
+	SETOPTIONS DOCUMENTATION
+	having this here because stellar doesn't have it and it takes some time to
+	see their repo and fetch these. SetOptions is quite powerful and can do
+	operations on a given accoutn by the same account
+	1. Freeze Issuance - this can be done by setting all 4 weights to zero and locking
+	the issuing account. This would however mean that we can never send a tx from
+	the account, we need to have a new platform struct for each proejct that is advertised
+	on the platform
+	2. Set Flags - Call the helper functions in order to set flags on the accounts.
+			A. Immutable - can't delete the account
+			B. Required - need issuing account's permission before they can hold the
+			issuing account's credit.
+			C. Revocable - can revoke credit held by other accounts
+	Based on the descriptions above, it is clear that we need A and B. But having 2
+	would mean that secondary speculation markets cant flourish (sicne they would
+	require our authorization) and hence we don't set the required flag
 
-			TODO: have a new platform setup for each account
+	TODO: have a new platform setup for each account
 
-			SetOptions(
-			InflationDest("GCT7S5BA6ZC7SV7GGEMEYJTWOBYTBOA7SC4JEYP7IAEDG7HQNIWKRJ4G"),
-			SetAuthRequired(),
-			SetAuthRevocable(),
-			SetAuthImmutable(),
-			ClearAuthRequired(),
-			ClearAuthRevocable(),
-			ClearAuthImmutable(),
-			MasterWeight(1),
-			SetThresholds(2, 3, 4),
-			HomeDomain("stellar.org"),
-			AddSigner("GC6DDGPXVWXD5V6XOWJ7VUTDYI7VKPV2RAJWBVBHR47OPV5NASUNHTJW", 5),
-		*/
-	)
-
-	if err != nil {
-		return -1, "", err
-	}
-
-	return SendTx(seed, tx)
-}
+	SetOptions(
+	InflationDest("GCT7S5BA6ZC7SV7GGEMEYJTWOBYTBOA7SC4JEYP7IAEDG7HQNIWKRJ4G"),
+	SetAuthRequired(),
+	SetAuthRevocable(),
+	SetAuthImmutable(),
+	ClearAuthRequired(),
+	ClearAuthRevocable(),
+	ClearAuthImmutable(),
+	MasterWeight(1),
+	SetThresholds(2, 3, 4),
+	HomeDomain("stellar.org"),
+	AddSigner("GC6DDGPXVWXD5V6XOWJ7VUTDYI7VKPV2RAJWBVBHR47OPV5NASUNHTJW", 5),
+*/
 
 // Generating a keypair on stellar doesn't mean that you can send funds to it
 // you need to call the CreateAccount method in project to be able to send funds

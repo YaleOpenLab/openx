@@ -55,7 +55,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Printf("PLATFORM SEED IS: %s\n PLATFORM PUBLIC KEY IS: %s", platformSeed, platformPublicKey)
+	log.Printf("PLATFORM SEED IS: %s\n PLATFORM PUBLIC KEY IS: %s\n", platformSeed, platformPublicKey)
 	// TODO: how much do we pay the investor? how does it work
 	// Do we sell the REC created from the solar panels only to the investor? If so,
 	// isn't that enough to propel investment in the solar contract itself?
@@ -68,8 +68,6 @@ func main() {
 	// TODO: Need to automatically cover breach scenarios in case the recipient doesn't
 	// pay for a specific period of time
 	// TODO: also write a Makefile so that its easy for people to get started with stuff
-	// TODO: look into how flags are set and set flags on accounts - no documentation is around
-	// regarding this for go, so idk
 	// TODO: implement a dummy KYC inspector so that we can view what the role
 	// of that entity would be as well
 	fmt.Println("------------STELLAR HOUSE INVESTMENT CLI INTERFACE------------")
@@ -173,16 +171,10 @@ func main() {
 					break
 				}
 				fmt.Printf("PAYING BACK %s TOWARDS PROJECT NUMBER: %d\n", paybackAmount, rtContract.Params.Index) // use the rtContract.Params here instead of using projectNumber from long ago
-				// now we need to call back the payback function to payback the asset
-				// Here, we will simply payback the DEBTokens that was sent to us earlier
-				if rtContract.Params.DebtAssetCode == "" {
-					log.Println("Project not found")
-					break
-				}
 
-				err = solar.Payback(recipient.U.Index, rtContract.Params.Index, rtContract.Params.DebtAssetCode, platformPublicKey, platformSeed, paybackAmount, recipientSeed)
+				err = solar.Payback(recipient.U.Index, rtContract.Params.Index, rtContract.Params.DebtAssetCode, paybackAmount, recipientSeed)
 				if err != nil {
-					log.Println("PAYBACK TX FAILED, PLEASE TRY AGAIN!")
+					log.Println("PAYBACK TX FAILED, PLEASE TRY AGAIN!", err)
 					break
 				}
 				break
@@ -504,7 +496,7 @@ func main() {
 					log.Println(err)
 					break
 				}
-				fmt.Printf("Platform seed is: %s and platform's publicKey is %s", platformSeed, platformPublicKey)
+				fmt.Printf("Platform seed is: %s and platform's publicKey is %s\n", platformSeed, platformPublicKey)
 				err = xlm.RefillAccount(investor.U.PublicKey, platformSeed)
 				if err != nil {
 					log.Println(err)
@@ -544,7 +536,7 @@ func main() {
 				log.Println("The investor's public key and private key are: ", investor.U.PublicKey, " ", investorSeed)
 				log.Println("The recipient's public key and private key are: ", recipient.U.PublicKey, " ", recipientSeed)
 				// so now we have three entities setup, so we create the assets and invest in them
-				cProject, err := solar.InvestInProject(solarProject.Params.Index, platformPublicKey, platformSeed, investor.U.Index, recipient.U.Index, investmentAmount, investorSeed, recipientSeed) // assume payback period is 5
+				cProject, err := solar.InvestInProject(solarProject.Params.Index, investor.U.Index, recipient.U.Index, investmentAmount, investorSeed, recipientSeed, platformSeed)
 				if err != nil {
 					log.Println(err)
 				} else {
@@ -571,7 +563,7 @@ func main() {
 				// maybe don't trust asset again when you've trusted it already? check if that's
 				// possible and save on the tx fee for a single transaction. But I guess its
 				// difficult to retrieve trustlines, so we'll go ahead with it
-				hash, err := assets.TrustAsset(stablecoin.StableUSD, consts.StablecoinTrustLimit, investor.U.PublicKey, investorSeed)
+				hash, err := assets.TrustAsset(stablecoin.Code, consts.StableCoinAddress, consts.StablecoinTrustLimit, investor.U.PublicKey, investorSeed)
 				if err != nil {
 					log.Println(err)
 					break
