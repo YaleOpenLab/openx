@@ -10,7 +10,6 @@ import (
 	database "github.com/OpenFinancing/openfinancing/database"
 	utils "github.com/OpenFinancing/openfinancing/utils"
 	"github.com/boltdb/bolt"
-	"github.com/stellar/go/build"
 )
 
 // the coop struct uses the same base params as the bond model
@@ -137,22 +136,19 @@ func (a *Coop) Invest(issuerPublicKey string, issuerSeed string, investor *datab
 			return a, err
 		}
 	*/
-	var INVAsset build.Asset
-	INVAsset.Code = a.Params.InvestorAssetCode
-	INVAsset.Issuer = issuerPublicKey
 	// make investor trust the asset that we provide
-	txHash, err := assets.TrustAsset(INVAsset, utils.FtoS(a.TotalAmount), investor.U.PublicKey, investorSeed)
+	txHash, err := assets.TrustAsset(a.Params.InvestorAssetCode, issuerPublicKey, utils.FtoS(a.TotalAmount), investor.U.PublicKey, investorSeed)
 	// trust upto the total value of the asset
 	if err != nil {
 		return err
 	}
-	log.Println("Investor trusted asset: ", INVAsset.Code, " tx hash: ", txHash)
-	log.Println("Sending INVAsset: ", INVAsset.Code, "for: ", investmentAmount)
-	_, txHash, err = assets.SendAssetFromIssuer(INVAsset.Code, investor.U.PublicKey, investmentAmountS, issuerSeed, issuerPublicKey)
+	log.Println("Investor trusted asset: ", a.Params.InvestorAssetCode, " tx hash: ", txHash)
+	log.Println("Sending INVAsset: ", a.Params.InvestorAssetCode, "for: ", investmentAmount)
+	_, txHash, err = assets.SendAssetFromIssuer(a.Params.InvestorAssetCode, investor.U.PublicKey, investmentAmountS, issuerSeed, issuerPublicKey)
 	if err != nil {
 		return err
 	}
-	log.Printf("Sent INVAsset %s to investor %s with txhash %s", INVAsset.Code, investor.U.PublicKey, txHash)
+	log.Printf("Sent INVAsset %s to investor %s with txhash %s", a.Params.InvestorAssetCode, investor.U.PublicKey, txHash)
 	// investor asset sent, update a.Params's BalLeft
 	a.UnitsSold += 1
 	investor.AmountInvested += float64(investmentAmount)

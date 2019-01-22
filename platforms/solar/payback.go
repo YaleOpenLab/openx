@@ -4,9 +4,13 @@ import (
 	"fmt"
 	"log"
 
+	assets "github.com/OpenFinancing/openfinancing/assets"
+	consts "github.com/OpenFinancing/openfinancing/consts"
 	database "github.com/OpenFinancing/openfinancing/database"
+	issuer "github.com/OpenFinancing/openfinancing/issuer"
 	oracle "github.com/OpenFinancing/openfinancing/oracle"
 	utils "github.com/OpenFinancing/openfinancing/utils"
+	wallet "github.com/OpenFinancing/openfinancing/wallet"
 	xlm "github.com/OpenFinancing/openfinancing/xlm"
 )
 
@@ -34,7 +38,13 @@ import (
 // that it sent and if not, raises the dispute since the forward DebtAsset payment
 // is on chain and resolves the dispute itself using existing off chain legal frameworks
 // (issued bonds, agreements, etc)
-func Payback(recpIndex int, projIndex int, assetName string, issuerPubkey string, issuerSeed string, amount string, seed string) error {
+// TODO: evaluate whether we need PaybackAsset
+func Payback(recpIndex int, projIndex int, assetName string, amount string, recipientSeed string) error {
+	issuerPubkey, _, err := wallet.RetrieveSeed(issuer.CreatePath(projIndex), consts.IssuerSeedPwd)
+	if err != nil {
+		return err
+	}
+
 	recipient, err := database.RetrieveRecipient(recpIndex)
 	if err != nil {
 		return err
@@ -43,26 +53,28 @@ func Payback(recpIndex int, projIndex int, assetName string, issuerPubkey string
 	if err != nil {
 		return err
 	}
-	// once we have the stablecoin here, we can remove the assetName
-	StableBalance, err := xlm.GetAssetBalance(recipient.U.PublicKey, "STABLEUSD")
-	// checks for the stablecoin asset
-	if err != nil {
-		log.Println("YOU HAVE NO STABLECOIN BALANCE, PLEASE REFILL ACCOUNT")
-		return err
-	}
-
+	/*
+		// once we have the stablecoin here, we can remove the assetName
+		StableBalance, err := xlm.GetAssetBalance(recipient.U.PublicKey, "STABLEUSD")
+		// checks for the stablecoin asset
+		if err != nil {
+			log.Println("YOU HAVE NO STABLECOIN BALANCE, PLEASE REFILL ACCOUNT")
+			return err
+		}
+	*/
 	DEBAssetBalance, err := xlm.GetAssetBalance(recipient.U.PublicKey, assetName)
 	if err != nil {
-		log.Println("Don't have the debt asset in possession")
+		fmt.Println("Don't have the debt asset in possession")
 		return err
 	}
 
+	/* Renable this once this goes to testing
 	if utils.StoF(amount) > utils.StoF(StableBalance) {
 		// check whether the recipient has enough StableUSD to make this happen
 		log.Println("YOU CAN'T SEND AN AMOUNT MORE THAN WHAT YOU HAVE")
 		return fmt.Errorf("YOU CAN'T SEND AN AMOUNT MORE THAN WHAT YOU HAVE")
 	}
-	// check balance in DEBAssetCode anmd
+	*/
 	monthlyBill := oracle.MonthlyBill()
 	if err != nil {
 		log.Println("Unable to fetch oracle price, exiting")
@@ -76,7 +88,7 @@ func Payback(recpIndex int, projIndex int, assetName string, issuerPubkey string
 	// hardcode for now, need to add the oracle here so that we
 	// can do this dynamically
 	// send amount worth DebtAssets back to issuer
-	confHeight, txHash, err := recipient.SendAssetToIssuer(assetName, issuerPubkey, amount, seed)
+	confHeight, txHash, err := assets.SendAssetToIssuer(assetName, issuerPubkey, amount, recipientSeed, recipient.U.PublicKey)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -124,12 +136,6 @@ func Payback(recpIndex int, projIndex int, assetName string, issuerPubkey string
 	}
 	// balLeft must be updated on the server side and can be challenged easily
 	// if there's some discrepancy since the tx's are on the blockchain
-	err = sendPaybackAsset(project, recipient.U.PublicKey, amount, issuerSeed, issuerPubkey)
-	if err != nil {
-		log.Println("Sending back payback asset failed, please try again!", err)
-		return err
-	}
-
 	err = project.updateRecipient(recipient)
 	if err != nil {
 		return err
@@ -144,14 +150,12 @@ func Payback(recpIndex int, projIndex int, assetName string, issuerPubkey string
 
 // CalculatePayback is a function that simply sums the PaybackAsset
 // balance and returns them to the frontend UI for a nice display
+// TODO: this function is not in use anymore, evaluate its need
 func (project Project) CalculatePayback(amount string) string {
 	// the idea is that we should be able to pass an assetId to this function
 	// and it must calculate how much time we have left for payback. For this example
 	// until we do the db stuff, lets pass a few params (although this could be done
 	// separately as well).
-	// TODO: this function needs to be the function which calls the oracle
-	// Consider not only the PaybackAssets amount, but also the rate of solar generation or consumption per year
-	// (Eg. PaybackAssets are 10'000 and the rate/yrs is 2000, thus 5 years is the estimated bond maturity and payback remaining time)
 	amountF := utils.StoF(amount)
 	amountPB := (amountF / float64(project.Params.TotalValue)) * float64(project.Params.Years*12)
 	amountPBString := utils.FtoS(amountPB)

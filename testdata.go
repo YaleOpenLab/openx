@@ -47,6 +47,23 @@ func InsertDummyData() error {
 		if err != nil {
 			log.Fatal(err)
 		}
+		err = database.AddInspector(inv.U.Index)
+		if err != nil {
+			log.Fatal(err)
+		}
+		x, err := database.RetrieveUser(inv.U.Index)
+		if err != nil {
+			log.Fatal(err)
+		}
+		inv.U = x
+		err = inv.Save()
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = x.Authorize(inv.U.Index)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	_, err = bonds.NewBond("Dec 21 2021", "Member Rights Link", "Security Type 1", 5.4, "AAA", "Moody's Investments", "Wells Fargo",

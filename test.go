@@ -8,6 +8,7 @@ import (
 
 	assets "github.com/OpenFinancing/openfinancing/assets"
 	consts "github.com/OpenFinancing/openfinancing/consts"
+	database "github.com/OpenFinancing/openfinancing/database"
 	ipfs "github.com/OpenFinancing/openfinancing/ipfs"
 	platform "github.com/OpenFinancing/openfinancing/platforms"
 	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
@@ -55,7 +56,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Printf("PLATFORM SEED IS: %s\n PLATFORM PUBLIC KEY IS: %s", platformSeed, platformPublicKey)
+	log.Printf("PLATFORM SEED IS: %s\n PLATFORM PUBLIC KEY IS: %s\n", platformSeed, platformPublicKey)
 	// TODO: how much do we pay the investor? how does it work
 	// Do we sell the REC created from the solar panels only to the investor? If so,
 	// isn't that enough to propel investment in the solar contract itself?
@@ -68,8 +69,6 @@ func main() {
 	// TODO: Need to automatically cover breach scenarios in case the recipient doesn't
 	// pay for a specific period of time
 	// TODO: also write a Makefile so that its easy for people to get started with stuff
-	// TODO: look into how flags are set and set flags on accounts - no documentation is around
-	// regarding this for go, so idk
 	// TODO: implement a dummy KYC inspector so that we can view what the role
 	// of that entity would be as well
 	fmt.Println("------------STELLAR HOUSE INVESTMENT CLI INTERFACE------------")
@@ -173,16 +172,10 @@ func main() {
 					break
 				}
 				fmt.Printf("PAYING BACK %s TOWARDS PROJECT NUMBER: %d\n", paybackAmount, rtContract.Params.Index) // use the rtContract.Params here instead of using projectNumber from long ago
-				// now we need to call back the payback function to payback the asset
-				// Here, we will simply payback the DEBTokens that was sent to us earlier
-				if rtContract.Params.DebtAssetCode == "" {
-					log.Println("Project not found")
-					break
-				}
 
-				err = solar.Payback(recipient.U.Index, rtContract.Params.Index, rtContract.Params.DebtAssetCode, platformPublicKey, platformSeed, paybackAmount, recipientSeed)
+				err = solar.Payback(recipient.U.Index, rtContract.Params.Index, rtContract.Params.DebtAssetCode, paybackAmount, recipientSeed)
 				if err != nil {
-					log.Println("PAYBACK TX FAILED, PLEASE TRY AGAIN!")
+					log.Println("PAYBACK TX FAILED, PLEASE TRY AGAIN!", err)
 					break
 				}
 				break
@@ -454,6 +447,7 @@ func main() {
 			fmt.Println("  8. Get ipfs hash of a contract")
 			fmt.Println("  9. Display all Funded Projects")
 			fmt.Println("  10. Unlock account")
+			fmt.Println("  11. KYC users (admin only)")
 			fmt.Println("  default: Exit")
 			optI, err := scan.ScanForInt()
 			if err != nil {
@@ -504,7 +498,7 @@ func main() {
 					log.Println(err)
 					break
 				}
-				fmt.Printf("Platform seed is: %s and platform's publicKey is %s", platformSeed, platformPublicKey)
+				fmt.Printf("Platform seed is: %s and platform's publicKey is %s\n", platformSeed, platformPublicKey)
 				err = xlm.RefillAccount(investor.U.PublicKey, platformSeed)
 				if err != nil {
 					log.Println(err)
@@ -544,7 +538,7 @@ func main() {
 				log.Println("The investor's public key and private key are: ", investor.U.PublicKey, " ", investorSeed)
 				log.Println("The recipient's public key and private key are: ", recipient.U.PublicKey, " ", recipientSeed)
 				// so now we have three entities setup, so we create the assets and invest in them
-				cProject, err := solar.InvestInProject(solarProject.Params.Index, platformPublicKey, platformSeed, investor.U.Index, recipient.U.Index, investmentAmount, investorSeed, recipientSeed) // assume payback period is 5
+				cProject, err := solar.InvestInProject(solarProject.Params.Index, investor.U.Index, recipient.U.Index, investmentAmount, investorSeed, recipientSeed, platformSeed)
 				if err != nil {
 					log.Println(err)
 				} else {
@@ -571,7 +565,7 @@ func main() {
 				// maybe don't trust asset again when you've trusted it already? check if that's
 				// possible and save on the tx fee for a single transaction. But I guess its
 				// difficult to retrieve trustlines, so we'll go ahead with it
-				hash, err := assets.TrustAsset(stablecoin.StableUSD, consts.StablecoinTrustLimit, investor.U.PublicKey, investorSeed)
+				hash, err := assets.TrustAsset(stablecoin.Code, consts.StableCoinAddress, consts.StablecoinTrustLimit, investor.U.PublicKey, investorSeed)
 				if err != nil {
 					log.Println(err)
 					break
@@ -666,6 +660,52 @@ func main() {
 				}
 				investorSeed = seed
 				log.Println(" Seed successfully unlocked: ", seed)
+			case 11:
+				if !investor.U.Inspector {
+					fmt.Println("You do not have access to this page")
+					break
+				}
+				fmt.Println("WELCOME TO THE KYC INTERFACE!!")
+				fmt.Println("CHOOSE AN OPTION FROM THE FOLLOWING MENU")
+				fmt.Println("1. VIEW ALL KYC'D USERS")
+				fmt.Println("2. VIEW ALL NON KYC'D USERS")
+				sInput, err := scan.ScanForInt()
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				switch sInput {
+				case 1:
+					allUsers, err := database.RetrieveAllUsersWithKyc()
+					if err != nil {
+						log.Println(err)
+						break
+					}
+					PrintUsers(allUsers)
+					break
+				case 2:
+					allUsers, err := database.RetrieveAllUsersWithoutKyc()
+					if err != nil {
+						log.Println(err)
+						break
+					}
+					PrintUsers(allUsers)
+					fmt.Println("WHICH USER DO YOU WANT TO AUTHENTICATE WITH KYC?")
+					uInput, err := scan.ScanForInt()
+					if err != nil {
+						log.Println(err)
+						break
+					}
+					err = investor.U.Authorize(uInput)
+					if err != nil {
+						log.Println(err)
+						break
+					}
+					break
+				default:
+					log.Println("Invalid input, please enter valid input")
+					break
+				}
 			default:
 				ExitPrompt()
 			} // end of switch

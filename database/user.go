@@ -39,6 +39,11 @@ type User struct {
 	// hash of the password in reality
 	FirstSignedUp string
 	// auto generated timestamp
+	Kyc bool
+	// false if kyc is not accepted / reviewed, true if user has been verified.
+	Inspector bool
+	// inspector is a kyc inspector who valdiates the data of people who would like
+	// to signup on the platform
 }
 
 // User is a metastrucutre that contains commonyl used keys within a single umbrella
@@ -69,6 +74,7 @@ func NewUser(uname string, pwd string, seedpwd string, Name string) (User, error
 	a.LoginPassword = utils.SHA3hash(pwd) // store tha sha3 hash
 	// now we have a new User, take this and then send this struct off to be stored in the database
 	a.FirstSignedUp = utils.Timestamp()
+	a.Kyc = false
 	err = a.Save()
 	return a, err // since user is a meta structure, insert it and then return the function
 }
@@ -89,6 +95,64 @@ func (a *User) Save() error {
 		return b.Put([]byte(utils.ItoB(a.Index)), encoded)
 	})
 	return err
+}
+
+func RetrieveAllUsersWithoutKyc() ([]User, error) {
+	var arr []User
+	db, err := OpenDB()
+	if err != nil {
+		return arr, err
+	}
+	defer db.Close()
+
+	err = db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket(UserBucket)
+		for i := 1; ; i++ {
+			var rUser User
+			x := b.Get(utils.ItoB(i))
+			if x == nil {
+				return nil
+			}
+			err := json.Unmarshal(x, &rUser)
+			if err != nil {
+				return err
+			}
+			if !rUser.Kyc {
+				arr = append(arr, rUser)
+			}
+		}
+		return nil
+	})
+	return arr, err
+}
+
+func RetrieveAllUsersWithKyc() ([]User, error) {
+	var arr []User
+	db, err := OpenDB()
+	if err != nil {
+		return arr, err
+	}
+	defer db.Close()
+
+	err = db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket(UserBucket)
+		for i := 1; ; i++ {
+			var rUser User
+			x := b.Get(utils.ItoB(i))
+			if x == nil {
+				return nil
+			}
+			err := json.Unmarshal(x, &rUser)
+			if err != nil {
+				return err
+			}
+			if rUser.Kyc {
+				arr = append(arr, rUser)
+			}
+		}
+		return nil
+	})
+	return arr, err
 }
 
 // RetrieveAllUsers gets a list of all User in the database
@@ -217,4 +281,44 @@ func CheckUsernameCollision(uname string) error {
 		return nil
 	})
 	return err
+}
+
+// Everything above this is exactly the same as the investor class. Need to replicate
+// because of bucket issues, hopefully there's a nicer way
+// package kyc is designed to emulate the working of a kyc entity in the system
+// when someone signs up on the system, they appear in they KYC reviewer's panel
+// and the inspector has to approve them for them to  be able to go on the platform.
+// iF rejected, they can choose to submit additional information that they are indeed
+// compliant and in that case we can allow them unto the platform
+// Roughly this should involve a new bool in the user bucket which says kyc and only
+// the inspector should have the power to set it to true.
+// the inspector itself requires kyc though, so we shall have an admin account which can
+// kickoff the kyc process.
+// TODO: what do we do with these KYC powers? what features are open and what can be
+// viewed only by going through KYC?
+func (a *User) Authorize(userIndex int) error {
+	// we don't really mind who this user is since all we need to verify is his identity
+	if !a.Inspector {
+		return fmt.Errorf("You don't have the required permissions to kyc a person")
+	}
+	user, err := RetrieveUser(userIndex)
+	// we want to retrieve only users who have not gone through KYC before
+	if err != nil {
+		return err
+	}
+	if user.Kyc {
+		return fmt.Errorf("user already KYC'd")
+	}
+	user.Kyc = true
+	return user.Save()
+}
+
+func AddInspector(userIndex int) error {
+	// this should only be called by the platform itself and not open to others
+	user, err := RetrieveUser(userIndex)
+	if err != nil {
+		return err
+	}
+	user.Inspector = true
+	return user.Save()
 }

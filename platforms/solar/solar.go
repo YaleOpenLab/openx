@@ -17,8 +17,8 @@ import (
 
 // Contracts and Projects are used interchangeably below
 // A contract has six Stages (right now an order has 6 stages and later both will be merged)
-// seed funding and seed assets are also TODOs, though investors can see the assets
-// now and can transfer funds if they really want to
+// seed assets are a TODO, though investors can see the assets now and can transfer
+// funds if they really want to
 
 // A legal contract should ideally be stored on ipfs and we must keep track of the
 // ipfs hash so that we can retrieve it later when required

@@ -17,6 +17,17 @@ import (
 // needs to be hosted somewhere, so it is necessary that each platform should have
 // its own pubkey and seed pair
 // InitializePlatform returns the platform publickey and seed
+// We have a new model in which we have a new seed for every project that is
+// advertised on the platform. The way this would wokr is that it sets up the assets,
+// and then we freeze the account to freeze issuance. This would mean we would no longer
+// be able to transact with the account although people can still send funds to it
+// in this case, they would send us back DebtAssets provided they have sufficient
+// stableUSD balance. Else they would not be able to trigger payback.
+// TODO: this password could also be agreed uponby the party of investors and the recipient
+// so that we act as a trustless entity, which is cool. This has to be done on the frontend's
+// side preferably
+// the main platform still has its pubkey and seed pair and sends funds out to issuers
+// but is not directly involved in the setting up of trustlines
 func InitializePlatform() (string, string, error) {
 	var publicKey string
 	var seed string
@@ -71,7 +82,7 @@ func InitializePlatform() (string, string, error) {
 	}
 	_ = xlm.GetXLM(publicKey) // the API request errors out even on success, so
 	// don't catch this error
-	_, txhash, err := xlm.SetPlatformFlags("1", seed)
+	_, txhash, err := xlm.SetAuthImmutable(seed)
 	log.Println("TX HASH FOR SETOPTIONS: ", txhash)
 	if err != nil {
 		log.Println("ERROR WHILE SETTING OPTIONS")

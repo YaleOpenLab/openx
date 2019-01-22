@@ -11,7 +11,7 @@ import (
 // that is in the real world. Right now, this is hardcoded since we need to come up
 // with a construct to get the price data in a reliable way - this could be a website
 // were poeple erport this or certified authorities can timestamp this on chain
-// or similar. Web s craping government websites might work, but that seems too
+// or similar. Web scraping government websites might work, but that seems too
 // overkill for what we're doing now.
 func MonthlyBill() string {
 	// right now, community consensus look like the price of electricity is

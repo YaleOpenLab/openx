@@ -7,9 +7,7 @@ import (
 	"fmt"
 
 	utils "github.com/OpenFinancing/openfinancing/utils"
-	xlm "github.com/OpenFinancing/openfinancing/xlm"
 	"github.com/boltdb/bolt"
-	"github.com/stellar/go/build"
 )
 
 type Recipient struct {
@@ -118,24 +116,4 @@ func ValidateRecipient(name string, pwhash string) (Recipient, error) {
 		return rec, err
 	}
 	return RetrieveRecipient(user.Index)
-}
-
-// SendAssetToIssuer sends back assets from an asset holder to the issuer of the asset.
-func (a *Recipient) SendAssetToIssuer(assetName string, issuerPubkey string, amount string, seed string) (int32, string, error) {
-	// SendAssetToIssuer is FROM recipient / investor to issuer
-	paymentTx, err := build.Transaction(
-		build.SourceAccount{a.U.PublicKey},
-		build.TestNetwork,
-		build.AutoSequence{SequenceProvider: xlm.TestNetClient},
-		build.Payment(
-			build.Destination{AddressOrSeed: issuerPubkey},
-			build.CreditAmount{assetName, issuerPubkey, amount},
-		),
-	)
-
-	if err != nil {
-		return -11, "", err
-	}
-
-	return xlm.SendTx(seed, paymentTx)
 }

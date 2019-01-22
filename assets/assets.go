@@ -34,7 +34,6 @@
 // on chain and the investor has to trust the issuer with that. Also, in this case,
 // anonymous investors wouldn't be able to invest, which is something that would be
 // nice to have
-// TODO: Add flags to assets
 package assets
 
 import (
@@ -63,13 +62,13 @@ func CreateAsset(assetName string, PublicKey string) build.Asset {
 // TrustAsset trusts a specific asset issued by a particular public key and signs
 // a transaction with a preset limit on how much it is willing to trsut that issuer's
 // asset for
-func TrustAsset(asset build.Asset, limit string, PublicKey string, Seed string) (string, error) {
+func TrustAsset(assetCode string, assetIssuer string, limit string, PublicKey string, Seed string) (string, error) {
 	// TRUST is FROM PublicKey TO Seed
 	trustTx, err := build.Transaction(
 		build.SourceAccount{PublicKey},
 		build.AutoSequence{SequenceProvider: xlm.TestNetClient},
 		build.TestNetwork,
-		build.Trust(asset.Code, asset.Issuer, build.Limit(limit)),
+		build.Trust(assetCode, assetIssuer, build.Limit(limit)),
 	)
 
 	if err != nil {
@@ -102,4 +101,24 @@ func SendAssetFromIssuer(assetName string, destination string, amount string,
 		return -1, "", err
 	}
 	return xlm.SendTx(issuerSeed, paymentTx)
+}
+
+func SendAssetToIssuer(assetName string, destination string, amount string,
+	seed string, pubkey string) (int32, string, error) {
+	// this transaction is FROM recipient TO issuer
+	paymentTx, err := build.Transaction(
+		build.SourceAccount{pubkey},
+		build.TestNetwork,
+		build.AutoSequence{SequenceProvider: xlm.TestNetClient},
+		build.MemoText{"Sending Asset: " + assetName},
+		build.Payment(
+			build.Destination{AddressOrSeed: destination},
+			build.CreditAmount{assetName, destination, amount},
+		),
+	)
+
+	if err != nil {
+		return -1, "", err
+	}
+	return xlm.SendTx(seed, paymentTx)
 }
