@@ -60,6 +60,9 @@ func PrintInvestor(investor database.Investor) {
 	fmt.Println("          Your Username is: ", investor.U.LoginUserName)
 	fmt.Println("          Your Password hash is: ", investor.U.LoginPassword)
 	fmt.Println("          Your Inspector status is: ", investor.U.Inspector)
+	if investor.U.Notification {
+		fmt.Println("         Your Email id is: ", investor.U.Email)
+	}
 }
 
 func PrintUsers(users []database.User) {
@@ -76,6 +79,9 @@ func PrintUser(user database.User) {
 	fmt.Println("          Your Username is: ", user.LoginUserName)
 	fmt.Println("          Your Password hash is: ", user.LoginPassword)
 	fmt.Println("          Your KYC status is: ", user.Kyc)
+	if user.Notification {
+		fmt.Println("         Your Email id is: ", user.Email)
+	}
 }
 
 // PrintRecipient pretty prints recipients
@@ -85,6 +91,10 @@ func PrintRecipient(recipient database.Recipient) {
 	fmt.Println("          Your Received Assets are: ", recipient.ReceivedSolarProjects)
 	fmt.Println("          Your Username is: ", recipient.U.LoginUserName)
 	fmt.Println("          Your Password hash is: ", recipient.U.LoginPassword)
+	fmt.Println("          Your KYC status is: ", recipient.U.Kyc)
+	if recipient.U.Notification {
+		fmt.Println("         Your Email id is: ", recipient.U.Email)
+	}
 }
 
 func PrintEntity(a solar.Entity) {

@@ -44,9 +44,13 @@ type User struct {
 	Inspector bool
 	// inspector is a kyc inspector who valdiates the data of people who would like
 	// to signup on the platform
+	Email string
+	// user email to send out notifications
+	Notification bool
+	// GDPR, if user wants to opt in, set this to true. Default is false
 }
 
-// User is a metastrucutre that contains commonyl used keys within a single umbrella
+// User is a metastrucutre that contains commonly used keys within a single umbrella
 // so that we can import it wherever needed.
 func NewUser(uname string, pwd string, seedpwd string, Name string) (User, error) {
 	// call this after the user has failled in username and password.
@@ -75,6 +79,7 @@ func NewUser(uname string, pwd string, seedpwd string, Name string) (User, error
 	// now we have a new User, take this and then send this struct off to be stored in the database
 	a.FirstSignedUp = utils.Timestamp()
 	a.Kyc = false
+	a.Notification = false
 	err = a.Save()
 	return a, err // since user is a meta structure, insert it and then return the function
 }

@@ -1,8 +1,8 @@
 package wallet
 
 import (
-	"log"
 	"fmt"
+	"log"
 
 	aes "github.com/OpenFinancing/openfinancing/aes"
 	"github.com/stellar/go/keypair"

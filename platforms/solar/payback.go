@@ -8,6 +8,7 @@ import (
 	consts "github.com/OpenFinancing/openfinancing/consts"
 	database "github.com/OpenFinancing/openfinancing/database"
 	issuer "github.com/OpenFinancing/openfinancing/issuer"
+	notif "github.com/OpenFinancing/openfinancing/notif"
 	oracle "github.com/OpenFinancing/openfinancing/oracle"
 	stablecoin "github.com/OpenFinancing/openfinancing/stablecoin"
 	utils "github.com/OpenFinancing/openfinancing/utils"
@@ -46,6 +47,9 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 	// in reality, we run using stableUSD directly wihtout th XLM part. Anonymous investors
 	// or people who are a bit more  careful with keys could still use the XLM -> StableUSD
 	// bridge, but the need for that and kyc regulations have to be evaluated.
+	// Also, if a user can hold balance in btc / xlm, we could direct them to exchange it
+	// using the DEX taht stellar provides and use that asset (or we could setup a payment
+	// provider which accepts fiat + crypto and issue this asset ourselves)
 	issuerPubkey, _, err := wallet.RetrieveSeed(issuer.CreatePath(projIndex), consts.IssuerSeedPwd)
 	if err != nil {
 		return err
@@ -68,12 +72,11 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 	}
 
 	// pay stableUSD back to platform
-	_, txhash, err := assets.SendAsset(stablecoin.Code, stablecoin.PublicKey, platformPubkey, amount, recipientSeed, recipient.U.PublicKey, "Opensolar payback: "+utils.ItoS(projIndex))
+	_, stableUSDHash, err := assets.SendAsset(stablecoin.Code, stablecoin.PublicKey, platformPubkey, amount, recipientSeed, recipient.U.PublicKey, "Opensolar payback: "+utils.ItoS(projIndex))
 	if err != nil {
-		log.Println("Sending stableusd to platform failed", platformPubkey, amount, recipientSeed, recipient.U.PublicKey)
 		return err
 	}
-	log.Println("Paid back platform in  stableUSD, txhash: ", txhash)
+	log.Println("Paid back platform in  stableUSD, txhash: ", stableUSDHash)
 
 	DEBAssetBalance, err := xlm.GetAssetBalance(recipient.U.PublicKey, assetName)
 	if err != nil {
@@ -88,13 +91,13 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 	}
 
 	log.Println("Retrieved average price from oracle: ", monthlyBill)
-	confHeight, txHash, err := assets.SendAssetToIssuer(assetName, issuerPubkey, amount, recipientSeed, recipient.U.PublicKey)
+	confHeight, debtPaybackHash, err := assets.SendAssetToIssuer(assetName, issuerPubkey, amount, recipientSeed, recipient.U.PublicKey)
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 
-	log.Println("Paid debt amount: ", amount, " back to issuer, tx hash: ", txHash, " ", confHeight)
+	log.Println("Paid debt amount: ", amount, " back to issuer, tx hash: ", debtPaybackHash, " ", confHeight)
 	// log.Println("Checking balance to see if our account was debited")
 	newBalance, err := xlm.GetAssetBalance(recipient.U.PublicKey, assetName)
 	if err != nil {
@@ -110,7 +113,9 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 
 	// would be nice to take some additional action like sending a notification or
 	// something to investors or to the email address given so that everyone is made
-	// aware of this and there's data transparency
+	// aware of this and there's data transparency once the recipient pays back to the
+	// platform - could be a service which people can subscriibe to in case they need
+	// something
 
 	if paidAmount < mBillFloat {
 		log.Println("Amount paid is less than amount required, please make sure to cover this next time")
@@ -144,6 +149,14 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 	err = project.Save()
 	if err != nil {
 		return err
+	}
+	if recipient.U.Notification {
+		notif.SendPaybackNotifToRecipient(projIndex, recipient.U.Email, stableUSDHash, debtPaybackHash)
+	}
+	for _, elem := range project.ProjectInvestors {
+		if elem.U.Notification {
+			notif.SendPaybackNotifToInvestor(projIndex, elem.U.Email, stableUSDHash, debtPaybackHash)
+		}
 	}
 	return err
 }

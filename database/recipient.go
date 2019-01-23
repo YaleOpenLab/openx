@@ -34,6 +34,14 @@ func NewRecipient(uname string, pwd string, seedpwd string, Name string) (Recipi
 	return a, err
 }
 
+func (a *Recipient) AddEmail(email string) error {
+	// call this function when a user wants to get notifications. Ask on frontend whether
+	// it wants to
+	a.U.Email = email
+	a.U.Notification = true
+	return a.Save()
+}
+
 // Save() saves a given recipient's details
 func (a *Recipient) Save() error {
 	db, err := OpenDB()

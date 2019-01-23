@@ -473,6 +473,9 @@ func main() {
 					log.Println("Couldn't retrieve project, try again!")
 					continue
 				}
+				if solarProject.Stage != 3 {
+					log.Println("Stage of Project doesn't match, try again!")
+				}
 				PrintProject(solarProject)
 				fmt.Println(" HOW MUCH DO YOU WANT TO INVEST?")
 				investmentAmount, err := scan.ScanForStringWithCheckI()

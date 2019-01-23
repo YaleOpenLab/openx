@@ -46,7 +46,8 @@ type Investor struct {
 // insert their publickey into the system and then have hanlders for them signing
 // transactions
 // TODO: add anonymous investor signing handlers
-// TODO: While anonymity to the public is important, we need to consider all KYC compliance. Could come from an external service.
+// TODO: While anonymity to the public is important, we need to consider all KYC
+// compliance. Could come from an external service.
 func NewInvestor(uname string, pwd string, seedpwd string, Name string) (Investor, error) {
 	var a Investor
 	var err error
@@ -57,6 +58,14 @@ func NewInvestor(uname string, pwd string, seedpwd string, Name string) (Investo
 	a.AmountInvested = float64(0)
 	err = a.Save()
 	return a, err
+}
+
+func (a *Investor) AddEmail(email string) error {
+	// call this function when a user wants to get notifications. Ask on frontend whether
+	// it wants to
+	a.U.Email = email
+	a.U.Notification = true
+	return a.Save()
 }
 
 // InsertInvestor inserts a passed Investor object into the database

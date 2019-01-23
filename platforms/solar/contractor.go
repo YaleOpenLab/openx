@@ -20,6 +20,7 @@ import (
 // don't go back on their investment and slash their investment by 10% if this happens
 // and distribute that amount to the recipient directly and reduce everyone's bids
 // by that amount to account for the change in underlying Project
+// TODO: add multiple contractors
 
 // Contractors are created here inheriting properties from Users/Entities
 func NewContractor(uname string, pwd string, seedpwd string, Name string, Address string, Description string) (Entity, error) {
