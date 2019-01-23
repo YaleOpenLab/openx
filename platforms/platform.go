@@ -5,8 +5,10 @@ import (
 	"log"
 	"os"
 
+	assets "github.com/OpenFinancing/openfinancing/assets"
 	consts "github.com/OpenFinancing/openfinancing/consts"
 	scan "github.com/OpenFinancing/openfinancing/scan"
+	stablecoin "github.com/OpenFinancing/openfinancing/stablecoin"
 	utils "github.com/OpenFinancing/openfinancing/utils"
 	wallet "github.com/OpenFinancing/openfinancing/wallet"
 	xlm "github.com/OpenFinancing/openfinancing/xlm"
@@ -23,9 +25,8 @@ import (
 // be able to transact with the account although people can still send funds to it
 // in this case, they would send us back DebtAssets provided they have sufficient
 // stableUSD balance. Else they would not be able to trigger payback.
-// TODO: this password could also be agreed uponby the party of investors and the recipient
-// so that we act as a trustless entity, which is cool. This has to be done on the frontend's
-// side preferably
+// TODO: this password could also be agreed upon by the party of investors and the recipient
+// so that we act as a trustless entity, which is cool. This has to be done on the frontend preferably
 // the main platform still has its pubkey and seed pair and sends funds out to issuers
 // but is not directly involved in the setting up of trustlines
 func InitializePlatform() (string, string, error) {
@@ -87,6 +88,12 @@ func InitializePlatform() (string, string, error) {
 	if err != nil {
 		log.Println("ERROR WHILE SETTING OPTIONS")
 	}
+	// make the platform trust the stablecoin for receiving payments
+	txhash, err = assets.TrustAsset(stablecoin.Code, stablecoin.PublicKey, "10000000000", publicKey, seed)
+	if err != nil {
+		return publicKey, seed, err
+	}
+	log.Println("Platform trusts stablecoin: ", txhash)
 	return publicKey, seed, err
 }
 
@@ -105,8 +112,8 @@ func RefillPlatform(publicKey string) error {
 		// get coins if balance is this low
 		log.Println("Refilling platform balance")
 		err := xlm.GetXLM(publicKey)
-		// TODO: in future, need to refill platform sufficiently well and interact
-		// with a cold wallet that we have previously set
+		// refill platform sufficiently well and interact with a cold wallet that we
+		// have previously set earlier to avoid hacks and similar
 		if err != nil {
 			return err
 		}

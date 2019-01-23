@@ -85,8 +85,6 @@ func SendTx(Seed string, tx *build.TransactionBuilder) (int32, string, error) {
 	would mean that secondary speculation markets cant flourish (sicne they would
 	require our authorization) and hence we don't set the required flag
 
-	TODO: have a new platform setup for each account
-
 	SetOptions(
 	InflationDest("GCT7S5BA6ZC7SV7GGEMEYJTWOBYTBOA7SC4JEYP7IAEDG7HQNIWKRJ4G"),
 	SetAuthRequired(),

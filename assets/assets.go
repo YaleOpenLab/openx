@@ -122,3 +122,23 @@ func SendAssetToIssuer(assetName string, destination string, amount string,
 	}
 	return xlm.SendTx(seed, paymentTx)
 }
+
+func SendAsset(assetName string, issuerPubkey string, destination string, amount string,
+	seed string, pubkey string, memo string) (int32, string, error) {
+	// this transaction is FROM pubkey TO destination
+	paymentTx, err := build.Transaction(
+		build.SourceAccount{pubkey},
+		build.TestNetwork,
+		build.AutoSequence{SequenceProvider: xlm.TestNetClient},
+		build.MemoText{memo},
+		build.Payment(
+			build.Destination{AddressOrSeed: destination},
+			build.CreditAmount{assetName, issuerPubkey, amount},
+		),
+	)
+
+	if err != nil {
+		return -1, "", err
+	}
+	return xlm.SendTx(seed, paymentTx)
+}

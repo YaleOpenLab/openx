@@ -4,7 +4,7 @@ package solar
 // This can be applied as a feedback system to actors that are part of projects
 // (i.e. relate to Entities.go, such as contractors). It allows investors and
 // recipients to give comments on the services provided by these entities in the project.
-// TODO: build and improve this functionality and consider a reputation system to score services.
+// TODO: build and improve this functionality and link it with the reputation system
 
 type Feedback struct {
 	Content string

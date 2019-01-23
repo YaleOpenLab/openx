@@ -57,7 +57,7 @@ func main() {
 	}
 
 	log.Printf("PLATFORM SEED IS: %s\n PLATFORM PUBLIC KEY IS: %s\n", platformSeed, platformPublicKey)
-	// TODO: how much do we pay the investor? how does it work
+	// TODO: how much do we pay the investor?
 	// Do we sell the REC created from the solar panels only to the investor? If so,
 	// isn't that enough to propel investment in the solar contract itself?
 	// TODO: need a server to run a public stellar node to test out stuff
@@ -69,8 +69,6 @@ func main() {
 	// TODO: Need to automatically cover breach scenarios in case the recipient doesn't
 	// pay for a specific period of time
 	// TODO: also write a Makefile so that its easy for people to get started with stuff
-	// TODO: implement a dummy KYC inspector so that we can view what the role
-	// of that entity would be as well
 	fmt.Println("------------STELLAR HOUSE INVESTMENT CLI INTERFACE------------")
 
 	// init stablecoin stuff
@@ -173,7 +171,7 @@ func main() {
 				}
 				fmt.Printf("PAYING BACK %s TOWARDS PROJECT NUMBER: %d\n", paybackAmount, rtContract.Params.Index) // use the rtContract.Params here instead of using projectNumber from long ago
 
-				err = solar.Payback(recipient.U.Index, rtContract.Params.Index, rtContract.Params.DebtAssetCode, paybackAmount, recipientSeed)
+				err = solar.Payback(recipient.U.Index, rtContract.Params.Index, rtContract.Params.DebtAssetCode, paybackAmount, recipientSeed, platformPublicKey)
 				if err != nil {
 					log.Println("PAYBACK TX FAILED, PLEASE TRY AGAIN!", err)
 					break
@@ -193,6 +191,8 @@ func main() {
 				}
 				break
 			case 5:
+				var bestContract solar.Project
+				var err error
 				allContracts, err := solar.RetrieveRecipientProjects(solar.ProposedProject, recipient.U.Index)
 				if err != nil {
 					log.Println(err)
@@ -219,29 +219,18 @@ func main() {
 				switch opt {
 				case 1:
 					fmt.Println("YOU'VE CHOSEN TO SELECT BY BLIND AUCTION RULES")
-					// here we assume that the timeout period for the auction is up and that
-					// price is the winning metric of a specific bid, like in traditional contract
-					bestContract, err := solar.SelectContractBlind(allContracts)
+					bestContract, err = solar.SelectContractBlind(allContracts)
 					if err != nil {
 						log.Println(err)
 						continue
 					}
-					log.Println("BEST CONTRACT IS: ")
-					// we need the contractor who proposed this contract
-					bestContract.SetFinalizedProject()
-					PrintProject(bestContract)
-					// now at this point, we need to mark this specific contract as completed.
-					// do we set a flag? db entry? how do we do that
 				case 2:
 					fmt.Println("YOU'VE CHOSEN TO SELECT BY NUMBER OF YEARS")
-					bestContract, err := solar.SelectContractTime(allContracts)
+					bestContract, err = solar.SelectContractTime(allContracts)
 					if err != nil {
 						log.Println(err)
 						continue
 					}
-					log.Println("BEST CONTRACT IS: ")
-					bestContract.SetFinalizedProject()
-					PrintProject(bestContract)
 				case 3:
 					for i, contract := range allContracts {
 						log.Println("BEST BID CHOICE NUMBER: ", i)
@@ -253,28 +242,24 @@ func main() {
 						log.Println(err)
 						break
 					}
-					log.Println("BEST CONTRACT IS: ")
-					// we need the contractor who proposed this contract
-					allContracts[opt].SetFinalizedProject()
-					PrintProject(allContracts[opt])
+					bestContract = allContracts[opt]
 				case 4:
 					fmt.Println("YOU'VE CHOSEN TO SELECT BY VICKREY AUCTION RULES")
 					// here we assume that the timeout period for the auction is up and that
 					// price is the winning metric of a specific bid, like in traditional contract
-					bestContract, err := solar.SelectContractVickrey(allContracts)
+					bestContract, err = solar.SelectContractVickrey(allContracts)
 					if err != nil {
 						log.Println(err)
 						continue
 					}
-					log.Println("BEST CONTRACT IS: ")
-					// we need the contractor who proposed this contract
-					bestContract.SetFinalizedProject()
-					PrintProject(bestContract)
-					// now at this point, we need to mark this specific contract as completed.
-					// do we set a flag? db entry? how do we do that
 				default:
 					break
 				}
+				bestContract.SetFinalizedProject()
+				log.Println("BEST CONTRACT IS: ")
+				PrintProject(bestContract)
+				// now the contract is at stage 3
+				// TODO: setup the issuer and stuff here instead of in invest
 			case 6:
 				fmt.Println("LIST OF ALL PRE ORIGIN PROJECTS BY ORIGINATORS (STAGE 0)")
 				allMyProjects, err := solar.RetrieveProjectsAtStage(solar.PreOriginProject)
@@ -475,6 +460,9 @@ func main() {
 					log.Println("Couldn't retrieve project, try again!")
 					continue
 				}
+				if solarProject.Stage != 3 {
+					log.Println("Stage of Project doesn't match, try again!")
+				}
 				PrintProject(solarProject)
 				fmt.Println(" HOW MUCH DO YOU WANT TO INVEST?")
 				investmentAmount, err := scan.ScanForStringWithCheckI()
@@ -498,6 +486,7 @@ func main() {
 					log.Println(err)
 					break
 				}
+
 				fmt.Printf("Platform seed is: %s and platform's publicKey is %s\n", platformSeed, platformPublicKey)
 				err = xlm.RefillAccount(investor.U.PublicKey, platformSeed)
 				if err != nil {
@@ -518,10 +507,11 @@ func main() {
 					break
 				}
 
-				// need the recipient's seed here as well
-				// need to unlock the recipient account
+				// need the recipient's seed here as well, unlock the recipient account
 				fmt.Println("ENTER THE RECIPIENT'S SEED PASSWORD")
-				// ideally we should ask the recipient for confirmation in case he wants to re4ceived the money or something
+				// ideally we should ask the recipient for confirmation in case he wants to
+				// receive the money or something. Also the fact that we can't unlock the account
+				// for him
 				seedpwd, err := scan.ScanRawPassword()
 				if err != nil {
 					log.Println(err)

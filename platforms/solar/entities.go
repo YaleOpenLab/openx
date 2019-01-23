@@ -94,6 +94,40 @@ func (a *Entity) Save() error {
 }
 
 // gets all the proposed contracts for a particular recipient
+func RetrieveAllEntitiesWithoutRole() ([]Entity, error) {
+	var arr []Entity
+	temp, err := database.RetrieveAllUsers()
+	if err != nil {
+		return arr, err
+	}
+	limit := len(temp) + 1
+	db, err := database.OpenDB()
+	if err != nil {
+		return arr, err
+	}
+	defer db.Close()
+
+	err = db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket(database.ContractorBucket)
+		for i := 1; i < limit; i++ {
+			var rContractor Entity
+			x := b.Get(utils.ItoB(i))
+			if x == nil {
+				// might be some other user like an investor or recipient
+				continue
+			}
+			err := json.Unmarshal(x, &rContractor)
+			if err != nil {
+				return nil
+			}
+			arr = append(arr, rContractor)
+		}
+		return nil
+	})
+	return arr, err
+}
+
+// gets all the proposed contracts for a particular recipient
 func RetrieveAllEntities(role string) ([]Entity, error) {
 	var arr []Entity
 	temp, err := database.RetrieveAllUsers()
@@ -191,4 +225,56 @@ func newEntity(uname string, pwd string, seedpwd string, Name string, Address st
 	}
 	err = a.Save()
 	return a, err
+}
+
+func ChangeReputation(entityIndex int, reputation float64) error {
+	a, err := RetrieveEntity(entityIndex)
+	if err != nil {
+		return err
+	}
+	if reputation > 0 {
+		err = a.U.IncreaseReputation(reputation)
+	} else {
+		err = a.U.DecreaseReputation(reputation)
+	}
+	if err != nil {
+		return err
+	}
+	return a.Save()
+}
+
+func TopReputationEntitiesWithoutRole() ([]Entity, error) {
+	// TopReputationEntities returns entities with reputation in descending order
+	allEntities, err := RetrieveAllEntitiesWithoutRole()
+	if err != nil {
+		return allEntities, err
+	}
+	for i, _ := range allEntities {
+		for j, _ := range allEntities {
+			if allEntities[i].U.Reputation < allEntities[j].U.Reputation {
+				tmp := allEntities[i]
+				allEntities[i] = allEntities[j]
+				allEntities[j] = tmp
+			}
+		}
+	}
+	return allEntities, nil
+}
+
+func TopReputationEntities(role string) ([]Entity, error) {
+	// caller knows what role he needs this list for, so directly retrieve and do stuff here
+	allEntities, err := RetrieveAllEntities(role)
+	if err != nil {
+		return allEntities, err
+	}
+	for i, _ := range allEntities {
+		for j, _ := range allEntities {
+			if allEntities[i].U.Reputation < allEntities[j].U.Reputation {
+				tmp := allEntities[i]
+				allEntities[i] = allEntities[j]
+				allEntities[j] = tmp
+			}
+		}
+	}
+	return allEntities, nil
 }

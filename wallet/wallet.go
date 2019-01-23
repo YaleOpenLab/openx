@@ -1,6 +1,7 @@
 package wallet
 
 import (
+	"fmt"
 	"log"
 
 	aes "github.com/OpenFinancing/openfinancing/aes"
@@ -69,6 +70,9 @@ func DecryptSeed(encryptedSeed []byte, seedpwd string) (string, error) {
 }
 
 func ReturnPubkey(seed string) (string, error) {
+	if len(seed) == 0 {
+		return seed, fmt.Errorf("Empty Seed passed!")
+	}
 	keyp, err := keypair.Parse(seed)
 	return keyp.Address(), err
 }

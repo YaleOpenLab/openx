@@ -46,7 +46,8 @@ type Investor struct {
 // insert their publickey into the system and then have hanlders for them signing
 // transactions
 // TODO: add anonymous investor signing handlers
-// TODO: While anonymity to the public is important, we need to consider all KYC compliance. Could come from an external service.
+// TODO: While anonymity to the public is important, we need to consider all KYC
+// compliance. Could come from an external service.
 func NewInvestor(uname string, pwd string, seedpwd string, Name string) (Investor, error) {
 	var a Investor
 	var err error
@@ -57,6 +58,14 @@ func NewInvestor(uname string, pwd string, seedpwd string, Name string) (Investo
 	a.AmountInvested = float64(0)
 	err = a.Save()
 	return a, err
+}
+
+func (a *Investor) AddEmail(email string) error {
+	// call this function when a user wants to get notifications. Ask on frontend whether
+	// it wants to
+	a.U.Email = email
+	a.U.Notification = true
+	return a.Save()
 }
 
 // InsertInvestor inserts a passed Investor object into the database
@@ -173,4 +182,41 @@ func (a *Investor) CanInvest(balance string, targetBalance string) bool {
 		return false
 	}
 	return balance >= targetBalance
+}
+
+// the following two functions on reputation are repeated for recipients and entities
+// but are necessary for th RPC which woukd call these functions in various scenarios
+// eg. when negative feedback is approved  by multiple parties and they decide to
+// reduce the reputation of the user
+func ChangeReputation(invIndex int, reputation float64) error {
+	a, err := RetrieveInvestor(invIndex)
+	if err != nil {
+		return err
+	}
+	if reputation > 0 {
+		err = a.U.IncreaseReputation(reputation)
+	} else {
+		err = a.U.DecreaseReputation(reputation)
+	}
+	if err != nil {
+		return err
+	}
+	return a.Save()
+}
+
+func TopReputationInvestors() ([]Investor, error) {
+	allInvestors, err := RetrieveAllInvestors()
+	if err != nil {
+		return allInvestors, err
+	}
+	for i, _ := range allInvestors {
+		for j, _ := range allInvestors {
+			if allInvestors[i].U.Reputation < allInvestors[j].U.Reputation {
+				tmp := allInvestors[i]
+				allInvestors[i] = allInvestors[j]
+				allInvestors[j] = tmp
+			}
+		}
+	}
+	return allInvestors, nil
 }

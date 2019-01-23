@@ -501,7 +501,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = Payback(1, 1, "", "", "")
+	err = Payback(1, 1, "", "", "", "")
 	if err == nil {
 		t.Fatal("Invalid params not caught, exiting!")
 	}

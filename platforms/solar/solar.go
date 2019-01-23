@@ -8,7 +8,6 @@ package solar
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 
 	database "github.com/OpenFinancing/openfinancing/database"
 	utils "github.com/OpenFinancing/openfinancing/utils"
@@ -32,15 +31,22 @@ import (
 type Project struct {
 	Params SolarParams // Params is the former Order struct imported into the new Project structure
 
-	Originator       Entity // a specific contract must hold the person who originated it
-	OriginatorFee    int    // fee paid to the originator from the total fee of the project
-	Contractor       Entity // the person with the proposed contract
-	ContractorFee    int    // fee paid to the contractor from the total fee of the project
-	Guarantor        Entity // the person guaranteeing the specific project in question
+	Originator    Entity // a specific contract must hold the person who originated it
+	OriginatorFee int    // fee paid to the originator from the total fee of the project
+	Contractor    Entity // the person with the proposed contract
+	ContractorFee int    // fee paid to the contractor from the total fee of the project
+	Guarantor     Entity // the person guaranteeing the specific project in question
+
 	ProjectRecipient database.Recipient
 	ProjectInvestors []database.Investor
-	Stage            float64 // the stage at which the contract is at, float due to potential support of 0.5 state changes in the future
-	AuctionType      string  // the type of the auction in question. Default is blind auction unless explicitly mentioned
+
+	Stage       float64 // the stage at which the contract is at, float due to potential support of 0.5 state changes in the future
+	AuctionType string  // the type of the auction in question. Default is blind auction unless explicitly mentioned
+
+	OriginatorMoUHash       string // the contract between the originator and the recipient at stage LegalContractStage
+	ContractorContractHash  string // the contract between the contractor and the platform at stage ProposeProject
+	InvPlatformContractHash string // the contract between the investor and the platform at stage FundedProject
+	RecPlatformContractHash string // the contract between the recipient and the platform at stage FundedProject
 }
 
 // so a contract's rough workflow is like
@@ -349,7 +355,6 @@ func (project *Project) updateRecipient(a database.Recipient) error {
 	pos := -1
 	for i, mem := range a.ReceivedSolarProjects {
 		if mem == project.Params.DebtAssetCode {
-			log.Println("Rewriting the thing in our copy")
 			// rewrite the thing in memory that we have
 			pos = i
 			break
@@ -362,4 +367,40 @@ func (project *Project) updateRecipient(a database.Recipient) error {
 		return err
 	}
 	return nil
+}
+
+func SaveOriginatorMoU(projIndex int, hash string) error {
+	a, err := RetrieveProject(projIndex)
+	if err != nil {
+		return err
+	}
+	a.OriginatorMoUHash = hash
+	return a.Save()
+}
+
+func SaveContractHash(projIndex int, hash string) error {
+	a, err := RetrieveProject(projIndex)
+	if err != nil {
+		return err
+	}
+	a.ContractorContractHash = hash
+	return a.Save()
+}
+
+func SaveInvPlatformContract(projIndex int, hash string) error {
+	a, err := RetrieveProject(projIndex)
+	if err != nil {
+		return err
+	}
+	a.InvPlatformContractHash = hash
+	return a.Save()
+}
+
+func SaveRecPlatformContract(projIndex int, hash string) error {
+	a, err := RetrieveProject(projIndex)
+	if err != nil {
+		return err
+	}
+	a.RecPlatformContractHash = hash
+	return a.Save()
 }

@@ -34,6 +34,14 @@ func NewRecipient(uname string, pwd string, seedpwd string, Name string) (Recipi
 	return a, err
 }
 
+func (a *Recipient) AddEmail(email string) error {
+	// call this function when a user wants to get notifications. Ask on frontend whether
+	// it wants to
+	a.U.Email = email
+	a.U.Notification = true
+	return a.Save()
+}
+
 // Save() saves a given recipient's details
 func (a *Recipient) Save() error {
 	db, err := OpenDB()
@@ -116,4 +124,37 @@ func ValidateRecipient(name string, pwhash string) (Recipient, error) {
 		return rec, err
 	}
 	return RetrieveRecipient(user.Index)
+}
+
+func ChangeRecpReputation(recpIndex int, reputation float64) error {
+	a, err := RetrieveRecipient(recpIndex)
+	if err != nil {
+		return err
+	}
+	if reputation > 0 {
+		err = a.U.IncreaseReputation(reputation)
+	} else {
+		err = a.U.DecreaseReputation(reputation)
+	}
+	if err != nil {
+		return err
+	}
+	return a.Save()
+}
+
+func TopReputationRecipient() ([]Recipient, error) {
+	allRecipients, err := RetrieveAllRecipients()
+	if err != nil {
+		return allRecipients, err
+	}
+	for i, _ := range allRecipients {
+		for j, _ := range allRecipients {
+			if allRecipients[i].U.Reputation < allRecipients[j].U.Reputation {
+				tmp := allRecipients[i]
+				allRecipients[i] = allRecipients[j]
+				allRecipients[j] = tmp
+			}
+		}
+	}
+	return allRecipients, nil
 }
