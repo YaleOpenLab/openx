@@ -13,7 +13,7 @@ import (
 // and that's what we have right now. If we want this to be an auction as well, we
 // need to have a specific date of sorts where all the contractors can propose
 // contracts immmediately, without latency.
-// TODO: slash contractor deposits in case they go back after wiinning the auction
+// TODO: slash contractor deposits in case they go back after winning the auction
 // A given Contractor right now is allowed only for one final bid for blind
 // auction advantages (i.e. no price discovery, etc). If we want to change this, we must
 // Also, have some kind of deposit for Contractors (5% or something) so that they

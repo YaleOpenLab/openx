@@ -57,7 +57,7 @@ func main() {
 	}
 
 	log.Printf("PLATFORM SEED IS: %s\n PLATFORM PUBLIC KEY IS: %s\n", platformSeed, platformPublicKey)
-	// TODO: how much do we pay the investor? how does it work
+	// TODO: how much do we pay the investor?
 	// Do we sell the REC created from the solar panels only to the investor? If so,
 	// isn't that enough to propel investment in the solar contract itself?
 	// TODO: need a server to run a public stellar node to test out stuff
@@ -69,8 +69,6 @@ func main() {
 	// TODO: Need to automatically cover breach scenarios in case the recipient doesn't
 	// pay for a specific period of time
 	// TODO: also write a Makefile so that its easy for people to get started with stuff
-	// TODO: implement a dummy KYC inspector so that we can view what the role
-	// of that entity would be as well
 	fmt.Println("------------STELLAR HOUSE INVESTMENT CLI INTERFACE------------")
 
 	// init stablecoin stuff
@@ -173,7 +171,7 @@ func main() {
 				}
 				fmt.Printf("PAYING BACK %s TOWARDS PROJECT NUMBER: %d\n", paybackAmount, rtContract.Params.Index) // use the rtContract.Params here instead of using projectNumber from long ago
 
-				err = solar.Payback(recipient.U.Index, rtContract.Params.Index, rtContract.Params.DebtAssetCode, paybackAmount, recipientSeed)
+				err = solar.Payback(recipient.U.Index, rtContract.Params.Index, rtContract.Params.DebtAssetCode, paybackAmount, recipientSeed, platformPublicKey)
 				if err != nil {
 					log.Println("PAYBACK TX FAILED, PLEASE TRY AGAIN!", err)
 					break

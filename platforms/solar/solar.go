@@ -8,7 +8,6 @@ package solar
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 
 	database "github.com/OpenFinancing/openfinancing/database"
 	utils "github.com/OpenFinancing/openfinancing/utils"
@@ -349,7 +348,6 @@ func (project *Project) updateRecipient(a database.Recipient) error {
 	pos := -1
 	for i, mem := range a.ReceivedSolarProjects {
 		if mem == project.Params.DebtAssetCode {
-			log.Println("Rewriting the thing in our copy")
 			// rewrite the thing in memory that we have
 			pos = i
 			break

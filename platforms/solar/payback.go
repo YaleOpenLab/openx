@@ -9,6 +9,7 @@ import (
 	database "github.com/OpenFinancing/openfinancing/database"
 	issuer "github.com/OpenFinancing/openfinancing/issuer"
 	oracle "github.com/OpenFinancing/openfinancing/oracle"
+	stablecoin "github.com/OpenFinancing/openfinancing/stablecoin"
 	utils "github.com/OpenFinancing/openfinancing/utils"
 	wallet "github.com/OpenFinancing/openfinancing/wallet"
 	xlm "github.com/OpenFinancing/openfinancing/xlm"
@@ -26,7 +27,7 @@ import (
 // Anything below the lower bound gets a warning in
 // project for people to pay more, we could also have a threshold mechanism that says
 // if a person constantly defaults for more than half the owed amount for three
-// consecutive months, we sell power directly to the grid. THis could also be used
+// consecutive months, we sell power directly to the grid. This could also be used
 // for a rating system, where the frontend UI can have a rating based on whether
 // the recipient has defaulted or not in the past.
 // 2. The receiver checks whether the amount is greater than Oracle Threshold and
@@ -39,7 +40,12 @@ import (
 // is on chain and resolves the dispute itself using existing off chain legal frameworks
 // (issued bonds, agreements, etc)
 // TODO: evaluate whether we need PaybackAsset
-func Payback(recpIndex int, projIndex int, assetName string, amount string, recipientSeed string) error {
+func Payback(recpIndex int, projIndex int, assetName string, amount string, recipientSeed string,
+	platformPubkey string) error {
+	// in this flow, we exchange xlm for stableUSD and run the process in stableUSD but
+	// in reality, we run using stableUSD directly wihtout th XLM part. Anonymous investors
+	// or people who are a bit more  careful with keys could still use the XLM -> StableUSD
+	// bridge, but the need for that and kyc regulations have to be evaluated.
 	issuerPubkey, _, err := wallet.RetrieveSeed(issuer.CreatePath(projIndex), consts.IssuerSeedPwd)
 	if err != nil {
 		return err
@@ -53,28 +59,28 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 	if err != nil {
 		return err
 	}
-	/*
-		// once we have the stablecoin here, we can remove the assetName
-		StableBalance, err := xlm.GetAssetBalance(recipient.U.PublicKey, "STABLEUSD")
-		// checks for the stablecoin asset
-		if err != nil {
-			log.Println("YOU HAVE NO STABLECOIN BALANCE, PLEASE REFILL ACCOUNT")
-			return err
-		}
-	*/
+	// once we have the stablecoin here, we can remove the assetName
+	StableBalance, err := xlm.GetAssetBalance(recipient.U.PublicKey, "STABLEUSD")
+	// checks for the stablecoin asset
+	if err != nil || (utils.StoF(StableBalance) < utils.StoF(amount)) {
+		log.Println("You do not have the required stablecoin balance, please refill")
+		return err
+	}
+
+	// pay stableUSD back to platform
+	_, txhash, err := assets.SendAsset(stablecoin.Code, stablecoin.PublicKey, platformPubkey, amount, recipientSeed, recipient.U.PublicKey, "Opensolar payback: "+utils.ItoS(projIndex))
+	if err != nil {
+		log.Println("Sending stableusd to platform failed", platformPubkey, amount, recipientSeed, recipient.U.PublicKey)
+		return err
+	}
+	log.Println("Paid back platform in  stableUSD, txhash: ", txhash)
+
 	DEBAssetBalance, err := xlm.GetAssetBalance(recipient.U.PublicKey, assetName)
 	if err != nil {
 		fmt.Println("Don't have the debt asset in possession")
 		return err
 	}
 
-	/* Renable this once this goes to testing
-	if utils.StoF(amount) > utils.StoF(StableBalance) {
-		// check whether the recipient has enough StableUSD to make this happen
-		log.Println("YOU CAN'T SEND AN AMOUNT MORE THAN WHAT YOU HAVE")
-		return fmt.Errorf("YOU CAN'T SEND AN AMOUNT MORE THAN WHAT YOU HAVE")
-	}
-	*/
 	monthlyBill := oracle.MonthlyBill()
 	if err != nil {
 		log.Println("Unable to fetch oracle price, exiting")
@@ -82,12 +88,6 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 	}
 
 	log.Println("Retrieved average price from oracle: ", monthlyBill)
-	// the oracle needs to know the assetName so that it can find the other details
-	// about this asset from the db. This should run on the server side and must
-	// be split when we do run client side stuff.
-	// hardcode for now, need to add the oracle here so that we
-	// can do this dynamically
-	// send amount worth DebtAssets back to issuer
 	confHeight, txHash, err := assets.SendAssetToIssuer(assetName, issuerPubkey, amount, recipientSeed, recipient.U.PublicKey)
 	if err != nil {
 		log.Println(err)
@@ -106,14 +106,14 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 	mBillFloat := utils.StoF(monthlyBill)
 
 	paidAmount := DEBAssetBalanceFloat - newBalanceFloat
-	log.Println("Old Balance: ", DEBAssetBalanceFloat, "New Balance: ", newBalanceFloat, "Paid: ", paidAmount, "Bill Amount: ", mBillFloat)
+	log.Println("Old Balance: ", DEBAssetBalanceFloat, " New Balance: ", newBalanceFloat, " Paid: ", paidAmount, " Bill Amount: ", mBillFloat)
 
 	// would be nice to take some additional action like sending a notification or
 	// something to investors or to the email address given so that everyone is made
 	// aware of this and there's data transparency
 
 	if paidAmount < mBillFloat {
-		log.Println("Amount paid is less than amount required, balance not updating, please make sure to cover this next time")
+		log.Println("Amount paid is less than amount required, please make sure to cover this next time")
 	} else if paidAmount > mBillFloat {
 		log.Println("You've chosen to pay more than what is required for this month. Adjusting payback period accordingly")
 	} else {
