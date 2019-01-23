@@ -169,6 +169,8 @@ func InvestInProject(projIndex int, invIndex int, recpIndex int, invAmount strin
 	if project.Params.MoneyRaised == project.Params.TotalValue {
 		// this project covers up the amount nedeed for the project, so set the DebtAssetCode
 		// and PaybackAssetCodes, generate them and give to the recipient
+		// we need the recipient's seed here, so we need to wait on the frontend and require
+		// confirmation from the recipient or something
 		project.Params.DebtAssetCode = assets.AssetID(consts.DebtAssetPrefix + project.Params.Metadata)
 		project.Params.PaybackAssetCode = assets.AssetID(consts.PaybackAssetPrefix + project.Params.Metadata)
 

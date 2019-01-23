@@ -70,3 +70,9 @@ func (contractor *Entity) AddCollateral(amount float64, data string) error {
 	contractor.CollateralData = append(contractor.CollateralData, data)
 	return contractor.Save()
 }
+
+func (contractor *Entity) Slash(contractValue float64) error {
+	// slash an entity's reputation score if it reneges back on an agreed contract
+	contractor.U.Reputation -= contractValue * 0.1
+	return contractor.Save()
+}

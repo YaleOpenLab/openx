@@ -125,3 +125,36 @@ func ValidateRecipient(name string, pwhash string) (Recipient, error) {
 	}
 	return RetrieveRecipient(user.Index)
 }
+
+func ChangeRecpReputation(recpIndex int, reputation float64) error {
+	a, err := RetrieveRecipient(recpIndex)
+	if err != nil {
+		return err
+	}
+	if reputation > 0 {
+		err = a.U.IncreaseReputation(reputation)
+	} else {
+		err = a.U.DecreaseReputation(reputation)
+	}
+	if err != nil {
+		return err
+	}
+	return a.Save()
+}
+
+func TopReputationRecipient() ([]Recipient, error) {
+	allRecipients, err := RetrieveAllRecipients()
+	if err != nil {
+		return allRecipients, err
+	}
+	for i, _ := range allRecipients {
+		for j, _ := range allRecipients {
+			if allRecipients[i].U.Reputation < allRecipients[j].U.Reputation {
+				tmp := allRecipients[i]
+				allRecipients[i] = allRecipients[j]
+				allRecipients[j] = tmp
+			}
+		}
+	}
+	return allRecipients, nil
+}

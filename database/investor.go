@@ -183,3 +183,40 @@ func (a *Investor) CanInvest(balance string, targetBalance string) bool {
 	}
 	return balance >= targetBalance
 }
+
+// the following two functions on reputation are repeated for recipients and entities
+// but are necessary for th RPC which woukd call these functions in various scenarios
+// eg. when negative feedback is approved  by multiple parties and they decide to
+// reduce the reputation of the user
+func ChangeReputation(invIndex int, reputation float64) error {
+	a, err := RetrieveInvestor(invIndex)
+	if err != nil {
+		return err
+	}
+	if reputation > 0 {
+		err = a.U.IncreaseReputation(reputation)
+	} else {
+		err = a.U.DecreaseReputation(reputation)
+	}
+	if err != nil {
+		return err
+	}
+	return a.Save()
+}
+
+func TopReputationInvestors() ([]Investor, error) {
+	allInvestors, err := RetrieveAllInvestors()
+	if err != nil {
+		return allInvestors, err
+	}
+	for i, _ := range allInvestors {
+		for j, _ := range allInvestors {
+			if allInvestors[i].U.Reputation < allInvestors[j].U.Reputation {
+				tmp := allInvestors[i]
+				allInvestors[i] = allInvestors[j]
+				allInvestors[j] = tmp
+			}
+		}
+	}
+	return allInvestors, nil
+}

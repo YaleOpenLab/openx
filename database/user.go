@@ -48,6 +48,10 @@ type User struct {
 	// user email to send out notifications
 	Notification bool
 	// GDPR, if user wants to opt in, set this to true. Default is false
+	Reputation float64
+	// Reputation contains the reputation of a good contractor. Reputation increases
+	// for each completed bond and decreases for each bond cancelled. The frontend
+	// could have a table based on reputation scores
 }
 
 // User is a metastrucutre that contains commonly used keys within a single umbrella
@@ -326,4 +330,34 @@ func AddInspector(userIndex int) error {
 	}
 	user.Inspector = true
 	return user.Save()
+}
+
+// TODO: evaluate how we will grade projects and weigh reputation
+func (a *User) IncreaseReputation(reputation float64) error {
+	a.Reputation += reputation
+	return a.Save()
+}
+
+func (a *User) DecreaseReputation(reputation float64) error {
+	a.Reputation -= reputation
+	return a.Save()
+}
+
+func TopReputationUsers() ([]User, error) {
+	// these reputation functions should mostly be used by the frontend through the
+	// RPC to display to other users what other users' reputation is.
+	allUsers, err := RetrieveAllUsers()
+	if err != nil {
+		return allUsers, err
+	}
+	for i, _ := range allUsers {
+		for j, _ := range allUsers {
+			if allUsers[i].Reputation < allUsers[j].Reputation {
+				tmp := allUsers[i]
+				allUsers[i] = allUsers[j]
+				allUsers[j] = tmp
+			}
+		}
+	}
+	return allUsers, nil
 }
