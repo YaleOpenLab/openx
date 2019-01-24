@@ -15,6 +15,7 @@ type SolarParams struct {
 	InvestorAssetCode string
 	DebtAssetCode     string
 	PaybackAssetCode  string
+	SeedAssetCode     string
 
 	BalLeft float64 // denotes the balance left to pay by the party
 	Votes   int     // the number of votes towards a proposed contract by investors
@@ -24,3 +25,16 @@ type SolarParams struct {
 	DateLastPaid  string // date the project was last paid
 	// Percentage raised is not stored in the database since that can be calculated by the UI
 }
+
+// these are the reputation values associated with a specific project. For eg if
+// a project's total worth is 10000 and everything in the project goes well and
+// all entities are satisfied by the outcome, the originator gains 1000 points,
+// the contractor gains 3000 points and so on
+// MWTODO: get comments on the weights and tweak them if needed
+var (
+	InvestorWeight   = 0.1
+	OriginatorWeight = 0.1
+	ContractorWeight = 0.3
+	DeveloperWeight  = 0.2
+	RecipientWeight  = 0.3
+)

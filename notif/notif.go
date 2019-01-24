@@ -11,7 +11,7 @@ import (
 // package notif is used to send out notifications regarding important events that take
 // place with respect to a specific project / investment
 
-// TODO: Get comments on general text here
+// MWTODO: Get comments on general text here
 // footerString is a common footer string that is used by all emails
 var footerString = "Have a nice day!\n\nWarm Regards, \nThe OpenSolar Team\n\n\n\n" +
 	"You're receiving this email because your contact was given" +
@@ -70,6 +70,20 @@ func SendInvestmentNotifToInvestor(projIndex int, to string, stableHash string, 
 	// investment
 	body := "Greetings from the opensolar platform! \n\n" +
 		"We're writing to let you know have invested in project number: " + utils.ItoS(projIndex) + "\n\n" +
+		"Your proofs of payment are attached below and may be used as future reference in case of discrepancies:  \n\n" +
+		"Your stablecoin payment hash is: https://testnet.steexp.com/tx/" + stableHash + "\n" +
+		"Your trusted asset hash is: https://testnet.steexp.com/tx/" + trustHash + "\n" +
+		"Your investment asset hash is: https://testnet.steexp.com/tx/" + assetHash + "\n\n\n" +
+		footerString
+	return sendMail(body, to)
+}
+
+func SendSeedInvestmentNotifToInvestor(projIndex int, to string, stableHash string, trustHash string, assetHash string) error {
+	// this is sent to the investor on investment
+	// this should ideally contain all the information he needs for a concise proof of
+	// investment
+	body := "Greetings from the opensolar platform! \n\n" +
+		"We're writing to let you know have invested in the seed round of project: " + utils.ItoS(projIndex) + "\n\n" +
 		"Your proofs of payment are attached below and may be used as future reference in case of discrepancies:  \n\n" +
 		"Your stablecoin payment hash is: https://testnet.steexp.com/tx/" + stableHash + "\n" +
 		"Your trusted asset hash is: https://testnet.steexp.com/tx/" + trustHash + "\n" +

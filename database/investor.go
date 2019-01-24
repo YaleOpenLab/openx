@@ -45,7 +45,6 @@ type Investor struct {
 // we decide to allow anonymous investors to invest on our platform, we can easily
 // insert their publickey into the system and then have hanlders for them signing
 // transactions
-// TODO: add anonymous investor signing handlers
 // TODO: While anonymity to the public is important, we need to consider all KYC
 // compliance. Could come from an external service.
 func NewInvestor(uname string, pwd string, seedpwd string, Name string) (Investor, error) {
@@ -188,7 +187,7 @@ func (a *Investor) CanInvest(balance string, targetBalance string) bool {
 // but are necessary for th RPC which woukd call these functions in various scenarios
 // eg. when negative feedback is approved  by multiple parties and they decide to
 // reduce the reputation of the user
-func ChangeReputation(invIndex int, reputation float64) error {
+func ChangeInvReputation(invIndex int, reputation float64) error {
 	a, err := RetrieveInvestor(invIndex)
 	if err != nil {
 		return err

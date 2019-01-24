@@ -163,7 +163,6 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 
 // CalculatePayback is a function that simply sums the PaybackAsset
 // balance and returns them to the frontend UI for a nice display
-// TODO: this function is not in use anymore, evaluate its need
 func (project Project) CalculatePayback(amount string) string {
 	// the idea is that we should be able to pass an assetId to this function
 	// and it must calculate how much time we have left for payback. For this example

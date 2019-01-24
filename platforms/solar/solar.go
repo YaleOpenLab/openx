@@ -1,10 +1,5 @@
 package solar
 
-// the database package maintains read / write operations to the orderbook
-// we need an orderbook because there is no state on Stellar which makes it
-// difficult for us to store this on the blockchain. We use boltdb now since we don't
-// do that much relational mapping, but in the case we need that, we can modify
-// this package to do that.
 import (
 	"encoding/json"
 	"fmt"
@@ -14,14 +9,8 @@ import (
 	"github.com/boltdb/bolt"
 )
 
-// Contracts and Projects are used interchangeably below
-// A contract has six Stages (right now an order has 6 stages and later both will be merged)
-// seed assets are a TODO, though investors can see the assets now and can transfer
-// funds if they really want to
-
 // A legal contract should ideally be stored on ipfs and we must keep track of the
 // ipfs hash so that we can retrieve it later when required
-
 // A Project is what is stored in the database and what is used by other packages
 // Project imports SolarParams since having everythin inside one struct is tedious
 // and SolarParams already has lots of keys. Also, this doesn't affect the way its
@@ -31,25 +20,39 @@ import (
 type Project struct {
 	Params SolarParams // Params is the former Order struct imported into the new Project structure
 
-	Originator    Entity // a specific contract must hold the person who originated it
-	OriginatorFee int    // fee paid to the originator from the total fee of the project
-	Contractor    Entity // the person with the proposed contract
-	ContractorFee int    // fee paid to the contractor from the total fee of the project
-	Guarantor     Entity // the person guaranteeing the specific project in question
+	// List of entities other than the contractor
+	Originator    Entity  // a specific contract must hold the person who originated it
+	OriginatorFee float64 // fee paid to the originator from the total fee of the project
+	Developer     Entity  // the developer who would be responsible for isntallign the solar panels and the IoT hubs
+	DeveloperFee  Entity  // the fee charged by the developer
+	Guarantor     Entity  // the person guaranteeing the specific project in question
 
-	ProjectRecipient database.Recipient
-	ProjectInvestors []database.Investor
+	// List of contractor entities
+	Contractor             Entity  // the person with the proposed contract
+	ContractorFee          float64 // fee paid to the contractor from the total fee of the project
+	SecondaryContractor    Entity  // this is the secondary contractor involved in the project
+	SecondaryContractorFee float64 // the fee to be paid towards the secondary contractor
+	TertiaryContractor     Entity  // tertiary contractor if any can be added to the system
+	TertiaryContractorFee  float64 // the fee to be paid towards the tertiary contractor
+
+	ProjectRecipient database.Recipient  // The recipient of the project in question
+	ProjectInvestors []database.Investor // The various investors who are invested in the project
+	SeedInvestors    []database.Investor // investors who took part before the contract was at stage 3
 
 	Stage       float64 // the stage at which the contract is at, float due to potential support of 0.5 state changes in the future
 	AuctionType string  // the type of the auction in question. Default is blind auction unless explicitly mentioned
 
+	// Various ipfs hashes that we need to store
 	OriginatorMoUHash       string // the contract between the originator and the recipient at stage LegalContractStage
 	ContractorContractHash  string // the contract between the contractor and the platform at stage ProposeProject
 	InvPlatformContractHash string // the contract between the investor and the platform at stage FundedProject
 	RecPlatformContractHash string // the contract between the recipient and the platform at stage FundedProject
+
+	Reputation float64 // the positive reputation associated with a given project
+	// MWTODO: get feedback on Reputation weighting
 }
 
-// so a contract's rough workflow is like
+// so a project's rough workflow is like
 // origincontract (0) -> approval by recipient (1) -> OpenForMoneyStage (1.5) -> ...
 // NewOriginProject returns a new project passed a project and originator to assign to
 // Save or Insert inserts a specific Project into the database
@@ -287,6 +290,14 @@ func RecipientAuthorize(projIndex int, recpIndex int) error {
 	}
 	// set the project as both originated and ready for investors' money
 	err = project.SetOriginProject()
+	if err != nil {
+		return err
+	}
+	// once a specific project has been originated, set the reputation for the originator
+	// depending on the value proposed by the recipient. This reputation will increase
+	// automatically once the project has been invested in users because the total value
+	// would be higher, so we needn't have a separate mechanism that deals with this.
+	err = RepOriginatedProject(project.Originator.U.Index, project.Params.Index)
 	if err != nil {
 		return err
 	}
