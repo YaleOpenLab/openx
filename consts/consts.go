@@ -14,6 +14,7 @@ var InvestorAssetPrefix = "InvestorAssets_"                                     
 var BondAssetPrefix = "BondAssets_"                                                  // the prefix that will be hashed to give a bond asset
 var CoopAssetPrefix = "CoopAsset_"                                                   // the prefix that will be hashed to give the cooperative asset
 var DebtAssetPrefix = "DebtAssets_"                                                  // the prefix that will be hashed to give a recipient AssetID
+var SeedAssetPrefix = "SeedAssets_"                                                  // the prefix that will be hashed to give an ivnestor his seed id
 var PaybackAssetPrefix = "PaybackAssets_"                                            // the prefix that will be hashed to give a payback AssetID
 var HomeDir = os.Getenv("HOME") + "/.openfinancing"                                  // home directory where we store the platform seed
 var PlatformSeedFile = HomeDir + "/platformseed.hex"                                 // the path where the platform's seed is stored

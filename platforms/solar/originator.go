@@ -49,8 +49,21 @@ func (contractor *Entity) Originate(panelSize string, totalValue float64, locati
 	pc.Stage = 0 // 0 since we need to filter this out while retrieving the propsoed contracts
 	pc.AuctionType = auctionType
 	pc.Originator = *contractor
+	pc.Reputation = totalValue // reputation is equal to the total value of the project
 	// instead of storing in this proposedcontracts slice, store it as a project, but not a contract and retrieve by stage
 	err = pc.Save()
 	// don't insert the project since the contractor's projects are not final
 	return pc, err
+}
+
+func RepOriginatedProject(origIndex int, projIndex int) error {
+	originator, err := RetrieveEntity(origIndex)
+	if err != nil {
+		return err
+	}
+	project, err := RetrieveProject(projIndex)
+	if err != nil {
+		return err
+	}
+	return originator.U.IncreaseReputation(project.Params.TotalValue * OriginatorWeight)
 }

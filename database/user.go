@@ -303,7 +303,7 @@ func CheckUsernameCollision(uname string) error {
 // the inspector should have the power to set it to true.
 // the inspector itself requires kyc though, so we shall have an admin account which can
 // kickoff the kyc process.
-// TODO: what do we do with these KYC powers? what features are open and what can be
+// MWTODO: what do we do with these KYC powers? what features are open and what can be
 // viewed only by going through KYC?
 func (a *User) Authorize(userIndex int) error {
 	// we don't really mind who this user is since all we need to verify is his identity
@@ -332,7 +332,6 @@ func AddInspector(userIndex int) error {
 	return user.Save()
 }
 
-// TODO: evaluate how we will grade projects and weigh reputation
 func (a *User) IncreaseReputation(reputation float64) error {
 	a.Reputation += reputation
 	return a.Save()

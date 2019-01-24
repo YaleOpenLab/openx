@@ -378,10 +378,8 @@ func TestDb(t *testing.T) {
 		t.Fatalf("Stage doesn't match, quitting!")
 	}
 
-	err = nOP.SetInstalledProjectStage()
-	if err != nil {
-		t.Fatal(err)
-	}
+	nOP.Stage = 5
+	err = nOP.Save()
 	if nOP.Stage != 5 {
 		t.Fatalf("Stage doesn't match, quitting!")
 	}

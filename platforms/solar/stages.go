@@ -1,7 +1,8 @@
 package solar
 
 import (
-// "fmt"
+	// "fmt"
+	database "github.com/OpenFinancing/openfinancing/database"
 )
 
 var (
@@ -48,7 +49,14 @@ func (a *Project) SetProposedProject() error {
 
 func (a *Project) SetFinalizedProject() error {
 	a.Stage = 3
-	return a.Save()
+	a.Reputation = a.Params.TotalValue
+	// upgrade reputation since totalValue would have changed originated contract
+	err := a.Save()
+	if err != nil {
+		return err
+	}
+	// modify originator reputation now that the final price is fixed
+	return RepOriginatedProject(a.Originator.U.Index, a.Params.Index)
 }
 
 func (a *Project) SetFundedProject() error {
@@ -58,10 +66,30 @@ func (a *Project) SetFundedProject() error {
 
 func (a *Project) SetInstalledProjectStage() error {
 	a.Stage = 5
-	return a.Save()
+	err := a.Save()
+	if err != nil {
+		return err
+	}
+	// modify contractor Reputation now that a project has been installed
+	err = database.ChangeRecpReputation(a.Contractor.U.Index, a.Params.TotalValue*RecipientWeight)
+	if err != nil {
+		return err
+	}
+	for _, elem := range a.ProjectInvestors {
+		err := database.ChangeInvReputation(elem.U.Index, a.Params.TotalValue*InvestorWeight)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (a *Project) SetPowerGenerationStage() error {
 	a.Stage = 6
-	return a.Save()
+	err := a.Save()
+	if err != nil {
+		return err
+	}
+	// set the reputation for the recipient here
+	return database.ChangeRecpReputation(a.ProjectRecipient.U.Index, a.Params.TotalValue*RecipientWeight)
 }

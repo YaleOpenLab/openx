@@ -9,6 +9,11 @@ import (
 	"github.com/boltdb/bolt"
 )
 
+// the database package maintains read / write operations to the orderbook
+// we need an orderbook because there is no state on Stellar which makes it
+// difficult for us to store this on the blockchain. We use boltdb now since we don't
+// do that much relational mapping, but in the case we need that, we can modify
+// this package to do that.
 // package database contains base level stuff that will be required by all the
 // sub platforms in the platform of platforms model. Currently contains Investors,
 // Recipients and Users, but can be expanded to contain even stages, if that's deemed
