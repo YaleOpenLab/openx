@@ -3,7 +3,6 @@ package solar
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 
 	database "github.com/OpenFinancing/openfinancing/database"
 	utils "github.com/OpenFinancing/openfinancing/utils"
@@ -85,7 +84,6 @@ func (a *Entity) Save() error {
 		b := tx.Bucket(database.ContractorBucket)
 		encoded, err := json.Marshal(a)
 		if err != nil {
-			log.Println("Failed to encode this data into json")
 			return err
 		}
 		return b.Put([]byte(utils.ItoB(a.U.Index)), encoded)

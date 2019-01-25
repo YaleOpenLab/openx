@@ -83,6 +83,46 @@ func TestDb(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Able to validate user in database with wrong path")
 	}
+	_, err = RetrieveAllUsersWithoutKyc()
+	if err == nil {
+		t.Fatalf("Able to retrieve users in database with invalid path")
+	}
+	_, err = RetrieveAllUsersWithKyc()
+	if err == nil {
+		t.Fatalf("Able to retrieve users in database with invalid path")
+	}
+	err = CheckUsernameCollision("blah")
+	if err == nil {
+		t.Fatalf("Able to check collision in database with invalid path")
+	}
+	_, err = TopReputationUsers()
+	if err == nil {
+		t.Fatalf("Able to retrieve users in database with invalid path")
+	}
+	err = AddInspector(user.Index)
+	if err == nil {
+		t.Fatalf("Able to add inspector in database with invalid path")
+	}
+	_, err = TopReputationRecipient()
+	if err == nil {
+		t.Fatalf("Able to retrieve top recipients in database with invalid path")
+	}
+	err = ChangeRecpReputation(1, 1.0)
+	if err == nil {
+		t.Fatalf("Able to change reputation in database with invalid path")
+	}
+	err = recp.AddEmail("blah@blah.com")
+	if err == nil {
+		t.Fatalf("Able to save recipient in database with invalid path")
+	}
+	_, err = TopReputationInvestors()
+	if err == nil {
+		t.Fatalf("able to retrieve top investors in database with invalid path")
+	}
+	err = ChangeInvReputation(1, 1.0)
+	if err == nil {
+		t.Fatalf("Able to change reputation in database with invalid path")
+	}
 	// set the db directory back to normal so that we can test stuff which goes inside the db
 	consts.DbDir = os.Getenv("HOME") + "/.openfinancing/database"
 	err = os.MkdirAll(consts.DbDir, os.ModePerm) // create the db
@@ -140,6 +180,15 @@ func TestDb(t *testing.T) {
 		t.Fatalf("Invalid bucket name")
 	}
 	x.Close()
+	CoopBucket = []byte("Coop")
+	InspectorBucket = []byte("")
+	x, err = OpenDB()
+
+	if err == nil {
+		t.Fatalf("Invalid bucket name")
+	}
+	x.Close()
+	InspectorBucket = []byte("Inspector")
 	// even though we set the names back to their originals above, ahve this snippet
 	// here so that its easier to audit the tests without having to worry about
 	// typos while setting the bucket names back to what they were
@@ -151,6 +200,7 @@ func TestDb(t *testing.T) {
 	UserBucket = []byte("Users")
 	BondBucket = []byte("Bonds")
 	CoopBucket = []byte("Coop")
+	InspectorBucket = []byte("Inspector")
 	db, err := OpenDB()
 	if err != nil {
 		t.Fatal(err)
@@ -290,7 +340,7 @@ func TestDb(t *testing.T) {
 	}
 
 	// check CanInvest Route
-	if inv.CanInvest("100", "1000") {
+	if inv.CanInvest("1000") {
 		t.Fatalf("CanInvest Returns true!")
 	}
 
@@ -342,6 +392,127 @@ func TestDb(t *testing.T) {
 	_, err = inv.TrustAsset(testAsset2, "-1", "blah")
 	if err == nil {
 		t.Fatalf("can trust invalid asset")
+	}
+	_, err = RetrieveAllUsersWithoutKyc()
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = RetrieveAllUsersWithKyc()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = CheckUsernameCollision("recipient1")
+	if err == nil {
+		t.Fatalf("username collision not picked up")
+	}
+	err = user.IncreaseReputation(1.0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = user.DecreaseReputation(1.0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = TopReputationUsers()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = user.Authorize(user.Index)
+	if err == nil {
+		t.Fatalf("Not able to catch inspector permission error")
+	}
+	err = AddInspector(user.Index)
+	if err != nil {
+		t.Fatal(err)
+	}
+	user, err = RetrieveUser(user.Index)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = user.Authorize(user.Index)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = user.Authorize(user.Index)
+	if err == nil {
+		t.Fatalf("Able to authorize KYC'd user, exiting!")
+	}
+	_, err = RetrieveAllUsersWithKyc()
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = TopReputationRecipient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = ChangeRecpReputation(recp.U.Index, 1.0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = ChangeRecpReputation(recp.U.Index, -1.0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = recp.AddEmail("blah@blah.com")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = TopReputationInvestors()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = ChangeInvReputation(inv.U.Index, 1.0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = ChangeInvReputation(inv.U.Index, -1.0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	inv2, err := NewInvestor("investor1", "blah", "blah", "Investor1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = ChangeInvReputation(inv2.U.Index, 10.0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = ChangeInvReputation(inv.U.Index, 5.0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	recp2, err := NewRecipient("recipient1", "blah", "blah", "Recipient1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = ChangeRecpReputation(recp2.U.Index, 10.0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	chk, err := RetrieveRecipient(recp2.U.Index)
+	if err != nil {
+		t.Fatal(err)
+	}
+	log.Println("CHKTHIS: ", chk.U.Reputation)
+	err = ChangeRecpReputation(recp2.U.Index, 5.0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = TopReputationRecipient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = TopReputationInvestors()
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = TopReputationUsers()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = inv2.AddEmail("blah@blah.com")
+	if err != nil {
+		t.Fatal(err)
 	}
 	os.Remove(consts.DbDir + "/yol.db")
 }

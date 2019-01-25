@@ -86,13 +86,90 @@ func TestDb(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Can retrieve entity in invalid db, quitting!")
 	}
+	err = RepInstalledProject(1, 1)
+	if err == nil {
+		t.Fatal("Can increase reputation in database with invalid path")
+	}
+	err = RepOriginatedProject(1, 1)
+	if err == nil {
+		t.Fatalf("Can increase reputation in database with invalid path")
+	}
+	err = ChangeReputation(1, 1)
+	if err == nil {
+		t.Fatalf("Able to change reputation with invalid db, quitting!")
+	}
+	_, err = TopReputationEntities("contractor")
+	if err == nil {
+		t.Fatal("Able to retrieve entity with invalid db, quitting!")
+	}
+	_, err = TopReputationEntitiesWithoutRole()
+	if err == nil {
+		t.Fatal("Able to retrieve entities with invalid db, quitting!")
+	}
+	_, err = RetrieveAllEntitiesWithoutRole()
+	if err == nil {
+		t.Fatal("Able to retrieve entities with invalid db, quitting!")
+	}
+	err = SaveOriginatorMoU(1, "blah")
+	if err == nil {
+		t.Fatalf("Able to save hash in invalid db, quitting!")
+	}
+	err = SaveContractHash(1, "blah")
+	if err == nil {
+		t.Fatalf("Able to save hash in invalid db, quitting!")
+	}
+	err = SaveInvPlatformContract(1, "blah")
+	if err == nil {
+		t.Fatalf("Able to save hash in invalid db, quitting!")
+	}
+	err = SaveRecPlatformContract(1, "blah")
+	if err == nil {
+		t.Fatalf("Able to save hash in invalid db, quitting!")
+	}
+	if VerifyBeforeAuthorizing(1) {
+		t.Fatalf("Can verify with invalid db, quitting!")
+	}
+	_, _, _, err = PreInvestmentCheck(1, 1, 1, "")
+	if err == nil {
+		t.Fatalf("PreInvestmentCheck succeeds, quitting!")
+	}
+	_, err = SendUSDToPlatform("", "", "", 1)
+	if err == nil {
+		t.Fatalf("SendUSDToPlatform succeeds, quitting!")
+	}
+	_, err = InvestInProject(1, 1, 1, "", "", "", "")
+	if err == nil {
+		t.Fatalf("InvestInProject succeeds, quitting!")
+	}
+	_, err = SeedInvestInProject(1, 1, 1, "", "", "", "")
+	if err == nil {
+		t.Fatalf("SeedInvestInProject succeeds, quitting!")
+	}
+	var tmpProj Project
+	var tmpRecp database.Recipient
+	err = tmpProj.sendRecipientAssets(tmpRecp, "", "", "")
+	if err == nil {
+		t.Fatalf("Sending recipient assets failed, quitting!")
+	}
+	tmpProj.SetInstalledProjectStage()
+	if err == nil {
+		t.Fatalf("Setting stage works with invalid db, quitting!")
+	}
+	tmpProj.SetPowerGenerationStage()
+	if err == nil {
+		t.Fatalf("Setting stage works with invalid db, quitting!")
+	}
+	tmpProj.SetFinalizedProject()
+	if err == nil {
+		t.Fatalf("Setting stage works with invalid db, quitting!")
+	}
 	consts.DbDir = oldDbDir
 	db, err := database.OpenDB()
 	if err != nil {
 		t.Fatal(err)
 	}
 	db.Close() // close immmediately after check
-	var project1 SolarParams
+	var testProjectParams SolarParams
 	var dummy Project
 	// investors entity testing over, test recipients below in the same way
 	// now we repeat the same tests for all other entities
@@ -121,24 +198,24 @@ func TestDb(t *testing.T) {
 		t.Fatal(err)
 	}
 	// tests for contractors
-	newCE, err := NewContractor("ConTest", "pwd", "blah", "NameConTest", "123 ABC Street", "ConDescription") // use and test this as well
+	contractor, err := NewContractor("ConTest", "pwd", "blah", "NameConTest", "123 ABC Street", "ConDescription") // use and test this as well
 	if err != nil {
 		t.Fatal(err)
 	}
-	project1.Index = 1
-	project1.PanelSize = "100 1000 sq.ft homes each with their own private spaces for luxury"
-	project1.TotalValue = 14000
-	project1.Location = "India Basin, San Francisco"
-	project1.MoneyRaised = 0
-	project1.Metadata = "India Basin is an upcoming creative project based in San Francisco that seeks to invite innovators from all around to participate"
-	project1.InvestorAssetCode = ""
-	project1.DebtAssetCode = ""
-	project1.PaybackAssetCode = ""
-	project1.DateInitiated = ""
-	project1.Years = 3
-	dummy.Params = project1
+	testProjectParams.Index = 1
+	testProjectParams.PanelSize = "100 1000 sq.ft homes each with their own private spaces for luxury"
+	testProjectParams.TotalValue = 14000
+	testProjectParams.Location = "India Basin, San Francisco"
+	testProjectParams.MoneyRaised = 0
+	testProjectParams.Metadata = "India Basin is an upcoming creative project based in San Francisco that seeks to invite innovators from all around to participate"
+	testProjectParams.InvestorAssetCode = ""
+	testProjectParams.DebtAssetCode = ""
+	testProjectParams.PaybackAssetCode = ""
+	testProjectParams.DateInitiated = ""
+	testProjectParams.Years = 3
+	dummy.Params = testProjectParams
 	dummy.ProjectRecipient = recp
-	dummy.Contractor = newCE
+	dummy.Contractor = contractor
 	dummy.Originator = newCE2
 	dummy.Stage = 3
 	err = dummy.Save()
@@ -213,7 +290,7 @@ func TestDb(t *testing.T) {
 		t.Fatal(err)
 	}
 	// tests for originators
-	newCE, err = newEntity("OrigTest", "pwd", "blah", "NameOrigTest", "123 ABC Street", "OrigDescription", "originator")
+	contractor, err = newEntity("OrigTest", "pwd", "blah", "NameOrigTest", "123 ABC Street", "OrigDescription", "originator")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -240,12 +317,12 @@ func TestDb(t *testing.T) {
 	if len(allConts) != 1 || allConts[0].U.Name != "NameConTest" {
 		t.Fatal("Names don't match, quitting!")
 	}
-	_, err = newCE.Propose("100 16x32 panels", 28000, "Puerto Rico", 6, "LEED+ Gold rated panels and this is random data out of nowhere and we supply our own devs and provide insurance guarantee as well. Dual audit maintenance upto 1 year. Returns capped as per defaults", recp.U.Index, 1, "blind")
+	_, err = contractor.Propose("100 16x32 panels", 28000, "Puerto Rico", 6, "LEED+ Gold rated panels and this is random data out of nowhere and we supply our own devs and provide insurance guarantee as well. Dual audit maintenance upto 1 year. Returns capped as per defaults", recp.U.Index, 1, "blind")
 	// 1 for retrieving martin as the recipient and 1 is the project Index
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = newCE.Propose("100 16x32 panels", 28000, "Puerto Rico", 6, "LEED+ Gold rated panels and this is random data out of nowhere and we supply our own devs and provide insurance guarantee as well. Dual audit maintenance upto 1 year. Returns capped as per defaults", 1000, 1, "blind")
+	_, err = contractor.Propose("100 16x32 panels", 28000, "Puerto Rico", 6, "LEED+ Gold rated panels and this is random data out of nowhere and we supply our own devs and provide insurance guarantee as well. Dual audit maintenance upto 1 year. Returns capped as per defaults", 1000, 1, "blind")
 	// 1 for retrieving martin as the recipient and 1 is the project Index
 	if err == nil {
 		t.Fatal("Able to retrieve non existent recipient, quitting!")
@@ -315,92 +392,92 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Projects could not be retrieved!")
 	}
-	project1.Index = len(indexCheck) + 1
-	nOP, err := newOriginProject(project1, newCE2)
+	testProjectParams.Index = len(indexCheck) + 1
+	testProject, err := newOriginProject(testProjectParams, newCE2)
 	if err != nil {
 		t.Fatal(err)
 	}
-	nOP.ProjectRecipient = recp
-	err = nOP.Save()
+	testProject.ProjectRecipient = recp
+	err = testProject.Save()
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = nOP.SetPreOriginProject()
+	err = testProject.SetPreOriginProject()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = nOP.SetLegalContractStage()
+	err = testProject.SetLegalContractStage()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if nOP.Stage != 0.5 {
+	if testProject.Stage != 0.5 {
 		t.Fatalf("Stage doesn't match, quitting!")
 	}
 
-	err = nOP.SetOriginProject()
+	err = testProject.SetOriginProject()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if nOP.Stage != 1 {
+	if testProject.Stage != 1 {
 		t.Fatalf("Stage doesn't match, quitting!")
 	}
 
-	err = nOP.SetOpenForMoneyStage()
+	err = testProject.SetOpenForMoneyStage()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if nOP.Stage != 1.5 {
+	if testProject.Stage != 1.5 {
 		t.Fatalf("Stage doesn't match, quitting!")
 	}
 
-	err = nOP.SetProposedProject()
+	err = testProject.SetProposedProject()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if nOP.Stage != 2 {
+	if testProject.Stage != 2 {
 		t.Fatalf("Stage doesn't match, quitting!")
 	}
 
-	err = nOP.SetFinalizedProject()
+	err = testProject.SetFinalizedProject()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if nOP.Stage != 3 {
+	if testProject.Stage != 3 {
 		t.Fatalf("Stage doesn't match, quitting!")
 	}
 
-	err = nOP.SetFundedProject()
+	err = testProject.SetFundedProject()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if nOP.Stage != 4 {
+	if testProject.Stage != 4 {
 		t.Fatalf("Stage doesn't match, quitting!")
 	}
 
-	nOP.Stage = 5
-	err = nOP.Save()
-	if nOP.Stage != 5 {
+	testProject.Stage = 5
+	err = testProject.Save()
+	if testProject.Stage != 5 {
 		t.Fatalf("Stage doesn't match, quitting!")
 	}
 
-	err = nOP.SetPowerGenerationStage()
+	err = testProject.SetPowerGenerationStage()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if nOP.Stage != 6 {
+	if testProject.Stage != 6 {
 		t.Fatalf("Stage doesn't match, quitting!")
 	}
 
 	// cycle back to stage 0 and try using the other function to modify the stage
-	err = nOP.SetPreOriginProject()
+	err = testProject.SetPreOriginProject()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if nOP.Stage != 0 {
+	if testProject.Stage != 0 {
 		t.Fatalf("Stage doesn't match, quitting!")
 	}
-	err = nOP.SetOriginProject()
+	err = testProject.SetOriginProject()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -415,7 +492,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = nOP.SetProposedProject()
+	err = testProject.SetProposedProject()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -423,14 +500,18 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	recp.ReceivedSolarProjects = append(recp.ReceivedSolarProjects, project1.DebtAssetCode)
+	err = VoteTowardsProposedProject(inv.U.Index, 1000000, 2)
+	if err == nil {
+		t.Fatalf("Can vote greater than the voting balance!")
+	}
+	recp.ReceivedSolarProjects = append(recp.ReceivedSolarProjects, testProjectParams.DebtAssetCode)
 	// the above thing is to test the function itself and not the functionality since
-	// DebtAssetCode for project1 should be empty
+	// DebtAssetCode for testProjectParams should be empty
 	err = recp.Save()
 	if err != nil {
 		t.Fatal(err)
 	}
-	chk := nOP.CalculatePayback("100")
+	chk := testProject.CalculatePayback("100")
 	if chk != "0.257143" {
 		t.Fatalf("Balance doesn't match , quitting!")
 	}
@@ -443,10 +524,27 @@ func TestDb(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Empty array returns choice")
 	}
-	arr = append(arr, nOP)
+	arr = append(arr, testProject)
+	var arrDup []Project
+	var testProject2 Project
+	testProject2 = testProject
+	testProject2.Params.TotalValue = 0
+	err = testProject2.Save()
+	if err != nil {
+		t.Fatal(err)
+	}
+	arr = append(arr, testProject2)
 	x, err = SelectContractBlind(arr)
 	if err != nil {
 		t.Fatal(err)
+	}
+	_, err = SelectContractVickrey(arr)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = SelectContractVickrey(arrDup)
+	if err == nil {
+		t.Fatalf("SelectContractVickrey succeeds with empty array!")
 	}
 	sc1, err := RetrieveAllProjects()
 	if err != nil {
@@ -469,15 +567,138 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if x.Params.Index != nOP.Params.Index {
+	if x.Params.Index != testProject.Params.Index {
 		t.Fatalf("Indices don't match, quitting!")
 	}
 	y, err = SelectContractTime(arr)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if y.Params.Index != nOP.Params.Index {
+	if y.Params.Index != testProject.Params.Index {
 		t.Fatalf("Indices don't match, quitting!")
+	}
+	err = testProject.SetAuctionType("blind")
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = testProject.SetAuctionType("vickrey")
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = testProject.SetAuctionType("dutch")
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = testProject.SetAuctionType("english")
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = testProject.SetAuctionType("blah")
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = contractor.AddCollateral(10000, "This is test collateral")
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = contractor.Slash(10)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = RepInstalledProject(contractor.U.Index, testProjectParams.Index)
+	if err != nil {
+		t.Fatal(err)
+	}
+	contractor2, err := NewContractor("ConTest", "pwd", "blah", "NameConTest", "123 ABC Street", "ConDescription") // use and test this as well
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = ChangeReputation(contractor2.U.Index, 5)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = ChangeReputation(contractor.U.Index, 10)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = TopReputationEntities("contractor")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = TopReputationEntitiesWithoutRole()
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = RetrieveAllEntitiesWithoutRole()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = SaveOriginatorMoU(testProject.Params.Index, "blah")
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = SaveContractHash(testProject.Params.Index, "blah")
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = SaveInvPlatformContract(testProject.Params.Index, "blah")
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = SaveRecPlatformContract(testProject.Params.Index, "blah")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !VerifyBeforeAuthorizing(testProject.Params.Index) {
+		t.Fatalf("Can't verify contract, quitting!")
+	}
+	_, err = RetrieveEntity(1000)
+	if err == nil {
+		t.Fatalf("Invalid Entity returns true")
+	}
+	err = ChangeReputation(contractor.U.Index, -10)
+	if err != nil {
+		t.Fatal(err)
+	}
+	testProject.Stage = 0
+	err = testProject.Save()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = RecipientAuthorize(testProject.Params.Index, recp.U.Index)
+	if err != nil {
+		t.Fatal(err)
+	}
+	testProject.Stage = 1
+	err = testProject.Save()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = RecipientAuthorize(testProject.Params.Index, recp.U.Index)
+	if err == nil {
+		t.Fatalf("Failed to catch stage 0 error")
+	}
+	testProject.ProjectRecipient = tmpRecp
+	err = RecipientAuthorize(testProject.Params.Index, recp.U.Index)
+	if err == nil {
+		t.Fatalf("Failed to catch stage recp index error")
+	}
+	err = VoteTowardsProposedProject(inv.U.Index, 100, testProject.Params.Index)
+	if err == nil {
+		t.Fatalf("Can vote greater than the voting balance!")
+	}
+	inv3, err := database.NewInvestor("inv1", "blah", "blah", "cool")
+	if err != nil {
+		t.Fatal(err)
+	}
+	testProject.ProjectInvestors = append(testProject.ProjectInvestors, inv3)
+	err = testProject.Save()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = testProject.SetInstalledProjectStage()
+	if err != nil {
+		t.Fatal(err)
 	}
 	_, err = newEntity("OrigTest", "pwd", "blah", "NameOrigTest", "123 ABC Street", "OrigDescription", "developer")
 	if err != nil {
@@ -510,6 +731,10 @@ func TestDb(t *testing.T) {
 	var recpx database.Recipient
 	recpx.ReceivedSolarProjects = append(recpx.ReceivedSolarProjects, dummy.Params.DebtAssetCode)
 	err = dummy.updateRecipient(recpx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = dummy.updateRecipient(tmpRecp)
 	if err != nil {
 		t.Fatal(err)
 	}

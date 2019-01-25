@@ -167,7 +167,6 @@ func RefillAccount(publicKey string, platformSeed string) error {
 	if balanceI < 3 { // to setup trustlines
 		_, _, err = SendXLM(publicKey, consts.DonateBalance, platformSeed, "Sending XLM to refill")
 		if err != nil {
-			log.Println("Account doesn't have funds")
 			return fmt.Errorf("Account doesn't have funds or invalid seed")
 		}
 	}

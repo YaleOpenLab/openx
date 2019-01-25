@@ -88,4 +88,12 @@ func TestXLM(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	_, _, err = SetAuthImmutable(seed)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, _, err = FreezeAccount(seed)
+	if err != nil {
+		t.Fatal(err)
+	}
 }

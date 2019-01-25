@@ -71,7 +71,7 @@ func (a *Project) SetInstalledProjectStage() error {
 		return err
 	}
 	// modify contractor Reputation now that a project has been installed
-	err = database.ChangeRecpReputation(a.Contractor.U.Index, a.Params.TotalValue*RecipientWeight)
+	err = a.Contractor.U.IncreaseReputation(a.Params.TotalValue * ContractorWeight)
 	if err != nil {
 		return err
 	}
