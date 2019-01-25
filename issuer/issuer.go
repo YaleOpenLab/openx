@@ -37,7 +37,6 @@ func InitIssuer(projIndex int, seedpwd string) error {
 	// init a new pk and seed pair
 	seed, _, err := xlm.GetKeyPair()
 	if err != nil {
-		log.Println(err)
 		return err
 	}
 	// store this seed in home/projects/projIndex.hex

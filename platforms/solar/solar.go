@@ -274,7 +274,7 @@ func RecipientAuthorize(projIndex int, recpIndex int) error {
 	if err != nil {
 		return err
 	}
-	if project.Params.Index != 0 { // project stage not at zero, shouldn't be called here
+	if project.Stage != 0 { // project stage not at zero, shouldn't be called here
 		return fmt.Errorf("Project stage not zero")
 	}
 	if !VerifyBeforeAuthorizing(projIndex) {
