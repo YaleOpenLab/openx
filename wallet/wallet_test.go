@@ -80,9 +80,17 @@ func TestWallet(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	err = StoreSeed(seedtest, "blah", "./blah/blah.txt")
+	if err == nil {
+		t.Fatalf("Not able to catch invalid path error")
+	}
 	rtpk, err := ReturnPubkey(seed)
 	if err != nil {
 		t.Fatal(err)
+	}
+	_, err = ReturnPubkey("")
+	if err == nil {
+		t.Fatalf("Not able to catch empty seed error")
 	}
 	if rtpk != pubkey {
 		t.Fatalf("Pubkeys don't match, quitting!")

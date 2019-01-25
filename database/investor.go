@@ -175,12 +175,12 @@ func (a *Investor) TrustAsset(asset build.Asset, limit string, seed string) (str
 }
 
 // CanInvest checks whether an investor has the required balance to invest in a project
-func (a *Investor) CanInvest(balance string, targetBalance string) bool {
+func (a *Investor) CanInvest(targetBalance string) bool {
 	balance, err := xlm.GetAssetBalance(a.U.PublicKey, "STABLEUSD")
 	if err != nil {
 		return false
 	}
-	return balance >= targetBalance
+	return utils.StoF(balance) >= utils.StoF(targetBalance)
 }
 
 // the following two functions on reputation are repeated for recipients and entities

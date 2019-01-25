@@ -11,7 +11,7 @@ import (
 // NewSeed creates a new seed and stores the seed in an encrypted form in the
 // specified path
 func NewSeed(path string, password string) (string, string, error) {
-	// these can store the file ion any path passed to them
+	// these can store the file in any path passed to them
 	var seed string
 	var publicKey string
 	var err error
