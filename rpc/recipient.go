@@ -6,6 +6,8 @@ import (
 	"net/http"
 
 	database "github.com/OpenFinancing/openfinancing/database"
+	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
+	utils "github.com/OpenFinancing/openfinancing/utils"
 )
 
 // setupRecipientRPCs sets up all RPCs related to the recipient. Most are similar
@@ -16,6 +18,7 @@ func setupRecipientRPCs() {
 	insertRecipient()
 	validateRecipient()
 	getAllRecipients()
+	payback()
 }
 
 func parseRecipient(r *http.Request) (database.Recipient, error) {
@@ -72,7 +75,8 @@ func validateRecipient() {
 	http.HandleFunc("/recipient/validate", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
 		// need to pass the pwhash param here
-		if r.URL.Query() == nil || r.URL.Query()["LoginUserName"] == nil || len(r.URL.Query()["LoginPassword"][0]) != 128 {
+		if r.URL.Query() == nil || r.URL.Query()["LoginUserName"] == nil ||
+			len(r.URL.Query()["LoginPassword"][0]) != 128 {
 			errorHandler(w, r, http.StatusNotFound)
 			return
 		}
@@ -84,5 +88,37 @@ func validateRecipient() {
 		}
 		log.Println("Prepared Recipient:", prepRecipient)
 		MarshalSend(w, r, prepRecipient)
+	})
+}
+
+func payback() {
+	// func Payback(recpIndex int, projIndex int, assetName string, amount string, recipientSeed string,
+	// 	platformPubkey string) error {
+	http.HandleFunc("/recipient/payback", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		// this is a get request to make things easier for the teller
+		if r.URL.Query() == nil || r.URL.Query()["recpIndex"] == nil ||
+			r.URL.Query()["projIndex"] == nil || r.URL.Query()["assetName"] == nil ||
+			r.URL.Query()["amount"] == nil || r.URL.Query()["platformPublicKey"] == nil {
+				log.Println("PARAM ERROR")
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+		recpIndex := utils.StoI(r.URL.Query()["recpIndex"][0])
+		projIndex := utils.StoI(r.URL.Query()["projIndex"][0])
+		assetName := r.URL.Query()["assetName"][0]
+		recipientSeed := r.URL.Query()["recipientSeed"][0]
+		amount := r.URL.Query()["amount"][0]
+		platformPublicKey := r.URL.Query()["platformPublicKey"][0]
+
+		err := solar.Payback(recpIndex, projIndex, assetName, amount, recipientSeed, platformPublicKey)
+		if err != nil {
+			log.Println("PAYBACK ERROR: ", err)
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+		var rt StatusResponse
+		rt.Status = 200
+		MarshalSend(w, r, rt)
 	})
 }

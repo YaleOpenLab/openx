@@ -1,0 +1,6 @@
+# rename this file to tellerconfig.yaml and fill with appropriate values before starting
+platformPublicKey: "GDULAIM6N6SIW7MWS3NDJPY3UIFOHSM4766WQ6O6EKFDBC7PF53VKYLY"
+seedpwd: x
+username: martin
+password: p
+apiurl: "http://localhost:8080"

@@ -2,12 +2,15 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 
 	database "github.com/OpenFinancing/openfinancing/database"
+	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
 	rpc "github.com/OpenFinancing/openfinancing/rpc"
+	utils "github.com/OpenFinancing/openfinancing/utils"
 )
 
 func GetRequest(url string) ([]byte, error) {
@@ -29,7 +32,7 @@ func GetRequest(url string) ([]byte, error) {
 
 func PingRpc() error {
 	// make a curl request out to lcoalhost and get the ping response
-	data, err := GetRequest("http://localhost:8080/ping")
+	data, err := GetRequest(ApiUrl + "/ping")
 	if err != nil {
 		return err
 	}
@@ -44,8 +47,8 @@ func PingRpc() error {
 	return nil
 }
 
-func PingInvestors() error {
-	data, err := GetRequest("http://localhost:8080/investor/all")
+func GetInvestors() error {
+	data, err := GetRequest(ApiUrl + "/investor/all")
 	if err != nil {
 		return err
 	}
@@ -60,8 +63,8 @@ func PingInvestors() error {
 	return nil
 }
 
-func PingRecipients() error {
-	data, err := GetRequest("http://localhost:8080/recipient/all")
+func GetRecipients() error {
+	data, err := GetRequest(ApiUrl + "/recipient/all")
 	if err != nil {
 		return err
 	}
@@ -70,7 +73,67 @@ func PingRecipients() error {
 	if err != nil {
 		return err
 	}
-	ColorOutput("REUQEST SUCCEEDED", GreenColor)
+	ColorOutput("REQUEST SUCCEEDED", GreenColor)
 	log.Println(x)
 	return nil
+}
+
+func GetProjectIndex(assetName string) (int, error) {
+	data, err := GetRequest(ApiUrl + "/project/funded")
+	if err != nil {
+		return -1, err
+	}
+	var x []solar.Project
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return -1, err
+	}
+	for _, elem := range x {
+		if elem.Params.DebtAssetCode == assetName {
+			return elem.Params.Index, nil
+		}
+	}
+	return -1, fmt.Errorf("Not found")
+}
+
+func LoginToPlatForm(username string, pwhash string) error {
+	data, err := GetRequest(ApiUrl + "/recipient/validate?" + "LoginUserName=" + username + "&LoginPassword=" + pwhash)
+	if err != nil {
+		return err
+	}
+	var x database.Recipient
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return err
+	}
+	ColorOutput("UNLOCKED RECIPIENT", GreenColor)
+	LocalRecipient = x
+	return nil
+}
+
+func ProjectPayback(recpIndex string, assetName string,
+	recipientSeed string, amount string) error {
+	fmt.Println("SENDING REQUEST")
+	// retrieve project index
+	projIndexI, err := GetProjectIndex(assetName)
+	if err != nil {
+		return fmt.Errorf("Couldn't pay")
+	}
+	projIndex := utils.ItoS(projIndexI)
+	data, err := GetRequest(ApiUrl + "/recipient/payback?" + "recpIndex=" + recpIndex +
+		"&projIndex=" + projIndex + "&assetName=" + assetName + "&recipientSeed=" +
+		recipientSeed + "&amount=" + amount + "&platformPublicKey=" + PlatformPublicKey)
+	if err != nil {
+		return err
+	}
+	var x rpc.StatusResponse
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return err
+	}
+	if x.Status == 200 {
+		ColorOutput("PAID!", GreenColor)
+		return nil
+	}
+	return fmt.Errorf("Errored out")
 }
