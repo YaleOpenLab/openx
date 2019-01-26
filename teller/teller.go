@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	consts "github.com/OpenFinancing/openfinancing/consts"
+	database "github.com/OpenFinancing/openfinancing/database"
 )
 
 // package teller contains the remote client code that would be run on the client's
@@ -27,13 +28,25 @@ import (
 // Consider doing this with IoT partners, eg. Atonomi.
 // Right now, the teller just does a tamper resistance (so no one can stop the teller system, or tamper with the code).
 // Teller has its own public key and seed, allowing the devices to have a fully defined address in the network.
-var PublicKey string
-var Seed string
+
+var (
+	LocalRecipient    database.Recipient
+	RecpSeed          string
+	RecpPublicKey     string
+	PlatformPublicKey string
+	ApiUrl            string
+)
+
+var cleanupDone chan struct{}
 
 func main() {
-	CreateHomeDir()
-	CreateFile()
-	Authenticate()
+	// Authenticate with the platform
+	err := SetupConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+	go CheckPayback()
+	log.Println("TELLER PUBKEY: ", RecpPublicKey)
 	promptColor := color.New(color.FgHiYellow).SprintFunc()
 	whiteColor := color.New(color.FgHiWhite).SprintFunc()
 	rl, err := readline.NewEx(&readline.Config{
@@ -69,7 +82,7 @@ func main() {
 			for err != nil {
 				log.Println(err)
 				err = EndHandler(t)
-				<-cleanupDone // to prevent user from quitting when sigin arrives
+				<-cleanupDone // to prevent user from quitting when sigint arrives
 			}
 			break
 		}

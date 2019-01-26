@@ -77,13 +77,13 @@ func DataHandler() {
 	})
 }
 
-func SetupRoutest() {
+func SetupRoutes() {
 	PingHandler()
 	DataHandler()
 }
 
 func StartServer() {
-	SetupRoutest()
+	SetupRoutes()
 	err := http.ListenAndServeTLS(":"+consts.Tlsport, "ssl/server.crt", "ssl/server.key", nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)

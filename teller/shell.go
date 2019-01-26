@@ -19,32 +19,36 @@ func WriteToHandler(w http.ResponseWriter, jsonString []byte) {
 
 func ParseInput(input []string) error {
 	if len(input) == 0 {
+		fmt.Println("List of commands: test, getcoins, getinv, getrec, update, gbh, bal, xlm")
 		return fmt.Errorf("No command given")
 	}
 	if len(input) == 1 {
 		log.Println("Command entered: ", input[0])
 		command := input[0]
 		switch command {
-		case "start":
-			// idelly this should be a singel command that we can run in order to start all our
-			// systems and report back to the platform that we have.
-			log.Println("Checking if hardware is installed")
-			log.Println("Connecting to said hardware")
+		case "help":
+			// print out all the commands, would be nice if there was some automated
+			// way to get all the commands
+			fmt.Println("List of commands: test, getcoins, getinv, getrec, update, gbh, bal, xlm")
+			break
 		case "test":
 			log.Println("COOL STUFF!")
-			PingRpc()
+			err := PingRpc()
+			if err != nil {
+				log.Println(err)
+			}
 		case "getcoins":
-			err := xlm.GetXLM(PublicKey)
+			err := xlm.GetXLM(RecpPublicKey)
 			if err != nil {
 				log.Println(err)
 			}
 		case "getinv":
-			err := PingInvestors()
+			err := GetInvestors()
 			if err != nil {
 				log.Println(err)
 			}
 		case "getrec":
-			err := PingRecipients()
+			err := GetRecipients()
 			if err != nil {
 				log.Println(err)
 			}
@@ -58,6 +62,11 @@ func ParseInput(input []string) error {
 		subcommand := input[1]
 		switch command {
 		case "update":
+			if subcommand == "help" {
+				fmt.Println("USAGE: update <state>")
+				fmt.Println("THis hashes the state ")
+				break
+			}
 			// the second part should be the state
 			// send _timestamp_ stroops to ourselves, we just pay the network fee of 100 stroops
 			// this gives us 10**5 updates per xlm, which is pretty nice, considering that we
@@ -67,17 +76,20 @@ func ParseInput(input []string) error {
 			// we can take the first 28 bytes of the hash and then feed it.
 			// we only have 56 bit security, but we e cost of breaking 56 bit security is higher
 			// than the payment required per month, so we should be good
-			x := utils.Timestamp()
-			shaHash := strings.ToUpper(utils.SHA3hash(x))
-			// we could ideally send the smallest amoutn of 1 stroop but stellar allows you to
+			shaHash := strings.ToUpper(utils.SHA3hash(subcommand))
+			// we could ideally send the smallest amount of 1 stroop but stellar allows you to
 			// send yourself as much money as you want, so we can have any number here
 			// we could also time this amount to be the state update number itself
-			_, hash, err := xlm.SendXLM(PublicKey, utils.I64toS(utils.Unix()), Seed, shaHash[:28])
+			_, hash, err := xlm.SendXLM(RecpPublicKey, utils.I64toS(utils.Unix()), RecpSeed, shaHash[:28])
 			if err != nil {
 				log.Println(err)
 			}
-			log.Println("Updated state: ", hash)
+			ColorOutput("Updated State: "+hash, MagentaColor)
 		case "gbh":
+			if subcommand == "help" {
+				fmt.Println("USAGE: gbh <block number>")
+				break
+			}
 			hash, err := xlm.GetBlockHash(subcommand)
 			if err != nil {
 				log.Println(err)
@@ -86,12 +98,16 @@ func ParseInput(input []string) error {
 		case "bal":
 			var balance string
 			var err error
+			if subcommand == "help" {
+				fmt.Println("USAGE: bal <asset>, xlm for native balance")
+				break
+			}
 			ColorOutput("Displaying balance in "+subcommand+" for user: ", WhiteColor)
 			switch subcommand {
 			case "xlm":
-				balance, err = xlm.GetNativeBalance(PublicKey)
+				balance, err = xlm.GetNativeBalance(RecpPublicKey)
 			default:
-				balance, err = xlm.GetAssetBalance(PublicKey, subcommand)
+				balance, err = xlm.GetAssetBalance(RecpPublicKey, subcommand)
 			}
 			if err != nil {
 				fmt.Println(err)

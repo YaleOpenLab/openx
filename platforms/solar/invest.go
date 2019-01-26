@@ -43,7 +43,7 @@ func PreInvestmentCheck(projIndex int, invIndex int, recpIndex int, invAmount st
 
 	if !investor.CanInvest(invAmount) {
 		log.Println("Investor has less balance than what is required to ivnest in this asset")
-		return project, investor, recipient, err
+		return project, investor, recipient, fmt.Errorf("Investor has less balance than what is required to ivnest in this asset")
 	}
 
 	// check if investment amount is greater than or equal to the project requirements

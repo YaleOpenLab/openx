@@ -59,6 +59,7 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 	if err != nil {
 		return err
 	}
+
 	project, err := RetrieveProject(projIndex)
 	if err != nil {
 		return err
@@ -70,9 +71,8 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 		log.Println("You do not have the required stablecoin balance, please refill")
 		return err
 	}
-
 	// pay stableUSD back to platform
-	_, stableUSDHash, err := assets.SendAsset(stablecoin.Code, stablecoin.PublicKey, platformPubkey, amount, recipientSeed, recipient.U.PublicKey, "Opensolar payback: "+utils.ItoS(projIndex))
+	_, stableUSDHash, err := assets.SendAsset(stablecoin.Code, consts.StableCoinAddress, platformPubkey, amount, recipientSeed, recipient.U.PublicKey, "Opensolar payback: "+utils.ItoS(projIndex))
 	if err != nil {
 		return err
 	}
