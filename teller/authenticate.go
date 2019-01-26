@@ -72,15 +72,18 @@ func CheckPayback() {
 		recpIndex := utils.ItoS(LocalRecipient.U.Index)
 		// we only know the debt asset, so retrieve all projects and search for our debt asset
 		assetName := LocalRecipient.ReceivedSolarProjects[0] // hardcode for now
+		// also might not really be a problem since we assume one recipient per installed solar project
 		recipientSeed := RecpSeed
 		amount := oracle.MonthlyBill() // TODO: this should be data accumulated from zigbee in the future
 		// the platform RecpPublicKey will be static, so can be hardcoded
 		// sleep for the interval we want to payback in
 		err := ProjectPayback(recpIndex, assetName, recipientSeed, amount)
 		if err != nil {
+			// payment failed for some reason, notify the developer of this platform
+			// and the platform as well
 			log.Println(err)
 			// <-cleanupDone // terminate and commit hash
 		}
-		time.Sleep(consts.TestPaybackInterval * time.Second)
+		time.Sleep(consts.PaybackInterval * time.Second)
 	}
 }
