@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/viper"
 )
 
+// SetupConfig reads required values from the config file
 func SetupConfig() error {
 	var err error
 	viper.SetConfigType("yaml")

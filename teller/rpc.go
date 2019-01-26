@@ -113,7 +113,6 @@ func LoginToPlatForm(username string, pwhash string) error {
 
 func ProjectPayback(recpIndex string, assetName string,
 	recipientSeed string, amount string) error {
-	fmt.Println("SENDING REQUEST")
 	// retrieve project index
 	projIndexI, err := GetProjectIndex(assetName)
 	if err != nil {

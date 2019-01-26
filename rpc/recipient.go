@@ -100,7 +100,7 @@ func payback() {
 		if r.URL.Query() == nil || r.URL.Query()["recpIndex"] == nil ||
 			r.URL.Query()["projIndex"] == nil || r.URL.Query()["assetName"] == nil ||
 			r.URL.Query()["amount"] == nil || r.URL.Query()["platformPublicKey"] == nil {
-				log.Println("PARAM ERROR")
+			log.Println("PARAM ERROR")
 			errorHandler(w, r, http.StatusNotFound)
 			return
 		}

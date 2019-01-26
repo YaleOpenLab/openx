@@ -29,3 +29,4 @@ var Tlsport = "443"                                                             
 var IssuerSeedPwd = "blah"                                                           // the issuer seed password for unlocking the encrypted file. This is a constant for now, can be varied later if required
 var PaybackInterval = time.Duration(1 * 60 * 60 * 24 * 30)                           // second * minute * hour * day * number
 var TestPaybackInterval = time.Duration(5)                                           // 5 seconds
+var DefaultRpcPort = 8080                                                            // the default port on which the rpc server of the platform starts

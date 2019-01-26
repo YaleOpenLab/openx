@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 
-	assets "github.com/OpenFinancing/openfinancing/assets"
 	consts "github.com/OpenFinancing/openfinancing/consts"
 	database "github.com/OpenFinancing/openfinancing/database"
 	ipfs "github.com/OpenFinancing/openfinancing/ipfs"
@@ -15,42 +14,41 @@ import (
 	rpc "github.com/OpenFinancing/openfinancing/rpc"
 	scan "github.com/OpenFinancing/openfinancing/scan"
 	stablecoin "github.com/OpenFinancing/openfinancing/stablecoin"
+	utils "github.com/OpenFinancing/openfinancing/utils"
 	wallet "github.com/OpenFinancing/openfinancing/wallet"
 	xlm "github.com/OpenFinancing/openfinancing/xlm"
 	flags "github.com/jessevdk/go-flags"
 )
 
-// test.go drives the CLI interface. Will be removed once we have a funcitoning frontend
+// test.go drives the CLI interface. Will be removed once we have a functioning frontend
 // that supplements the backend in an effective way.
 var opts struct {
-	// Slice of bool will append 'true' each time the option
-	// is encountered (can be set multiple times, like -vvv)
-	Verbose   []bool `short:"v" long:"verbose" description:"Show verbose debug information"`
-	InvAmount int    `short:"i" description:"Desired investment"`
-	RecYears  int    `short:"r" description:"Number of years the recipient wants to repay in. Can be 3, 5 or 7 years."`
-	Port      string `short:"p" description:"The port on which the server runs on"`
+	Port int `short:"p" description:"The port on which the server runs on"`
+}
+
+func ParseConfig(args []string) error {
+	_, err := flags.ParseArgs(&opts, args)
+	if err != nil {
+		return err
+	}
+	port := utils.ItoS(consts.DefaultRpcPort)
+	if opts.Port != 0 {
+		port = utils.ItoS(opts.Port)
+	}
+	log.Println("Starting RPC Server on Port: ", opts.Port)
+	go rpc.StartServer(port) // run as go routine for now
+	return nil
 }
 
 func main() {
 	var err error
-	_, err = flags.ParseArgs(&opts, os.Args)
+	err = ParseConfig(os.Args)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	go rpc.StartServer("8080") // run as go routine for now
 	var investorSeed string
 	var recipientSeed string
-	// the memo field in stellar is particularly interesting for us wrt preserving state
-	// as shown in the preliminary pdf example. We need to test out whether we can commit
-	// more state in the memo field and find a way for third party clients to be able
-	// to replicate this state so that this is verifiable and not just an entry of state
-	// in the system.
-	// instead of fetching data after it passes through a 3rd party, it would be nice if we could
-	// get the data and then pass it on to them since it has to interface with our smart contract
-	// which interfaces with stellar. This is easier if we have a stellar client running on local,
-	// but I think that would not be possible on a small device (or maybe too much work, idk)
-	// does it need a remote stellar node running?
+
 	platformPublicKey, platformSeed, err := StartPlatform()
 	if err != nil {
 		log.Fatal(err)
@@ -460,9 +458,11 @@ func main() {
 					log.Println("Couldn't retrieve project, try again!")
 					continue
 				}
+
 				if solarProject.Stage != 3 {
 					log.Println("Stage of Project doesn't match, try again!")
 				}
+
 				PrintProject(solarProject)
 				fmt.Println(" HOW MUCH DO YOU WANT TO INVEST?")
 				investmentAmount, err := scan.ScanForStringWithCheckI()
@@ -470,12 +470,14 @@ func main() {
 					log.Println(err)
 					break
 				}
+
 				fmt.Println(" DO YOU WANT TO CONFIRM THIS ORDER? (PRESS N IF YOU DON'T WANT TO)")
 				confirmOpt, err := scan.ScanForString()
 				if err != nil {
 					log.Println(err)
 					break
 				}
+
 				if confirmOpt == "N" || confirmOpt == "n" {
 					fmt.Println("YOU HAVE DECIDED TO CANCEL THIS ORDER")
 					break
@@ -542,33 +544,17 @@ func main() {
 				BalanceDisplayPrompt(investor.U.PublicKey)
 				break
 			case 5:
-				// this should be expanded in the future to make use of the inbuilt DEX
-				// on stellar (checkout stellarterm)
 				log.Println("Enter the amount you want to convert into STABLEUSD")
-				// this would also mean that you need to check whether we have the balance
-				// here and then proceed further
 				convAmount, err := scan.ScanForStringWithCheckF()
 				if err != nil {
 					log.Println(err)
-					return
+					break
 				}
-				// maybe don't trust asset again when you've trusted it already? check if that's
-				// possible and save on the tx fee for a single transaction. But I guess its
-				// difficult to retrieve trustlines, so we'll go ahead with it
-				hash, err := assets.TrustAsset(stablecoin.Code, consts.StableCoinAddress, consts.StablecoinTrustLimit, investor.U.PublicKey, investorSeed)
+				err = stablecoin.Exchange(investor.U.PublicKey, investorSeed, convAmount)
 				if err != nil {
 					log.Println(err)
 					break
 				}
-				log.Println("tx hash for trusting stableUSD: ", hash)
-				// now send coins across and see if our tracker detects it
-				_, hash, err = xlm.SendXLM(stablecoin.PublicKey, convAmount, investorSeed, "sending xlm to bootstrap")
-				if err != nil {
-					log.Println(err)
-					break
-				}
-
-				log.Println("tx hash for sent xlm: ", hash, "pubkey: ", investor.U.PublicKey)
 				break
 			case 6:
 				DisplayOriginProjects()

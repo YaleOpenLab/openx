@@ -26,9 +26,11 @@ import (
 // TODO: Figure out how to tie the actual IoT device and its ID with the project
 // that it belongs, the contract, recipient, and eg. person who installed it.
 // Consider doing this with IoT partners, eg. Atonomi.
-// Right now, the teller just does a tamper resistance (so no one can stop the teller system, or tamper with the code).
-// Teller has its own public key and seed, allowing the devices to have a fully defined address in the network.
-
+// Teller authenticates with the platform using a remote API and then retrieves
+// credentials once authenticated. Both the teller and the project recipient on the
+// platform are the same entity, just that the teller is associated with the hw device.
+// hw device needs an id and stuff, hopefully Atonomi can give us that.
+// TODO: do we have a stellar client running on local? might not be possible on a small device though
 var (
 	LocalRecipient    database.Recipient
 	RecpSeed          string
