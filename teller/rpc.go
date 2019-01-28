@@ -106,7 +106,7 @@ func LoginToPlatForm(username string, pwhash string) error {
 	if err != nil {
 		return err
 	}
-	ColorOutput("UNLOCKED RECIPIENT", GreenColor)
+	ColorOutput("AUTHENTICATED RECIPIENT", GreenColor)
 	LocalRecipient = x
 	return nil
 }
@@ -135,4 +135,41 @@ func ProjectPayback(recpIndex string, assetName string,
 		return nil
 	}
 	return fmt.Errorf("Errored out")
+}
+
+func SetDeviceId(username string, pwhash string, deviceId string) error {
+	data, err := GetRequest(ApiUrl + "/recipient/deviceId?" + "LoginUserName=" + username +
+		"&LoginPassword=" + pwhash + "&deviceid=" + deviceId)
+	if err != nil {
+		return err
+	}
+	var x rpc.StatusResponse
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return err
+	}
+	if x.Status == 200 {
+		ColorOutput("PAID!", GreenColor)
+		return nil
+	}
+	return fmt.Errorf("Errored out, didn't receive 200")
+}
+
+func StoreStartTime() error {
+	data, err := GetRequest(ApiUrl + "/recipient/startdevice?" + "LoginUserName=" + LocalRecipient.U.LoginUserName +
+		"&LoginPassword=" + LocalRecipient.U.LoginPassword + "&start=" + utils.I64toS(utils.Unix()))
+	if err != nil {
+		return err
+	}
+	log.Println("DATA+", data)
+	var x rpc.StatusResponse
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return err
+	}
+	if x.Status == 200 {
+		ColorOutput("LOGGED START TIME SUCCESSFULLY!", GreenColor)
+		return nil
+	}
+	return fmt.Errorf("Errored out, didn't receive 200")
 }

@@ -42,5 +42,21 @@ func SetupConfig() error {
 		return err
 	}
 
+	// check for device id and set it if none is set
+	err = CheckDeviceID()
+	if err != nil {
+		return err
+	}
+
+	DeviceId, err = GetDeviceID()
+	if err != nil {
+		return err
+	}
+
+	err = StoreStartTime()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

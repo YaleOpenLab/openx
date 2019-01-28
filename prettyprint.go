@@ -95,6 +95,8 @@ func PrintRecipient(recipient database.Recipient) {
 	if recipient.U.Notification {
 		fmt.Println("         Your Email id is: ", recipient.U.Email)
 	}
+	fmt.Println("          Your Device ID is: ", recipient.DeviceId)
+	fmt.Println("          Your Device Start Times are: ", recipient.DeviceStarts)
 }
 
 func PrintEntity(a solar.Entity) {

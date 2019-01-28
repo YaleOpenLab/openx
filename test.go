@@ -133,6 +133,12 @@ func main() {
 				Stage3ProjectsDisplayPrompt()
 				break
 			case 2:
+				// retrieve again to get changes that may have occured in between
+				recipient, err = database.RetrieveRecipient(recipient.U.Index)
+				if err != nil {
+					log.Println(err)
+					break
+				}
 				PrintRecipient(recipient)
 				break
 			case 3:

@@ -37,6 +37,7 @@ var (
 	RecpPublicKey     string
 	PlatformPublicKey string
 	ApiUrl            string
+	DeviceId          string
 )
 
 var cleanupDone chan struct{}
@@ -47,8 +48,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	ColorOutput("TELLER PUBKEY: "+RecpPublicKey, GreenColor)
+	ColorOutput("DEVICE ID: "+DeviceId, GreenColor)
+	log.Fatal("Checks done")
 	go CheckPayback()
-	log.Println("TELLER PUBKEY: ", RecpPublicKey)
 	promptColor := color.New(color.FgHiYellow).SprintFunc()
 	whiteColor := color.New(color.FgHiWhite).SprintFunc()
 	rl, err := readline.NewEx(&readline.Config{
