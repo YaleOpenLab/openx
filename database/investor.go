@@ -46,7 +46,8 @@ type Investor struct {
 // insert their publickey into the system and then have hanlders for them signing
 // transactions
 // TODO: While anonymity to the public is important, we need to consider all KYC
-// compliance. Could come from an external service.
+// compliance. Could come from an external service, look into external services that
+// can provide this for us.
 func NewInvestor(uname string, pwd string, seedpwd string, Name string) (Investor, error) {
 	var a Investor
 	var err error

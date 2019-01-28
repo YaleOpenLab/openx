@@ -19,6 +19,9 @@ func setupRecipientRPCs() {
 	validateRecipient()
 	getAllRecipients()
 	payback()
+	storeDeviceId()
+	storeStartTime()
+	storeDeviceLocation()
 }
 
 func parseRecipient(r *http.Request) (database.Recipient, error) {
@@ -30,7 +33,7 @@ func parseRecipient(r *http.Request) (database.Recipient, error) {
 	}
 
 	prepRecipient.U, err = database.NewUser(r.FormValue("LoginUserName"), r.FormValue("LoginPassword"), r.FormValue("Name"), r.FormValue("EPassword"))
-	log.Println("Prepared recipient: ", prepRecipient)
+	log.Println("Parsed recipient: ", prepRecipient)
 	return prepRecipient, err
 }
 
@@ -58,7 +61,7 @@ func insertRecipient() {
 			return
 		}
 
-		log.Println("Prepared Recipient:", prepRecipient)
+		log.Println("Parsed recipient:", prepRecipient)
 		err = prepRecipient.Save()
 		if err != nil {
 			errorHandler(w, r, http.StatusNotFound)
@@ -86,7 +89,7 @@ func validateRecipient() {
 			errorHandler(w, r, http.StatusNotFound)
 			return
 		}
-		log.Println("Prepared Recipient:", prepRecipient)
+		log.Println("Parsed recipient:", prepRecipient)
 		MarshalSend(w, r, prepRecipient)
 	})
 }
@@ -117,8 +120,82 @@ func payback() {
 			errorHandler(w, r, http.StatusNotFound)
 			return
 		}
-		var rt StatusResponse
-		rt.Status = 200
-		MarshalSend(w, r, rt)
+		Send200(w, r)
+	})
+}
+
+func RecpValidateHelper(w http.ResponseWriter, r *http.Request) (database.Recipient, error) {
+	// first validate the recipient or anyone would be able to set device ids
+	checkGet(w, r)
+	var prepRecipient database.Recipient
+	// need to pass the pwhash param here
+	if r.URL.Query() == nil || r.URL.Query()["LoginUserName"] == nil ||
+		len(r.URL.Query()["LoginPassword"][0]) != 128 {
+		return prepRecipient, fmt.Errorf("Invalid params passed")
+	}
+
+	prepRecipient, err := database.ValidateRecipient(r.URL.Query()["LoginUserName"][0], r.URL.Query()["LoginPassword"][0])
+	if err != nil {
+		return prepRecipient, err
+	}
+
+	return prepRecipient, nil
+}
+
+func storeDeviceId() {
+	http.HandleFunc("/recipient/deviceId", func(w http.ResponseWriter, r *http.Request) {
+		// first validate the recipient or anyone would be able to set device ids
+		prepRecipient, err := RecpValidateHelper(w, r)
+		if err != nil || r.URL.Query()["deviceid"] == nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		// we have the recipient ready. Now set the device id
+		prepRecipient.DeviceId = r.URL.Query()["deviceid"][0]
+		err = prepRecipient.Save()
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+		Send200(w, r)
+	})
+}
+
+func storeStartTime() {
+	http.HandleFunc("/recipient/startdevice", func(w http.ResponseWriter, r *http.Request) {
+		// first validate the recipient or anyone would be able to set device ids
+		prepRecipient, err := RecpValidateHelper(w, r)
+		if err != nil || r.URL.Query()["start"] == nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		prepRecipient.DeviceStarts = append(prepRecipient.DeviceStarts, r.URL.Query()["start"][0])
+		err = prepRecipient.Save()
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+		Send200(w, r)
+	})
+}
+
+func storeDeviceLocation() {
+	http.HandleFunc("/recipient/storelocation", func(w http.ResponseWriter, r *http.Request) {
+		// first validate the recipient or anyone would be able to set device ids
+		prepRecipient, err := RecpValidateHelper(w, r)
+		if err != nil || r.URL.Query()["location"] == nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		prepRecipient.DeviceLocation = r.URL.Query()["location"][0]
+		err = prepRecipient.Save()
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+		Send200(w, r)
 	})
 }

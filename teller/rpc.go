@@ -11,7 +11,18 @@ import (
 	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
 	rpc "github.com/OpenFinancing/openfinancing/rpc"
 	utils "github.com/OpenFinancing/openfinancing/utils"
+	geo "github.com/martinlindhe/google-geolocate"
 )
+
+func GetLocation(mapskey string) string {
+	// see https://developers.google.com/maps/documentation/geolocation/intro on how
+	// to improve location accuracy
+	client := geo.NewGoogleGeo(mapskey)
+	res, _ := client.Geolocate()
+	location := fmt.Sprintf("Lat%fLng%f", res.Lat, res.Lng) // some ranodm format, can be improved upon if necessary
+	DeviceLocation = location
+	return location
+}
 
 func GetRequest(url string) ([]byte, error) {
 	// make a curl request out to lcoalhost and get the ping response
@@ -106,7 +117,7 @@ func LoginToPlatForm(username string, pwhash string) error {
 	if err != nil {
 		return err
 	}
-	ColorOutput("UNLOCKED RECIPIENT", GreenColor)
+	ColorOutput("AUTHENTICATED RECIPIENT", GreenColor)
 	LocalRecipient = x
 	return nil
 }
@@ -135,4 +146,61 @@ func ProjectPayback(recpIndex string, assetName string,
 		return nil
 	}
 	return fmt.Errorf("Errored out")
+}
+
+func SetDeviceId(username string, pwhash string, deviceId string) error {
+	data, err := GetRequest(ApiUrl + "/recipient/deviceId?" + "LoginUserName=" + username +
+		"&LoginPassword=" + pwhash + "&deviceid=" + deviceId)
+	if err != nil {
+		return err
+	}
+	var x rpc.StatusResponse
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return err
+	}
+	if x.Status == 200 {
+		ColorOutput("PAID!", GreenColor)
+		return nil
+	}
+	return fmt.Errorf("Errored out, didn't receive 200")
+}
+
+func StoreStartTime() error {
+	data, err := GetRequest(ApiUrl + "/recipient/startdevice?" + "LoginUserName=" + LocalRecipient.U.LoginUserName +
+		"&LoginPassword=" + LocalRecipient.U.LoginPassword + "&start=" + utils.I64toS(utils.Unix()))
+	if err != nil {
+		return err
+	}
+
+	var x rpc.StatusResponse
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return err
+	}
+	if x.Status == 200 {
+		ColorOutput("LOGGED START TIME SUCCESSFULLY!", GreenColor)
+		return nil
+	}
+	return fmt.Errorf("Errored out, didn't receive 200")
+}
+
+func StoreLocation(mapskey string) error {
+	location := GetLocation(mapskey)
+	data, err := GetRequest(ApiUrl + "/recipient/storelocation?" + "LoginUserName=" + LocalRecipient.U.LoginUserName +
+		"&LoginPassword=" + LocalRecipient.U.LoginPassword + "&location=" + location)
+	if err != nil {
+		return err
+	}
+
+	var x rpc.StatusResponse
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return err
+	}
+	if x.Status == 200 {
+		ColorOutput("LOGGED LOCATION SUCCESSFULLY!", GreenColor)
+		return nil
+	}
+	return fmt.Errorf("Errored out, didn't receive 200")
 }
