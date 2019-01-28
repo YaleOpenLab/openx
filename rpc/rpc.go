@@ -48,6 +48,12 @@ func MarshalSend(w http.ResponseWriter, r *http.Request, x interface{}) {
 	WriteToHandler(w, xJson)
 }
 
+func Send200(w http.ResponseWriter, r *http.Request) {
+	var rt StatusResponse
+	rt.Status = 200
+	MarshalSend(w, r, rt)
+}
+
 func checkOrigin(w http.ResponseWriter, r *http.Request) {
 	// if r.Header.Get("Origin") != "localhost" { // allow only our frontend UI to connect to our RPC instance
 	// 	http.Error(w, "404 page not found", http.StatusNotFound)

@@ -11,18 +11,6 @@ import (
 	xlm "github.com/OpenFinancing/openfinancing/xlm"
 )
 
-type Client struct {
-	Info     string
-	Location string
-	UniqueId string
-}
-
-// we should Authenticate whether the code we wanted the rpi to run is actually running
-// in order to do this, we have a password + pk/sk based authentication system
-var StartHash string
-var NowHash string
-
-// BlockStamp gets the latest blockhash from the API
 func BlockStamp() (string, error) {
 	// get the latest  block here
 	hash, err := xlm.GetLatestBlockHash()
@@ -30,7 +18,7 @@ func BlockStamp() (string, error) {
 }
 
 // EndHandler runs when the teller shuts down
-func EndHandler(t Client) error {
+func EndHandler() error {
 	log.Println("Gracefully shutting down, please do not press any buttons in the process")
 	var err error
 	NowHash, err = BlockStamp()
@@ -38,7 +26,7 @@ func EndHandler(t Client) error {
 		return err
 	}
 	log.Printf("StartHash: %s, NowHash: %s", StartHash, NowHash)
-	hashString := "Device Shutting down. Info: " + t.Info + " Device Location: " + t.Location + " Device Unique ID: " + t.UniqueId + " " + StartHash + NowHash
+	hashString := "Device Shutting down. Info: " + DeviceInfo + " Device Location: " + DeviceLocation + " Device Unique ID: " + DeviceId + " " + StartHash + NowHash
 	// need to hash this with ipfs
 	ipfsHash, err := ipfs.AddStringToIpfs(hashString)
 	if err != nil {

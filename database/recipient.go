@@ -14,18 +14,25 @@ import (
 // about recipients to add in the struct, For example, recipients should be associated
 // to sites eligible for projects (eg. a building or land where you can put panels),
 // (and eventually need to show proof of this)
+// Each project should have a unique recipient associated with it. While this is
+// not strictly necessary, it is better for management on both ends, so seems like
+// something that we want to encourage?
 type Recipient struct {
+	U User
+	// user related functions are called as an instance directly
 	ReceivedSolarProjects []string
 	// ReceivedProjects denotes the projects that have been received by the recipient
 	// instead of storing the PaybackAssets and the DebtAssets, we store this
-	U User
-	// user related functions are called as an instance directly
 	DeviceId string
 	// the device ID of the associated solar hub. We don't do much with it here,
 	// but we need it on the IoT Hub side to check login stuff
 	DeviceStarts []string
 	// the start time of the devices recorded for reference. We could monitor unscheduled
 	// closes on the platfrom level as well and send email notifications or similar
+	DeviceLocation string
+	// the location of the device. Teller gets location using google's geolocation
+	// API. Accuracy is of the order ~1km radius. Not great, but enough to detect
+	// theft or something
 }
 
 // NewRecipient returns a new recipient provided with the function parameters
@@ -164,22 +171,4 @@ func TopReputationRecipient() ([]Recipient, error) {
 		}
 	}
 	return allRecipients, nil
-}
-
-func StoreDeviceId(recpIndex int, deviceId string) error {
-	recipient, err := RetrieveRecipient(recpIndex)
-	if err != nil {
-		return err
-	}
-	recipient.DeviceId = deviceId
-	return recipient.Save()
-}
-
-func StoreDeviceStart(recpIndex int, startTime string) error {
-	recipient, err := RetrieveRecipient(recpIndex)
-	if err != nil {
-		return err
-	}
-	recipient.DeviceStarts = append(recipient.DeviceStarts, startTime)
-	return recipient.Save()
 }

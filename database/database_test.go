@@ -123,14 +123,6 @@ func TestDb(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Able to change reputation in database with invalid path")
 	}
-	err = StoreDeviceId(1, "blah")
-	if err == nil {
-		t.Fatalf("Able to store device id in invalid database")
-	}
-	err = StoreDeviceStart(recp2.U.Index, "blah")
-	if err == nil {
-		t.Fatalf("Able to store start time in invalid database, quitting!")
-	}
 	// set the db directory back to normal so that we can test stuff which goes inside the db
 	consts.DbDir = os.Getenv("HOME") + "/.openfinancing/database"
 	err = os.MkdirAll(consts.DbDir, os.ModePerm) // create the db
@@ -519,14 +511,6 @@ func TestDb(t *testing.T) {
 		t.Fatal(err)
 	}
 	err = inv2.AddEmail("blah@blah.com")
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = StoreDeviceId(recp2.U.Index, "blah")
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = StoreDeviceStart(recp2.U.Index, "blah")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -30,3 +30,4 @@ var IssuerSeedPwd = "blah"                                                      
 var PaybackInterval = time.Duration(1 * 60 * 60 * 24 * 30)                           // second * minute * hour * day * number
 var TestPaybackInterval = time.Duration(5)                                           // 5 seconds
 var DefaultRpcPort = 8080                                                            // the default port on which the rpc server of the platform starts
+var LoginRefreshInterval = time.Duration(5 * 60)                                     // every 5 minutes we refresh the teller to import the changes on the platform
