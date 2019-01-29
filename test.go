@@ -167,6 +167,7 @@ func main() {
 					break
 				}
 			case 1:
+				// getFinalProjects RPC
 				Stage3ProjectsDisplayPrompt()
 				break
 			case 2:
@@ -180,7 +181,7 @@ func main() {
 				PrintRecipient(recipient)
 				break
 			case 3:
-				// payback() RPC
+				// payback RPC
 				log.Println(recipient.ReceivedSolarProjects)
 				fmt.Println("WHICH PROJECT DO YOU WANT TO PAY BACK TOWARDS? (ENTER PROJECT NUMBER)")
 				projectNumber, err := scan.ScanForInt()
@@ -221,6 +222,7 @@ func main() {
 				}
 				break
 			case 4:
+				// getStableCoin RPC
 				log.Println("Enter the amount you want to convert into STABLEUSD")
 				convAmount, err := scan.ScanForStringWithCheckF()
 				if err != nil {
@@ -298,7 +300,11 @@ func main() {
 				default:
 					break
 				}
-				bestContract.SetFinalizedProject()
+				err = bestContract.SetFinalizedProject()
+				if err != nil {
+					log.Println(err)
+					break
+				}
 				log.Println("BEST CONTRACT IS: ")
 				PrintProject(bestContract)
 				// now the contract is at stage 3

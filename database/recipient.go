@@ -162,8 +162,7 @@ func TopReputationRecipient() ([]Recipient, error) {
 	}
 	for i, _ := range allRecipients {
 		for j, _ := range allRecipients {
-			fmt.Println("CHECK REPUT, i: ", allRecipients[i].U.Reputation, " j: ", allRecipients[j].U.Reputation)
-			if allRecipients[i].U.Reputation < allRecipients[j].U.Reputation {
+			if allRecipients[i].U.Reputation > allRecipients[j].U.Reputation {
 				tmp := allRecipients[i]
 				allRecipients[i] = allRecipients[j]
 				allRecipients[j] = tmp

@@ -26,6 +26,7 @@ type User struct {
 	// PublicKey denotes the public key of the recipient
 	LoginUserName string
 	// the username you use to login to the platform
+	// TODO: change this to just "username"
 	LoginPassword string
 	// the password, which you use to authenticate on the platform
 	Address string
@@ -333,6 +334,7 @@ func AddInspector(userIndex int) error {
 	return user.Save()
 }
 
+// these two functions can be used as internal hnadlers and hte RPC can save reputation directly
 func (a *User) IncreaseReputation(reputation float64) error {
 	a.Reputation += reputation
 	return a.Save()
@@ -352,7 +354,7 @@ func TopReputationUsers() ([]User, error) {
 	}
 	for i, _ := range allUsers {
 		for j, _ := range allUsers {
-			if allUsers[i].Reputation < allUsers[j].Reputation {
+			if allUsers[i].Reputation > allUsers[j].Reputation {
 				tmp := allUsers[i]
 				allUsers[i] = allUsers[j]
 				allUsers[j] = tmp

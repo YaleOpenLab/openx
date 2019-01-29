@@ -47,14 +47,14 @@ func PingRpc() error {
 	if err != nil {
 		return err
 	}
-	var x rpc.PingResponse
+	var x rpc.StatusResponse
 	// now data is in byte, we need the other strucutre now
 	err = json.Unmarshal(data, &x)
 	if err != nil {
 		return err
 	}
 	// the result would be the status of the platform
-	ColorOutput("PLATFORM STATUS: "+x.Status, GreenColor)
+	ColorOutput("PLATFORM STATUS: "+utils.ItoS(x.Status), GreenColor)
 	return nil
 }
 

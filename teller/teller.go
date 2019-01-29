@@ -15,14 +15,6 @@ import (
 
 // package teller contains the remote client code that would be run on the client's
 // side and communicate information with us and with atonomi and other partners.
-// for now, we need a client that can start up and generate a pk/seed pair. This would
-// be stored in the project struct and if anyone wants to see the status of this
-// node, they can check the blockchain for the node's updates (node should update
-// the blockchain at frequient intervals with power generation data in the memo
-// field of the tx. In short, teller should be run on the IoT hub that would be in
-// place on the hardware side
-// Polling interval would be an arbitrary 5 minutes, 1440/5 = 288 updates a day
-// These would be the calls from the Rasberry Pi and are calls over a protected MQTT channel and TLS.
 // TODO: Figure out how to tie the actual IoT device and its ID with the project
 // that it belongs, the contract, recipient, and eg. person who installed it.
 // Consider doing this with IoT partners, eg. Atonomi.
@@ -30,7 +22,9 @@ import (
 // credentials once authenticated. Both the teller and the project recipient on the
 // platform are the same entity, just that the teller is associated with the hw device.
 // hw device needs an id and stuff, hopefully Atonomi can give us that.
-// TODO: do we have a stellar client running on local? might not be possible on a small device though
+// Teller tracks whenever the device starts and goes off, so we know when exactly the device was
+// switched off. This is enough as proof that the device was running in between. This also
+// avoids needing to poll the blockchain often and saves on the (minimal, still) tx fee.
 var (
 	LocalRecipient    database.Recipient
 	RecpSeed          string
@@ -72,12 +66,15 @@ func main() {
 		log.Fatal(err)
 	}
 	defer rl.Close()
-	// main shell loop
+
 	DeviceInfo = "Raspberry Pi3 Model B+"
 	go StartServer()
+
+	// channels for preventing immediate sigint
 	signalChan := make(chan os.Signal, 1)
 	cleanupDone := make(chan struct{})
 	signal.Notify(signalChan, os.Interrupt)
+
 	go func() {
 		<-signalChan
 		fmt.Println("\nSigint received in quit function. not quitting!")

@@ -13,12 +13,14 @@ type SnInvestor struct {
 	InvestedBonds         []string
 	InvestedCoops         []string
 	PublicKey             string
+	Reputation            float64
 }
 
 type SnRecipient struct {
 	Name                  string
 	PublicKey             string
 	ReceivedSolarProjects []string
+	Reputation            float64
 }
 
 type SnUser struct {
@@ -31,6 +33,7 @@ func setupPublicRoutes() {
 	getAllInvestorsPublic()
 	getAllRecipientsPublic()
 	getTopReputationPublic()
+	getInvTopReputationPublic()
 }
 
 // MWTODO: get feedback on what routes to make public
@@ -47,6 +50,7 @@ func sanitizeInvestor(investor database.Investor) SnInvestor {
 	sanitize.InvestedBonds = investor.InvestedBonds
 	sanitize.InvestedCoops = investor.InvestedCoops
 	sanitize.PublicKey = investor.U.PublicKey
+	sanitize.Reputation = investor.U.Reputation
 	return sanitize
 }
 
@@ -56,6 +60,7 @@ func sanitizeRecipient(recipient database.Recipient) SnRecipient {
 	var sanitize SnRecipient
 	sanitize.Name = recipient.U.Name
 	sanitize.PublicKey = recipient.U.PublicKey
+	sanitize.Reputation = recipient.U.Reputation
 	sanitize.ReceivedSolarProjects = recipient.ReceivedSolarProjects
 	return sanitize
 }
@@ -122,6 +127,8 @@ func getAllRecipientsPublic() {
 	})
 }
 
+// this is to publish a list of the users with the best feedback in the system in order
+// to award them abdges or something similar
 func getTopReputationPublic() {
 	http.HandleFunc("/public/reputation/top", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
@@ -132,5 +139,31 @@ func getTopReputationPublic() {
 		}
 		sUsers := sanitizeAllUsers(allUsers)
 		MarshalSend(w, r, sUsers)
+	})
+}
+
+func getRecpTopReputationPublic() {
+	http.HandleFunc("/public/recipient/reputation/top", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		allRecps, err := database.TopReputationRecipient()
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+		sRecipients := sanitizeAllRecipients(allRecps)
+		MarshalSend(w, r, sRecipients)
+	})
+}
+
+func getInvTopReputationPublic() {
+	http.HandleFunc("/public/investor/reputation/top", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		allInvs, err := database.TopReputationInvestors()
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+		sInvestors := sanitizeAllInvestors(allInvs)
+		MarshalSend(w, r, sInvestors)
 	})
 }

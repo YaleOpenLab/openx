@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	database "github.com/OpenFinancing/openfinancing/database"
 	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
@@ -18,6 +19,7 @@ func setupInvestorRPCs() {
 	validateInvestor()
 	getAllInvestors()
 	investInProject()
+	changeReputationInv()
 }
 
 func parseInvestor(r *http.Request) (database.Investor, error) {
@@ -129,11 +131,50 @@ func investInProject() {
 			return
 		}
 
-		// note that while using this route, we can't send the recipient assets (maybe)
+		// note that while using this route, we can't send the investor assets (maybe)
 		// make it so in the UI that only they can accept an investment so we can get their
 		// seed and send them assets. By not accepting, they would forfeit their investment,
 		// so incentive would be there to unlock the seed.
 		_, err = solar.InvestInProject(projIndex, investor.U.Index, amount, investorSeed)
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+		Send200(w, r)
+	})
+}
+
+func InvValidateHelper(w http.ResponseWriter, r *http.Request) (database.Investor, error) {
+	// first validate the investor or anyone would be able to set device ids
+	checkGet(w, r)
+	var prepInvestor database.Investor
+	// need to pass the pwhash param here
+	if r.URL.Query() == nil || r.URL.Query()["username"] == nil ||
+		len(r.URL.Query()["pwhash"][0]) != 128 {
+		return prepInvestor, fmt.Errorf("Invalid params passed")
+	}
+
+	prepInvestor, err := database.ValidateInvestor(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
+	if err != nil {
+		return prepInvestor, err
+	}
+
+	return prepInvestor, nil
+}
+
+func changeReputationInv() {
+	http.HandleFunc("/investor/reputation", func(w http.ResponseWriter, r *http.Request) {
+		investor, err := InvValidateHelper(w, r)
+		if err != nil || r.URL.Query()["reputation"] == nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+		reputation, err := strconv.ParseFloat(r.URL.Query()["reputation"][0], 32) // same as StoI but we need to catch the error here
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+		err = database.ChangeInvReputation(investor.U.Index, reputation)
 		if err != nil {
 			errorHandler(w, r, http.StatusNotFound)
 			return

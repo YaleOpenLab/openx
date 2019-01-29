@@ -211,7 +211,7 @@ func TopReputationInvestors() ([]Investor, error) {
 	}
 	for i, _ := range allInvestors {
 		for j, _ := range allInvestors {
-			if allInvestors[i].U.Reputation < allInvestors[j].U.Reputation {
+			if allInvestors[i].U.Reputation > allInvestors[j].U.Reputation {
 				tmp := allInvestors[i]
 				allInvestors[i] = allInvestors[j]
 				allInvestors[j] = tmp
