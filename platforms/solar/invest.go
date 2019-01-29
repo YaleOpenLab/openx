@@ -54,11 +54,11 @@ func PreInvestmentCheck(projIndex int, invIndex int, recpIndex int, invAmount st
 	return project, investor, recipient, nil
 }
 
-func SendUSDToPlatform(platformSeed string, invSeed string, invAmount string, projIndex int) (string, error) {
+func SendUSDToPlatform(invSeed string, invAmount string, projIndex int) (string, error) {
 	// send stableusd to the platform (not the issuer) since the issuer will be locked
 	// and we can't use the funds. We also need ot be able to redeem the stablecoin for fiat
 	// so we can't burn them
-	platformPubkey, err := wallet.ReturnPubkey(platformSeed)
+	platformPubkey, err := wallet.ReturnPubkey(consts.PlatformSeed)
 	if err != nil {
 		return "", err
 	}
@@ -94,11 +94,18 @@ func SendUSDToPlatform(platformSeed string, invSeed string, invAmount string, pr
 }
 
 // InvestInProject invests in a particular solar project given required parameters
-func InvestInProject(projIndex int, invIndex int, recpIndex int, invAmount string,
-	invSeed string, recpSeed string, platformSeed string) (Project, error) {
+func InvestInProject(projIndex int, invIndex int, invAmount string, invSeed string) (Project, error) {
 	var err error
 
-	project, investor, recipient, err := PreInvestmentCheck(projIndex, invIndex, recpIndex, invAmount)
+	var project Project
+	var investor database.Investor
+
+	project, err = RetrieveProject(projIndex)
+	if err != nil {
+		return project, err
+	}
+
+	investor, err = database.RetrieveInvestor(invIndex)
 	if err != nil {
 		return project, err
 	}
@@ -114,13 +121,13 @@ func InvestInProject(projIndex int, invIndex int, recpIndex int, invAmount strin
 		if err != nil {
 			return project, err
 		}
-		err = issuer.FundIssuer(project.Params.Index, consts.IssuerSeedPwd, platformSeed)
+		err = issuer.FundIssuer(project.Params.Index, consts.IssuerSeedPwd, consts.PlatformSeed)
 		if err != nil {
 			return project, err
 		}
 	}
 
-	stableTxHash, err := SendUSDToPlatform(platformSeed, invSeed, invAmount, project.Params.Index)
+	stableTxHash, err := SendUSDToPlatform(invSeed, invAmount, project.Params.Index)
 	if err != nil {
 		return project, err
 	}
@@ -160,21 +167,37 @@ func InvestInProject(projIndex int, invIndex int, recpIndex int, invAmount strin
 		notif.SendInvestmentNotifToInvestor(projIndex, investor.U.Email, stableTxHash, invTrustTxHash, invAssetTxHash)
 	}
 
-	err = project.sendRecipientAssets(recipient, issuerPubkey, issuerSeed, recpSeed)
+	/*
+		// The main difference between the RPC and non RPC version is that we don't send
+		// any assets to the recipient in this case. We need to have handlers which will
+		// take care of follow ups to send assets to the recipient later
+			err = project.sendRecipientAssets(recipient, issuerPubkey, issuerSeed, recpSeed)
+			if err != nil {
+				return project, err
+			}
+	*/
+	err = project.Save()
 	if err != nil {
 		return project, err
 	}
-
-	err = project.Save()
+	if project.Params.MoneyRaised == project.Params.TotalValue {
+		project.Lock = true
+		err = project.Save()
+		if err != nil {
+			return project, err
+		}
+		project.sendRecipientNotification()
+		go sendRecipientAssets(project.Params.Index, issuerPubkey, issuerSeed)
+	}
 	return project, err
 }
 
 // SeedInvestInProject is similar to InvestInProject differing only in that it distributes
 // seed assets instead of investor assets
 func SeedInvestInProject(projIndex int, invIndex int, recpIndex int, invAmount string,
-	invSeed string, recpSeed string, platformSeed string) (Project, error) {
+	invSeed string, recpSeed string) (Project, error) {
 
-	project, investor, recipient, err := PreInvestmentCheck(projIndex, invIndex, recpIndex, invAmount)
+	project, investor, _, err := PreInvestmentCheck(projIndex, invIndex, recpIndex, invAmount)
 	if err != nil {
 		return project, err
 	}
@@ -190,14 +213,14 @@ func SeedInvestInProject(projIndex int, invIndex int, recpIndex int, invAmount s
 		if err != nil {
 			return project, err
 		}
-		err = issuer.FundIssuer(project.Params.Index, consts.IssuerSeedPwd, platformSeed)
+		err = issuer.FundIssuer(project.Params.Index, consts.IssuerSeedPwd, consts.PlatformSeed)
 		if err != nil {
 			return project, err
 		}
 	}
 
 	// we now have the seed asset and the issuer setup
-	stableTxHash, err := SendUSDToPlatform(platformSeed, invSeed, invAmount, project.Params.Index)
+	stableTxHash, err := SendUSDToPlatform(invSeed, invAmount, project.Params.Index)
 	if err != nil {
 		return project, err
 	}
@@ -237,80 +260,130 @@ func SeedInvestInProject(projIndex int, invIndex int, recpIndex int, invAmount s
 		notif.SendSeedInvestmentNotifToInvestor(projIndex, investor.U.Email, stableTxHash, invTrustTxHash, invAssetTxHash)
 	}
 
-	err = project.sendRecipientAssets(recipient, issuerPubkey, issuerSeed, recpSeed)
+	err = project.Save()
 	if err != nil {
 		return project, err
 	}
-
-	err = project.Save()
+	if project.Params.MoneyRaised == project.Params.TotalValue {
+		project.Lock = true
+		err = project.Save()
+		if err != nil {
+			return project, err
+		}
+		project.sendRecipientNotification()
+	}
 	return project, err
 }
 
-func (project *Project) sendRecipientAssets(recipient database.Recipient, issuerPubkey string,
-	issuerSeed string, recpSeed string) error {
-	if project.Params.MoneyRaised != project.Params.TotalValue {
-		return nil // investment not complete fully, this isn't an error
-	} else {
-		// this project covers up the amount nedeed for the project, so set the DebtAssetCode
-		// and PaybackAssetCodes, generate them and give to the recipient
-		// we need the recipient's seed here, so we need to wait on the frontend and require
-		// confirmation from the recipient or something
-		project.Params.DebtAssetCode = assets.AssetID(consts.DebtAssetPrefix + project.Params.Metadata)
-		project.Params.PaybackAssetCode = assets.AssetID(consts.PaybackAssetPrefix + project.Params.Metadata)
+func (project *Project) sendRecipientNotification() {
+	// this project covers up the amount nedeed for the project, so send the recipient
+	// a notification that their project has been invested in and that they need
+	// to logon to the platform in order to accept the investment
+	// notif.SendUnlockNotifToRecipient(project.Params.Index, project.ProjectRecipient.U.Email)
+	notif.SendUnlockNotifToRecipient(project.Params.Index, "varunramganesh@gmail.com")
+}
 
-		DebtAsset := assets.CreateAsset(project.Params.DebtAssetCode, issuerPubkey)
-		PaybackAsset := assets.CreateAsset(project.Params.PaybackAssetCode, issuerPubkey)
-
-		pbAmtTrust := utils.ItoS(project.Params.Years * 12 * 2) // two way exchange possible, to account for errors
-
-		recpPbTrustHash, err := assets.TrustAsset(PaybackAsset.Code, issuerPubkey, pbAmtTrust, recipient.U.PublicKey, recpSeed)
-		if err != nil {
-			return err
-		}
-
-		log.Println("Recipient Trusts Debt asset: ", DebtAsset.Code, " tx hash: ", recpPbTrustHash)
-		_, recpAssetHash, err := assets.SendAssetFromIssuer(PaybackAsset.Code, recipient.U.PublicKey, pbAmtTrust, issuerSeed, issuerPubkey) // same amount as debt
-		if err != nil {
-			return err
-		}
-
-		log.Printf("Sent PaybackAsset to recipient %s with txhash %s", recipient.U.PublicKey, recpAssetHash)
-		recpDebtTrustHash, err := assets.TrustAsset(DebtAsset.Code, issuerPubkey, utils.FtoS(project.Params.TotalValue*2), recipient.U.PublicKey, recpSeed)
-		if err != nil {
-			return err
-		}
-
-		log.Println("Recipient Trusts Payback asset: ", PaybackAsset.Code, " tx hash: ", recpDebtTrustHash)
-		_, recpDebtAssetHash, err := assets.SendAssetFromIssuer(DebtAsset.Code, recipient.U.PublicKey, utils.FtoS(project.Params.TotalValue), issuerSeed, issuerPubkey) // same amount as debt
-		if err != nil {
-			return err
-		}
-
-		log.Printf("Sent PaybackAsset to recipient %s with txhash %s\n", recipient.U.PublicKey, recpDebtAssetHash)
-		project.Params.BalLeft = float64(project.Params.TotalValue)
-		project.ProjectRecipient = recipient // need to udpate project.Params each time recipient is mutated
-		project.Stage = FundedProject        // set funded project stage
-		recipient.ReceivedSolarProjects = append(recipient.ReceivedSolarProjects, DebtAsset.Code)
-
-		err = recipient.Save()
-		if err != nil {
-			return err
-		}
-
-		err = project.Save()
-		if err != nil {
-			return err
-		}
-
-		txhash, err := issuer.FreezeIssuer(project.Params.Index, "blah")
-		if err != nil {
-			return err
-		}
-
-		log.Printf("Tx hash for freezing issuer is: %s", txhash)
-		if recipient.U.Notification {
-			notif.SendInvestmentNotifToRecipient(project.Params.Index, recipient.U.Email, recpPbTrustHash, recpAssetHash, recpDebtTrustHash, recpDebtAssetHash)
-		}
+func sendRecipientAssets(projIndex int, issuerPubkey string, issuerSeed string) error {
+	// this project covers up the amount nedeed for the project, so set the DebtAssetCode
+	// and PaybackAssetCodes, generate them and give to the recipient
+	// we need the recipient's seed here, so we need to wait on the frontend and require
+	// confirmation from the recipient or something
+	// we need the recipient's seed before we can proceed further
+	startTime := utils.Unix()
+	project, err := RetrieveProject(projIndex)
+	if err != nil {
+		return err
 	}
+
+	for utils.Unix()-startTime < consts.LockInterval {
+		log.Println("RUNNING INSIDE LOOP")
+		if !project.Lock {
+			log.Println("Project UNLOCKED IN LOOP")
+			break
+		}
+		project, err = RetrieveProject(projIndex)
+		if err != nil {
+			return err
+		}
+		time.Sleep(10 * time.Second)
+	}
+
+	// here, we hope that the recipient's account is setup already
+	// by the time the function reaches here, the lock would have been opened
+	// update our copy of the project
+	project, err = RetrieveProject(projIndex)
+	if err != nil {
+		return err
+	}
+	recpSeed, err := wallet.DecryptSeed(project.ProjectRecipient.U.EncryptedSeed, project.LockPwd)
+	if err != nil {
+		return err
+	}
+	recipient := project.ProjectRecipient
+	// now send the assets as normal
+	project.Params.DebtAssetCode = assets.AssetID(consts.DebtAssetPrefix + project.Params.Metadata)
+	project.Params.PaybackAssetCode = assets.AssetID(consts.PaybackAssetPrefix + project.Params.Metadata)
+
+	DebtAsset := assets.CreateAsset(project.Params.DebtAssetCode, issuerPubkey)
+	PaybackAsset := assets.CreateAsset(project.Params.PaybackAssetCode, issuerPubkey)
+
+	pbAmtTrust := utils.ItoS(project.Params.Years * 12 * 2) // two way exchange possible, to account for errors
+
+	recpPbTrustHash, err := assets.TrustAsset(PaybackAsset.Code, issuerPubkey, pbAmtTrust, recipient.U.PublicKey, recpSeed)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	log.Println("Recipient Trusts Debt asset: ", DebtAsset.Code, " tx hash: ", recpPbTrustHash)
+	_, recpAssetHash, err := assets.SendAssetFromIssuer(PaybackAsset.Code, recipient.U.PublicKey, pbAmtTrust, issuerSeed, issuerPubkey) // same amount as debt
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	log.Printf("Sent PaybackAsset to recipient %s with txhash %s", recipient.U.PublicKey, recpAssetHash)
+	recpDebtTrustHash, err := assets.TrustAsset(DebtAsset.Code, issuerPubkey, utils.FtoS(project.Params.TotalValue*2), recipient.U.PublicKey, recpSeed)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	log.Println("Recipient Trusts Payback asset: ", PaybackAsset.Code, " tx hash: ", recpDebtTrustHash)
+	_, recpDebtAssetHash, err := assets.SendAssetFromIssuer(DebtAsset.Code, recipient.U.PublicKey, utils.FtoS(project.Params.TotalValue), issuerSeed, issuerPubkey) // same amount as debt
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	log.Printf("Sent PaybackAsset to recipient %s with txhash %s\n", recipient.U.PublicKey, recpDebtAssetHash)
+	project.Params.BalLeft = float64(project.Params.TotalValue)
+	project.ProjectRecipient = recipient // need to udpate project.Params each time recipient is mutated
+	project.Stage = FundedProject        // set funded project stage
+	recipient.ReceivedSolarProjects = append(recipient.ReceivedSolarProjects, DebtAsset.Code)
+
+	err = recipient.Save()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	err = project.Save()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	txhash, err := issuer.FreezeIssuer(project.Params.Index, "blah")
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	log.Printf("Tx hash for freezing issuer is: %s", txhash)
+	if recipient.U.Notification {
+		notif.SendInvestmentNotifToRecipient(project.Params.Index, recipient.U.Email, recpPbTrustHash, recpAssetHash, recpDebtTrustHash, recpDebtAssetHash)
+	}
+	fmt.Println("PROJECT %d's INVESTMENT CONFIRMED!", project.Params.Index)
 	return project.Save()
 }

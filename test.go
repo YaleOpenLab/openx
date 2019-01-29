@@ -22,6 +22,8 @@ import (
 
 // test.go drives the CLI interface. Will be removed once we have a functioning frontend
 // that supplements the backend in an effective way.
+// TODO: move to the teller based config system mimicking the frontend once we have RPCs
+// for functions that will be used by the frontend.
 var opts struct {
 	Port int `short:"p" description:"The port on which the server runs on"`
 }
@@ -46,15 +48,16 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	var investorSeed string
 	var recipientSeed string
 
-	platformPublicKey, platformSeed, err := StartPlatform()
+	consts.PlatformPublicKey, consts.PlatformSeed, err = StartPlatform()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Printf("PLATFORM SEED IS: %s\n PLATFORM PUBLIC KEY IS: %s\n", platformSeed, platformPublicKey)
+	log.Printf("PLATFORM SEED IS: %s\n PLATFORM PUBLIC KEY IS: %s\n", consts.PlatformSeed, consts.PlatformPublicKey)
 	// TODO: how much do we pay the investor?
 	// Do we sell the REC created from the solar panels only to the investor? If so,
 	// isn't that enough to propel investment in the solar contract itself?
@@ -112,6 +115,7 @@ func main() {
 		for {
 			fmt.Println("------------RECIPIENT INTERFACE------------")
 			fmt.Println("----CHOOSE ONE OF THE FOLLOWING OPTIONS----")
+			fmt.Println("  0. Display all Locked Projects")
 			fmt.Println("  1. Display all Open Projects (STAGE 3)")
 			fmt.Println("  2. Display my Profile")
 			fmt.Println("  3. Payback towards an Project (STAGE 6)")
@@ -129,10 +133,44 @@ func main() {
 				break
 			}
 			switch optI {
+			case 0:
+				fmt.Println("CHOOSE A PROJECT TO UNLOCK")
+				allProjects, err := solar.RetrieveLockedProjects()
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				log.Println(allProjects)
+				pIndex, err := scan.ScanForInt()
+				if err != nil {
+					log.Println(err)
+					break
+				}
+
+				fmt.Println("ENTER SEED PASSWORD:")
+				// need to unlock the recipient account
+				seedpwd, err := scan.ScanRawPassword()
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				// make sure that the seed provided is valid
+				_, err = wallet.DecryptSeed(recipient.U.EncryptedSeed, seedpwd)
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				// unlock the project
+				err = solar.UnlockProject(recipient.U.LoginUserName, recipient.U.LoginPassword, pIndex, seedpwd)
+				if err != nil {
+					log.Println(err)
+					break
+				}
 			case 1:
 				Stage3ProjectsDisplayPrompt()
 				break
 			case 2:
+				// validateRecipient RPC
 				// retrieve again to get changes that may have occured in between
 				recipient, err = database.RetrieveRecipient(recipient.U.Index)
 				if err != nil {
@@ -142,6 +180,7 @@ func main() {
 				PrintRecipient(recipient)
 				break
 			case 3:
+				// payback() RPC
 				log.Println(recipient.ReceivedSolarProjects)
 				fmt.Println("WHICH PROJECT DO YOU WANT TO PAY BACK TOWARDS? (ENTER PROJECT NUMBER)")
 				projectNumber, err := scan.ScanForInt()
@@ -175,7 +214,7 @@ func main() {
 				}
 				fmt.Printf("PAYING BACK %s TOWARDS PROJECT NUMBER: %d\n", paybackAmount, rtContract.Params.Index) // use the rtContract.Params here instead of using projectNumber from long ago
 
-				err = solar.Payback(recipient.U.Index, rtContract.Params.Index, rtContract.Params.DebtAssetCode, paybackAmount, recipientSeed, platformPublicKey)
+				err = solar.Payback(recipient.U.Index, rtContract.Params.Index, rtContract.Params.DebtAssetCode, paybackAmount, recipientSeed, consts.PlatformPublicKey)
 				if err != nil {
 					log.Println("PAYBACK TX FAILED, PLEASE TRY AGAIN!", err)
 					break
@@ -451,6 +490,7 @@ func main() {
 				PrintInvestor(investor)
 				break
 			case 3:
+				// investInProject RPC
 				fmt.Println("----WHICH PROJECT DO YOU WANT TO INVEST IN? (ENTER ORDER NUMBER WITHOUT SPACES)----")
 				oNumber, err := scan.ScanForInt()
 				if err != nil {
@@ -489,27 +529,27 @@ func main() {
 					break
 				}
 
-				err = platform.RefillPlatform(platformPublicKey)
+				err = platform.RefillPlatform(consts.PlatformPublicKey)
 				if err != nil {
 					log.Println(err)
 					break
 				}
 
-				fmt.Printf("Platform seed is: %s and platform's publicKey is %s\n", platformSeed, platformPublicKey)
-				err = xlm.RefillAccount(investor.U.PublicKey, platformSeed)
+				fmt.Printf("Platform seed is: %s and platform's publicKey is %s\n", consts.PlatformSeed, consts.PlatformPublicKey)
+				err = xlm.RefillAccount(investor.U.PublicKey, consts.PlatformSeed)
 				if err != nil {
 					log.Println(err)
 					break
 				}
 				recipient := solarProject.ProjectRecipient
 				// from here on, reference recipient
-				err = xlm.RefillAccount(recipient.U.PublicKey, platformSeed)
+				err = xlm.RefillAccount(recipient.U.PublicKey, consts.PlatformSeed)
 				if err != nil {
 					log.Println(err)
 					break
 				}
 
-				platformBalance, err := xlm.GetNativeBalance(platformPublicKey)
+				platformBalance, err := xlm.GetNativeBalance(consts.PlatformPublicKey)
 				if err != nil {
 					log.Println(err)
 					break
@@ -536,7 +576,7 @@ func main() {
 				log.Println("The investor's public key and private key are: ", investor.U.PublicKey, " ", investorSeed)
 				log.Println("The recipient's public key and private key are: ", recipient.U.PublicKey, " ", recipientSeed)
 				// so now we have three entities setup, so we create the assets and invest in them
-				cProject, err := solar.InvestInProject(solarProject.Params.Index, investor.U.Index, recipient.U.Index, investmentAmount, investorSeed, recipientSeed, platformSeed)
+				cProject, err := solar.InvestInProject(solarProject.Params.Index, investor.U.Index, investmentAmount, investorSeed)
 				if err != nil {
 					log.Println(err)
 				} else {

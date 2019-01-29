@@ -12,6 +12,7 @@ import (
 	"net/http"
 )
 
+// TODO: have some nice APi documentation page for this so that we can easily reference
 type PingResponse struct {
 	// pingresponse returns "alive" when called could be used by services
 	// that scan for uptime
@@ -114,17 +115,16 @@ func StartServer(port string) {
 	// to access the API
 	// a potential improvement will be to add something like macaroons
 	// so that we can serve over an authenticated channel
+	// setup all related handlers
 	setupBasicHandlers()
-	// setup basic handlers - / and /ping
 	setupProjectRPCs()
-	// setup project related RPCs
 	setupInvestorRPCs()
-	// setup investor related RPCs
 	setupRecipientRPCs()
-	// setup recipient related RPCs
 	setupBondRPCs()
 	setupCoopRPCs()
 	setupUserRpcs()
+	setupStableCoinRPCs()
+
 	portString := ":" + port // weird construction, but this should work
 	log.Fatal(http.ListenAndServe(portString, nil))
 }

@@ -12,6 +12,8 @@ import (
 // place with respect to a specific project / investment
 
 // MWTODO: Get comments on general text here
+// TODO: maybe encrypt the config file so a person with access to this file cannot
+// steal all credentials
 // footerString is a common footer string that is used by all emails
 var footerString = "Have a nice day!\n\nWarm Regards, \nThe OpenSolar Team\n\n\n\n" +
 	"You're receiving this email because your contact was given" +
@@ -30,7 +32,7 @@ func sendMail(body string, to string) error {
 		log.Println("Error while reading email values from config file")
 		return err
 	}
-	log.Println("VIPER CONFIG: ", viper.Get("email"), viper.Get("password"))
+	log.Println("SENDING EMAIL: ", viper.Get("email"), viper.Get("password"))
 	from := viper.Get("email").(string)    // interface to string
 	pass := viper.Get("password").(string) // interface to string
 	auth := smtp.PlainAuth("", from, pass, "smtp.gmail.com")
@@ -114,6 +116,19 @@ func SendPaybackNotifToInvestor(projIndex int, to string, stableUSDHash string, 
 		"The recipient's proofs of payment are attached below and may be used as future reference in case of discrepancies:  \n\n" +
 		"Stablecoin payment hash is: https://testnet.steexp.com/tx/" + stableUSDHash + "\n" +
 		"Debt asset hash is: https://testnet.steexp.com/tx/" + debtPaybackHash + "\n\n\n" +
+		footerString
+	return sendMail(body, to)
+}
+
+// SendPaybackNotifToInvestor sends a notification email to the investor when the recipient
+// pays back towards a particular order
+func SendUnlockNotifToRecipient(projIndex int, to string) error {
+	// this is sent to the investor on payback from an investor
+	body := "Greetings from the opensolar platform! \n\n" +
+		"We're writing to let you know that project number: " + utils.ItoS(projIndex) + " has been invested in\n\n" +
+		"You are required to logon to the platform within a period of 3(THREE) days in order to accept the investment\n\n" +
+		"If you choose to not accept the given investment in your project, please be warned that your reputation score " +
+		"will be adjusted accordingly and this may affect any future proposal that you seek funding for on the platform\n\n" +
 		footerString
 	return sendMail(body, to)
 }
