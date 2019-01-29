@@ -9,14 +9,14 @@ import (
 	consts "github.com/OpenFinancing/openfinancing/consts"
 	database "github.com/OpenFinancing/openfinancing/database"
 	ipfs "github.com/OpenFinancing/openfinancing/ipfs"
-	platform "github.com/OpenFinancing/openfinancing/platforms"
+	// platform "github.com/OpenFinancing/openfinancing/platforms"
 	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
 	rpc "github.com/OpenFinancing/openfinancing/rpc"
 	scan "github.com/OpenFinancing/openfinancing/scan"
 	stablecoin "github.com/OpenFinancing/openfinancing/stablecoin"
 	utils "github.com/OpenFinancing/openfinancing/utils"
 	wallet "github.com/OpenFinancing/openfinancing/wallet"
-	xlm "github.com/OpenFinancing/openfinancing/xlm"
+	// xlm "github.com/OpenFinancing/openfinancing/xlm"
 	flags "github.com/jessevdk/go-flags"
 )
 
@@ -467,7 +467,7 @@ func main() {
 			fmt.Println("----CHOOSE ONE OF THE FOLLOWING OPTIONS----")
 			fmt.Println("  1. Display all Open Projects (STAGE 3)")
 			fmt.Println("  2. Display my Profile")
-			fmt.Println("  3. Invest in an Project (STAGE 3)")
+			// fmt.Println("  3. Invest in an Project (STAGE 3)")
 			fmt.Println("  4. Display All Balances")
 			fmt.Println("  5. Exchange XLM for USD")
 			fmt.Println("  6. Display all Origin (STAGE 1) Projects")
@@ -491,105 +491,17 @@ func main() {
 				break
 			case 3:
 				// investInProject RPC
-				fmt.Println("----WHICH PROJECT DO YOU WANT TO INVEST IN? (ENTER ORDER NUMBER WITHOUT SPACES)----")
-				oNumber, err := scan.ScanForInt()
-				if err != nil {
-					fmt.Println("Couldn't read user input")
-					break
-				}
-				// now the user has decided to invest in the asset with index uInput
-				// we need to retrieve the project and ask for confirmation
-				solarProject, err := solar.RetrieveProject(oNumber)
-				if err != nil {
-					log.Println("Couldn't retrieve project, try again!")
-					continue
-				}
-
-				if solarProject.Stage != 3 {
-					log.Println("Stage of Project doesn't match, try again!")
-				}
-
-				PrintProject(solarProject)
-				fmt.Println(" HOW MUCH DO YOU WANT TO INVEST?")
-				investmentAmount, err := scan.ScanForStringWithCheckI()
-				if err != nil {
-					log.Println(err)
-					break
-				}
-
-				fmt.Println(" DO YOU WANT TO CONFIRM THIS ORDER? (PRESS N IF YOU DON'T WANT TO)")
-				confirmOpt, err := scan.ScanForString()
-				if err != nil {
-					log.Println(err)
-					break
-				}
-
-				if confirmOpt == "N" || confirmOpt == "n" {
-					fmt.Println("YOU HAVE DECIDED TO CANCEL THIS ORDER")
-					break
-				}
-
-				err = platform.RefillPlatform(consts.PlatformPublicKey)
-				if err != nil {
-					log.Println(err)
-					break
-				}
-
-				fmt.Printf("Platform seed is: %s and platform's publicKey is %s\n", consts.PlatformSeed, consts.PlatformPublicKey)
-				err = xlm.RefillAccount(investor.U.PublicKey, consts.PlatformSeed)
-				if err != nil {
-					log.Println(err)
-					break
-				}
-				recipient := solarProject.ProjectRecipient
-				// from here on, reference recipient
-				err = xlm.RefillAccount(recipient.U.PublicKey, consts.PlatformSeed)
-				if err != nil {
-					log.Println(err)
-					break
-				}
-
-				platformBalance, err := xlm.GetNativeBalance(consts.PlatformPublicKey)
-				if err != nil {
-					log.Println(err)
-					break
-				}
-
-				// need the recipient's seed here as well, unlock the recipient account
-				fmt.Println("ENTER THE RECIPIENT'S SEED PASSWORD")
-				// ideally we should ask the recipient for confirmation in case he wants to
-				// receive the money or something. Also the fact that we can't unlock the account
-				// for him
-				seedpwd, err := scan.ScanRawPassword()
-				if err != nil {
-					log.Println(err)
-					break
-				}
-				seed, err := wallet.DecryptSeed(recipient.U.EncryptedSeed, seedpwd)
-				if err != nil {
-					log.Println(err)
-					break
-				}
-				recipientSeed = seed
-				log.Println(" Seed successfully unlocked")
-				log.Println("Platform's updated balance is: ", platformBalance)
-				log.Println("The investor's public key and private key are: ", investor.U.PublicKey, " ", investorSeed)
-				log.Println("The recipient's public key and private key are: ", recipient.U.PublicKey, " ", recipientSeed)
-				// so now we have three entities setup, so we create the assets and invest in them
-				cProject, err := solar.InvestInProject(solarProject.Params.Index, investor.U.Index, investmentAmount, investorSeed)
-				if err != nil {
-					log.Println(err)
-				} else {
-					fmt.Println("YOUR PROJECT INVESTMENT HAS BEEN CONFIRMED: ")
-					PrintProject(cProject)
-					fmt.Println("PLEASE CHECK A BLOCKCHAIN EXPLORER TO CONFIRM BALANCES: ")
-					fmt.Println("https://testnet.steexp.com/account/" + investor.U.PublicKey + "#balances")
-				}
-				break
+				// This route has been removed since once you invest in a particular order and it reaches
+				// the limit, this function will not transfer assets back to the recipient, resulting
+				// in an improper way of emulating the workflow. The only option is to call the route,
+				// which will be called by the frontend, so we can emulate this successfully.
+				// curl -X GET -H "Content-Type: application/x-www-form-urlencoded" -H "Origin: localhost" -H "Cache-Control: no-cache" "http://localhost:8080/investor/invest?username=john&password=9a768ace36ff3d1771d5c145a544de3d68343b2e76093cb7b2a8ea89ac7f1a20c852e6fc1d71275b43abffefac381c5b906f55c3bcff4225353d02f1d3498758&seedpwd=x&projIndex=1&amount=14000"
 			case 4:
 				BalanceDisplayPrompt(investor.U.PublicKey)
 				break
 			case 5:
+				// Stablecoin/get route
+				// curl -X GET -H "Content-Type: application/x-www-form-urlencoded" -H "Origin: localhost" -H "Cache-Control: no-cache" "http://localhost:8080/stablecoin/get?seed=SB2Z5GZASNF4ZR7263WWYISZP3UXSP7A6IP6ENZ44G4T44G6NVUCSVSP&amount=1"
 				log.Println("Enter the amount you want to convert into STABLEUSD")
 				convAmount, err := scan.ScanForStringWithCheckF()
 				if err != nil {

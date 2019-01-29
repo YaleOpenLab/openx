@@ -48,13 +48,11 @@ func insertInvestor() {
 			errorHandler(w, r, http.StatusNotFound)
 			return
 		}
-		var rt StatusResponse
-		rt.Status = 200
-		MarshalSend(w, r, rt)
+		Send200(w, r)
 	})
 }
 
-// validateInvestor retreives the investor after valdiating if such an ivnestor exists
+// validateInvestor retrieves the investor after valdiating if such an ivnestor exists
 // by checking the pwhash of the given investor with the stored one
 func validateInvestor() {
 	http.HandleFunc("/investor/validate", func(w http.ResponseWriter, r *http.Request) {

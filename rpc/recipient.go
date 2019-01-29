@@ -68,9 +68,7 @@ func insertRecipient() {
 			return
 		}
 
-		var rt StatusResponse
-		rt.Status = 200
-		MarshalSend(w, r, rt)
+		Send200(w, r)
 	})
 }
 

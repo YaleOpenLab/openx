@@ -13,17 +13,12 @@ import (
 )
 
 // TODO: have some nice APi documentation page for this so that we can easily reference
-type PingResponse struct {
-	// pingresponse returns "alive" when called could be used by services
-	// that scan for uptime
-	Status string
-}
 
 type StatusResponse struct {
 	Status int
 }
 
-// setupBasicHandlers sets up two hadnler functions that can be used to serve a default
+// setupBasicHandlers sets up two handler functions that can be used to serve a default
 // 404 response when we either error out or received input is incorrect.  This is not
 // exactly ideal, because we don't expcet the RPC to be exposed and would like some more
 // errors when we handle it on the frontend, but this makes for more a bit more
@@ -37,6 +32,7 @@ func WriteToHandler(w http.ResponseWriter, jsonString []byte) {
 	w.Header().Add("Access-Control-Allow-Headers", "Accept, Authorization, Cache-Control, Content-Type")
 	w.Header().Add("Access-Control-Allow-Methods", "*")
 	w.Header().Add("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Content-Type", "application/json")
 	w.Write(jsonString)
 }
 
@@ -50,12 +46,14 @@ func MarshalSend(w http.ResponseWriter, r *http.Request, x interface{}) {
 }
 
 func Send200(w http.ResponseWriter, r *http.Request) {
+	// TODO: have differnet functions that will send the appropriate repsonse codes
 	var rt StatusResponse
 	rt.Status = 200
 	MarshalSend(w, r, rt)
 }
 
 func checkOrigin(w http.ResponseWriter, r *http.Request) {
+	// re-enable this function for all private routes
 	// if r.Header.Get("Origin") != "localhost" { // allow only our frontend UI to connect to our RPC instance
 	// 	http.Error(w, "404 page not found", http.StatusNotFound)
 	// }
@@ -94,9 +92,7 @@ func setupDefaultHandler() {
 func setupPingHandler() {
 	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
-		var pr PingResponse
-		pr.Status = "Alive"
-		MarshalSend(w, r, pr)
+		Send200(w, r)
 	})
 }
 
@@ -124,6 +120,7 @@ func StartServer(port string) {
 	setupCoopRPCs()
 	setupUserRpcs()
 	setupStableCoinRPCs()
+	setupPublicRoutes()
 
 	portString := ":" + port // weird construction, but this should work
 	log.Fatal(http.ListenAndServe(portString, nil))

@@ -49,9 +49,10 @@ type User struct {
 	Notification bool
 	// GDPR, if user wants to opt in, set this to true. Default is false
 	Reputation float64
-	// Reputation contains the reputation of a good contractor. Reputation increases
+	// Reputation contains the reputation of a good user. Reputation increases
 	// for each completed bond and decreases for each bond cancelled. The frontend
-	// could have a table based on reputation scores
+	// could have a table based on reputation scores and use the appropriate scores for
+	// awarding badges or something to users with high reputation
 }
 
 // User is a metastrucutre that contains commonly used keys within a single umbrella
