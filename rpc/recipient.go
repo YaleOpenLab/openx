@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	database "github.com/OpenFinancing/openfinancing/database"
 	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
@@ -22,17 +23,19 @@ func setupRecipientRPCs() {
 	storeDeviceId()
 	storeStartTime()
 	storeDeviceLocation()
+	changeReputationRecp()
+	chooseBlindAuction()
 }
 
 func parseRecipient(r *http.Request) (database.Recipient, error) {
 	var prepRecipient database.Recipient
 	err := r.ParseForm()
-	if err != nil || r.FormValue("LoginUserName") == "" || r.FormValue("LoginPassword") == "" || r.FormValue("Name") == "" || r.FormValue("EPassword") == "" {
+	if err != nil || r.FormValue("username") == "" || r.FormValue("pwhash") == "" || r.FormValue("Name") == "" || r.FormValue("EPassword") == "" {
 		// don't care which type of error because you send 404 anyway
-		return prepRecipient, fmt.Errorf("One of required fields missing: LoginUserName, LoginPassword, Name, EPassword")
+		return prepRecipient, fmt.Errorf("One of required fields missing: username, pwhash, Name, EPassword")
 	}
 
-	prepRecipient.U, err = database.NewUser(r.FormValue("LoginUserName"), r.FormValue("LoginPassword"), r.FormValue("Name"), r.FormValue("EPassword"))
+	prepRecipient.U, err = database.NewUser(r.FormValue("username"), r.FormValue("pwhash"), r.FormValue("Name"), r.FormValue("EPassword"))
 	log.Println("Parsed recipient: ", prepRecipient)
 	return prepRecipient, err
 }
@@ -68,9 +71,7 @@ func insertRecipient() {
 			return
 		}
 
-		var rt StatusResponse
-		rt.Status = 200
-		MarshalSend(w, r, rt)
+		Send200(w, r)
 	})
 }
 
@@ -78,13 +79,13 @@ func validateRecipient() {
 	http.HandleFunc("/recipient/validate", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
 		// need to pass the pwhash param here
-		if r.URL.Query() == nil || r.URL.Query()["LoginUserName"] == nil ||
-			len(r.URL.Query()["LoginPassword"][0]) != 128 {
+		if r.URL.Query() == nil || r.URL.Query()["username"] == nil ||
+			len(r.URL.Query()["pwhash"][0]) != 128 {
 			errorHandler(w, r, http.StatusNotFound)
 			return
 		}
 
-		prepRecipient, err := database.ValidateRecipient(r.URL.Query()["LoginUserName"][0], r.URL.Query()["LoginPassword"][0])
+		prepRecipient, err := database.ValidateRecipient(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
 		if err != nil {
 			errorHandler(w, r, http.StatusNotFound)
 			return
@@ -129,12 +130,12 @@ func RecpValidateHelper(w http.ResponseWriter, r *http.Request) (database.Recipi
 	checkGet(w, r)
 	var prepRecipient database.Recipient
 	// need to pass the pwhash param here
-	if r.URL.Query() == nil || r.URL.Query()["LoginUserName"] == nil ||
-		len(r.URL.Query()["LoginPassword"][0]) != 128 {
+	if r.URL.Query() == nil || r.URL.Query()["username"] == nil ||
+		len(r.URL.Query()["pwhash"][0]) != 128 {
 		return prepRecipient, fmt.Errorf("Invalid params passed")
 	}
 
-	prepRecipient, err := database.ValidateRecipient(r.URL.Query()["LoginUserName"][0], r.URL.Query()["LoginPassword"][0])
+	prepRecipient, err := database.ValidateRecipient(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
 	if err != nil {
 		return prepRecipient, err
 	}
@@ -196,6 +197,122 @@ func storeDeviceLocation() {
 			errorHandler(w, r, http.StatusNotFound)
 			return
 		}
+		Send200(w, r)
+	})
+}
+
+// changeReputation changes the reputation of a specified recipient
+func changeReputationRecp() {
+	http.HandleFunc("/recipient/reputation", func(w http.ResponseWriter, r *http.Request) {
+		recipient, err := RecpValidateHelper(w, r)
+		if err != nil || r.URL.Query()["reputation"] == nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+		reputation, err := strconv.ParseFloat(r.URL.Query()["reputation"][0], 32) // same as StoI but we need to catch the error here
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+		err = database.ChangeRecpReputation(recipient.U.Index, reputation)
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+		Send200(w, r)
+	})
+}
+
+func chooseBlindAuction() {
+	http.HandleFunc("/recipient/auction/choose/blind", func(w http.ResponseWriter, r *http.Request) {
+		recipient, err := RecpValidateHelper(w, r)
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		allContracts, err := solar.RetrieveRecipientProjects(solar.ProposedProject, recipient.U.Index)
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		bestContract, err := solar.SelectContractBlind(allContracts)
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		err = bestContract.SetFinalizedProject()
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		Send200(w, r)
+	})
+}
+
+func chooseVickreyAuction() {
+	http.HandleFunc("/recipient/auction/choose/vickrey", func(w http.ResponseWriter, r *http.Request) {
+		recipient, err := RecpValidateHelper(w, r)
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		allContracts, err := solar.RetrieveRecipientProjects(solar.ProposedProject, recipient.U.Index)
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		// the only differing part in the three auction routes. Would be nice if there were
+		// some way to avoid repetition like this
+		bestContract, err := solar.SelectContractVickrey(allContracts)
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		err = bestContract.SetFinalizedProject()
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		Send200(w, r)
+	})
+}
+
+func chooseTimeAuction() {
+	http.HandleFunc("/recipient/auction/choose/time", func(w http.ResponseWriter, r *http.Request) {
+		recipient, err := RecpValidateHelper(w, r)
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		allContracts, err := solar.RetrieveRecipientProjects(solar.ProposedProject, recipient.U.Index)
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		// the only differing part in the three auction routes. Would be nice if there were
+		// some way to avoid repetition like this
+		bestContract, err := solar.SelectContractTime(allContracts)
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		err = bestContract.SetFinalizedProject()
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
 		Send200(w, r)
 	})
 }

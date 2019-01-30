@@ -50,6 +50,8 @@ type Project struct {
 
 	Reputation float64 // the positive reputation associated with a given project
 	// MWTODO: get feedback on Reputation weighting
+	Lock    bool   // lock investment in order to wait for receipient's confirmation
+	LockPwd string // the recipient's seedpwd. Will be set to null as soon as we use it.
 }
 
 // so a project's rough workflow is like
@@ -414,4 +416,59 @@ func SaveRecPlatformContract(projIndex int, hash string) error {
 	}
 	a.RecPlatformContractHash = hash
 	return a.Save()
+}
+
+func RetrieveLockedProjects() ([]Project, error) {
+	var arr []Project
+	db, err := database.OpenDB()
+	if err != nil {
+		return arr, err
+	}
+	defer db.Close()
+	err = db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket(database.ProjectsBucket)
+		for i := 1; ; i++ {
+			var rProject Project
+			x := b.Get(utils.ItoB(i))
+			if x == nil {
+				break
+			}
+			err := json.Unmarshal(x, &rProject)
+			if err != nil {
+				return err
+			}
+			// append only contracts which are open for funding and below
+			if rProject.Lock {
+				arr = append(arr, rProject)
+			}
+		}
+		return nil
+	})
+	return arr, err
+}
+
+func UnlockProject(username string, pwhash string, projIndex int, seedpwd string) error {
+	fmt.Println("UNLOCKING PROJECT")
+	project, err := RetrieveProject(projIndex)
+	if err != nil {
+		return err
+	}
+
+	recipient, err := database.ValidateRecipient(username, pwhash)
+	if err != nil {
+		return err
+	}
+
+	if recipient.U.LoginPassword != project.ProjectRecipient.U.LoginPassword {
+		return fmt.Errorf("Seeds don't match, quitting!")
+	}
+
+	if !project.Lock {
+		return fmt.Errorf("Project not locked")
+	}
+
+	project.LockPwd = seedpwd
+	project.Lock = false
+	fmt.Println("PROJECT UNLOCKED!")
+	return project.Save()
 }

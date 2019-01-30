@@ -26,6 +26,7 @@ type User struct {
 	// PublicKey denotes the public key of the recipient
 	LoginUserName string
 	// the username you use to login to the platform
+	// TODO: change this to just "username"
 	LoginPassword string
 	// the password, which you use to authenticate on the platform
 	Address string
@@ -49,9 +50,10 @@ type User struct {
 	Notification bool
 	// GDPR, if user wants to opt in, set this to true. Default is false
 	Reputation float64
-	// Reputation contains the reputation of a good contractor. Reputation increases
+	// Reputation contains the reputation of a good user. Reputation increases
 	// for each completed bond and decreases for each bond cancelled. The frontend
-	// could have a table based on reputation scores
+	// could have a table based on reputation scores and use the appropriate scores for
+	// awarding badges or something to users with high reputation
 }
 
 // User is a metastrucutre that contains commonly used keys within a single umbrella
@@ -332,6 +334,7 @@ func AddInspector(userIndex int) error {
 	return user.Save()
 }
 
+// these two functions can be used as internal hnadlers and hte RPC can save reputation directly
 func (a *User) IncreaseReputation(reputation float64) error {
 	a.Reputation += reputation
 	return a.Save()
@@ -351,7 +354,7 @@ func TopReputationUsers() ([]User, error) {
 	}
 	for i, _ := range allUsers {
 		for j, _ := range allUsers {
-			if allUsers[i].Reputation < allUsers[j].Reputation {
+			if allUsers[i].Reputation > allUsers[j].Reputation {
 				tmp := allUsers[i]
 				allUsers[i] = allUsers[j]
 				allUsers[j] = tmp
