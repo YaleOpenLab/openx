@@ -56,6 +56,11 @@ func StoI(a string) int {
 	return aInt
 }
 
+func StoICheck(a string) (int, error) {
+	// convert string to int
+	return strconv.Atoi(a)
+}
+
 func SHA3hash(inputString string) string {
 	byteString := sha3.Sum512([]byte(inputString))
 	return hex.EncodeToString(byteString[:])

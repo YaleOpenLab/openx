@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	database "github.com/OpenFinancing/openfinancing/database"
+	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
 )
 
 func setupUserRpcs() {
@@ -33,6 +34,12 @@ func removeSeedInv(investor database.Investor) database.Investor {
 	return investor
 }
 
+func removeSeedEntity(entity solar.Entity) solar.Entity {
+	var dummy []byte
+	entity.U.EncryptedSeed = dummy
+	return entity
+}
+
 func ValidateUser() {
 	http.HandleFunc("/user/validate", func(w http.ResponseWriter, r *http.Request) {
 		checkOrigin(w, r)
@@ -51,15 +58,25 @@ func ValidateUser() {
 		// no we need to see whether this guy is an investor or a recipient.
 		var prepInvestor database.Investor
 		var prepRecipient database.Recipient
+		var prepEntity solar.Entity
 		rec := false
+		entity := false
 		prepInvestor, err = database.RetrieveInvestor(prepUser.Index)
 		if err != nil {
 			// means the user is a recipient, retrieve recipient credentials
-			rec = true
 			prepRecipient, err = database.ValidateRecipient(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
 			if err != nil {
-				errorHandler(w, r, http.StatusNotFound)
-				return
+				// it is not a recipient either
+				prepEntity, err = solar.ValidateEntity(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
+				if err != nil {
+					// not an investor, recipient or entity, error
+					errorHandler(w, r, http.StatusNotFound)
+					return
+				} else {
+					entity = true
+				}
+			} else {
+				rec = true
 			}
 		}
 
@@ -68,6 +85,10 @@ func ValidateUser() {
 		if rec {
 			x.Role = "Recipient"
 			x.Entity = removeSeedRecp(prepRecipient)
+			MarshalSend(w, r, x)
+		} else if entity {
+			x.Role = "Entity"
+			x.Entity = removeSeedEntity(prepEntity)
 			MarshalSend(w, r, x)
 		} else {
 			x.Role = "Investor"

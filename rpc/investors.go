@@ -59,12 +59,12 @@ func insertInvestor() {
 func validateInvestor() {
 	http.HandleFunc("/investor/validate", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
-		if r.URL.Query() == nil || r.URL.Query()["username"] == nil || r.URL.Query()["password"] == nil ||
-			len(r.URL.Query()["password"][0]) != 128 { // sha 512 length
+		if r.URL.Query() == nil || r.URL.Query()["username"] == nil || r.URL.Query()["pwhash"] == nil ||
+			len(r.URL.Query()["pwhash"][0]) != 128 { // sha 512 length
 			errorHandler(w, r, http.StatusNotFound)
 			return
 		}
-		prepInvestor, err := database.ValidateInvestor(r.URL.Query()["username"][0], r.URL.Query()["password"][0])
+		prepInvestor, err := database.ValidateInvestor(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
 		if err != nil {
 			errorHandler(w, r, http.StatusNotFound)
 			return

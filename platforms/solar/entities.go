@@ -276,3 +276,12 @@ func TopReputationEntities(role string) ([]Entity, error) {
 	}
 	return allEntities, nil
 }
+
+func ValidateEntity(name string, pwhash string) (Entity, error) {
+	var rec Entity
+	user, err := database.ValidateUser(name, pwhash)
+	if err != nil {
+		return rec, err
+	}
+	return RetrieveEntity(user.Index)
+}
