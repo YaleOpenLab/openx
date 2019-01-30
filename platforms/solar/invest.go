@@ -384,6 +384,6 @@ func sendRecipientAssets(projIndex int, issuerPubkey string, issuerSeed string) 
 	if recipient.U.Notification {
 		notif.SendInvestmentNotifToRecipient(project.Params.Index, recipient.U.Email, recpPbTrustHash, recpAssetHash, recpDebtTrustHash, recpDebtAssetHash)
 	}
-	fmt.Println("PROJECT %d's INVESTMENT CONFIRMED!", project.Params.Index)
+	fmt.Printf("PROJECT %d's INVESTMENT CONFIRMED!", project.Params.Index)
 	return project.Save()
 }

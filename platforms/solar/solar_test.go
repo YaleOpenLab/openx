@@ -133,24 +133,20 @@ func TestDb(t *testing.T) {
 	if err == nil {
 		t.Fatalf("PreInvestmentCheck succeeds, quitting!")
 	}
-	_, err = SendUSDToPlatform("", "", "", 1)
+	_, err = SendUSDToPlatform("", "", 1)
 	if err == nil {
 		t.Fatalf("SendUSDToPlatform succeeds, quitting!")
 	}
-	_, err = InvestInProject(1, 1, 1, "", "", "", "")
+	_, err = InvestInProject(1, 1, "", "")
 	if err == nil {
 		t.Fatalf("InvestInProject succeeds, quitting!")
 	}
-	_, err = SeedInvestInProject(1, 1, 1, "", "", "", "")
+	_, err = SeedInvestInProject(1, 1, 1, "", "", "")
 	if err == nil {
 		t.Fatalf("SeedInvestInProject succeeds, quitting!")
 	}
 	var tmpProj Project
 	var tmpRecp database.Recipient
-	err = tmpProj.sendRecipientAssets(tmpRecp, "", "", "")
-	if err == nil {
-		t.Fatalf("Sending recipient assets failed, quitting!")
-	}
 	tmpProj.SetInstalledProjectStage()
 	if err == nil {
 		t.Fatalf("Setting stage works with invalid db, quitting!")
