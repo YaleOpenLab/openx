@@ -245,7 +245,7 @@ func main() {
 					continue
 				}
 				PrintProjects(allContracts)
-
+				// TODO: port this to the emulator
 				fmt.Println("CHOOSE THE METRIC BY WHICH YOU WANT TO SELECT THE WINNING BID: ")
 				fmt.Println("1. PRICE (BLIND)")
 				fmt.Println("2. COMPLETION TIME (IN YEARS)")
@@ -309,7 +309,6 @@ func main() {
 				log.Println("BEST CONTRACT IS: ")
 				PrintProject(bestContract)
 				// now the contract is at stage 3
-				// TODO: setup the issuer and stuff here instead of in invest
 			case 6:
 				fmt.Println("LIST OF ALL PRE ORIGIN PROJECTS BY ORIGINATORS (STAGE 0)")
 				allMyProjects, err := solar.RetrieveProjectsAtStage(solar.PreOriginProject)
@@ -372,8 +371,8 @@ func main() {
 			fmt.Println("-------------WELCOME BACK CONTRACTOR-------------")
 			for {
 				fmt.Println("WHAT WOULD YOU LIKE TO DO?")
-				fmt.Println("  1. VIEW ALL ORIGINATED (STAGE 1) PROJECTS")
-				fmt.Println("  2. VIEW PROFILE")
+				fmt.Println("  1. VIEW ALL ORIGINATED (STAGE 1) PROJECTS") // done
+				fmt.Println("  2. VIEW PROFILE") // done
 				fmt.Println("  3. CREATE A PROPOSED (STAGE 2) PROJECT")
 				fmt.Println("  4. VIEW ALL MY PROPOSED (STAGE 2) PROJECTS")
 				fmt.Println("  5. CREATE NEW TYPE OF COLLATERAL")
@@ -429,7 +428,7 @@ func main() {
 			for {
 				fmt.Println("WHAT WOULD YOU LIKE TO DO?")
 				fmt.Println("  1. PROPOSE A PRE-ORIGIN (STAGE 0) PROJECT TO A RECIPIENT")
-				fmt.Println("  2. VIEW PROFILE")
+				fmt.Println("  2. VIEW PROFILE") // done
 				fmt.Println("  3. VIEW ALL MY PRE-ORIGINATED (STAGE 0) PROJECTS")
 				fmt.Println("  4. VIEW ALL MY ORIGINATED (STAGE 1) PROJECTS")
 				optI, err = scan.ScanForInt()
@@ -470,7 +469,7 @@ func main() {
 		// User is an investor
 		for {
 			// Main investor loop
-			fmt.Println("------------INVESTOR INTERFACE------------")
+			fmt.Println("------------INVESTOR INTERFACE------------") //  done
 			fmt.Println("----CHOOSE ONE OF THE FOLLOWING OPTIONS----")
 			fmt.Println("  1. Display all Open Projects (STAGE 3)") // done
 			fmt.Println("  2. Display my Profile") // done
