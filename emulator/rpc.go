@@ -256,3 +256,103 @@ func GetIpfsHash(username string, pwhash string, hashString string) (string, err
 	}
 	return x, nil
 }
+
+func InvestInProject(projIndex string, amount string, username string, pwhash string, seedpwd string) (rpc.StatusResponse, error) {
+	var x rpc.StatusResponse
+	data, err := GetRequest(ApiUrl + "/investor/invest?" + "username=" + username + "&pwhash=" + pwhash +
+		"&seedpwd=" + seedpwd + "&projIndex=" + projIndex + "&amount=" + amount)
+	if err != nil {
+		return x, err
+	}
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return x, err
+	}
+	return x, nil
+}
+
+func VoteTowardsProject(projIndex string, amount string, username string, pwhash string) (rpc.StatusResponse, error) {
+	var x rpc.StatusResponse
+	data, err := GetRequest(ApiUrl + "/investor/vote?" + "username=" + username + "&pwhash=" + pwhash +
+		"&projIndex=" + projIndex + "&votes=" + amount)
+	if err != nil {
+		return x, err
+	}
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return x, err
+	}
+	return x, nil
+}
+
+func AuthKyc(userIndex string, username string, pwhash string) (rpc.StatusResponse, error) {
+	var x rpc.StatusResponse
+	data, err := GetRequest(ApiUrl + "/user/kyc?" + "username=" + username + "&pwhash=" + pwhash +
+		"&userIndex=" + userIndex)
+	if err != nil {
+		return x, err
+	}
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return x, err
+	}
+	return x, nil
+}
+
+func Payback(projIndex string, seedpwd string, username string, pwhash string, assetName string,
+	amount string) (rpc.StatusResponse, error) {
+	var x rpc.StatusResponse
+	data, err := GetRequest(ApiUrl + "/recipient/payback?" + "username=" + username + "&pwhash=" + pwhash +
+		"&projIndex=" + projIndex + "&seedpwd=" + seedpwd + "&amount=" + amount + "&assetName=" + assetName +
+		"&platformPublicKey=" + PlatformPublicKey)
+	if err != nil {
+		return x, err
+	}
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return x, err
+	}
+	return x, nil
+}
+
+func UnlockProject(username string, pwhash string, seedpwd string, projIndex string) (rpc.StatusResponse, error) {
+	var x rpc.StatusResponse
+	data, err := GetRequest(ApiUrl + "/recipient/unlock?" + "username=" + username + "&pwhash=" + pwhash +
+		"&projIndex=" + projIndex + "&seedpwd=" + seedpwd)
+	if err != nil {
+		return x, err
+	}
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return x, err
+	}
+	return x, nil
+}
+
+func FinalizeProject(username string, pwhash string, projIndex string) (rpc.StatusResponse, error) {
+	var x rpc.StatusResponse
+	data, err := GetRequest(ApiUrl + "/recipient/finalize?" + "username=" + username + "&pwhash=" + pwhash +
+		"&projIndex=" + projIndex)
+	if err != nil {
+		return x, err
+	}
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return x, err
+	}
+	return x, nil
+}
+
+func OriginateProject(username string, pwhash string, projIndex string) (rpc.StatusResponse, error) {
+	var x rpc.StatusResponse
+	data, err := GetRequest(ApiUrl + "/recipient/originate?" + "username=" + username + "&pwhash=" + pwhash +
+		"&projIndex=" + projIndex)
+	if err != nil {
+		return x, err
+	}
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return x, err
+	}
+	return x, nil
+}

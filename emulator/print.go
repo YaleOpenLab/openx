@@ -86,6 +86,7 @@ func PrintUser(user database.User) {
 
 // PrintRecipient pretty prints recipients
 func PrintRecipient(recipient database.Recipient) {
+	fmt.Println("          Your Index is: ", recipient.U.Index)
 	fmt.Println("          Your Public Key is: ", recipient.U.PublicKey)
 	fmt.Println("          Your Encrypted Seed is: ", recipient.U.EncryptedSeed)
 	fmt.Println("          Your Received Assets are: ", recipient.ReceivedSolarProjects)

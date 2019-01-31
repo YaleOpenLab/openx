@@ -37,12 +37,12 @@ func Login(username string, pwhash string) (string, error) {
 		}
 		LocalInvestor = inv
 		ColorOutput("PLEASE ENTER YOUR SEEDPWD: ", CyanColor)
-		seedpwd, err := scan.ScanRawPassword()
+		LocalSeedPwd, err = scan.ScanRawPassword()
 		if err != nil {
 			log.Println(err)
 			return wString, err
 		}
-		LocalSeed, err = wallet.DecryptSeed(LocalInvestor.U.EncryptedSeed, seedpwd)
+		LocalSeed, err = wallet.DecryptSeed(LocalInvestor.U.EncryptedSeed, LocalSeedPwd)
 		if err != nil {
 			log.Println(err)
 			return wString, err
@@ -60,12 +60,12 @@ func Login(username string, pwhash string) (string, error) {
 		}
 		LocalRecipient = recp
 		ColorOutput("ENTER YOUR SEEDPWD: ", CyanColor)
-		seedpwd, err := scan.ScanRawPassword()
+		LocalSeedPwd, err = scan.ScanRawPassword()
 		if err != nil {
 			log.Println(err)
 			return wString, err
 		}
-		LocalSeed, err = wallet.DecryptSeed(LocalRecipient.U.EncryptedSeed, seedpwd)
+		LocalSeed, err = wallet.DecryptSeed(LocalRecipient.U.EncryptedSeed, LocalSeedPwd)
 		if err != nil {
 			log.Println(err)
 			return wString, err
@@ -90,19 +90,19 @@ func Login(username string, pwhash string) (string, error) {
 			return wString, fmt.Errorf("Not a contractor")
 		}
 		ColorOutput("ENTER YOUR SEEDPWD: ", CyanColor)
-		seedpwd, err := scan.ScanRawPassword()
+		LocalSeedPwd, err = scan.ScanRawPassword()
 		if err != nil {
 			log.Println(err)
 			return wString, err
 		}
 		if entity.Contractor {
-			LocalSeed, err = wallet.DecryptSeed(LocalContractor.U.EncryptedSeed, seedpwd)
+			LocalSeed, err = wallet.DecryptSeed(LocalContractor.U.EncryptedSeed, LocalSeedPwd)
 			if err != nil {
 				log.Println("error while decrpyting seed, quitting!", err)
 				return wString, err
 			}
 		} else if entity.Originator {
-			LocalSeed, err = wallet.DecryptSeed(LocalOriginator.U.EncryptedSeed, seedpwd)
+			LocalSeed, err = wallet.DecryptSeed(LocalOriginator.U.EncryptedSeed, LocalSeedPwd)
 			if err != nil {
 				log.Println("error while decrpyting seed, quitting!", err)
 				return wString, err

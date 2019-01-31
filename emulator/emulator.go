@@ -27,9 +27,11 @@ var (
 	LocalContractor solar.Entity
 	LocalOriginator solar.Entity
 	LocalSeed       string
+	LocalSeedPwd    string
 )
 
 var ApiUrl = "http://localhost:8080"
+var PlatformPublicKey = "GDULAIM6N6SIW7MWS3NDJPY3UIFOHSM4766WQ6O6EKFDBC7PF53VKYLY"
 
 func main() {
 
@@ -193,7 +195,6 @@ func LoopOrig() error {
 	}
 	return nil
 }
-
 
 func LoopCont() error {
 	// This loop is exclusive to a contractor

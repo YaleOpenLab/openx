@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	database "github.com/OpenFinancing/openfinancing/database"
-	ipfs "github.com/OpenFinancing/openfinancing/ipfs"
 	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
 	utils "github.com/OpenFinancing/openfinancing/utils"
 	wallet "github.com/OpenFinancing/openfinancing/wallet"
@@ -21,18 +20,18 @@ func setupInvestorRPCs() {
 	getAllInvestors()
 	investInProject()
 	changeReputationInv()
-	getIpfsHash()
+	voteTowardsProject()
 }
 
 func parseInvestor(r *http.Request) (database.Investor, error) {
 	var prepInvestor database.Investor
 	err := r.ParseForm()
-	if err != nil || r.FormValue("username") == "" || r.FormValue("password") == "" || r.FormValue("Name") == "" || r.FormValue("EPassword") == "" {
-		return prepInvestor, fmt.Errorf("One of required fields missing: username, password, Name, EPassword")
+	if err != nil || r.FormValue("username") == "" || r.FormValue("pwhash") == "" || r.FormValue("Name") == "" || r.FormValue("EPassword") == "" {
+		return prepInvestor, fmt.Errorf("One of required fields missing: username, pwhash, Name, EPassword")
 	}
 
 	prepInvestor.AmountInvested = float64(0)
-	prepInvestor.U, err = database.NewUser(r.FormValue("username"), r.FormValue("password"), r.FormValue("Name"), r.FormValue("EPassword"))
+	prepInvestor.U, err = database.NewUser(r.FormValue("username"), r.FormValue("pwhash"), r.FormValue("Name"), r.FormValue("EPassword"))
 	return prepInvestor, err
 }
 
@@ -94,19 +93,19 @@ func investInProject() {
 	http.HandleFunc("/investor/invest", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
 		// need the following params to invest in a project:
-		// 1. Seed Password (for the investor)
+		// 1. Seed pwhash (for the investor)
 		// 2. project index
 		// 3. investment amount
 		// 4. Login username (for the investor)
-		// 5. Login Password (for the investor)
+		// 5. Login pwhash (for the investor)
 		if r.URL.Query() == nil || r.URL.Query()["seedpwd"] == nil || r.URL.Query()["projIndex"] == nil ||
-			r.URL.Query()["amount"] == nil || r.URL.Query()["username"] == nil || r.URL.Query()["password"] == nil ||
-			len(r.URL.Query()["password"][0]) != 128 { // sha 512 length
+			r.URL.Query()["amount"] == nil || r.URL.Query()["username"] == nil || r.URL.Query()["pwhash"] == nil ||
+			len(r.URL.Query()["pwhash"][0]) != 128 { // sha 512 length
 			errorHandler(w, r, http.StatusNotFound)
 			return
 		}
 
-		investor, err := database.ValidateInvestor(r.URL.Query()["username"][0], r.URL.Query()["password"][0])
+		investor, err := database.ValidateInvestor(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
 		if err != nil {
 			errorHandler(w, r, http.StatusNotFound)
 			return
@@ -185,34 +184,22 @@ func changeReputationInv() {
 	})
 }
 
-func getIpfsHash() {
-	http.HandleFunc("/ipfs/hash", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
-		if r.URL.Query() == nil || r.URL.Query()["username"] == nil || r.URL.Query()["pwhash"] == nil ||
-			len(r.URL.Query()["pwhash"][0]) != 128 || r.URL.Query()["string"] == nil{ // sha 512 length
+func voteTowardsProject() {
+	http.HandleFunc("/investor/vote", func(w http.ResponseWriter, r *http.Request) {
+		investor, err := InvValidateHelper(w, r)
+		if err != nil || r.URL.Query()["votes"] == nil || r.URL.Query()["projIndex"] == nil {
 			errorHandler(w, r, http.StatusNotFound)
 			return
 		}
 
-		_, err := database.ValidateUser(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
+		votes := utils.StoI(r.URL.Query()["votes"][0])
+		projIndex := utils.StoI(r.URL.Query()["projIndex"][0])
+		err = solar.VoteTowardsProposedProject(investor.U.Index, votes, projIndex)
 		if err != nil {
+			log.Println("ERROR: ", err)
 			errorHandler(w, r, http.StatusNotFound)
 			return
 		}
-
-		hashString := r.URL.Query()["string"][0]
-		hash, err := ipfs.AddStringToIpfs(hashString)
-		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
-			return
-		}
-
-		hashCheck, err := ipfs.GetStringFromIpfs(hash)
-		if err != nil || hashCheck != hashString {
-			errorHandler(w, r, http.StatusNotFound)
-			return
-		}
-
-		MarshalSend(w, r, hash)
+		Send200(w, r)
 	})
 }

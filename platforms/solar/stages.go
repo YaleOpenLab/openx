@@ -1,7 +1,6 @@
 package solar
 
 import (
-	// "fmt"
 	database "github.com/OpenFinancing/openfinancing/database"
 )
 

@@ -74,13 +74,14 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 	// pay stableUSD back to platform
 	_, stableUSDHash, err := assets.SendAsset(stablecoin.Code, consts.StableCoinAddress, platformPubkey, amount, recipientSeed, recipient.U.PublicKey, "Opensolar payback: "+utils.ItoS(projIndex))
 	if err != nil {
+		log.Println("SEND ASSET ERR:", err, platformPubkey, amount, recipientSeed, recipient.U.PublicKey)
 		return err
 	}
 	log.Println("Paid back platform in  stableUSD, txhash: ", stableUSDHash)
 
 	DEBAssetBalance, err := xlm.GetAssetBalance(recipient.U.PublicKey, assetName)
 	if err != nil {
-		fmt.Println("Don't have the debt asset in possession")
+		fmt.Println("Don't have the debt asset in possession", err)
 		return err
 	}
 

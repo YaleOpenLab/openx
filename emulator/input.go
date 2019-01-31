@@ -166,23 +166,87 @@ func ParseInputInv(input []string) error {
 		// start cases which are unique to investor
 	case "vote":
 		// TODO
-		if len(input) == 1 {
-			log.Println("VOTE HELP COMMANDS")
+		if len(input) != 3 {
+			log.Println("vote <projIndex> <amount>")
 			break
 		}
-		projIndex, err := utils.StoICheck(input[1])
+		_, err = utils.StoICheck(input[1])
 		if err != nil {
 			log.Println(err)
 			break
 		}
-		fmt.Println("Voting t owards proposed contract:", projIndex)
+		_, err = utils.StoICheck(input[2])
+		if err != nil {
+			log.Println(err)
+			break
+		}
+		status, err := VoteTowardsProject(input[1], input[2], LocalInvestor.U.LoginUserName, LocalInvestor.U.LoginPassword)
+		if err != nil {
+			log.Println(err)
+			break
+		}
+		if status.Status == 200 {
+			ColorOutput("VOTE CAST!", GreenColor)
+		} else {
+			ColorOutput("VOTE NOT CAST", RedColor)
+		}
+		break
 		// end of vote
 	case "kyc":
 		// TODO
-		if LocalInvestor.U.Inspector {
-			fmt.Println("WELCOME TO THE KYC MENU")
+		if !LocalInvestor.U.Inspector {
+			ColorOutput("YOU ARE NOT A KYC INSPECTOR", RedColor)
+			break
 		}
+		if len(input) != 2 {
+			log.Println("kyc <userIndex>")
+			break
+		}
+		_, err = utils.StoICheck(input[1])
+		if err != nil {
+			log.Println(err)
+			break
+		}
+		status, err := AuthKyc(input[1], LocalInvestor.U.LoginUserName, LocalInvestor.U.LoginPassword)
+		if err != nil {
+			log.Println(err)
+			break
+		}
+		if status.Status == 200 {
+			ColorOutput("USER KYC'D!", GreenColor)
+		} else {
+			ColorOutput("USER NOT KYC'D", RedColor)
+		}
+		break
 		// end of kyc
+	case "invest":
+		log.Println("Invest Params: invest <proj_number> <amount>")
+		if len(input) != 3 {
+			log.Println("Extra / less params passed, please check!")
+			break
+		}
+		_, err = utils.StoICheck(input[1])
+		if err != nil {
+			log.Println(err)
+			break
+		}
+		_, err = utils.StoICheck(input[2])
+		if err != nil {
+			log.Println(err)
+			break
+		}
+		// now we need to invest in this project, call RPC
+		status, err := InvestInProject(input[1], input[2], LocalInvestor.U.LoginUserName, LocalInvestor.U.LoginPassword, LocalSeedPwd)
+		if err != nil {
+			log.Println(err)
+			break
+		}
+		if status.Status == 200 {
+			ColorOutput("INVESTMENT SUCCESSFUL, CHECK EMAIL", GreenColor)
+		} else {
+			ColorOutput("INVESTMENT NOT SUCCESSFUL", RedColor)
+		}
+		break
 	}
 	return nil
 }
@@ -349,33 +413,104 @@ func ParseInputRecp(input []string) error {
 		fmt.Println("IPFS HASH", hashString)
 		// end of ipfs
 		// start of recipient only functions
-	case "finalize":
-		if len(input) == 1 {
-			log.Println("FINALIZE HELP COMMANDS")
+	case "unlock":
+		/*
+			err := solar.UnlockProject(LocalRecipient.U.LoginUserName, LocalRecipient.U.LoginPassword, 1, LocalSeedPwd)
+			log.Fatal(err)
+		*/
+		// PAYBACK LOOP DOES NOT RUN
+		if len(input) != 2 {
+			log.Println("unlock <projIndex>")
 			break
 		}
-		projIndex, err := utils.StoICheck(input[1])
+		_, err = utils.StoICheck(input[1])
 		if err != nil {
 			log.Println(err)
 			break
 		}
-		fmt.Println("FINALIZING PROJECT WITH INDEX:", projIndex)
-		// end of payback
+		status, err := UnlockProject(LocalRecipient.U.LoginUserName, LocalRecipient.U.LoginPassword, LocalSeedPwd, input[1])
+		if err != nil {
+			log.Println(err)
+			break
+		}
+		if status.Status == 200 {
+			ColorOutput("PAYBACK SUCCESSFUL, CHECK EMAIL", GreenColor)
+		} else {
+			ColorOutput("PAYBACK NOT SUCCESSFUL", RedColor)
+		}
+		break
 	case "payback":
-		if len(input) == 1 {
-			log.Println("PAYBACK HELP COMMANDS")
+		if len(input) != 3 {
+			log.Println("payback <projIndex> <amount>")
 			break
 		}
-		projIndex, err := utils.StoICheck(input[1])
+		_, err = utils.StoICheck(input[1]) // projectIndex
 		if err != nil {
 			log.Println(err)
 			break
 		}
-		fmt.Println("PAYING TOWARDS PROJECT WITH INDEX:", projIndex)
+		_, err = utils.StoICheck(input[2]) // amount
+		if err != nil {
+			log.Println(err)
+			break
+		}
+		assetName := LocalRecipient.ReceivedSolarProjects[0] // hardcode for now, TODO: change this
+		status, err := Payback(input[1], LocalSeedPwd, LocalRecipient.U.LoginUserName, LocalRecipient.U.LoginPassword, assetName, input[2])
+		if err != nil {
+			log.Println(err)
+			break
+		}
+		if status.Status == 200 {
+			ColorOutput("PAYBACK SUCCESSFUL, CHECK EMAIL", GreenColor)
+		} else {
+			ColorOutput("PAYBACK NOT SUCCESSFUL", RedColor)
+		}
+		break
 		// end of payback
+	case "finalize":
+		if len(input) != 2 {
+			log.Println("finalize <projIndex>")
+			break
+		}
+
+		_, err = utils.StoICheck(input[1])
+		if err != nil {
+			log.Println(err)
+			break
+		}
+		status, err := FinalizeProject(LocalRecipient.U.LoginUserName, LocalRecipient.U.LoginPassword, input[1])
+		if err != nil {
+			log.Println(err)
+			break
+		}
+		if status.Status == 200 {
+			ColorOutput("PAYBACK SUCCESSFUL, CHECK EMAIL", GreenColor)
+		} else {
+			ColorOutput("PAYBACK NOT SUCCESSFUL", RedColor)
+		}
+		break
 	case "originate":
-		fmt.Println("ORIGINATING PROJECT!")
-		// end of payback
+		if len(input) != 2 {
+			log.Println("originate <projIndex>")
+			break
+		}
+
+		_, err = utils.StoICheck(input[1])
+		if err != nil {
+			log.Println(err)
+			break
+		}
+		status, err := OriginateProject(LocalRecipient.U.LoginUserName, LocalRecipient.U.LoginPassword, input[1])
+		if err != nil {
+			log.Println(err)
+			break
+		}
+		if status.Status == 200 {
+			ColorOutput("PAYBACK SUCCESSFUL, CHECK EMAIL", GreenColor)
+		} else {
+			ColorOutput("PAYBACK NOT SUCCESSFUL", RedColor)
+		}
+		break
 	}
 	return nil
 }
