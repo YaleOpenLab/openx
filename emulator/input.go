@@ -8,6 +8,7 @@ import (
 )
 
 func ParseInputInv(input []string) error {
+	var err error
 	// we need to have one parse input function for each entity on the platform
 	// ie investor, recipient, contractor, originator, etc
 	// the input array contains the commands that we want to parse.
@@ -19,6 +20,12 @@ func ParseInputInv(input []string) error {
 	// input is greater than length 1 which means we can parse according to the command given
 	command := input[0]
 	switch command {
+	case "ping":
+		err = PingRpc()
+		if err != nil {
+			log.Println(err)
+			return err
+		}
 	// have a list of all the supported commands here and then check for length, etc inside
 	case "display":
 		// display is a  broad command and needs to have a subcommand
@@ -29,11 +36,49 @@ func ParseInputInv(input []string) error {
 		}
 		subcommand := input[1]
 		switch subcommand {
-		case "balances":
-			log.Println("Calling balances API")
-			break
+		case "balance":
+			if len(input) == 2 {
+				log.Println("Calling balances API")
+				balances, err := GetBalances(LocalInvestor.U.LoginUserName, LocalInvestor.U.LoginPassword)
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				PrintBalances(balances)
+				break
+			}
+			subcommand := input[2]
+			switch subcommand {
+			case "xlm":
+				// print xlm balance
+				balance, err := GetXLMBalance(LocalInvestor.U.LoginUserName, LocalInvestor.U.LoginPassword)
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				ColorOutput("BALANCE: "+balance, MagentaColor)
+				break
+			case "all":
+				balances, err := GetBalances(LocalInvestor.U.LoginUserName, LocalInvestor.U.LoginPassword)
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				PrintBalances(balances)
+				break
+			default:
+				balance, err := GetAssetBalance(LocalInvestor.U.LoginUserName, LocalInvestor.U.LoginPassword, subcommand)
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				ColorOutput("BALANCE: "+balance, MagentaColor)
+				break
+				// print asset balance
+			}
 		case "profile":
 			log.Println("Displaying Profile")
+			PrintInvestor(LocalInvestor)
 			break
 		case "projects":
 			if len(input) == 2 {
@@ -42,32 +87,43 @@ func ParseInputInv(input []string) error {
 				break
 			}
 			subsubcommand := input[2]
+			var stage float64
 			switch subsubcommand {
-			case "originated":
-				log.Println("Displaying all originated (stage 1) projects")
-				break
 			case "seed":
 				log.Println("Displaying all seed (stage 1.5) projects")
+				stage = 1.5
 				break
 			case "proposed":
 				log.Println("Displaying all proposed (stage 2) projects")
+				stage = 2
 				break
 			case "open":
 				log.Println("Displaying open (stage 3) projects")
+				stage = 3
 				break
 			case "funded":
 				log.Println("Displaying funded (stage 4) projects")
+				stage = 4
 				break
 			case "installed":
 				log.Println("Displaying installed (stage 5) projects")
+				stage = 5
 				break
 			case "power":
 				log.Println("Displaying funded (stage 6) projects")
+				stage = 6
 				break
 			case "fin":
 				log.Println("Displaying funded (stage 7) projects")
+				stage = 7
 				break
 			}
+			arr, err := RetrieveProject(stage)
+			if err != nil {
+				log.Println(err)
+				break
+			}
+			PrintProjects(arr)
 			break
 		} // end of display
 	case "exchange":
@@ -83,8 +139,33 @@ func ParseInputInv(input []string) error {
 		}
 		// convert this to int and check if int
 		fmt.Println("Exchanging", amount, "XLM for STABLEUSD")
+		response, err := GetStableCoin(LocalInvestor.U.LoginUserName, LocalInvestor.U.LoginPassword, LocalSeed, input[1])
+		if err != nil {
+			log.Println(err)
+			break
+		}
+		if response.Status == 200 {
+			ColorOutput("SUCCESSFUL, CHECK BALANCES", GreenColor)
+		} else {
+			ColorOutput("RESPONSE STATUS: "+utils.ItoS(response.Status), GreenColor)
+		}
 		// end of exchange
+	case "ipfs":
+		if len(input) == 1 {
+			log.Println("IPFS HELP COMMANDS")
+			break
+		}
+		inputString := input[1]
+		hashString, err := GetIpfsHash(LocalInvestor.U.LoginUserName, LocalInvestor.U.LoginPassword, inputString)
+		if err != nil {
+			log.Println(err)
+			break
+		}
+		fmt.Println("IPFS HASH", hashString)
+		// end of ipfs
+		// start cases which are unique to investor
 	case "vote":
+		// TODO
 		if len(input) == 1 {
 			log.Println("VOTE HELP COMMANDS")
 			break
@@ -96,15 +177,8 @@ func ParseInputInv(input []string) error {
 		}
 		fmt.Println("Voting t owards proposed contract:", projIndex)
 		// end of vote
-	case "ipfs":
-		if len(input) == 1 {
-			log.Println("IPFS HELP COMMANDS")
-			break
-		}
-		inputString := input[1]
-		fmt.Println("HASHING", inputString, "using IPFS")
-		// end of ipfs
 	case "kyc":
+		// TODO
 		if LocalInvestor.U.Inspector {
 			fmt.Println("WELCOME TO THE KYC MENU")
 		}
@@ -114,6 +188,7 @@ func ParseInputInv(input []string) error {
 }
 
 func ParseInputRecp(input []string) error {
+	var err error
 	// Various command supported for the recipient
 	if len(input) == 0 {
 		// shouldn't happen, still
@@ -122,6 +197,13 @@ func ParseInputRecp(input []string) error {
 	// input is greater than length 1 which means we can parse according to the command given
 	command := input[0]
 	switch command {
+	case "ping":
+		err = PingRpc()
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+	// have a list of all the supported commands here and then check for length, etc inside
 	case "display":
 		// display is a  broad command and needs to have a subcommand
 		if len(input) == 1 {
@@ -131,11 +213,49 @@ func ParseInputRecp(input []string) error {
 		}
 		subcommand := input[1]
 		switch subcommand {
-		case "balances":
-			log.Println("Calling balances API")
-			break
+		case "balance":
+			if len(input) == 2 {
+				log.Println("Calling balances API")
+				balances, err := GetBalances(LocalRecipient.U.LoginUserName, LocalRecipient.U.LoginPassword)
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				PrintBalances(balances)
+				break
+			}
+			subcommand := input[2]
+			switch subcommand {
+			case "xlm":
+				// print xlm balance
+				balance, err := GetXLMBalance(LocalRecipient.U.LoginUserName, LocalRecipient.U.LoginPassword)
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				ColorOutput("BALANCE: "+balance, MagentaColor)
+				break
+			case "all":
+				balances, err := GetBalances(LocalRecipient.U.LoginUserName, LocalRecipient.U.LoginPassword)
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				PrintBalances(balances)
+				break
+			default:
+				balance, err := GetAssetBalance(LocalRecipient.U.LoginUserName, LocalRecipient.U.LoginPassword, subcommand)
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				ColorOutput("BALANCE: "+balance, MagentaColor)
+				break
+				// print asset balance
+			}
 		case "profile":
 			log.Println("Displaying Profile")
+			PrintRecipient(LocalRecipient)
 			break
 		case "projects":
 			if len(input) == 2 {
@@ -144,35 +264,51 @@ func ParseInputRecp(input []string) error {
 				break
 			}
 			subsubcommand := input[2]
+			var stage float64
 			switch subsubcommand {
-			case "originated":
+			case "preorigin":
+				log.Println("Displaying all pre-originated (stage 0) projects")
+				stage = 0
+				break
+			case "origin":
 				log.Println("Displaying all originated (stage 1) projects")
+				stage = 1
 				break
 			case "seed":
 				log.Println("Displaying all seed (stage 1.5) projects")
+				stage = 1.5
 				break
 			case "proposed":
 				log.Println("Displaying all proposed (stage 2) projects")
+				stage = 2
 				break
 			case "open":
 				log.Println("Displaying open (stage 3) projects")
-				break
-			case "locked":
-				log.Println("Displaying all locked (stage 3) projects")
+				stage = 3
 				break
 			case "funded":
 				log.Println("Displaying funded (stage 4) projects")
+				stage = 4
 				break
 			case "installed":
 				log.Println("Displaying installed (stage 5) projects")
+				stage = 5
 				break
 			case "power":
 				log.Println("Displaying funded (stage 6) projects")
+				stage = 6
 				break
 			case "fin":
 				log.Println("Displaying funded (stage 7) projects")
+				stage = 7
 				break
 			}
+			arr, err := RetrieveProject(stage)
+			if err != nil {
+				log.Println(err)
+				break
+			}
+			PrintProjects(arr)
 			break
 		} // end of display
 	case "exchange":
@@ -188,6 +324,16 @@ func ParseInputRecp(input []string) error {
 		}
 		// convert this to int and check if int
 		fmt.Println("Exchanging", amount, "XLM for STABLEUSD")
+		response, err := GetStableCoin(LocalRecipient.U.LoginUserName, LocalRecipient.U.LoginPassword, LocalSeed, input[1])
+		if err != nil {
+			log.Println(err)
+			break
+		}
+		if response.Status == 200 {
+			ColorOutput("SUCCESSFUL, CHECK BALANCES", GreenColor)
+		} else {
+			ColorOutput("RESPONSE STATUS: "+utils.ItoS(response.Status), GreenColor)
+		}
 		// end of exchange
 	case "ipfs":
 		if len(input) == 1 {
@@ -195,8 +341,14 @@ func ParseInputRecp(input []string) error {
 			break
 		}
 		inputString := input[1]
-		fmt.Println("HASHING", inputString, "using IPFS")
+		hashString, err := GetIpfsHash(LocalRecipient.U.LoginUserName, LocalRecipient.U.LoginPassword, inputString)
+		if err != nil {
+			log.Println(err)
+			break
+		}
+		fmt.Println("IPFS HASH", hashString)
 		// end of ipfs
+		// start of recipient only functions
 	case "finalize":
 		if len(input) == 1 {
 			log.Println("FINALIZE HELP COMMANDS")
@@ -229,6 +381,7 @@ func ParseInputRecp(input []string) error {
 }
 
 func ParseInputCont(input []string) error {
+	var err error
 	// Various command supported for the recipient
 	if len(input) == 0 {
 		// shouldn't happen, still
@@ -237,6 +390,13 @@ func ParseInputCont(input []string) error {
 	// input is greater than length 1 which means we can parse according to the command given
 	command := input[0]
 	switch command {
+	case "ping":
+		err = PingRpc()
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+	// have a list of all the supported commands here and then check for length, etc inside
 	case "display":
 		// display is a  broad command and needs to have a subcommand
 		if len(input) == 1 {
@@ -246,11 +406,49 @@ func ParseInputCont(input []string) error {
 		}
 		subcommand := input[1]
 		switch subcommand {
-		case "balances":
-			log.Println("Calling balances API")
-			break
+		case "balance":
+			if len(input) == 2 {
+				log.Println("Calling balances API")
+				balances, err := GetBalances(LocalContractor.U.LoginUserName, LocalContractor.U.LoginPassword)
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				PrintBalances(balances)
+				break
+			}
+			subcommand := input[2]
+			switch subcommand {
+			case "xlm":
+				// print xlm balance
+				balance, err := GetXLMBalance(LocalContractor.U.LoginUserName, LocalContractor.U.LoginPassword)
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				ColorOutput("BALANCE: "+balance, MagentaColor)
+				break
+			case "all":
+				balances, err := GetBalances(LocalContractor.U.LoginUserName, LocalContractor.U.LoginPassword)
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				PrintBalances(balances)
+				break
+			default:
+				balance, err := GetAssetBalance(LocalContractor.U.LoginUserName, LocalContractor.U.LoginPassword, subcommand)
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				ColorOutput("BALANCE: "+balance, MagentaColor)
+				break
+				// print asset balance
+			}
 		case "profile":
 			log.Println("Displaying Profile")
+			PrintEntity(LocalContractor)
 			break
 		case "projects":
 			if len(input) == 2 {
@@ -259,35 +457,51 @@ func ParseInputCont(input []string) error {
 				break
 			}
 			subsubcommand := input[2]
+			var stage float64
 			switch subsubcommand {
-			case "originated":
+			case "preorigin":
+				log.Println("Displaying all pre-originated (stage 0) projects")
+				stage = 0
+				break
+			case "origin":
 				log.Println("Displaying all originated (stage 1) projects")
+				stage = 1
 				break
 			case "seed":
 				log.Println("Displaying all seed (stage 1.5) projects")
+				stage = 1.5
 				break
 			case "proposed":
 				log.Println("Displaying all proposed (stage 2) projects")
+				stage = 2
 				break
 			case "open":
 				log.Println("Displaying open (stage 3) projects")
-				break
-			case "locked":
-				log.Println("Displaying all locked (stage 3) projects")
+				stage = 3
 				break
 			case "funded":
 				log.Println("Displaying funded (stage 4) projects")
+				stage = 4
 				break
 			case "installed":
 				log.Println("Displaying installed (stage 5) projects")
+				stage = 5
 				break
 			case "power":
 				log.Println("Displaying funded (stage 6) projects")
+				stage = 6
 				break
 			case "fin":
 				log.Println("Displaying funded (stage 7) projects")
+				stage = 7
 				break
 			}
+			arr, err := RetrieveProject(stage)
+			if err != nil {
+				log.Println(err)
+				break
+			}
+			PrintProjects(arr)
 			break
 		} // end of display
 	case "exchange":
@@ -303,6 +517,16 @@ func ParseInputCont(input []string) error {
 		}
 		// convert this to int and check if int
 		fmt.Println("Exchanging", amount, "XLM for STABLEUSD")
+		response, err := GetStableCoin(LocalContractor.U.LoginUserName, LocalContractor.U.LoginPassword, LocalSeed, input[1])
+		if err != nil {
+			log.Println(err)
+			break
+		}
+		if response.Status == 200 {
+			ColorOutput("SUCCESSFUL, CHECK BALANCES", GreenColor)
+		} else {
+			ColorOutput("RESPONSE STATUS: "+utils.ItoS(response.Status), GreenColor)
+		}
 		// end of exchange
 	case "ipfs":
 		if len(input) == 1 {
@@ -310,8 +534,14 @@ func ParseInputCont(input []string) error {
 			break
 		}
 		inputString := input[1]
-		fmt.Println("HASHING", inputString, "using IPFS")
+		hashString, err := GetIpfsHash(LocalContractor.U.LoginUserName, LocalContractor.U.LoginPassword, inputString)
+		if err != nil {
+			log.Println(err)
+			break
+		}
+		fmt.Println("IPFS HASH", hashString)
 		// end of ipfs
+		// start of conttractor only functions
 	case "propose":
 		fmt.Println("PROPOSED PROJECT INTERFACE")
 		break
@@ -328,7 +558,8 @@ func ParseInputCont(input []string) error {
 	return nil
 }
 
-func ParseInputCont(input []string) error {
+func ParseInputOrig(input []string) error {
+	var err error
 	// Various command supported for the recipient
 	if len(input) == 0 {
 		// shouldn't happen, still
@@ -337,6 +568,13 @@ func ParseInputCont(input []string) error {
 	// input is greater than length 1 which means we can parse according to the command given
 	command := input[0]
 	switch command {
+	case "ping":
+		err = PingRpc()
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+	// have a list of all the supported commands here and then check for length, etc inside
 	case "display":
 		// display is a  broad command and needs to have a subcommand
 		if len(input) == 1 {
@@ -346,11 +584,49 @@ func ParseInputCont(input []string) error {
 		}
 		subcommand := input[1]
 		switch subcommand {
-		case "balances":
-			log.Println("Calling balances API")
-			break
+		case "balance":
+			if len(input) == 2 {
+				log.Println("Calling balances API")
+				balances, err := GetBalances(LocalOriginator.U.LoginUserName, LocalOriginator.U.LoginPassword)
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				PrintBalances(balances)
+				break
+			}
+			subcommand := input[2]
+			switch subcommand {
+			case "xlm":
+				// print xlm balance
+				balance, err := GetXLMBalance(LocalOriginator.U.LoginUserName, LocalOriginator.U.LoginPassword)
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				ColorOutput("BALANCE: "+balance, MagentaColor)
+				break
+			case "all":
+				balances, err := GetBalances(LocalOriginator.U.LoginUserName, LocalOriginator.U.LoginPassword)
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				PrintBalances(balances)
+				break
+			default:
+				balance, err := GetAssetBalance(LocalOriginator.U.LoginUserName, LocalOriginator.U.LoginPassword, subcommand)
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				ColorOutput("BALANCE: "+balance, MagentaColor)
+				break
+				// print asset balance
+			}
 		case "profile":
 			log.Println("Displaying Profile")
+			PrintEntity(LocalOriginator)
 			break
 		case "projects":
 			if len(input) == 2 {
@@ -359,35 +635,51 @@ func ParseInputCont(input []string) error {
 				break
 			}
 			subsubcommand := input[2]
+			var stage float64
 			switch subsubcommand {
-			case "originated":
+			case "preorigin":
+				log.Println("Displaying all pre-originated (stage 0) projects")
+				stage = 0
+				break
+			case "origin":
 				log.Println("Displaying all originated (stage 1) projects")
+				stage = 1
 				break
 			case "seed":
 				log.Println("Displaying all seed (stage 1.5) projects")
+				stage = 1.5
 				break
 			case "proposed":
 				log.Println("Displaying all proposed (stage 2) projects")
+				stage = 2
 				break
 			case "open":
 				log.Println("Displaying open (stage 3) projects")
-				break
-			case "locked":
-				log.Println("Displaying all locked (stage 3) projects")
+				stage = 3
 				break
 			case "funded":
 				log.Println("Displaying funded (stage 4) projects")
+				stage = 4
 				break
 			case "installed":
 				log.Println("Displaying installed (stage 5) projects")
+				stage = 5
 				break
 			case "power":
 				log.Println("Displaying funded (stage 6) projects")
+				stage = 6
 				break
 			case "fin":
 				log.Println("Displaying funded (stage 7) projects")
+				stage = 7
 				break
 			}
+			arr, err := RetrieveProject(stage)
+			if err != nil {
+				log.Println(err)
+				break
+			}
+			PrintProjects(arr)
 			break
 		} // end of display
 	case "exchange":
@@ -403,6 +695,16 @@ func ParseInputCont(input []string) error {
 		}
 		// convert this to int and check if int
 		fmt.Println("Exchanging", amount, "XLM for STABLEUSD")
+		response, err := GetStableCoin(LocalOriginator.U.LoginUserName, LocalOriginator.U.LoginPassword, LocalSeed, input[1])
+		if err != nil {
+			log.Println(err)
+			break
+		}
+		if response.Status == 200 {
+			ColorOutput("SUCCESSFUL, CHECK BALANCES", GreenColor)
+		} else {
+			ColorOutput("RESPONSE STATUS: "+utils.ItoS(response.Status), GreenColor)
+		}
 		// end of exchange
 	case "ipfs":
 		if len(input) == 1 {
@@ -410,7 +712,12 @@ func ParseInputCont(input []string) error {
 			break
 		}
 		inputString := input[1]
-		fmt.Println("HASHING", inputString, "using IPFS")
+		hashString, err := GetIpfsHash(LocalOriginator.U.LoginUserName, LocalOriginator.U.LoginPassword, inputString)
+		if err != nil {
+			log.Println(err)
+			break
+		}
+		fmt.Println("IPFS HASH", hashString)
 		// end of ipfs
 	case "propose":
 		fmt.Println("PROPOSING PRE-ORIGIN PROJECT INTERFACE")

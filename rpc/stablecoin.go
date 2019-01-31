@@ -23,13 +23,13 @@ func getStableCoin() {
 		checkGet(w, r)
 		log.Println("Calling route")
 		if r.URL.Query() == nil || r.URL.Query()["seed"] == nil || r.URL.Query()["amount"] == nil ||
-			r.URL.Query()["username"] == nil || r.URL.Query()["password"] == nil ||
-			len(r.URL.Query()["password"][0]) != 128 {
+			r.URL.Query()["username"] == nil || r.URL.Query()["pwhash"] == nil ||
+			len(r.URL.Query()["pwhash"][0]) != 128 {
 			errorHandler(w, r, http.StatusNotFound)
 			return
 		}
 
-		_, err := database.ValidateUser(r.URL.Query()["username"][0], r.URL.Query()["password"][0])
+		_, err := database.ValidateUser(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
 		if err != nil {
 			errorHandler(w, r, http.StatusNotFound)
 			return

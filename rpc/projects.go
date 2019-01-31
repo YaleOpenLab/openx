@@ -118,6 +118,7 @@ func projectHandler(w http.ResponseWriter, r *http.Request, stage float64) {
 		errorHandler(w, r, http.StatusNotFound)
 		return
 	}
+	fmt.Println("PROJECTS AT STAGE: ", stage, allProjects)
 	MarshalSend(w, r, allProjects)
 }
 

@@ -1,14 +1,19 @@
 package rpc
 
 import (
+	"log"
 	"net/http"
 
 	database "github.com/OpenFinancing/openfinancing/database"
 	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
+	xlm "github.com/OpenFinancing/openfinancing/xlm"
 )
 
 func setupUserRpcs() {
 	ValidateUser()
+	getBalances()
+	getXLMBalance()
+	getAssetBalance()
 }
 
 // we want to pass to the caller whether the user is a recipient or an investor.
@@ -95,5 +100,86 @@ func ValidateUser() {
 			x.Entity = removeSeedInv(prepInvestor)
 			MarshalSend(w, r, x)
 		}
+	})
+}
+
+func getBalances() {
+	http.HandleFunc("/user/balances", func(w http.ResponseWriter, r *http.Request) {
+		checkOrigin(w, r)
+		checkGet(w, r)
+		// need to pass the pwhash param here
+		if r.URL.Query() == nil || r.URL.Query()["username"] == nil || r.URL.Query()["pwhash"] == nil || len(r.URL.Query()["pwhash"][0]) != 128 {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		prepUser, err := database.ValidateUser(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		pubkey := prepUser.PublicKey
+		balances, err := xlm.GetAllBalances(pubkey)
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+		MarshalSend(w, r, balances)
+	})
+}
+
+func getXLMBalance() {
+	http.HandleFunc("/user/balance/xlm", func(w http.ResponseWriter, r *http.Request) {
+		checkOrigin(w, r)
+		checkGet(w, r)
+		// need to pass the pwhash param here
+		if r.URL.Query() == nil || r.URL.Query()["username"] == nil || r.URL.Query()["pwhash"] == nil || len(r.URL.Query()["pwhash"][0]) != 128 {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		prepUser, err := database.ValidateUser(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		pubkey := prepUser.PublicKey
+		log.Println("PUBKEY: ", pubkey)
+		balance, err := xlm.GetNativeBalance(pubkey)
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+		MarshalSend(w, r, balance)
+	})
+}
+
+func getAssetBalance() {
+	http.HandleFunc("/user/balance/asset", func(w http.ResponseWriter, r *http.Request) {
+		checkOrigin(w, r)
+		checkGet(w, r)
+		// need to pass the pwhash param here
+		if r.URL.Query() == nil || r.URL.Query()["username"] == nil || r.URL.Query()["pwhash"] == nil ||
+			len(r.URL.Query()["pwhash"][0]) != 128 || r.URL.Query()["asset"] == nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		prepUser, err := database.ValidateUser(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		pubkey := prepUser.PublicKey
+		asset := r.URL.Query()["asset"][0]
+		balance, err := xlm.GetAssetBalance(pubkey, asset)
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+		MarshalSend(w, r, balance)
 	})
 }

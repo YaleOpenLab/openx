@@ -70,6 +70,7 @@ func main() {
 	// TODO: Need to automatically cover breach scenarios in case the recipient doesn't
 	// pay for a specific period of time
 	// TODO: also write a Makefile so that its easy for people to get started with stuff
+	// TODO: move most of this stuff to the new emulator struct
 	fmt.Println("------------STELLAR HOUSE INVESTMENT CLI INTERFACE------------")
 
 	// init stablecoin stuff

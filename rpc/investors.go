@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	database "github.com/OpenFinancing/openfinancing/database"
+	ipfs "github.com/OpenFinancing/openfinancing/ipfs"
 	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
 	utils "github.com/OpenFinancing/openfinancing/utils"
 	wallet "github.com/OpenFinancing/openfinancing/wallet"
@@ -20,6 +21,7 @@ func setupInvestorRPCs() {
 	getAllInvestors()
 	investInProject()
 	changeReputationInv()
+	getIpfsHash()
 }
 
 func parseInvestor(r *http.Request) (database.Investor, error) {
@@ -180,5 +182,37 @@ func changeReputationInv() {
 			return
 		}
 		Send200(w, r)
+	})
+}
+
+func getIpfsHash() {
+	http.HandleFunc("/ipfs/hash", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		if r.URL.Query() == nil || r.URL.Query()["username"] == nil || r.URL.Query()["pwhash"] == nil ||
+			len(r.URL.Query()["pwhash"][0]) != 128 || r.URL.Query()["string"] == nil{ // sha 512 length
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		_, err := database.ValidateUser(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		hashString := r.URL.Query()["string"][0]
+		hash, err := ipfs.AddStringToIpfs(hashString)
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		hashCheck, err := ipfs.GetStringFromIpfs(hash)
+		if err != nil || hashCheck != hashString {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		MarshalSend(w, r, hash)
 	})
 }

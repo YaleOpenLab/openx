@@ -27,7 +27,6 @@ var (
 	LocalContractor solar.Entity
 	LocalOriginator solar.Entity
 	LocalSeed       string
-	LocalPubkey     string // easier to handle instead of LocalRecipient.U.PublicKey
 )
 
 var ApiUrl = "http://localhost:8080"
@@ -57,9 +56,9 @@ func main() {
 	case "Recipient":
 		log.Fatal(LoopRecp())
 	case "Originator":
-		log.Fatal(LoopInv())
+		log.Fatal(LoopOrig())
 	case "Contractor":
-		log.Fatal(LoopInv())
+		log.Fatal(LoopCont())
 	default:
 		log.Println("It should never come here")
 	}
@@ -68,6 +67,9 @@ func main() {
 func LoopInv() error {
 	// this loop is for an investor
 	// we have authenticated the user and stored the details in an appropriate structure
+	// need to repeat this struct everywhere because having separate functions and importing
+	// it doesn't seem to work
+	// TOOD: look at alternatives if possible
 	promptColor := color.New(color.FgHiYellow).SprintFunc()
 	whiteColor := color.New(color.FgHiWhite).SprintFunc()
 	rl, err := readline.NewEx(&readline.Config{
@@ -77,7 +79,6 @@ func LoopInv() error {
 	})
 
 	ColorOutput("YOUR SEED IS: "+LocalSeed, RedColor)
-	ColorOutput("YOUR PUBKEY IS: "+LocalPubkey, RedColor)
 
 	if err != nil {
 		log.Fatal(err)
@@ -120,7 +121,6 @@ func LoopRecp() error {
 	})
 
 	ColorOutput("YOUR SEED IS: "+LocalSeed, RedColor)
-	ColorOutput("YOUR PUBKEY IS: "+LocalPubkey, RedColor)
 
 	if err != nil {
 		log.Fatal(err)
@@ -144,6 +144,91 @@ func LoopRecp() error {
 		ColorOutput("entered command: "+msg, YellowColor)
 
 		err = ParseInputRecp(cmdslice)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+	}
+	return nil
+}
+
+func LoopOrig() error {
+	// This loop is exclusive to an originator
+	promptColor := color.New(color.FgHiYellow).SprintFunc()
+	whiteColor := color.New(color.FgHiWhite).SprintFunc()
+	rl, err := readline.NewEx(&readline.Config{
+		Prompt:      promptColor("emulator") + whiteColor("# "),
+		HistoryFile: consts.TellerHomeDir + "/history.txt",
+		// AutoComplete: lc.NewAutoCompleter(),
+	})
+
+	ColorOutput("YOUR SEED IS: "+LocalSeed, RedColor)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rl.Close()
+
+	for {
+		// setup reader with max 4K input chars
+		msg, err := rl.Readline()
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		msg = strings.TrimSpace(msg)
+		if len(msg) == 0 {
+			continue
+		}
+		rl.SaveHistory(msg)
+
+		cmdslice := strings.Fields(msg)
+		ColorOutput("entered command: "+msg, YellowColor)
+
+		err = ParseInputOrig(cmdslice)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+	}
+	return nil
+}
+
+
+func LoopCont() error {
+	// This loop is exclusive to a contractor
+	promptColor := color.New(color.FgHiYellow).SprintFunc()
+	whiteColor := color.New(color.FgHiWhite).SprintFunc()
+	rl, err := readline.NewEx(&readline.Config{
+		Prompt:      promptColor("emulator") + whiteColor("# "),
+		HistoryFile: consts.TellerHomeDir + "/history.txt",
+		// AutoComplete: lc.NewAutoCompleter(),
+	})
+
+	ColorOutput("YOUR SEED IS: "+LocalSeed, RedColor)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rl.Close()
+
+	for {
+		// setup reader with max 4K input chars
+		msg, err := rl.Readline()
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		msg = strings.TrimSpace(msg)
+		if len(msg) == 0 {
+			continue
+		}
+		rl.SaveHistory(msg)
+
+		cmdslice := strings.Fields(msg)
+		ColorOutput("entered command: "+msg, YellowColor)
+
+		err = ParseInputCont(cmdslice)
 		if err != nil {
 			log.Println(err)
 			return err

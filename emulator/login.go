@@ -47,7 +47,6 @@ func Login(username string, pwhash string) (string, error) {
 			log.Println(err)
 			return wString, err
 		}
-		LocalPubkey = LocalInvestor.U.PublicKey
 	case "Recipient":
 		wString = "Recipient"
 		data, err = GetRequest(ApiUrl + "/recipient/validate?" + "username=" + username + "&pwhash=" + pwhash)
@@ -71,7 +70,6 @@ func Login(username string, pwhash string) (string, error) {
 			log.Println(err)
 			return wString, err
 		}
-		LocalPubkey = LocalRecipient.U.PublicKey
 	case "Entity":
 		data, err = GetRequest(ApiUrl + "/entity/validate?" + "username=" + username + "&pwhash=" + pwhash)
 		if err != nil {
@@ -103,14 +101,12 @@ func Login(username string, pwhash string) (string, error) {
 				log.Println("error while decrpyting seed, quitting!", err)
 				return wString, err
 			}
-			LocalPubkey = LocalContractor.U.PublicKey
 		} else if entity.Originator {
 			LocalSeed, err = wallet.DecryptSeed(LocalOriginator.U.EncryptedSeed, seedpwd)
 			if err != nil {
 				log.Println("error while decrpyting seed, quitting!", err)
 				return wString, err
 			}
-			LocalPubkey = LocalOriginator.U.PublicKey
 		}
 	}
 
