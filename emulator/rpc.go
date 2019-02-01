@@ -356,3 +356,57 @@ func OriginateProject(username string, pwhash string, projIndex string) (rpc.Sta
 	}
 	return x, nil
 }
+
+func GetOriginatedContracts(username string, pwhash string) ([]solar.Project, error) {
+	var x []solar.Project
+	data, err := GetRequest(ApiUrl + "/entity/getorigin?" + "username=" + username + "&pwhash=" + pwhash)
+	if err != nil {
+		return x, err
+	}
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return x, err
+	}
+	return x, nil
+}
+
+func GetPreOriginatedContracts(username string, pwhash string) ([]solar.Project, error) {
+	var x []solar.Project
+	data, err := GetRequest(ApiUrl + "/entity/getpreorigin?" + "username=" + username + "&pwhash=" + pwhash)
+	if err != nil {
+		return x, err
+	}
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return x, err
+	}
+	return x, nil
+}
+
+func GetProposedContracts(username string, pwhash string) ([]solar.Project, error) {
+	var x []solar.Project
+	data, err := GetRequest(ApiUrl + "/entity/getproposed?" + "username=" + username + "&pwhash=" + pwhash)
+	if err != nil {
+		return x, err
+	}
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return x, err
+	}
+	return x, nil
+}
+
+func AddCollateral(username string, pwhash string, collateral string, amount string) (rpc.StatusResponse, error) {
+	var x rpc.StatusResponse
+	log.Println("PSASING: ", amount, collateral)
+	data, err := GetRequest(ApiUrl + "/entity/addcollateral?" + "username=" + username + "&pwhash=" + pwhash +
+		"&collateral=" + collateral + "&amount=" + amount)
+	if err != nil {
+		return x, err
+	}
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return x, err
+	}
+	return x, nil
+}

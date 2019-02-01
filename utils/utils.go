@@ -50,6 +50,10 @@ func StoF(a string) float64 {
 	return x
 }
 
+func StoFWithCheck(a string) (float64, error) {
+	return strconv.ParseFloat(a, 32)
+}
+
 func StoI(a string) int {
 	// convert string to int
 	aInt, _ := strconv.Atoi(a)
