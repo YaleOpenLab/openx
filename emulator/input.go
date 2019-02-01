@@ -31,7 +31,7 @@ func ParseInputInv(input []string) error {
 		// display is a  broad command and needs to have a subcommand
 		if len(input) == 1 {
 			// only display was given, so display help command
-			log.Println("HELP COMMANDS")
+			log.Println("<display><balance, profile, projects>")
 			break
 		}
 		subcommand := input[1]
@@ -81,9 +81,9 @@ func ParseInputInv(input []string) error {
 			PrintInvestor(LocalInvestor)
 			break
 		case "projects":
-			if len(input) == 2 {
+			if len(input) != 3 {
 				// only display was given, so display help command
-				log.Println("PROJECTS HELP COMMANDS")
+				log.Println("<display projects> <preorigin, origin, seed, proposed, open, funded, installed, power, fin>")
 				break
 			}
 			subsubcommand := input[2]
@@ -127,9 +127,9 @@ func ParseInputInv(input []string) error {
 			break
 		} // end of display
 	case "exchange":
-		if len(input) == 1 {
+		if len(input) != 2 {
 			// only display was given, so display help command
-			log.Println("EXCHANGE HELP COMMANDS")
+			log.Println("<exchange> amount")
 			break
 		}
 		amount, err := utils.StoICheck(input[1])
@@ -151,8 +151,8 @@ func ParseInputInv(input []string) error {
 		}
 		// end of exchange
 	case "ipfs":
-		if len(input) == 1 {
-			log.Println("IPFS HELP COMMANDS")
+		if len(input) != 2 {
+			log.Println("<ipfs> string")
 			break
 		}
 		inputString := input[1]
@@ -272,7 +272,7 @@ func ParseInputRecp(input []string) error {
 		// display is a  broad command and needs to have a subcommand
 		if len(input) == 1 {
 			// only display was given, so display help command
-			log.Println("HELP COMMANDS")
+			log.Println("<display><balance, profile, projects>")
 			break
 		}
 		subcommand := input[1]
@@ -322,9 +322,9 @@ func ParseInputRecp(input []string) error {
 			PrintRecipient(LocalRecipient)
 			break
 		case "projects":
-			if len(input) == 2 {
+			if len(input) != 3 {
 				// only display was given, so display help command
-				log.Println("PROJECTS HELP COMMANDS")
+				log.Println("<display projects> <preorigin, origin, seed, proposed, open, funded, installed, power, fin>")
 				break
 			}
 			subsubcommand := input[2]
@@ -376,9 +376,9 @@ func ParseInputRecp(input []string) error {
 			break
 		} // end of display
 	case "exchange":
-		if len(input) == 1 {
+		if len(input) != 2 {
 			// only display was given, so display help command
-			log.Println("EXCHANGE HELP COMMANDS")
+			log.Println("<exchange> amount")
 			break
 		}
 		amount, err := utils.StoICheck(input[1])
@@ -400,8 +400,8 @@ func ParseInputRecp(input []string) error {
 		}
 		// end of exchange
 	case "ipfs":
-		if len(input) == 1 {
-			log.Println("IPFS HELP COMMANDS")
+		if len(input) != 2 {
+			log.Println("<ipfs> string")
 			break
 		}
 		inputString := input[1]
@@ -536,7 +536,7 @@ func ParseInputCont(input []string) error {
 		// display is a  broad command and needs to have a subcommand
 		if len(input) == 1 {
 			// only display was given, so display help command
-			log.Println("HELP COMMANDS")
+			log.Println("<display><balance, profile, projects>")
 			break
 		}
 		subcommand := input[1]
@@ -586,9 +586,9 @@ func ParseInputCont(input []string) error {
 			PrintEntity(LocalContractor)
 			break
 		case "projects":
-			if len(input) == 2 {
+			if len(input) != 3 {
 				// only display was given, so display help command
-				log.Println("PROJECTS HELP COMMANDS")
+				log.Println("<display projects> <preorigin, origin, seed, proposed, open, funded, installed, power, fin>")
 				break
 			}
 			subsubcommand := input[2]
@@ -640,9 +640,9 @@ func ParseInputCont(input []string) error {
 			break
 		} // end of display
 	case "exchange":
-		if len(input) == 1 {
+		if len(input) != 2 {
 			// only display was given, so display help command
-			log.Println("EXCHANGE HELP COMMANDS")
+			log.Println("<exchange> amount")
 			break
 		}
 		amount, err := utils.StoICheck(input[1])
@@ -664,8 +664,8 @@ func ParseInputCont(input []string) error {
 		}
 		// end of exchange
 	case "ipfs":
-		if len(input) == 1 {
-			log.Println("IPFS HELP COMMANDS")
+		if len(input) != 2 {
+			log.Println("<ipfs> string")
 			break
 		}
 		inputString := input[1]
@@ -677,18 +677,62 @@ func ParseInputCont(input []string) error {
 		fmt.Println("IPFS HASH", hashString)
 		// end of ipfs
 		// start of conttractor only functions
-	case "propose":
-		fmt.Println("PROPOSED PROJECT INTERFACE")
+	case "propose": // TODO: maybe arrive at a way to do this sometime later?
+		fmt.Println("Proposing a contract can be done only through the opensolar webui" +
+			"since that involves document verification")
 		break
 		// end of propose
 	case "myproposed":
-		fmt.Println("VIEWING ALL MY PROPOSED PROJECTS")
+		x, err := GetProposedContracts(LocalContractor.U.LoginUserName, LocalContractor.U.LoginPassword)
+		if err != nil {
+			log.Println(err)
+			break
+		}
+		log.Println(x)
 		break
-		// end of myproposed
-	case "collateral":
-		fmt.Println("CREATING A NEW TYPE OF COLLATERAL")
+	case "addcollateral":
+		if len(input) != 3 {
+			log.Println("<addcollateral> collateral amount")
+			break
+		}
+
+		_ ,err = utils.StoFWithCheck(input[2])
+		if err != nil {
+			log.Println(err)
+			break
+		}
+
+		response, err := AddCollateral(LocalContractor.U.LoginUserName, LocalContractor.U.LoginPassword, input[1], input[2])
+		if err != nil {
+			log.Println(err)
+			break
+		}
+
+		if response.Status == 200 {
+			ColorOutput("SUCCESSFULLY ADDED COLLATERAL", GreenColor)
+		} else {
+			ColorOutput("RESPONSE STATUS: "+utils.ItoS(response.Status), GreenColor)
+		}
 		break
-		// end of collateral
+	case "mypreoriginated":
+		x, err := GetPreOriginatedContracts(LocalContractor.U.LoginUserName, LocalContractor.U.LoginPassword)
+		if err != nil {
+			log.Println(err)
+			break
+		}
+		log.Println(x)
+		break
+		// end of myoriginated
+	case "myoriginated": // if the contractor acts as an originator sometime. Bool setting would be weird,
+	// but I guess there's nothing that prevents a contractor from acting as an originator, so we allow this.
+		x, err := GetOriginatedContracts(LocalContractor.U.LoginUserName, LocalContractor.U.LoginPassword)
+		if err != nil {
+			log.Println(err)
+			break
+		}
+		PrintProjects(x)
+		break
+		// end of myoriginated
 	}
 	return nil
 }
@@ -714,7 +758,7 @@ func ParseInputOrig(input []string) error {
 		// display is a  broad command and needs to have a subcommand
 		if len(input) == 1 {
 			// only display was given, so display help command
-			log.Println("HELP COMMANDS")
+			log.Println("<display><balance, profile, projects>")
 			break
 		}
 		subcommand := input[1]
@@ -764,9 +808,9 @@ func ParseInputOrig(input []string) error {
 			PrintEntity(LocalOriginator)
 			break
 		case "projects":
-			if len(input) == 2 {
+			if len(input) != 3 {
 				// only display was given, so display help command
-				log.Println("PROJECTS HELP COMMANDS")
+				log.Println("<display projects> <preorigin, origin, seed, proposed, open, funded, installed, power, fin>")
 				break
 			}
 			subsubcommand := input[2]
@@ -818,9 +862,9 @@ func ParseInputOrig(input []string) error {
 			break
 		} // end of display
 	case "exchange":
-		if len(input) == 1 {
+		if len(input) != 2 {
 			// only display was given, so display help command
-			log.Println("EXCHANGE HELP COMMANDS")
+			log.Println("<exchange> amount")
 			break
 		}
 		amount, err := utils.StoICheck(input[1])
@@ -842,8 +886,8 @@ func ParseInputOrig(input []string) error {
 		}
 		// end of exchange
 	case "ipfs":
-		if len(input) == 1 {
-			log.Println("IPFS HELP COMMANDS")
+		if len(input) != 2 {
+			log.Println("<ipfs> string")
 			break
 		}
 		inputString := input[1]
@@ -855,15 +899,64 @@ func ParseInputOrig(input []string) error {
 		fmt.Println("IPFS HASH", hashString)
 		// end of ipfs
 	case "propose":
-		fmt.Println("PROPOSING PRE-ORIGIN PROJECT INTERFACE")
+		fmt.Println("Proposing a contract can be done only through the opensolar webui" +
+			"since that involves document verification")
+		break
+	case "preoriginate":
+		fmt.Println("Pre originating a contract can be done only through the opensolar webui" +
+			"since that involves document verification")
 		break
 		// end of propose
+	case "addcollateral":
+		if len(input) != 3 {
+			log.Println("<addcollateral> collateral amount")
+			break
+		}
+
+		_ ,err = utils.StoFWithCheck(input[2])
+		if err != nil {
+			log.Println(err)
+			break
+		}
+
+		response, err := AddCollateral(LocalOriginator.U.LoginUserName, LocalOriginator.U.LoginPassword, input[1], input[2])
+		if err != nil {
+			log.Println(err)
+			break
+		}
+
+		if response.Status == 200 {
+			ColorOutput("SUCCESSFULLY ADDED COLLATERAL", GreenColor)
+		} else {
+			ColorOutput("RESPONSE STATUS: "+utils.ItoS(response.Status), GreenColor)
+		}
+		break
+		// end of addcollateral
 	case "myproposed":
-		fmt.Println("VIEWING ALL MY PRE-ORIGIN PROJECTS")
+		x, err := GetProposedContracts(LocalOriginator.U.LoginUserName, LocalOriginator.U.LoginPassword)
+		if err != nil {
+			log.Println(err)
+			break
+		}
+		log.Println(x)
 		break
 		// end of myproposed
+	case "mypreoriginated":
+		x, err := GetPreOriginatedContracts(LocalOriginator.U.LoginUserName, LocalOriginator.U.LoginPassword)
+		if err != nil {
+			log.Println(err)
+			break
+		}
+		log.Println(x)
+		break
+		// end of myoriginated
 	case "myoriginated":
-		fmt.Println("VIEWING ALL MY PRE-ORIGINATED PROJECTS")
+		x, err := GetOriginatedContracts(LocalOriginator.U.LoginUserName, LocalOriginator.U.LoginPassword)
+		if err != nil {
+			log.Println(err)
+			break
+		}
+		log.Println(x)
 		break
 		// end of myoriginated
 	}

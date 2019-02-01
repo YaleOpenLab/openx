@@ -6,3 +6,4 @@ test.txt
 config.yaml
 teller/tellerconfig.yaml
 emulator/emulator
+ofcli/ofcli
