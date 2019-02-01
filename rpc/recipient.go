@@ -9,6 +9,7 @@ import (
 	database "github.com/OpenFinancing/openfinancing/database"
 	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
 	utils "github.com/OpenFinancing/openfinancing/utils"
+	wallet "github.com/OpenFinancing/openfinancing/wallet"
 )
 
 // setupRecipientRPCs sets up all RPCs related to the recipient. Most are similar
@@ -25,6 +26,10 @@ func setupRecipientRPCs() {
 	storeDeviceLocation()
 	changeReputationRecp()
 	chooseBlindAuction()
+	unlock()
+	addEmail()
+	finalizeProject()
+	originateProject()
 }
 
 func parseRecipient(r *http.Request) (database.Recipient, error) {
@@ -101,23 +106,28 @@ func payback() {
 	http.HandleFunc("/recipient/payback", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
 		// this is a get request to make things easier for the teller
-		if r.URL.Query() == nil || r.URL.Query()["recpIndex"] == nil ||
-			r.URL.Query()["projIndex"] == nil || r.URL.Query()["assetName"] == nil ||
-			r.URL.Query()["amount"] == nil || r.URL.Query()["platformPublicKey"] == nil {
-			log.Println("PARAM ERROR")
+		prepRecipient, err := RecpValidateHelper(w, r)
+		if err != nil || r.URL.Query()["assetName"] == nil || r.URL.Query()["amount"] == nil ||
+			r.URL.Query()["platformPublicKey"] == nil || r.URL.Query()["seedpwd"] == nil || r.URL.Query()["projIndex"] == nil {
 			errorHandler(w, r, http.StatusNotFound)
 			return
 		}
-		recpIndex := utils.StoI(r.URL.Query()["recpIndex"][0])
+
+		recpIndex := prepRecipient.U.Index
 		projIndex := utils.StoI(r.URL.Query()["projIndex"][0])
 		assetName := r.URL.Query()["assetName"][0]
-		recipientSeed := r.URL.Query()["recipientSeed"][0]
+		seedpwd := r.URL.Query()["seedpwd"][0]
 		amount := r.URL.Query()["amount"][0]
 		platformPublicKey := r.URL.Query()["platformPublicKey"][0]
 
-		err := solar.Payback(recpIndex, projIndex, assetName, amount, recipientSeed, platformPublicKey)
+		recipientSeed, err := wallet.DecryptSeed(prepRecipient.U.EncryptedSeed, seedpwd)
 		if err != nil {
-			log.Println("PAYBACK ERROR: ", err)
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		err = solar.Payback(recpIndex, projIndex, assetName, amount, recipientSeed, platformPublicKey)
+		if err != nil {
 			errorHandler(w, r, http.StatusNotFound)
 			return
 		}
@@ -309,6 +319,100 @@ func chooseTimeAuction() {
 
 		err = bestContract.SetFinalizedProject()
 		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		Send200(w, r)
+	})
+}
+
+func unlock() {
+	http.HandleFunc("/recipient/unlock", func(w http.ResponseWriter, r *http.Request) {
+		recipient, err := RecpValidateHelper(w, r)
+		if err != nil || r.URL.Query()["seedpwd"] == nil {
+			log.Println(err)
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		seedpwd := r.URL.Query()["seedpwd"][0]
+		log.Println("SEEDPWD: ", seedpwd)
+		projIndex, err := utils.StoICheck(r.URL.Query()["projIndex"][0])
+		if err != nil {
+			log.Println(err)
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		err = solar.UnlockProject(recipient.U.LoginUserName, recipient.U.LoginPassword, projIndex, seedpwd)
+		if err != nil {
+			log.Println(err)
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		Send200(w, r)
+	})
+}
+
+func addEmail() {
+	http.HandleFunc("/recipient/addemail", func(w http.ResponseWriter, r *http.Request) {
+		recipient, err := RecpValidateHelper(w, r)
+		if err != nil || r.URL.Query()["email"] == nil {
+			log.Println(err)
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		email := r.URL.Query()["email"][0]
+		err = recipient.AddEmail(email)
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+		Send200(w, r)
+	})
+}
+
+func finalizeProject() {
+	http.HandleFunc("/recipient/finalize", func(w http.ResponseWriter, r *http.Request) {
+		_, err := RecpValidateHelper(w, r)
+		if err != nil || r.URL.Query()["projIndex"] == nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		projIndex := utils.StoI(r.URL.Query()["projIndex"][0])
+		project, err := solar.RetrieveProject(projIndex)
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		err = project.SetFinalizedProject()
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		Send200(w, r)
+	})
+}
+
+func originateProject() {
+	http.HandleFunc("/recipient/originate", func(w http.ResponseWriter, r *http.Request) {
+		recipient, err := RecpValidateHelper(w, r)
+		if err != nil || r.URL.Query()["projIndex"] == nil {
+			log.Println("ERROR WHILE HANDLIGN RECPS: ", err)
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		projIndex := utils.StoI(r.URL.Query()["projIndex"][0])
+		err = solar.RecipientAuthorize(projIndex, recipient.U.Index)
+		if err != nil {
+			log.Println("ERROR WHILE AUTHORIZING")
 			errorHandler(w, r, http.StatusNotFound)
 			return
 		}

@@ -296,14 +296,14 @@ func sendRecipientAssets(projIndex int, issuerPubkey string, issuerSeed string) 
 	}
 
 	for utils.Unix()-startTime < consts.LockInterval {
-		log.Println("RUNNING INSIDE LOOP")
-		if !project.Lock {
-			log.Println("Project UNLOCKED IN LOOP")
-			break
-		}
+		log.Printf("WAITING FOR PROJECT %d TO BE UNLOCKED", projIndex)
 		project, err = RetrieveProject(projIndex)
 		if err != nil {
 			return err
+		}
+		if !project.Lock {
+			log.Println("Project UNLOCKED IN LOOP")
+			break
 		}
 		time.Sleep(10 * time.Second)
 	}
@@ -313,10 +313,12 @@ func sendRecipientAssets(projIndex int, issuerPubkey string, issuerSeed string) 
 	// update our copy of the project
 	project, err = RetrieveProject(projIndex)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 	recpSeed, err := wallet.DecryptSeed(project.ProjectRecipient.U.EncryptedSeed, project.LockPwd)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 	recipient := project.ProjectRecipient

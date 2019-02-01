@@ -70,6 +70,7 @@ func main() {
 	// TODO: Need to automatically cover breach scenarios in case the recipient doesn't
 	// pay for a specific period of time
 	// TODO: also write a Makefile so that its easy for people to get started with stuff
+	// TODO: move most of this stuff to the new emulator struct
 	fmt.Println("------------STELLAR HOUSE INVESTMENT CLI INTERFACE------------")
 
 	// init stablecoin stuff
@@ -115,17 +116,17 @@ func main() {
 		for {
 			fmt.Println("------------RECIPIENT INTERFACE------------")
 			fmt.Println("----CHOOSE ONE OF THE FOLLOWING OPTIONS----")
-			fmt.Println("  0. Display all Locked Projects")
-			fmt.Println("  1. Display all Open Projects (STAGE 3)")
-			fmt.Println("  2. Display my Profile")
-			fmt.Println("  3. Payback towards an Project (STAGE 6)")
-			fmt.Println("  4. Exchange XLM for USD")
-			fmt.Println("  5. Finalize a specific Project (STAGE 2->3)")
-			fmt.Println("  6. Originate a specific Project (STAGE 0->1)")
-			fmt.Println("  7. View all Projects (ALL STAGES)")
-			fmt.Println("  8. View all Origin Projects (STAGE 1)")
-			fmt.Println("  9. View All Balances ")
-			fmt.Println("  10. Unlock Account")
+			fmt.Println("  0. Display all Locked Projects") // done
+			fmt.Println("  1. Display all Open Projects (STAGE 3)") // done
+			fmt.Println("  2. Display my Profile") // done
+			fmt.Println("  3. Payback towards an Project (STAGE 6)") // done
+			fmt.Println("  4. Exchange XLM for USD") // done
+			fmt.Println("  5. Finalize a specific Project (STAGE 2->3)") // done
+			fmt.Println("  6. Originate a specific Project (STAGE 0->1)") // done
+			fmt.Println("  7. View all Projects (ALL STAGES)") // done
+			fmt.Println("  8. View all Origin Projects (STAGE 1)") // done
+			fmt.Println("  9. View All Balances ") // done
+			fmt.Println("  10. Unlock Account") // done
 			fmt.Println("  default: Exit")
 			optI, err := scan.ScanForInt()
 			if err != nil {
@@ -244,7 +245,7 @@ func main() {
 					continue
 				}
 				PrintProjects(allContracts)
-
+				// TODO: port this to the emulator
 				fmt.Println("CHOOSE THE METRIC BY WHICH YOU WANT TO SELECT THE WINNING BID: ")
 				fmt.Println("1. PRICE (BLIND)")
 				fmt.Println("2. COMPLETION TIME (IN YEARS)")
@@ -308,7 +309,6 @@ func main() {
 				log.Println("BEST CONTRACT IS: ")
 				PrintProject(bestContract)
 				// now the contract is at stage 3
-				// TODO: setup the issuer and stuff here instead of in invest
 			case 6:
 				fmt.Println("LIST OF ALL PRE ORIGIN PROJECTS BY ORIGINATORS (STAGE 0)")
 				allMyProjects, err := solar.RetrieveProjectsAtStage(solar.PreOriginProject)
@@ -371,8 +371,8 @@ func main() {
 			fmt.Println("-------------WELCOME BACK CONTRACTOR-------------")
 			for {
 				fmt.Println("WHAT WOULD YOU LIKE TO DO?")
-				fmt.Println("  1. VIEW ALL ORIGINATED (STAGE 1) PROJECTS")
-				fmt.Println("  2. VIEW PROFILE")
+				fmt.Println("  1. VIEW ALL ORIGINATED (STAGE 1) PROJECTS") // done
+				fmt.Println("  2. VIEW PROFILE") // done
 				fmt.Println("  3. CREATE A PROPOSED (STAGE 2) PROJECT")
 				fmt.Println("  4. VIEW ALL MY PROPOSED (STAGE 2) PROJECTS")
 				fmt.Println("  5. CREATE NEW TYPE OF COLLATERAL")
@@ -428,7 +428,7 @@ func main() {
 			for {
 				fmt.Println("WHAT WOULD YOU LIKE TO DO?")
 				fmt.Println("  1. PROPOSE A PRE-ORIGIN (STAGE 0) PROJECT TO A RECIPIENT")
-				fmt.Println("  2. VIEW PROFILE")
+				fmt.Println("  2. VIEW PROFILE") // done
 				fmt.Println("  3. VIEW ALL MY PRE-ORIGINATED (STAGE 0) PROJECTS")
 				fmt.Println("  4. VIEW ALL MY ORIGINATED (STAGE 1) PROJECTS")
 				optI, err = scan.ScanForInt()
@@ -469,19 +469,19 @@ func main() {
 		// User is an investor
 		for {
 			// Main investor loop
-			fmt.Println("------------INVESTOR INTERFACE------------")
+			fmt.Println("------------INVESTOR INTERFACE------------") //  done
 			fmt.Println("----CHOOSE ONE OF THE FOLLOWING OPTIONS----")
-			fmt.Println("  1. Display all Open Projects (STAGE 3)")
-			fmt.Println("  2. Display my Profile")
-			// fmt.Println("  3. Invest in an Project (STAGE 3)")
-			fmt.Println("  4. Display All Balances")
-			fmt.Println("  5. Exchange XLM for USD")
-			fmt.Println("  6. Display all Origin (STAGE 1) Projects")
-			fmt.Println("  7. Vote towards a specific proposed project (STAGE 2)")
-			fmt.Println("  8. Get ipfs hash of a contract")
-			fmt.Println("  9. Display all Funded Projects")
-			fmt.Println("  10. Unlock account")
-			fmt.Println("  11. KYC users (admin only)")
+			fmt.Println("  1. Display all Open Projects (STAGE 3)") // done
+			fmt.Println("  2. Display my Profile") // done
+			// fmt.Println("  3. Invest in an Project (STAGE 3)") // done
+			fmt.Println("  4. Display All Balances") // done
+			fmt.Println("  5. Exchange XLM for USD") // done
+			fmt.Println("  6. Display all Origin (STAGE 1) Projects") // done
+			fmt.Println("  7. Vote towards a specific proposed project (STAGE 2)") // done
+			fmt.Println("  8. Get ipfs hash of a contract") // done
+			fmt.Println("  9. Display all Funded Projects") // done
+			fmt.Println("  10. Unlock account") // done
+			fmt.Println("  11. KYC users (admin only)") // done
 			fmt.Println("  default: Exit")
 			optI, err := scan.ScanForInt()
 			if err != nil {
@@ -497,7 +497,7 @@ func main() {
 				break
 			case 3:
 				// investInProject RPC
-				// This route has been removed since once you invest in a particular order and it reaches
+				// This function has been removed from the CLI since once you invest in a particular order and it reaches
 				// the limit, this function will not transfer assets back to the recipient, resulting
 				// in an improper way of emulating the workflow. The only option is to call the route,
 				// which will be called by the frontend, so we can emulate this successfully.

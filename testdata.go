@@ -29,6 +29,10 @@ func InsertDummyData() error {
 		if err != nil {
 			log.Fatal(err)
 		}
+		err = rec.AddEmail("varunramganesh@gmail.com")
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	var inv database.Investor

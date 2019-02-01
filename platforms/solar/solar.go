@@ -267,10 +267,7 @@ func VerifyBeforeAuthorizing(projIndex int) bool {
 	return true
 }
 
-// RecipientAuthorizeContract authorizes a specific project from the recipients side
-// if you already have the project and the recipient struct ready to pass.
-// this function is not used right now, but would be when we finalize the various
-// stages of a project
+// RecipientAuthorize is used to originate a specific project and take it to stage 1
 func RecipientAuthorize(projIndex int, recpIndex int) error {
 	project, err := RetrieveProject(projIndex)
 	if err != nil {
@@ -325,7 +322,7 @@ func VoteTowardsProposedProject(invIndex int, votes int, projectIndex int) error
 		return err
 	}
 	if project.Stage != 2 {
-		return fmt.Errorf("You can't vote for a project with stage less than 3")
+		return fmt.Errorf("You can't vote for a project with stage less than 2")
 	}
 	// we have the specific contract and need to upgrade the number of votes on this one
 	project.Params.Votes += votes
@@ -469,6 +466,10 @@ func UnlockProject(username string, pwhash string, projIndex int, seedpwd string
 
 	project.LockPwd = seedpwd
 	project.Lock = false
-	fmt.Println("PROJECT UNLOCKED!")
-	return project.Save()
+	fmt.Println("Project unlocked and lock password set to seed password! SEEDPWD: ", seedpwd)
+	err = project.Save()
+	if err != nil {
+		return err
+	}
+	return nil
 }

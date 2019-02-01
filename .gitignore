@@ -5,3 +5,4 @@ teller/teller
 test.txt
 config.yaml
 teller/tellerconfig.yaml
+emulator/emulator
