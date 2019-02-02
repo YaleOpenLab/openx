@@ -116,17 +116,17 @@ func main() {
 		for {
 			fmt.Println("------------RECIPIENT INTERFACE------------")
 			fmt.Println("----CHOOSE ONE OF THE FOLLOWING OPTIONS----")
-			fmt.Println("  0. Display all Locked Projects") // done
-			fmt.Println("  1. Display all Open Projects (STAGE 3)") // done
-			fmt.Println("  2. Display my Profile") // done
-			fmt.Println("  3. Payback towards an Project (STAGE 6)") // done
-			fmt.Println("  4. Exchange XLM for USD") // done
-			fmt.Println("  5. Finalize a specific Project (STAGE 2->3)") // done
+			fmt.Println("  0. Display all Locked Projects")               // done
+			fmt.Println("  1. Display all Open Projects (STAGE 3)")       // done
+			fmt.Println("  2. Display my Profile")                        // done
+			fmt.Println("  3. Payback towards an Project (STAGE 6)")      // done
+			fmt.Println("  4. Exchange XLM for USD")                      // done
+			fmt.Println("  5. Finalize a specific Project (STAGE 2->3)")  // done
 			fmt.Println("  6. Originate a specific Project (STAGE 0->1)") // done
-			fmt.Println("  7. View all Projects (ALL STAGES)") // done
-			fmt.Println("  8. View all Origin Projects (STAGE 1)") // done
-			fmt.Println("  9. View All Balances ") // done
-			fmt.Println("  10. Unlock Account") // done
+			fmt.Println("  7. View all Projects (ALL STAGES)")            // done
+			fmt.Println("  8. View all Origin Projects (STAGE 1)")        // done
+			fmt.Println("  9. View All Balances ")                        // done
+			fmt.Println("  10. Unlock Account")                           // done
 			fmt.Println("  default: Exit")
 			optI, err := scan.ScanForInt()
 			if err != nil {
@@ -371,11 +371,11 @@ func main() {
 			fmt.Println("-------------WELCOME BACK CONTRACTOR-------------")
 			for {
 				fmt.Println("WHAT WOULD YOU LIKE TO DO?")
-				fmt.Println("  1. VIEW ALL ORIGINATED (STAGE 1) PROJECTS") // done
-				fmt.Println("  2. VIEW PROFILE") // done
-				fmt.Println("  3. CREATE A PROPOSED (STAGE 2) PROJECT") // added to TODO
+				fmt.Println("  1. VIEW ALL ORIGINATED (STAGE 1) PROJECTS")  // done
+				fmt.Println("  2. VIEW PROFILE")                            // done
+				fmt.Println("  3. CREATE A PROPOSED (STAGE 2) PROJECT")     // added to TODO
 				fmt.Println("  4. VIEW ALL MY PROPOSED (STAGE 2) PROJECTS") // done
-				fmt.Println("  5. CREATE NEW TYPE OF COLLATERAL") // done
+				fmt.Println("  5. CREATE NEW TYPE OF COLLATERAL")           // done
 				optI, err := scan.ScanForInt()
 				if err != nil {
 					log.Println(err)
@@ -428,9 +428,9 @@ func main() {
 			for {
 				fmt.Println("WHAT WOULD YOU LIKE TO DO?")
 				fmt.Println("  1. PROPOSE A PRE-ORIGIN (STAGE 0) PROJECT TO A RECIPIENT") // added to TODO
-				fmt.Println("  2. VIEW PROFILE") // done
-				fmt.Println("  3. VIEW ALL MY PRE-ORIGINATED (STAGE 0) PROJECTS") // done
-				fmt.Println("  4. VIEW ALL MY ORIGINATED (STAGE 1) PROJECTS") // done
+				fmt.Println("  2. VIEW PROFILE")                                          // done
+				fmt.Println("  3. VIEW ALL MY PRE-ORIGINATED (STAGE 0) PROJECTS")         // done
+				fmt.Println("  4. VIEW ALL MY ORIGINATED (STAGE 1) PROJECTS")             // done
 				optI, err = scan.ScanForInt()
 				if err != nil {
 					log.Println(err)
@@ -472,16 +472,16 @@ func main() {
 			fmt.Println("------------INVESTOR INTERFACE------------") //  done
 			fmt.Println("----CHOOSE ONE OF THE FOLLOWING OPTIONS----")
 			fmt.Println("  1. Display all Open Projects (STAGE 3)") // done
-			fmt.Println("  2. Display my Profile") // done
+			fmt.Println("  2. Display my Profile")                  // done
 			// fmt.Println("  3. Invest in an Project (STAGE 3)") // done
-			fmt.Println("  4. Display All Balances") // done
-			fmt.Println("  5. Exchange XLM for USD") // done
-			fmt.Println("  6. Display all Origin (STAGE 1) Projects") // done
+			fmt.Println("  4. Display All Balances")                               // done
+			fmt.Println("  5. Exchange XLM for USD")                               // done
+			fmt.Println("  6. Display all Origin (STAGE 1) Projects")              // done
 			fmt.Println("  7. Vote towards a specific proposed project (STAGE 2)") // done
-			fmt.Println("  8. Get ipfs hash of a contract") // done
-			fmt.Println("  9. Display all Funded Projects") // done
-			fmt.Println("  10. Unlock account") // done
-			fmt.Println("  11. KYC users (admin only)") // done
+			fmt.Println("  8. Get ipfs hash of a contract")                        // done
+			fmt.Println("  9. Display all Funded Projects")                        // done
+			fmt.Println("  10. Unlock account")                                    // done
+			fmt.Println("  11. KYC users (admin only)")                            // done
 			fmt.Println("  default: Exit")
 			optI, err := scan.ScanForInt()
 			if err != nil {

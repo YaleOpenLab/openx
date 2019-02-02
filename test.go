@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -21,8 +20,6 @@ import (
 
 // the server powering the openfinancing platform. There are two clients that can be used
 // with the backned - ofcli and emulator
-// TODO: move to the teller based config system mimicking the frontend once we have RPCs
-// for functions that will be used by the frontend.
 var opts struct {
 	Port int `short:"p" description:"The port on which the server runs on"`
 }
@@ -74,22 +71,11 @@ func main() {
 	}
 
 	log.Printf("PLATFORM SEED IS: %s\n PLATFORM PUBLIC KEY IS: %s\n", consts.PlatformSeed, consts.PlatformPublicKey)
-	// TODO: how much do we pay the investor?
-	// Do we sell the REC created from the solar panels only to the investor? If so,
-	// isn't that enough to propel investment in the solar contract itself?
 	// TODO: need a server to run a public stellar node to test out stuff
-	// change the API mapping
-	// move current number of years metric to a separate package since that is
-	// more suitable for a model like affordable housing.
-	// look into what kind of data we get from the pi and checkout pi specific code
-	// to see if we can get something from there.
 	// TODO: Need to automatically cover breach scenarios in case the recipient doesn't
 	// pay for a specific period of time
 	// TODO: also write a Makefile so that its easy for people to get started with stuff
-	fmt.Println("------------STELLAR HOUSE INVESTMENT CLI INTERFACE (RETIRED, USE EMULATOR)------------")
-
-	// init stablecoin stuff
-	err = stablecoin.InitStableCoin()
+	err = stablecoin.InitStableCoin() // start the stablecoin daemon
 	if err != nil {
 		log.Fatal(err)
 	}
