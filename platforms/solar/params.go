@@ -1,6 +1,7 @@
 package solar
 
 // TODO: add more parameters here that would help identify a given solar project
+// TODO: migrate suggestions from the github gist to here
 type SolarParams struct {
 	Index int // an Index to keep quick track of how many projects exist
 
@@ -8,7 +9,7 @@ type SolarParams struct {
 	TotalValue  float64 // the total money that we need from investors
 	Location    string  // where this specific solar panel is located
 	MoneyRaised float64 // total money that has been raised until now
-	Years       int     // number of years the recipient has chosen to opt for
+	Years       int     // number of years teh recipient is expected to the initial investment amount back
 	Metadata    string  // any other metadata can be stored here
 
 	// once all funds have been raised, we need to set assetCodes

@@ -696,7 +696,7 @@ func ParseInputCont(input []string) error {
 			break
 		}
 
-		_ ,err = utils.StoFWithCheck(input[2])
+		_, err = utils.StoFWithCheck(input[2])
 		if err != nil {
 			log.Println(err)
 			break
@@ -724,7 +724,7 @@ func ParseInputCont(input []string) error {
 		break
 		// end of myoriginated
 	case "myoriginated": // if the contractor acts as an originator sometime. Bool setting would be weird,
-	// but I guess there's nothing that prevents a contractor from acting as an originator, so we allow this.
+		// but I guess there's nothing that prevents a contractor from acting as an originator, so we allow this.
 		x, err := GetOriginatedContracts(LocalContractor.U.LoginUserName, LocalContractor.U.LoginPassword)
 		if err != nil {
 			log.Println(err)
@@ -913,7 +913,7 @@ func ParseInputOrig(input []string) error {
 			break
 		}
 
-		_ ,err = utils.StoFWithCheck(input[2])
+		_, err = utils.StoFWithCheck(input[2])
 		if err != nil {
 			log.Println(err)
 			break

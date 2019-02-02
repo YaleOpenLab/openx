@@ -8,8 +8,8 @@ import (
 	database "github.com/OpenFinancing/openfinancing/database"
 	ipfs "github.com/OpenFinancing/openfinancing/ipfs"
 	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
-	xlm "github.com/OpenFinancing/openfinancing/xlm"
 	utils "github.com/OpenFinancing/openfinancing/utils"
+	xlm "github.com/OpenFinancing/openfinancing/xlm"
 )
 
 func setupUserRpcs() {

@@ -7,3 +7,4 @@ config.yaml
 teller/tellerconfig.yaml
 emulator/emulator
 ofcli/ofcli
+build/_workspace

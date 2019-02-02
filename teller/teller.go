@@ -18,6 +18,7 @@ import (
 // TODO: Figure out how to tie the actual IoT device and its ID with the project
 // that it belongs, the contract, recipient, and eg. person who installed it.
 // Consider doing this with IoT partners, eg. Atonomi.
+
 // Teller authenticates with the platform using a remote API and then retrieves
 // credentials once authenticated. Both the teller and the project recipient on the
 // platform are the same entity, just that the teller is associated with the hw device.
