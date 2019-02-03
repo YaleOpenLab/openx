@@ -387,5 +387,110 @@ func sendRecipientAssets(projIndex int, issuerPubkey string, issuerSeed string) 
 		notif.SendInvestmentNotifToRecipient(project.Params.Index, recipient.U.Email, recpPbTrustHash, recpAssetHash, recpDebtTrustHash, recpDebtAssetHash)
 	}
 	fmt.Printf("PROJECT %d's INVESTMENT CONFIRMED!", project.Params.Index)
-	return project.Save()
+	err = project.Save()
+	if err != nil {
+		return err
+	}
+	// need to run a separate goroutine for payback
+	go sendPaymentNotif(recipient.U.Index, project.Params.Index, recipient.U.Email)
+	go monitorPaybacks(recipient.U.Index, project.Params.Index, project.Params.DebtAssetCode)
+	return nil
+}
+
+// sendPaymentNotif sends a notification every payback period to the recipient to
+// kindly remind him to payback towards the project
+func sendPaymentNotif(recpIndex int, projIndex int, email string) {
+	// setup a payback monitoring routine for monitoring if the recipient pays us back on time
+	// the recipient must give his email to receive updates
+	paybackTimes := 0
+	for {
+		project, err := RetrieveProject(projIndex)
+
+		if err != nil {
+			log.Println(err)
+			message := "Error in payback routine, please contact help as soon as you receive this message " + err.Error()
+			notif.SendAlertEmail(message, email) // don't catch the error here
+			time.Sleep(time.Duration(project.PaybackPeriod * consts.OneWeekInSecond))
+		}
+
+		_, err = database.RetrieveRecipient(recpIndex) // need to retireve to make sure nothing goes awry
+		if err != nil {
+			log.Println(err)
+			message := "Error while retrieving your account details, please contact help as soon as you receive this message " + err.Error()
+			notif.SendAlertEmail(message, email) // don't catch the error here
+			time.Sleep(time.Duration(project.PaybackPeriod * consts.OneWeekInSecond))
+		}
+
+		if paybackTimes == 0 {
+			// sleep and bother during the next cycle
+			time.Sleep(time.Duration(project.PaybackPeriod * consts.OneWeekInSecond))
+		}
+
+		// PAYBACK TIME!!
+		// we don't know if the user has paid, but we send an email anyway
+		notif.SendPaybackAlertEmail(project.Params.Index, email)
+		// sleep until the next payment is due
+		paybackTimes += 1
+		log.Println("Sent: ", email, "a notification on payments for payment cycle: ", paybackTimes)
+		time.Sleep(time.Duration(project.PaybackPeriod * consts.OneWeekInSecond))
+	}
+}
+
+func monitorPaybacks(recpIndex int, projIndex int, debtAssetCode string) {
+	// monitor whether the user is paying back regularly towards the given project
+	// this is a routine similar to the general notification routine but focused more on the
+	// payback and tracking that. Also, if the other thread fails, nothing major happens except
+	// notifications, but if this one fails, we can't track paybacks, so this one has to be
+	// isolated.
+	for {
+		project, err := RetrieveProject(projIndex)
+		if err != nil {
+			log.Println(err)
+		}
+
+		recipient, err := database.RetrieveRecipient(recpIndex)
+		if err != nil {
+			log.Println(err)
+		}
+
+		// this will be our payback period and we need to check if the user pays us back
+
+		nowTime := utils.Unix()
+		timeElapsed := nowTime - project.Params.DateLastPaid            // this would be in seconds (unix time)
+		period := int64(project.PaybackPeriod * consts.OneWeekInSecond) // in seconds due to the const
+		factor := timeElapsed / period
+
+		if factor <= 1 {
+			// don't do anything since the suer has been apying back regularly
+			log.Println("User: ", recipient.U.Email, "is on track paying towards order: ", projIndex)
+			// maybe even update reputation here on a fractional basis depending on a user's timely payments
+		} else if factor >= 2 {
+			// person has not paid back for two consecutive period, send gentle reminder
+			notif.SendNicePaybackAlertEmail(projIndex, recipient.U.Email)
+		} else if factor >= 4 {
+			// person has not paid back for four consecutive cycles, send reminder
+			notif.SendSternPaybackAlertEmail(projIndex, recipient.U.Email)
+			for _, elem := range project.ProjectInvestors {
+				// send an email to recipients to assure them that we're on the issue and will be acting
+				// soon if the recipient fails to pay again.
+				notif.SendSternPaybackAlertEmailI(projIndex, elem.U.Email)
+			}
+			notif.SendSternPaybackAlertEmailG(projIndex, project.Guarantor.U.Email)
+			// send an email out to the guarantor
+		} else if factor >= 6 {
+			// send a disconnection notice to the recipient and let them know we have redirected
+			// power towards the grid. Also maybe email ourselves in this case so that we can
+			// contact them personally to resolve the issue as soon as possible.
+			notif.SendDisconnectionEmail(projIndex, recipient.U.Email)
+			for _, elem := range project.ProjectInvestors {
+				// send an email out to each investor to let them know that the recipient
+				// has defaulted on payments and that we have acted on the issue.
+				notif.SendDisconnectionEmailI(projIndex, elem.U.Email)
+			}
+			notif.SendDisconnectionEmailG(projIndex, project.Guarantor.U.Email)
+			// send an email out to the guarantor
+		}
+
+		time.Sleep(time.Duration(consts.OneWeekInSecond)) // poll every week to ch eck progress on payments
+	}
 }

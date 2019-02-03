@@ -32,8 +32,8 @@ func ParseConfig(args []string) (string, error) {
 	port := utils.ItoS(consts.DefaultRpcPort)
 	if opts.Port != 0 {
 		port = utils.ItoS(opts.Port)
+		log.Println("Starting RPC Server on Port: ", opts.Port)
 	}
-	log.Println("Starting RPC Server on Port: ", opts.Port)
 	return port, nil
 }
 
@@ -67,16 +67,14 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// TODO: need a server to run a public stellar node to test out stuff
 	consts.PlatformPublicKey, consts.PlatformSeed, err = StartPlatform()
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	log.Printf("PLATFORM SEED IS: %s\n PLATFORM PUBLIC KEY IS: %s\n", consts.PlatformSeed, consts.PlatformPublicKey)
-	// TODO: need a server to run a public stellar node to test out stuff
-	// TODO: Need to automatically cover breach scenarios in case the recipient doesn't
-	// pay for a specific period of time
-	// TODO: also write a Makefile so that its easy for people to get started with stuff
+
 	err = stablecoin.InitStableCoin() // start the stablecoin daemon
 	if err != nil {
 		log.Fatal(err)

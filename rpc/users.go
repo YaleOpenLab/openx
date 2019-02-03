@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 
@@ -26,6 +27,7 @@ func setupUserRpcs() {
 	kycView()
 	askForCoins()
 	trustAsset()
+	uploadFile()
 }
 
 // we want to pass to the caller whether the user is a recipient or an investor.
@@ -359,5 +361,64 @@ func trustAsset() {
 		}
 
 		MarshalSend(w, r, txhash)
+	})
+}
+
+// uploadFile uploads a fil to ipfs and returns the ipfs hash of the uploaded file
+// this is a POST request
+func uploadFile() {
+	http.HandleFunc("/upload", func(w http.ResponseWriter, r *http.Request) {
+
+		checkPost(w, r)
+		checkOrigin(w, r)
+
+		_, err := UserValidateHelper(w, r)
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		file, fileHeader, err := r.FormFile("file")
+		if err != nil {
+			log.Println(err)
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+		defer file.Close()
+
+		supportedType := false
+		header := fileHeader.Header.Get("Content-Type")
+
+		switch header {
+		case "image/jpeg":
+			supportedType = true
+		case "image/png":
+			supportedType = true
+		case "application/pdf":
+			supportedType = true
+		}
+
+		// can't do anything with extensions, so while decrypting from ipfs, we can attach
+		// all three types and return to the user.
+		if !supportedType {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		// file type is supported, store in ipfs
+		data, err := ioutil.ReadAll(file)
+		if err != nil {
+			log.Println(err)
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		hashString, err := ipfs.IpfsHashData(data)
+		if err != nil {
+			log.Println(err)
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+		MarshalSend(w, r, hashString)
 	})
 }

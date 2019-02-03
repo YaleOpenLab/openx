@@ -55,6 +55,9 @@ type Project struct {
 	LockPwd string // the recipient's seedpwd. Will be set to null as soon as we use it.
 
 	InvestmentType string // the type of investment - equity crowdfunding, municipal bond, normal crowdfunding, etc.
+	PaybackPeriod int // the frequency in number of weeks that the recipient has to payback the platform
+	// this has to be set to atelast a week since hte payback monitoring thread runs every week. Ideally, we could
+	/// provide users with a predefined list of payback perios periods
 }
 
 // so a project's rough workflow is like

@@ -3,8 +3,11 @@ package database
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+	"strings"
 
 	aes "github.com/OpenFinancing/openfinancing/aes"
+	notif "github.com/OpenFinancing/openfinancing/notif"
 	utils "github.com/OpenFinancing/openfinancing/utils"
 	wallet "github.com/OpenFinancing/openfinancing/wallet"
 	xlm "github.com/OpenFinancing/openfinancing/xlm"
@@ -361,4 +364,76 @@ func TopReputationUsers() ([]User, error) {
 		}
 	}
 	return allUsers, nil
+}
+
+func AgreeToContractConditions(contractHash string, projIndex string,
+	debtAssetCode string, userIndex int, seedpwd string) error {
+	// we need to display this on the frontend and once the user presses agree, commit
+	// a tx to the blockchain with the outcome
+	message := "I agree to the terms and conditions specified in contract " + contractHash +
+		"and by signing this message to the blockchain agree that I accept the investment in project " + projIndex +
+		"whose debt asset is: " + debtAssetCode
+	// hash the message and transmit the message in 5 parts
+	// eg.
+	// CONTRACTHASH9a768ace36ff3d17
+	// 71d5c145a544de3d68343b2e7609
+	// 3cb7b2a8ea89ac7f1a20c852e6fc
+	// 1d71275b43abffefac381c5b906f
+	// 55c3bcff4225353d02f1d3498758
+
+	user, err := RetrieveUser(userIndex)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	seed, err := wallet.DecryptSeed(user.EncryptedSeed, seedpwd)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	messageHash := "CONTRACTHASH" + strings.ToUpper(utils.SHA3hash(message))
+	firstPart := messageHash[:28] // higher limit is not included in the slice
+	secondPart := messageHash[28:56]
+	thirdPart := messageHash[56:84]
+	fourthPart := messageHash[84:112]
+	fifthPart := messageHash[112:140]
+
+	timeStamp := utils.I64toS(utils.Unix())
+	_, firstHash, err := xlm.SendXLM(user.PublicKey, timeStamp, seed, firstPart)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	_, secondHash, err := xlm.SendXLM(user.PublicKey, timeStamp, seed, secondPart)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	_, thirdHash, err := xlm.SendXLM(user.PublicKey, timeStamp, seed, thirdPart)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	_, fourthHash, err := xlm.SendXLM(user.PublicKey, timeStamp, seed, fourthPart)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	_, fifthHash, err := xlm.SendXLM(user.PublicKey, timeStamp, seed, fifthPart)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	//if user.Notification {
+		notif.SendContractNotification(firstHash, secondHash, thirdHash, fourthHash, fifthHash, "varunramganesh@gmail.com")
+	//}
+
+	return nil
 }

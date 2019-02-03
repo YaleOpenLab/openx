@@ -18,19 +18,21 @@ import (
 // emulator is intended to be a model for a frontend platform that would later be developed
 // using the same backend that we have right now
 var (
+	// have a global variable for each entity
 	LocalRecipient    database.Recipient
 	LocalUser         database.User
 	LocalInvestor     database.Investor
 	LocalContractor   solar.Entity
 	LocalOriginator   solar.Entity
+	// store local seed for easy retrieval
 	LocalSeed         string
+	// store localseedpwd after asking user for it the first time around
 	LocalSeedPwd      string
+	// store the platform public key
 	PlatformPublicKey string
 )
 
 var ApiUrl = "http://localhost:8080"
-
-// this platform public key would be public, so makes sense that we hardcode it
 
 func SetupConfig() (string, error) {
 	var err error

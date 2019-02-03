@@ -29,6 +29,7 @@ func InsertDummyData() error {
 		if err != nil {
 			log.Fatal(err)
 		}
+		rec.U.Notification = true
 		err = rec.AddEmail("varunramganesh@gmail.com")
 		if err != nil {
 			log.Fatal(err)
@@ -68,6 +69,7 @@ func InsertDummyData() error {
 		if err != nil {
 			log.Fatal(err)
 		}
+		inv.U.Notification = true
 		err = inv.AddEmail("varunramganesh@gmail.com")
 		if err != nil {
 			log.Fatal(err)
@@ -295,6 +297,7 @@ func InsertDummyData() error {
 	demoProject.SpecSheetHash = "ipfshash" // TODO: replace this with the real ipfs hash for the demo
 	demoProject.Reputation = 10000         // fix this equal to total value
 	demoProject.ProjectInvestors = append(demoProject.ProjectInvestors, demoInv)
+	demoProject.InvestmentType = "Municipal Bond"
 
 	err = demoProject.Save()
 	if err != nil {

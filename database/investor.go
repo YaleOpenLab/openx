@@ -65,6 +65,10 @@ func (a *Investor) AddEmail(email string) error {
 	// it wants to
 	a.U.Email = email
 	a.U.Notification = true
+	err := a.U.Save()
+	if err != nil {
+		return err
+	}
 	return a.Save()
 }
 
