@@ -22,6 +22,10 @@ func ParseInputInv(input []string) error {
 	// input is greater than length 1 which means we can parse according to the command given
 	command := input[0]
 	switch command {
+	case "help":
+		fmt.Println("LIST OF SUPPORTED COMMANDS: ")
+		fmt.Println("ping, display, exchange, ipfs, vote, kyc, invest, create, send, receive")
+		break
 	case "ping":
 		err = PingRpc()
 		if err != nil {
@@ -385,7 +389,9 @@ func ParseInputInv(input []string) error {
 				break
 			}
 
-			status, err := TrustAsset(LocalInvestor.U.LoginUserName, LocalInvestor.U.LoginPassword, assetName, issuerPubkey, input[4], LocalSeedPwd)
+			limit := input[4]
+
+			status, err := TrustAsset(LocalInvestor.U.LoginUserName, LocalInvestor.U.LoginPassword, assetName, issuerPubkey, limit, LocalSeedPwd)
 			if err != nil {
 				log.Println(err)
 				break
@@ -397,7 +403,7 @@ func ParseInputInv(input []string) error {
 			}
 			break
 		} // end of receive
-	} // end of bigger switch
+	} // end of investor
 	return nil
 }
 
@@ -411,6 +417,10 @@ func ParseInputRecp(input []string) error {
 	// input is greater than length 1 which means we can parse according to the command given
 	command := input[0]
 	switch command {
+	case "help":
+		fmt.Println("LIST OF SUPPORTED COMMANDS: ")
+		fmt.Println("ping, display, exchange, ipfs, create, send, receive, unlock, payback, finalize, originate")
+		break
 	case "ping":
 		err = PingRpc()
 		if err != nil {
@@ -474,7 +484,7 @@ func ParseInputRecp(input []string) error {
 		case "projects":
 			if len(input) != 3 {
 				// only display was given, so display help command
-				log.Println("<display projects> <preorigin, origin, seed, proposed, open, funded, installed, power, fin>")
+				log.Println("display projects <preorigin, origin, seed, proposed, open, funded, installed, power, fin>")
 				break
 			}
 			subsubcommand := input[2]
@@ -528,7 +538,7 @@ func ParseInputRecp(input []string) error {
 	case "exchange":
 		if len(input) != 2 {
 			// only display was given, so display help command
-			log.Println("<exchange> amount")
+			log.Println("exchange <amount>")
 			break
 		}
 		amount, err := utils.StoICheck(input[1])
@@ -551,7 +561,7 @@ func ParseInputRecp(input []string) error {
 		// end of exchange
 	case "ipfs":
 		if len(input) != 2 {
-			log.Println("<ipfs> string")
+			log.Println("ipfs <string>")
 			break
 		}
 		inputString := input[1]
@@ -564,11 +574,6 @@ func ParseInputRecp(input []string) error {
 		// end of ipfs
 		// start of recipient only functions
 	case "unlock":
-		/*
-			err := solar.UnlockProject(LocalRecipient.U.LoginUserName, LocalRecipient.U.LoginPassword, 1, LocalSeedPwd)
-			log.Fatal(err)
-		*/
-		// PAYBACK LOOP DOES NOT RUN
 		if len(input) != 2 {
 			log.Println("unlock <projIndex>")
 			break
@@ -604,8 +609,12 @@ func ParseInputRecp(input []string) error {
 			log.Println(err)
 			break
 		}
+
+		projIndex := input[1]
+		amount := input[2]
+
 		assetName := LocalRecipient.ReceivedSolarProjects[0] // hardcode for now, TODO: change this
-		status, err := Payback(input[1], LocalSeedPwd, LocalRecipient.U.LoginUserName, LocalRecipient.U.LoginPassword, assetName, input[2])
+		status, err := Payback(projIndex, LocalSeedPwd, LocalRecipient.U.LoginUserName, LocalRecipient.U.LoginPassword, assetName, amount)
 		if err != nil {
 			log.Println(err)
 			break
@@ -628,7 +637,10 @@ func ParseInputRecp(input []string) error {
 			log.Println(err)
 			break
 		}
-		status, err := FinalizeProject(LocalRecipient.U.LoginUserName, LocalRecipient.U.LoginPassword, input[1])
+
+		projIndex := input[1]
+
+		status, err := FinalizeProject(LocalRecipient.U.LoginUserName, LocalRecipient.U.LoginPassword, projIndex)
 		if err != nil {
 			log.Println(err)
 			break
@@ -650,7 +662,10 @@ func ParseInputRecp(input []string) error {
 			log.Println(err)
 			break
 		}
-		status, err := OriginateProject(LocalRecipient.U.LoginUserName, LocalRecipient.U.LoginPassword, input[1])
+
+		projIndex := input[1]
+
+		status, err := OriginateProject(LocalRecipient.U.LoginUserName, LocalRecipient.U.LoginPassword, projIndex)
 		if err != nil {
 			log.Println(err)
 			break
@@ -676,7 +691,9 @@ func ParseInputRecp(input []string) error {
 				log.Println("create asset <name>")
 				break
 			}
+
 			assetName := input[2]
+
 			status, err := CreateAssetInv(LocalRecipient.U.LoginUserName, LocalRecipient.U.LoginPassword,
 				assetName, LocalRecipient.U.PublicKey)
 			if err != nil {
@@ -773,7 +790,9 @@ func ParseInputRecp(input []string) error {
 				break
 			}
 
-			status, err := TrustAsset(LocalRecipient.U.LoginUserName, LocalRecipient.U.LoginPassword, assetName, issuerPubkey, input[4], LocalSeedPwd)
+			limit := input[4]
+
+			status, err := TrustAsset(LocalRecipient.U.LoginUserName, LocalRecipient.U.LoginPassword, assetName, issuerPubkey, limit, LocalSeedPwd)
 			if err != nil {
 				log.Println(err)
 				break
@@ -799,6 +818,11 @@ func ParseInputCont(input []string) error {
 	// input is greater than length 1 which means we can parse according to the command given
 	command := input[0]
 	switch command {
+	case "help":
+		fmt.Println("LIST OF SUPPORTED COMMANDS: ")
+		fmt.Println("ping, display, exchange, ipfs, create, send, receive, originate, " +
+			"propose, myproposed, addcollateral, myoriginated, mypreoriginated")
+		break
 	case "ping":
 		err = PingRpc()
 		if err != nil {
@@ -919,14 +943,16 @@ func ParseInputCont(input []string) error {
 			log.Println("<exchange> amount")
 			break
 		}
-		amount, err := utils.StoICheck(input[1])
+		_, err = utils.StoICheck(input[1])
 		if err != nil {
 			log.Println(err)
 			break
 		}
 		// convert this to int and check if int
+		amount := input[1]
+
 		fmt.Println("Exchanging", amount, "XLM for STABLEUSD")
-		response, err := GetStableCoin(LocalContractor.U.LoginUserName, LocalContractor.U.LoginPassword, LocalSeed, input[1])
+		response, err := GetStableCoin(LocalContractor.U.LoginUserName, LocalContractor.U.LoginPassword, LocalSeed, amount)
 		if err != nil {
 			log.Println(err)
 			break
@@ -976,7 +1002,10 @@ func ParseInputCont(input []string) error {
 			break
 		}
 
-		response, err := AddCollateral(LocalContractor.U.LoginUserName, LocalContractor.U.LoginPassword, input[1], input[2])
+		collateral := input[1]
+		amount := input[2]
+
+		response, err := AddCollateral(LocalContractor.U.LoginUserName, LocalContractor.U.LoginPassword, collateral, amount)
 		if err != nil {
 			log.Println(err)
 			break
@@ -1119,7 +1148,9 @@ func ParseInputCont(input []string) error {
 				break
 			}
 
-			status, err := TrustAsset(LocalContractor.U.LoginUserName, LocalContractor.U.LoginPassword, assetName, issuerPubkey, input[4], LocalSeedPwd)
+			limit := input[4]
+
+			status, err := TrustAsset(LocalContractor.U.LoginUserName, LocalContractor.U.LoginPassword, assetName, issuerPubkey, limit, LocalSeedPwd)
 			if err != nil {
 				log.Println(err)
 				break
@@ -1145,6 +1176,11 @@ func ParseInputOrig(input []string) error {
 	// input is greater than length 1 which means we can parse according to the command given
 	command := input[0]
 	switch command {
+	case "help":
+		fmt.Println("LIST OF SUPPORTED COMMANDS: ")
+		fmt.Println("ping, display, exchange, ipfs, create, send, receive, propose, " +
+			"preoriginate, myproposed, addcollateral, myoriginated, mypreoriginated")
+		break
 	case "ping":
 		err = PingRpc()
 		if err != nil {
@@ -1265,14 +1301,15 @@ func ParseInputOrig(input []string) error {
 			log.Println("<exchange> amount")
 			break
 		}
-		amount, err := utils.StoICheck(input[1])
+		_, err = utils.StoICheck(input[1])
 		if err != nil {
 			log.Println(err)
 			break
 		}
 		// convert this to int and check if int
-		fmt.Println("Exchanging", amount, "XLM for STABLEUSD")
-		response, err := GetStableCoin(LocalOriginator.U.LoginUserName, LocalOriginator.U.LoginPassword, LocalSeed, input[1])
+		amount := input[1]
+
+		response, err := GetStableCoin(LocalOriginator.U.LoginUserName, LocalOriginator.U.LoginPassword, LocalSeed, amount)
 		if err != nil {
 			log.Println(err)
 			break
@@ -1317,7 +1354,10 @@ func ParseInputOrig(input []string) error {
 			break
 		}
 
-		response, err := AddCollateral(LocalOriginator.U.LoginUserName, LocalOriginator.U.LoginPassword, input[1], input[2])
+		collateral := input[1]
+		amount := input[2]
+
+		response, err := AddCollateral(LocalOriginator.U.LoginUserName, LocalOriginator.U.LoginPassword, collateral, amount)
 		if err != nil {
 			log.Println(err)
 			break
@@ -1469,7 +1509,9 @@ func ParseInputOrig(input []string) error {
 				break
 			}
 
-			status, err := TrustAsset(LocalOriginator.U.LoginUserName, LocalOriginator.U.LoginPassword, assetName, issuerPubkey, input[4], LocalSeedPwd)
+			limit := input[4]
+
+			status, err := TrustAsset(LocalOriginator.U.LoginUserName, LocalOriginator.U.LoginPassword, assetName, issuerPubkey, limit, LocalSeedPwd)
 			if err != nil {
 				log.Println(err)
 				break

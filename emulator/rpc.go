@@ -481,7 +481,6 @@ func KycView(username string, pwhash string) ([]database.User, error) {
 	return x, nil
 }
 
-
 func AskXLM(username string, pwhash string) (rpc.StatusResponse, error) {
 	var x rpc.StatusResponse
 	data, err := GetRequest(ApiUrl + "/user/askxlm?" + "username=" + username + "&pwhash=" + pwhash)
@@ -495,9 +494,8 @@ func AskXLM(username string, pwhash string) (rpc.StatusResponse, error) {
 	return x, nil
 }
 
-
 func TrustAsset(username string, pwhash string, assetName string, issuerPubkey string,
-	limit string, seedpwd string) (rpc.StatusResponse, error){
+	limit string, seedpwd string) (rpc.StatusResponse, error) {
 	var x rpc.StatusResponse
 	data, err := GetRequest(ApiUrl + "/user/trustasset?" + "username=" + username + "&pwhash=" + pwhash +
 		"&assetCode=" + assetName + "&assetIssuer=" + issuerPubkey + "&limit=" + limit + "&seedpwd=" + seedpwd)

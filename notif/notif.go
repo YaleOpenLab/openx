@@ -136,7 +136,7 @@ func SendUnlockNotifToRecipient(projIndex int, to string) error {
 func SendEmail(message string, to string, name string) error {
 	// we can't send emails directyl sicne we would need their gmail usernames and password for that
 	startString := "Greetings from the opensolar platform! \n\n" +
-	"We're writing to let you know that " + name + " has sent you a message. The message contents follow: \n\n"
+		"We're writing to let you know that " + name + " has sent you a message. The message contents follow: \n\n"
 	body := startString + message + "\n\n\n" + footerString
 	return sendMail(body, to)
 }

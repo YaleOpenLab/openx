@@ -5,12 +5,12 @@ import (
 	"log"
 	"net/http"
 
+	assets "github.com/OpenFinancing/openfinancing/assets"
 	database "github.com/OpenFinancing/openfinancing/database"
 	ipfs "github.com/OpenFinancing/openfinancing/ipfs"
 	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
 	utils "github.com/OpenFinancing/openfinancing/utils"
 	wallet "github.com/OpenFinancing/openfinancing/wallet"
-	assets "github.com/OpenFinancing/openfinancing/assets"
 	xlm "github.com/OpenFinancing/openfinancing/xlm"
 )
 
