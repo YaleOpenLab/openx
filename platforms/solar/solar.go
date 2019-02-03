@@ -24,7 +24,6 @@ type Project struct {
 	Originator    Entity  // a specific contract must hold the person who originated it
 	OriginatorFee float64 // fee paid to the originator from the total fee of the project
 	Developer     Entity  // the developer who would be responsible for isntallign the solar panels and the IoT hubs
-	DeveloperFee  Entity  // the fee charged by the developer
 	Guarantor     Entity  // the person guaranteeing the specific project in question
 
 	// List of contractor entities
@@ -34,6 +33,7 @@ type Project struct {
 	SecondaryContractorFee float64 // the fee to be paid towards the secondary contractor
 	TertiaryContractor     Entity  // tertiary contractor if any can be added to the system
 	TertiaryContractorFee  float64 // the fee to be paid towards the tertiary contractor
+	DeveloperFee           float64 // the fee charged by the developer
 
 	ProjectRecipient database.Recipient  // The recipient of the project in question
 	ProjectInvestors []database.Investor // The various investors who are invested in the project
@@ -47,11 +47,14 @@ type Project struct {
 	ContractorContractHash  string // the contract between the contractor and the platform at stage ProposeProject
 	InvPlatformContractHash string // the contract between the investor and the platform at stage FundedProject
 	RecPlatformContractHash string // the contract between the recipient and the platform at stage FundedProject
+	SpecSheetHash           string // the ipfs hash of the specification document containing installation details and similar stuff
 
 	Reputation float64 // the positive reputation associated with a given project
 	// MWTODO: get feedback on Reputation weighting
-	Lock    bool   // lock investment in order to wait for receipient's confirmation
+	Lock    bool   // lock investment in order to wait for recipient's confirmation
 	LockPwd string // the recipient's seedpwd. Will be set to null as soon as we use it.
+
+	InvestmentType string // the type of investment - equity crowdfunding, municipal bond, normal crowdfunding, etc.
 }
 
 // so a project's rough workflow is like
@@ -456,7 +459,7 @@ func UnlockProject(username string, pwhash string, projIndex int, seedpwd string
 		return err
 	}
 
-	if recipient.U.LoginPassword != project.ProjectRecipient.U.LoginPassword {
+	if recipient.U.Pwhash != project.ProjectRecipient.U.Pwhash {
 		return fmt.Errorf("Seeds don't match, quitting!")
 	}
 

@@ -162,7 +162,7 @@ func main() {
 					break
 				}
 				// unlock the project
-				err = solar.UnlockProject(recipient.U.LoginUserName, recipient.U.LoginPassword, pIndex, seedpwd)
+				err = solar.UnlockProject(recipient.U.Username, recipient.U.Pwhash, pIndex, seedpwd)
 				if err != nil {
 					log.Println(err)
 					break

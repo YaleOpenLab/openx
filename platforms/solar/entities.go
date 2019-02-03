@@ -219,7 +219,7 @@ func newEntity(uname string, pwd string, seedpwd string, Name string, Address st
 	case "guarantor":
 		a.Guarantor = true
 	default:
-		return a, fmt.Errorf("invalid entity passed!")
+		return a, fmt.Errorf("invalid entity type passed!")
 	}
 	err = a.Save()
 	return a, err

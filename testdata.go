@@ -219,10 +219,86 @@ func InsertDummyData() error {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	_, err = solar.RetrieveAllEntities("contractor")
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	// MWTODO: get comments on various fileds in this file
+	demoInv, err := database.NewInvestor("Yale OpenLab", "p", "x", "Yale OpenLab")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	demoRec, err := database.NewRecipient("S.U. Pasto School, Puerto Rico", "p", "x", "S.U. Pasto School")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	demoOrig, err := solar.NewOriginator("MIT Digital Curreny Initiative", "p", "x", "MIT DCI", "MIT Building E14-15", "The MIT Media Lab's Digital Currency Initiative")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	demoCont, err := solar.NewContractor("Martin Wainstein", "p", "x", "Martin Wainstein", "254 Elm Street, New Haven, CT", "Martin Wainstein from the Yale OpenLab")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	demoDevel, err := solar.NewDeveloper("Genmoji Solar", "p", "x", "Genmoji Solar", "Genmoji, San Juan, Puerto Rico", "Genmoji Solar")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	demoGuar, err := solar.NewGuarantor("MIT Media Lab", "p", "x", "MIT Media Lab", "MIT Building E14-15", "The MIT Media Lab is an interdisciplinary lab with innovators from all around the globe")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var demoProject solar.Project
+
+	indexHelp, err := solar.RetrieveAllProjects()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	demoProject.Params.Index = len(indexHelp) + 1
+	demoProject.Params.PanelSize = "10x 100W Komaes Solar Panels"
+	demoProject.Params.TotalValue = 8000 + 2000
+	demoProject.Params.Location = "S.U. Pasto School, Puerto Rico"
+	demoProject.Params.MoneyRaised = 10000
+	demoProject.Params.Years = 5
+	demoProject.Params.InterestRate = 0.029
+	demoProject.Params.Metadata = "This is a pilot initiative of the MIT-Yale effort to integrate solar platforms with IoT data and blockchain based payment systems to help develop community shelters in Puerto Rico"
+	demoProject.Params.Inverter = "Schneider Conext SW 230V 2024"
+	demoProject.Params.ChargeRegulator = "Schneider MPPT60"
+	demoProject.Params.ControlPanel = "Schneider XW SCP"
+	demoProject.Params.CommBox = "Schneider Conext Insight"
+	demoProject.Params.ACTransfer = "Eaton Manual throw switches between grid and solar+grid setups"
+	demoProject.Params.SolarCombiner = "MidNite"
+	demoProject.Params.Batteries = "Advance Autoparts Deep cycle 600A"
+	demoProject.Params.IoTHub = "Raspberry Pi 3"
+	demoProject.Params.DateInitiated = "01/23/2018"
+	demoProject.Params.DateFunded = "06/19/2018"
+	demoProject.Params.BalLeft = 10000 // assume recipient has not paid anything back to us yet
+
+	demoProject.Originator = demoOrig
+	demoProject.Contractor = demoCont
+	demoProject.Developer = demoDevel
+	demoProject.Guarantor = demoGuar
+	demoProject.ContractorFee = 2000
+	demoProject.DeveloperFee = 6000
+	demoProject.ProjectRecipient = demoRec
+	demoProject.Stage = 6
+	demoProject.AuctionType = "private"
+	demoProject.SpecSheetHash = "ipfshash" // TODO: replace this with the real ipfs hash for the demo
+	demoProject.Reputation = 10000         // fix this equal to total value
+	demoProject.ProjectInvestors = append(demoProject.ProjectInvestors, demoInv)
+
+	err = demoProject.Save()
+	if err != nil {
+		log.Fatal(err)
+	}
 	return nil
 }

@@ -22,6 +22,10 @@ func ParseInputInv(input []string) error {
 	// input is greater than length 1 which means we can parse according to the command given
 	command := input[0]
 	switch command {
+	case "help":
+		fmt.Println("LIST OF SUPPORTED COMMANDS: ")
+		fmt.Println("ping, display, exchange, ipfs, vote, kyc, invest, create, send, receive")
+		break
 	case "ping":
 		err = PingRpc()
 		if err != nil {
@@ -41,7 +45,7 @@ func ParseInputInv(input []string) error {
 		case "balance":
 			if len(input) == 2 {
 				log.Println("Calling balances API")
-				balances, err := GetBalances(LocalInvestor.U.LoginUserName, LocalInvestor.U.LoginPassword)
+				balances, err := GetBalances(LocalInvestor.U.Username, LocalInvestor.U.Pwhash)
 				if err != nil {
 					log.Println(err)
 					break
@@ -53,7 +57,7 @@ func ParseInputInv(input []string) error {
 			switch subcommand {
 			case "xlm":
 				// print xlm balance
-				balance, err := GetXLMBalance(LocalInvestor.U.LoginUserName, LocalInvestor.U.LoginPassword)
+				balance, err := GetXLMBalance(LocalInvestor.U.Username, LocalInvestor.U.Pwhash)
 				if err != nil {
 					log.Println(err)
 					break
@@ -61,7 +65,7 @@ func ParseInputInv(input []string) error {
 				ColorOutput("BALANCE: "+balance, MagentaColor)
 				break
 			case "all":
-				balances, err := GetBalances(LocalInvestor.U.LoginUserName, LocalInvestor.U.LoginPassword)
+				balances, err := GetBalances(LocalInvestor.U.Username, LocalInvestor.U.Pwhash)
 				if err != nil {
 					log.Println(err)
 					break
@@ -69,7 +73,7 @@ func ParseInputInv(input []string) error {
 				PrintBalances(balances)
 				break
 			default:
-				balance, err := GetAssetBalance(LocalInvestor.U.LoginUserName, LocalInvestor.U.LoginPassword, subcommand)
+				balance, err := GetAssetBalance(LocalInvestor.U.Username, LocalInvestor.U.Pwhash, subcommand)
 				if err != nil {
 					log.Println(err)
 					break
@@ -141,7 +145,7 @@ func ParseInputInv(input []string) error {
 		}
 		// convert this to int and check if int
 		fmt.Println("Exchanging", amount, "XLM for STABLEUSD")
-		response, err := GetStableCoin(LocalInvestor.U.LoginUserName, LocalInvestor.U.LoginPassword, LocalSeed, input[1])
+		response, err := GetStableCoin(LocalInvestor.U.Username, LocalInvestor.U.Pwhash, LocalSeed, input[1])
 		if err != nil {
 			log.Println(err)
 			break
@@ -158,7 +162,7 @@ func ParseInputInv(input []string) error {
 			break
 		}
 		inputString := input[1]
-		hashString, err := GetIpfsHash(LocalInvestor.U.LoginUserName, LocalInvestor.U.LoginPassword, inputString)
+		hashString, err := GetIpfsHash(LocalInvestor.U.Username, LocalInvestor.U.Pwhash, inputString)
 		if err != nil {
 			log.Println(err)
 			break
@@ -182,7 +186,7 @@ func ParseInputInv(input []string) error {
 			log.Println(err)
 			break
 		}
-		status, err := VoteTowardsProject(input[1], input[2], LocalInvestor.U.LoginUserName, LocalInvestor.U.LoginPassword)
+		status, err := VoteTowardsProject(input[1], input[2], LocalInvestor.U.Username, LocalInvestor.U.Pwhash)
 		if err != nil {
 			log.Println(err)
 			break
@@ -215,7 +219,7 @@ func ParseInputInv(input []string) error {
 				log.Println(err)
 				break
 			}
-			status, err := AuthKyc(input[1], LocalInvestor.U.LoginUserName, LocalInvestor.U.LoginPassword)
+			status, err := AuthKyc(input[1], LocalInvestor.U.Username, LocalInvestor.U.Pwhash)
 			if err != nil {
 				log.Println(err)
 				break
@@ -227,7 +231,7 @@ func ParseInputInv(input []string) error {
 			}
 			break
 		case "notdone":
-			users, err := NotKycView(LocalInvestor.U.LoginUserName, LocalInvestor.U.LoginPassword)
+			users, err := NotKycView(LocalInvestor.U.Username, LocalInvestor.U.Pwhash)
 			if err != nil {
 				log.Println(err)
 				break
@@ -236,7 +240,7 @@ func ParseInputInv(input []string) error {
 			// print all the users who have kyc'd
 			break
 		case "done":
-			users, err := KycView(LocalInvestor.U.LoginUserName, LocalInvestor.U.LoginPassword)
+			users, err := KycView(LocalInvestor.U.Username, LocalInvestor.U.Pwhash)
 			if err != nil {
 				log.Println(err)
 				break
@@ -263,7 +267,7 @@ func ParseInputInv(input []string) error {
 			break
 		}
 		// now we need to invest in this project, call RPC
-		status, err := InvestInProject(input[1], input[2], LocalInvestor.U.LoginUserName, LocalInvestor.U.LoginPassword, LocalSeedPwd)
+		status, err := InvestInProject(input[1], input[2], LocalInvestor.U.Username, LocalInvestor.U.Pwhash, LocalSeedPwd)
 		if err != nil {
 			log.Println(err)
 			break
@@ -289,7 +293,7 @@ func ParseInputInv(input []string) error {
 				break
 			}
 			assetName := input[2]
-			status, err := CreateAssetInv(LocalInvestor.U.LoginUserName, LocalInvestor.U.LoginPassword,
+			status, err := CreateAssetInv(LocalInvestor.U.Username, LocalInvestor.U.Pwhash,
 				assetName, LocalInvestor.U.PublicKey)
 			if err != nil {
 				log.Println(err)
@@ -318,7 +322,7 @@ func ParseInputInv(input []string) error {
 			destination := input[3]
 			amount := input[4]
 
-			txhash, err := SendLocalAsset(LocalInvestor.U.LoginUserName, LocalInvestor.U.LoginPassword,
+			txhash, err := SendLocalAsset(LocalInvestor.U.Username, LocalInvestor.U.Pwhash,
 				LocalSeedPwd, assetName, destination, amount)
 			if err != nil {
 				log.Println(err)
@@ -343,7 +347,7 @@ func ParseInputInv(input []string) error {
 			if len(input) > 4 {
 				memo = input[4]
 			}
-			txhash, err := SendXLM(LocalInvestor.U.LoginUserName, LocalInvestor.U.LoginPassword,
+			txhash, err := SendXLM(LocalInvestor.U.Username, LocalInvestor.U.Pwhash,
 				LocalSeedPwd, destination, amount, memo)
 			if err != nil {
 				log.Println(err)
@@ -360,7 +364,7 @@ func ParseInputInv(input []string) error {
 		subcommand := input[1]
 		switch subcommand {
 		case "xlm":
-			status, err := AskXLM(LocalInvestor.U.LoginUserName, LocalInvestor.U.LoginPassword)
+			status, err := AskXLM(LocalInvestor.U.Username, LocalInvestor.U.Pwhash)
 			if err != nil {
 				log.Println(err)
 				break
@@ -385,7 +389,9 @@ func ParseInputInv(input []string) error {
 				break
 			}
 
-			status, err := TrustAsset(LocalInvestor.U.LoginUserName, LocalInvestor.U.LoginPassword, assetName, issuerPubkey, input[4], LocalSeedPwd)
+			limit := input[4]
+
+			status, err := TrustAsset(LocalInvestor.U.Username, LocalInvestor.U.Pwhash, assetName, issuerPubkey, limit, LocalSeedPwd)
 			if err != nil {
 				log.Println(err)
 				break
@@ -397,7 +403,7 @@ func ParseInputInv(input []string) error {
 			}
 			break
 		} // end of receive
-	} // end of bigger switch
+	} // end of investor
 	return nil
 }
 
@@ -411,6 +417,10 @@ func ParseInputRecp(input []string) error {
 	// input is greater than length 1 which means we can parse according to the command given
 	command := input[0]
 	switch command {
+	case "help":
+		fmt.Println("LIST OF SUPPORTED COMMANDS: ")
+		fmt.Println("ping, display, exchange, ipfs, create, send, receive, unlock, payback, finalize, originate")
+		break
 	case "ping":
 		err = PingRpc()
 		if err != nil {
@@ -430,7 +440,7 @@ func ParseInputRecp(input []string) error {
 		case "balance":
 			if len(input) == 2 {
 				log.Println("Calling balances API")
-				balances, err := GetBalances(LocalRecipient.U.LoginUserName, LocalRecipient.U.LoginPassword)
+				balances, err := GetBalances(LocalRecipient.U.Username, LocalRecipient.U.Pwhash)
 				if err != nil {
 					log.Println(err)
 					break
@@ -442,7 +452,7 @@ func ParseInputRecp(input []string) error {
 			switch subcommand {
 			case "xlm":
 				// print xlm balance
-				balance, err := GetXLMBalance(LocalRecipient.U.LoginUserName, LocalRecipient.U.LoginPassword)
+				balance, err := GetXLMBalance(LocalRecipient.U.Username, LocalRecipient.U.Pwhash)
 				if err != nil {
 					log.Println(err)
 					break
@@ -450,7 +460,7 @@ func ParseInputRecp(input []string) error {
 				ColorOutput("BALANCE: "+balance, MagentaColor)
 				break
 			case "all":
-				balances, err := GetBalances(LocalRecipient.U.LoginUserName, LocalRecipient.U.LoginPassword)
+				balances, err := GetBalances(LocalRecipient.U.Username, LocalRecipient.U.Pwhash)
 				if err != nil {
 					log.Println(err)
 					break
@@ -458,7 +468,7 @@ func ParseInputRecp(input []string) error {
 				PrintBalances(balances)
 				break
 			default:
-				balance, err := GetAssetBalance(LocalRecipient.U.LoginUserName, LocalRecipient.U.LoginPassword, subcommand)
+				balance, err := GetAssetBalance(LocalRecipient.U.Username, LocalRecipient.U.Pwhash, subcommand)
 				if err != nil {
 					log.Println(err)
 					break
@@ -474,7 +484,7 @@ func ParseInputRecp(input []string) error {
 		case "projects":
 			if len(input) != 3 {
 				// only display was given, so display help command
-				log.Println("<display projects> <preorigin, origin, seed, proposed, open, funded, installed, power, fin>")
+				log.Println("display projects <preorigin, origin, seed, proposed, open, funded, installed, power, fin>")
 				break
 			}
 			subsubcommand := input[2]
@@ -528,7 +538,7 @@ func ParseInputRecp(input []string) error {
 	case "exchange":
 		if len(input) != 2 {
 			// only display was given, so display help command
-			log.Println("<exchange> amount")
+			log.Println("exchange <amount>")
 			break
 		}
 		amount, err := utils.StoICheck(input[1])
@@ -538,7 +548,7 @@ func ParseInputRecp(input []string) error {
 		}
 		// convert this to int and check if int
 		fmt.Println("Exchanging", amount, "XLM for STABLEUSD")
-		response, err := GetStableCoin(LocalRecipient.U.LoginUserName, LocalRecipient.U.LoginPassword, LocalSeed, input[1])
+		response, err := GetStableCoin(LocalRecipient.U.Username, LocalRecipient.U.Pwhash, LocalSeed, input[1])
 		if err != nil {
 			log.Println(err)
 			break
@@ -551,11 +561,11 @@ func ParseInputRecp(input []string) error {
 		// end of exchange
 	case "ipfs":
 		if len(input) != 2 {
-			log.Println("<ipfs> string")
+			log.Println("ipfs <string>")
 			break
 		}
 		inputString := input[1]
-		hashString, err := GetIpfsHash(LocalRecipient.U.LoginUserName, LocalRecipient.U.LoginPassword, inputString)
+		hashString, err := GetIpfsHash(LocalRecipient.U.Username, LocalRecipient.U.Pwhash, inputString)
 		if err != nil {
 			log.Println(err)
 			break
@@ -564,11 +574,6 @@ func ParseInputRecp(input []string) error {
 		// end of ipfs
 		// start of recipient only functions
 	case "unlock":
-		/*
-			err := solar.UnlockProject(LocalRecipient.U.LoginUserName, LocalRecipient.U.LoginPassword, 1, LocalSeedPwd)
-			log.Fatal(err)
-		*/
-		// PAYBACK LOOP DOES NOT RUN
 		if len(input) != 2 {
 			log.Println("unlock <projIndex>")
 			break
@@ -578,7 +583,7 @@ func ParseInputRecp(input []string) error {
 			log.Println(err)
 			break
 		}
-		status, err := UnlockProject(LocalRecipient.U.LoginUserName, LocalRecipient.U.LoginPassword, LocalSeedPwd, input[1])
+		status, err := UnlockProject(LocalRecipient.U.Username, LocalRecipient.U.Pwhash, LocalSeedPwd, input[1])
 		if err != nil {
 			log.Println(err)
 			break
@@ -604,8 +609,12 @@ func ParseInputRecp(input []string) error {
 			log.Println(err)
 			break
 		}
+
+		projIndex := input[1]
+		amount := input[2]
+
 		assetName := LocalRecipient.ReceivedSolarProjects[0] // hardcode for now, TODO: change this
-		status, err := Payback(input[1], LocalSeedPwd, LocalRecipient.U.LoginUserName, LocalRecipient.U.LoginPassword, assetName, input[2])
+		status, err := Payback(projIndex, LocalSeedPwd, LocalRecipient.U.Username, LocalRecipient.U.Pwhash, assetName, amount)
 		if err != nil {
 			log.Println(err)
 			break
@@ -628,7 +637,10 @@ func ParseInputRecp(input []string) error {
 			log.Println(err)
 			break
 		}
-		status, err := FinalizeProject(LocalRecipient.U.LoginUserName, LocalRecipient.U.LoginPassword, input[1])
+
+		projIndex := input[1]
+
+		status, err := FinalizeProject(LocalRecipient.U.Username, LocalRecipient.U.Pwhash, projIndex)
 		if err != nil {
 			log.Println(err)
 			break
@@ -650,7 +662,10 @@ func ParseInputRecp(input []string) error {
 			log.Println(err)
 			break
 		}
-		status, err := OriginateProject(LocalRecipient.U.LoginUserName, LocalRecipient.U.LoginPassword, input[1])
+
+		projIndex := input[1]
+
+		status, err := OriginateProject(LocalRecipient.U.Username, LocalRecipient.U.Pwhash, projIndex)
 		if err != nil {
 			log.Println(err)
 			break
@@ -676,8 +691,10 @@ func ParseInputRecp(input []string) error {
 				log.Println("create asset <name>")
 				break
 			}
+
 			assetName := input[2]
-			status, err := CreateAssetInv(LocalRecipient.U.LoginUserName, LocalRecipient.U.LoginPassword,
+
+			status, err := CreateAssetInv(LocalRecipient.U.Username, LocalRecipient.U.Pwhash,
 				assetName, LocalRecipient.U.PublicKey)
 			if err != nil {
 				log.Println(err)
@@ -706,7 +723,7 @@ func ParseInputRecp(input []string) error {
 			destination := input[3]
 			amount := input[4]
 
-			txhash, err := SendLocalAsset(LocalRecipient.U.LoginUserName, LocalRecipient.U.LoginPassword,
+			txhash, err := SendLocalAsset(LocalRecipient.U.Username, LocalRecipient.U.Pwhash,
 				LocalSeedPwd, assetName, destination, amount)
 			if err != nil {
 				log.Println(err)
@@ -731,7 +748,7 @@ func ParseInputRecp(input []string) error {
 			if len(input) > 4 {
 				memo = input[4]
 			}
-			txhash, err := SendXLM(LocalRecipient.U.LoginUserName, LocalRecipient.U.LoginPassword,
+			txhash, err := SendXLM(LocalRecipient.U.Username, LocalRecipient.U.Pwhash,
 				LocalSeedPwd, destination, amount, memo)
 			if err != nil {
 				log.Println(err)
@@ -748,7 +765,7 @@ func ParseInputRecp(input []string) error {
 		subcommand := input[1]
 		switch subcommand {
 		case "xlm":
-			status, err := AskXLM(LocalRecipient.U.LoginUserName, LocalRecipient.U.LoginPassword)
+			status, err := AskXLM(LocalRecipient.U.Username, LocalRecipient.U.Pwhash)
 			if err != nil {
 				log.Println(err)
 				break
@@ -773,7 +790,9 @@ func ParseInputRecp(input []string) error {
 				break
 			}
 
-			status, err := TrustAsset(LocalRecipient.U.LoginUserName, LocalRecipient.U.LoginPassword, assetName, issuerPubkey, input[4], LocalSeedPwd)
+			limit := input[4]
+
+			status, err := TrustAsset(LocalRecipient.U.Username, LocalRecipient.U.Pwhash, assetName, issuerPubkey, limit, LocalSeedPwd)
 			if err != nil {
 				log.Println(err)
 				break
@@ -785,6 +804,42 @@ func ParseInputRecp(input []string) error {
 			}
 			break
 		} // end of receive
+	case "calculate":
+		if len(input) == 1 {
+			log.Println("calculate <payback>")
+			break
+		}
+		subcommand := input[1]
+		switch subcommand {
+		case "ownership":
+			// calculate the balance of the debt asset here
+			if len(input) == 1 {
+				fmt.Println("payback <assetName>")
+				break
+			}
+
+			assetName := LocalRecipient.ReceivedSolarProjects[0]
+
+			limit, err := GetTrustLimit(LocalRecipient.U.Username, LocalRecipient.U.Pwhash, assetName)
+			if err != nil {
+				log.Println(err)
+				break
+			}
+
+			limitF := utils.StoF(limit)
+			// get balance of debt asset here
+			debtBalance, err := GetAssetBalance(LocalRecipient.U.Username, LocalRecipient.U.Pwhash, assetName)
+			if err != nil {
+				log.Println(err)
+				break
+			}
+
+			debtF := utils.StoF(debtBalance)
+			ownership := (1 - debtF/(limitF/2)) * 100
+			ColorOutput("YOUR PERCENTAGE OWNERSHIP OF THE ASSET: "+ utils.FtoS(ownership), MagentaColor)
+			break
+			// end of payback
+		}
 	}
 	return nil
 }
@@ -799,6 +854,11 @@ func ParseInputCont(input []string) error {
 	// input is greater than length 1 which means we can parse according to the command given
 	command := input[0]
 	switch command {
+	case "help":
+		fmt.Println("LIST OF SUPPORTED COMMANDS: ")
+		fmt.Println("ping, display, exchange, ipfs, create, send, receive, originate, " +
+			"propose, myproposed, addcollateral, myoriginated, mypreoriginated")
+		break
 	case "ping":
 		err = PingRpc()
 		if err != nil {
@@ -818,7 +878,7 @@ func ParseInputCont(input []string) error {
 		case "balance":
 			if len(input) == 2 {
 				log.Println("Calling balances API")
-				balances, err := GetBalances(LocalContractor.U.LoginUserName, LocalContractor.U.LoginPassword)
+				balances, err := GetBalances(LocalContractor.U.Username, LocalContractor.U.Pwhash)
 				if err != nil {
 					log.Println(err)
 					break
@@ -830,7 +890,7 @@ func ParseInputCont(input []string) error {
 			switch subcommand {
 			case "xlm":
 				// print xlm balance
-				balance, err := GetXLMBalance(LocalContractor.U.LoginUserName, LocalContractor.U.LoginPassword)
+				balance, err := GetXLMBalance(LocalContractor.U.Username, LocalContractor.U.Pwhash)
 				if err != nil {
 					log.Println(err)
 					break
@@ -838,7 +898,7 @@ func ParseInputCont(input []string) error {
 				ColorOutput("BALANCE: "+balance, MagentaColor)
 				break
 			case "all":
-				balances, err := GetBalances(LocalContractor.U.LoginUserName, LocalContractor.U.LoginPassword)
+				balances, err := GetBalances(LocalContractor.U.Username, LocalContractor.U.Pwhash)
 				if err != nil {
 					log.Println(err)
 					break
@@ -846,7 +906,7 @@ func ParseInputCont(input []string) error {
 				PrintBalances(balances)
 				break
 			default:
-				balance, err := GetAssetBalance(LocalContractor.U.LoginUserName, LocalContractor.U.LoginPassword, subcommand)
+				balance, err := GetAssetBalance(LocalContractor.U.Username, LocalContractor.U.Pwhash, subcommand)
 				if err != nil {
 					log.Println(err)
 					break
@@ -919,14 +979,16 @@ func ParseInputCont(input []string) error {
 			log.Println("<exchange> amount")
 			break
 		}
-		amount, err := utils.StoICheck(input[1])
+		_, err = utils.StoICheck(input[1])
 		if err != nil {
 			log.Println(err)
 			break
 		}
 		// convert this to int and check if int
+		amount := input[1]
+
 		fmt.Println("Exchanging", amount, "XLM for STABLEUSD")
-		response, err := GetStableCoin(LocalContractor.U.LoginUserName, LocalContractor.U.LoginPassword, LocalSeed, input[1])
+		response, err := GetStableCoin(LocalContractor.U.Username, LocalContractor.U.Pwhash, LocalSeed, amount)
 		if err != nil {
 			log.Println(err)
 			break
@@ -943,7 +1005,7 @@ func ParseInputCont(input []string) error {
 			break
 		}
 		inputString := input[1]
-		hashString, err := GetIpfsHash(LocalContractor.U.LoginUserName, LocalContractor.U.LoginPassword, inputString)
+		hashString, err := GetIpfsHash(LocalContractor.U.Username, LocalContractor.U.Pwhash, inputString)
 		if err != nil {
 			log.Println(err)
 			break
@@ -957,7 +1019,7 @@ func ParseInputCont(input []string) error {
 		break
 		// end of propose
 	case "myproposed":
-		x, err := GetProposedContracts(LocalContractor.U.LoginUserName, LocalContractor.U.LoginPassword)
+		x, err := GetProposedContracts(LocalContractor.U.Username, LocalContractor.U.Pwhash)
 		if err != nil {
 			log.Println(err)
 			break
@@ -976,7 +1038,10 @@ func ParseInputCont(input []string) error {
 			break
 		}
 
-		response, err := AddCollateral(LocalContractor.U.LoginUserName, LocalContractor.U.LoginPassword, input[1], input[2])
+		collateral := input[1]
+		amount := input[2]
+
+		response, err := AddCollateral(LocalContractor.U.Username, LocalContractor.U.Pwhash, collateral, amount)
 		if err != nil {
 			log.Println(err)
 			break
@@ -989,7 +1054,7 @@ func ParseInputCont(input []string) error {
 		}
 		break
 	case "mypreoriginated":
-		x, err := GetPreOriginatedContracts(LocalContractor.U.LoginUserName, LocalContractor.U.LoginPassword)
+		x, err := GetPreOriginatedContracts(LocalContractor.U.Username, LocalContractor.U.Pwhash)
 		if err != nil {
 			log.Println(err)
 			break
@@ -999,7 +1064,7 @@ func ParseInputCont(input []string) error {
 		// end of myoriginated
 	case "myoriginated": // if the contractor acts as an originator sometime. Bool setting would be weird,
 		// but I guess there's nothing that prevents a contractor from acting as an originator, so we allow this.
-		x, err := GetOriginatedContracts(LocalContractor.U.LoginUserName, LocalContractor.U.LoginPassword)
+		x, err := GetOriginatedContracts(LocalContractor.U.Username, LocalContractor.U.Pwhash)
 		if err != nil {
 			log.Println(err)
 			break
@@ -1023,7 +1088,7 @@ func ParseInputCont(input []string) error {
 				break
 			}
 			assetName := input[2]
-			status, err := CreateAssetInv(LocalContractor.U.LoginUserName, LocalContractor.U.LoginPassword,
+			status, err := CreateAssetInv(LocalContractor.U.Username, LocalContractor.U.Pwhash,
 				assetName, LocalContractor.U.PublicKey)
 			if err != nil {
 				log.Println(err)
@@ -1052,7 +1117,7 @@ func ParseInputCont(input []string) error {
 			destination := input[3]
 			amount := input[4]
 
-			txhash, err := SendLocalAsset(LocalContractor.U.LoginUserName, LocalContractor.U.LoginPassword,
+			txhash, err := SendLocalAsset(LocalContractor.U.Username, LocalContractor.U.Pwhash,
 				LocalSeedPwd, assetName, destination, amount)
 			if err != nil {
 				log.Println(err)
@@ -1077,7 +1142,7 @@ func ParseInputCont(input []string) error {
 			if len(input) > 4 {
 				memo = input[4]
 			}
-			txhash, err := SendXLM(LocalContractor.U.LoginUserName, LocalContractor.U.LoginPassword,
+			txhash, err := SendXLM(LocalContractor.U.Username, LocalContractor.U.Pwhash,
 				LocalSeedPwd, destination, amount, memo)
 			if err != nil {
 				log.Println(err)
@@ -1094,7 +1159,7 @@ func ParseInputCont(input []string) error {
 		subcommand := input[1]
 		switch subcommand {
 		case "xlm":
-			status, err := AskXLM(LocalContractor.U.LoginUserName, LocalContractor.U.LoginPassword)
+			status, err := AskXLM(LocalContractor.U.Username, LocalContractor.U.Pwhash)
 			if err != nil {
 				log.Println(err)
 				break
@@ -1119,7 +1184,9 @@ func ParseInputCont(input []string) error {
 				break
 			}
 
-			status, err := TrustAsset(LocalContractor.U.LoginUserName, LocalContractor.U.LoginPassword, assetName, issuerPubkey, input[4], LocalSeedPwd)
+			limit := input[4]
+
+			status, err := TrustAsset(LocalContractor.U.Username, LocalContractor.U.Pwhash, assetName, issuerPubkey, limit, LocalSeedPwd)
 			if err != nil {
 				log.Println(err)
 				break
@@ -1145,6 +1212,11 @@ func ParseInputOrig(input []string) error {
 	// input is greater than length 1 which means we can parse according to the command given
 	command := input[0]
 	switch command {
+	case "help":
+		fmt.Println("LIST OF SUPPORTED COMMANDS: ")
+		fmt.Println("ping, display, exchange, ipfs, create, send, receive, propose, " +
+			"preoriginate, myproposed, addcollateral, myoriginated, mypreoriginated")
+		break
 	case "ping":
 		err = PingRpc()
 		if err != nil {
@@ -1164,7 +1236,7 @@ func ParseInputOrig(input []string) error {
 		case "balance":
 			if len(input) == 2 {
 				log.Println("Calling balances API")
-				balances, err := GetBalances(LocalOriginator.U.LoginUserName, LocalOriginator.U.LoginPassword)
+				balances, err := GetBalances(LocalOriginator.U.Username, LocalOriginator.U.Pwhash)
 				if err != nil {
 					log.Println(err)
 					break
@@ -1176,7 +1248,7 @@ func ParseInputOrig(input []string) error {
 			switch subcommand {
 			case "xlm":
 				// print xlm balance
-				balance, err := GetXLMBalance(LocalOriginator.U.LoginUserName, LocalOriginator.U.LoginPassword)
+				balance, err := GetXLMBalance(LocalOriginator.U.Username, LocalOriginator.U.Pwhash)
 				if err != nil {
 					log.Println(err)
 					break
@@ -1184,7 +1256,7 @@ func ParseInputOrig(input []string) error {
 				ColorOutput("BALANCE: "+balance, MagentaColor)
 				break
 			case "all":
-				balances, err := GetBalances(LocalOriginator.U.LoginUserName, LocalOriginator.U.LoginPassword)
+				balances, err := GetBalances(LocalOriginator.U.Username, LocalOriginator.U.Pwhash)
 				if err != nil {
 					log.Println(err)
 					break
@@ -1192,7 +1264,7 @@ func ParseInputOrig(input []string) error {
 				PrintBalances(balances)
 				break
 			default:
-				balance, err := GetAssetBalance(LocalOriginator.U.LoginUserName, LocalOriginator.U.LoginPassword, subcommand)
+				balance, err := GetAssetBalance(LocalOriginator.U.Username, LocalOriginator.U.Pwhash, subcommand)
 				if err != nil {
 					log.Println(err)
 					break
@@ -1265,14 +1337,15 @@ func ParseInputOrig(input []string) error {
 			log.Println("<exchange> amount")
 			break
 		}
-		amount, err := utils.StoICheck(input[1])
+		_, err = utils.StoICheck(input[1])
 		if err != nil {
 			log.Println(err)
 			break
 		}
 		// convert this to int and check if int
-		fmt.Println("Exchanging", amount, "XLM for STABLEUSD")
-		response, err := GetStableCoin(LocalOriginator.U.LoginUserName, LocalOriginator.U.LoginPassword, LocalSeed, input[1])
+		amount := input[1]
+
+		response, err := GetStableCoin(LocalOriginator.U.Username, LocalOriginator.U.Pwhash, LocalSeed, amount)
 		if err != nil {
 			log.Println(err)
 			break
@@ -1289,7 +1362,7 @@ func ParseInputOrig(input []string) error {
 			break
 		}
 		inputString := input[1]
-		hashString, err := GetIpfsHash(LocalOriginator.U.LoginUserName, LocalOriginator.U.LoginPassword, inputString)
+		hashString, err := GetIpfsHash(LocalOriginator.U.Username, LocalOriginator.U.Pwhash, inputString)
 		if err != nil {
 			log.Println(err)
 			break
@@ -1317,7 +1390,10 @@ func ParseInputOrig(input []string) error {
 			break
 		}
 
-		response, err := AddCollateral(LocalOriginator.U.LoginUserName, LocalOriginator.U.LoginPassword, input[1], input[2])
+		collateral := input[1]
+		amount := input[2]
+
+		response, err := AddCollateral(LocalOriginator.U.Username, LocalOriginator.U.Pwhash, collateral, amount)
 		if err != nil {
 			log.Println(err)
 			break
@@ -1331,7 +1407,7 @@ func ParseInputOrig(input []string) error {
 		break
 		// end of addcollateral
 	case "myproposed":
-		x, err := GetProposedContracts(LocalOriginator.U.LoginUserName, LocalOriginator.U.LoginPassword)
+		x, err := GetProposedContracts(LocalOriginator.U.Username, LocalOriginator.U.Pwhash)
 		if err != nil {
 			log.Println(err)
 			break
@@ -1340,7 +1416,7 @@ func ParseInputOrig(input []string) error {
 		break
 		// end of myproposed
 	case "mypreoriginated":
-		x, err := GetPreOriginatedContracts(LocalOriginator.U.LoginUserName, LocalOriginator.U.LoginPassword)
+		x, err := GetPreOriginatedContracts(LocalOriginator.U.Username, LocalOriginator.U.Pwhash)
 		if err != nil {
 			log.Println(err)
 			break
@@ -1349,7 +1425,7 @@ func ParseInputOrig(input []string) error {
 		break
 		// end of myoriginated
 	case "myoriginated":
-		x, err := GetOriginatedContracts(LocalOriginator.U.LoginUserName, LocalOriginator.U.LoginPassword)
+		x, err := GetOriginatedContracts(LocalOriginator.U.Username, LocalOriginator.U.Pwhash)
 		if err != nil {
 			log.Println(err)
 			break
@@ -1373,7 +1449,7 @@ func ParseInputOrig(input []string) error {
 				break
 			}
 			assetName := input[2]
-			status, err := CreateAssetInv(LocalOriginator.U.LoginUserName, LocalOriginator.U.LoginPassword,
+			status, err := CreateAssetInv(LocalOriginator.U.Username, LocalOriginator.U.Pwhash,
 				assetName, LocalOriginator.U.PublicKey)
 			if err != nil {
 				log.Println(err)
@@ -1402,7 +1478,7 @@ func ParseInputOrig(input []string) error {
 			destination := input[3]
 			amount := input[4]
 
-			txhash, err := SendLocalAsset(LocalOriginator.U.LoginUserName, LocalOriginator.U.LoginPassword,
+			txhash, err := SendLocalAsset(LocalOriginator.U.Username, LocalOriginator.U.Pwhash,
 				LocalSeedPwd, assetName, destination, amount)
 			if err != nil {
 				log.Println(err)
@@ -1427,7 +1503,7 @@ func ParseInputOrig(input []string) error {
 			if len(input) > 4 {
 				memo = input[4]
 			}
-			txhash, err := SendXLM(LocalOriginator.U.LoginUserName, LocalOriginator.U.LoginPassword,
+			txhash, err := SendXLM(LocalOriginator.U.Username, LocalOriginator.U.Pwhash,
 				LocalSeedPwd, destination, amount, memo)
 			if err != nil {
 				log.Println(err)
@@ -1444,7 +1520,7 @@ func ParseInputOrig(input []string) error {
 		subcommand := input[1]
 		switch subcommand {
 		case "xlm":
-			status, err := AskXLM(LocalOriginator.U.LoginUserName, LocalOriginator.U.LoginPassword)
+			status, err := AskXLM(LocalOriginator.U.Username, LocalOriginator.U.Pwhash)
 			if err != nil {
 				log.Println(err)
 				break
@@ -1469,7 +1545,9 @@ func ParseInputOrig(input []string) error {
 				break
 			}
 
-			status, err := TrustAsset(LocalOriginator.U.LoginUserName, LocalOriginator.U.LoginPassword, assetName, issuerPubkey, input[4], LocalSeedPwd)
+			limit := input[4]
+
+			status, err := TrustAsset(LocalOriginator.U.Username, LocalOriginator.U.Pwhash, assetName, issuerPubkey, limit, LocalSeedPwd)
 			if err != nil {
 				log.Println(err)
 				break
