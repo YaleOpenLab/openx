@@ -398,9 +398,109 @@ func GetProposedContracts(username string, pwhash string) ([]solar.Project, erro
 
 func AddCollateral(username string, pwhash string, collateral string, amount string) (rpc.StatusResponse, error) {
 	var x rpc.StatusResponse
-	log.Println("PSASING: ", amount, collateral)
 	data, err := GetRequest(ApiUrl + "/entity/addcollateral?" + "username=" + username + "&pwhash=" + pwhash +
 		"&collateral=" + collateral + "&amount=" + amount)
+	if err != nil {
+		return x, err
+	}
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return x, err
+	}
+	return x, nil
+}
+
+func CreateAssetInv(username string, pwhash string, assetName string, pubkey string) (rpc.StatusResponse, error) {
+	var x rpc.StatusResponse
+	data, err := GetRequest(ApiUrl + "/investor/localasset?" + "username=" + username + "&pwhash=" + pwhash +
+		"&assetName=" + assetName)
+	if err != nil {
+		return x, err
+	}
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return x, err
+	}
+	return x, nil
+}
+
+func SendLocalAsset(username string, pwhash string, seedpwd string, assetName string,
+	destination string, amount string) (string, error) {
+	var x string
+
+	data, err := GetRequest(ApiUrl + "/investor/sendlocalasset?" + "username=" + username + "&pwhash=" + pwhash +
+		"&assetName=" + assetName + "&destination=" + destination + "&amount=" + amount + "&seedpwd=" + seedpwd)
+	if err != nil {
+		return x, err
+	}
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return x, err
+	}
+	return x, nil
+}
+
+func SendXLM(username string, pwhash string, seedpwd string, destination string,
+	amount string, memo string) (string, error) {
+	var x string
+	data, err := GetRequest(ApiUrl + "/user/sendxlm?" + "username=" + username + "&pwhash=" + pwhash +
+		"&destination=" + destination + "&amount=" + amount + "&seedpwd=" + seedpwd)
+	if err != nil {
+		return x, err
+	}
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return x, err
+	}
+	return x, nil
+}
+
+func NotKycView(username string, pwhash string) ([]database.User, error) {
+	var x []database.User
+	data, err := GetRequest(ApiUrl + "/user/notkycview?" + "username=" + username + "&pwhash=" + pwhash)
+	if err != nil {
+		return x, err
+	}
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return x, err
+	}
+	return x, nil
+}
+
+func KycView(username string, pwhash string) ([]database.User, error) {
+	var x []database.User
+	data, err := GetRequest(ApiUrl + "/user/kycview?" + "username=" + username + "&pwhash=" + pwhash)
+	if err != nil {
+		return x, err
+	}
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return x, err
+	}
+	return x, nil
+}
+
+
+func AskXLM(username string, pwhash string) (rpc.StatusResponse, error) {
+	var x rpc.StatusResponse
+	data, err := GetRequest(ApiUrl + "/user/askxlm?" + "username=" + username + "&pwhash=" + pwhash)
+	if err != nil {
+		return x, err
+	}
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return x, err
+	}
+	return x, nil
+}
+
+
+func TrustAsset(username string, pwhash string, assetName string, issuerPubkey string,
+	limit string, seedpwd string) (rpc.StatusResponse, error){
+	var x rpc.StatusResponse
+	data, err := GetRequest(ApiUrl + "/user/trustasset?" + "username=" + username + "&pwhash=" + pwhash +
+		"&assetCode=" + assetName + "&assetIssuer=" + issuerPubkey + "&limit=" + limit + "&seedpwd=" + seedpwd)
 	if err != nil {
 		return x, err
 	}

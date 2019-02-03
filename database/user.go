@@ -54,6 +54,8 @@ type User struct {
 	// for each completed bond and decreases for each bond cancelled. The frontend
 	// could have a table based on reputation scores and use the appropriate scores for
 	// awarding badges or something to users with high reputation
+	LocalAssets []string
+	// a collection of assets that the user can own and trade locally using the emulator
 }
 
 // User is a metastrucutre that contains commonly used keys within a single umbrella

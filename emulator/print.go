@@ -63,6 +63,7 @@ func PrintInvestor(investor database.Investor) {
 	if investor.U.Notification {
 		fmt.Println("         Your Email id is: ", investor.U.Email)
 	}
+	fmt.Println("         Your Local Assets are: ", investor.U.LocalAssets)
 }
 
 func PrintUsers(users []database.User) {
