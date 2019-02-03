@@ -108,7 +108,7 @@ func GetProjectIndex(assetName string) (int, error) {
 }
 
 func LoginToPlatForm(username string, pwhash string) error {
-	data, err := GetRequest(ApiUrl + "/recipient/validate?" + "LoginUserName=" + username + "&LoginPassword=" + pwhash)
+	data, err := GetRequest(ApiUrl + "/recipient/validate?" + "Username=" + username + "&Pwhash=" + pwhash)
 	if err != nil {
 		return err
 	}
@@ -149,8 +149,8 @@ func ProjectPayback(recpIndex string, assetName string,
 }
 
 func SetDeviceId(username string, pwhash string, deviceId string) error {
-	data, err := GetRequest(ApiUrl + "/recipient/deviceId?" + "LoginUserName=" + username +
-		"&LoginPassword=" + pwhash + "&deviceid=" + deviceId)
+	data, err := GetRequest(ApiUrl + "/recipient/deviceId?" + "Username=" + username +
+		"&Pwhash=" + pwhash + "&deviceid=" + deviceId)
 	if err != nil {
 		return err
 	}
@@ -167,8 +167,8 @@ func SetDeviceId(username string, pwhash string, deviceId string) error {
 }
 
 func StoreStartTime() error {
-	data, err := GetRequest(ApiUrl + "/recipient/startdevice?" + "LoginUserName=" + LocalRecipient.U.LoginUserName +
-		"&LoginPassword=" + LocalRecipient.U.LoginPassword + "&start=" + utils.I64toS(utils.Unix()))
+	data, err := GetRequest(ApiUrl + "/recipient/startdevice?" + "Username=" + LocalRecipient.U.Username +
+		"&Pwhash=" + LocalRecipient.U.Pwhash + "&start=" + utils.I64toS(utils.Unix()))
 	if err != nil {
 		return err
 	}
@@ -187,8 +187,8 @@ func StoreStartTime() error {
 
 func StoreLocation(mapskey string) error {
 	location := GetLocation(mapskey)
-	data, err := GetRequest(ApiUrl + "/recipient/storelocation?" + "LoginUserName=" + LocalRecipient.U.LoginUserName +
-		"&LoginPassword=" + LocalRecipient.U.LoginPassword + "&location=" + location)
+	data, err := GetRequest(ApiUrl + "/recipient/storelocation?" + "Username=" + LocalRecipient.U.Username +
+		"&Pwhash=" + LocalRecipient.U.Pwhash + "&location=" + location)
 	if err != nil {
 		return err
 	}

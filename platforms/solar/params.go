@@ -9,7 +9,7 @@ type SolarParams struct {
 	TotalValue   float64 // the total money that we need from investors
 	Location     string  // where this specific solar panel is located
 	MoneyRaised  float64 // total money that has been raised until now
-	Years        int     // number of years teh recipient is expected to the initial investment amount back
+	Years        int     // number of years the recipient is expected to repay the initial investment amount by
 	InterestRate float64 // the interest rate provided to potential investors
 	Metadata     string  // any other metadata can be stored here
 

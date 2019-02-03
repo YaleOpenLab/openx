@@ -65,7 +65,7 @@ func CheckDeviceID() error {
 			return err
 		}
 		file.Close()
-		err = SetDeviceId(LocalRecipient.U.LoginUserName, LocalRecipient.U.LoginPassword, deviceId)
+		err = SetDeviceId(LocalRecipient.U.Username, LocalRecipient.U.Pwhash, deviceId)
 		if err != nil {
 			return err
 		}

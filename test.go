@@ -41,6 +41,8 @@ func StartPlatform() (string, string, error) {
 	var publicKey string
 	var seed string
 	database.CreateHomeDir()
+
+	// InsertDummyData()
 	allContracts, err := solar.RetrieveAllProjects()
 	if err != nil {
 		log.Println("Error retrieving all projects from the database")

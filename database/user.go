@@ -15,8 +15,7 @@ import (
 // commonly used functions so that we need not repeat the ssame thing for every instance.
 type User struct {
 	Index int
-	// default index, gets us easy stats on how many people are there and stuff,
-	// don't want to omit this
+	// default index, gets us easy stats on how many people are there
 	EncryptedSeed []byte
 	// EncryptedSeed stores the AES-256 encrypted seed of the user. This way, even
 	// if the platform is hacked, the user's funds are still safe
@@ -24,11 +23,10 @@ type User struct {
 	// Name of the primary stakeholder involved (principal trustee of school, for eg.)
 	PublicKey string
 	// PublicKey denotes the public key of the recipient
-	LoginUserName string
+	Username string
 	// the username you use to login to the platform
-	// TODO: change this to just "username"
-	LoginPassword string
-	// the password, which you use to authenticate on the platform
+	Pwhash string
+	// the password hash, which you use to authenticate on the platform
 	Address string
 	// the registered address of the above company
 	Description string
@@ -37,7 +35,6 @@ type User struct {
 	// information on company credentials, their experience
 	Image string
 	// image can be company logo, founder selfie
-	// hash of the password in reality
 	FirstSignedUp string
 	// auto generated timestamp
 	Kyc bool
@@ -50,7 +47,7 @@ type User struct {
 	Notification bool
 	// GDPR, if user wants to opt in, set this to true. Default is false
 	Reputation float64
-	// Reputation contains the reputation of a good user. Reputation increases
+	// Reputation contains the max reputation that can be gained by a user. Reputation increases
 	// for each completed bond and decreases for each bond cancelled. The frontend
 	// could have a table based on reputation scores and use the appropriate scores for
 	// awarding badges or something to users with high reputation
@@ -82,8 +79,8 @@ func NewUser(uname string, pwd string, seedpwd string, Name string) (User, error
 	if err != nil {
 		return a, err
 	}
-	a.LoginUserName = uname
-	a.LoginPassword = utils.SHA3hash(pwd) // store tha sha3 hash
+	a.Username = uname
+	a.Pwhash = utils.SHA3hash(pwd) // store tha sha3 hash
 	// now we have a new User, take this and then send this struct off to be stored in the database
 	a.FirstSignedUp = utils.Timestamp()
 	a.Kyc = false
@@ -237,7 +234,7 @@ func ValidateUser(name string, pwhash string) (User, error) {
 				return err
 			}
 			// check names
-			if rUser.LoginUserName == name && rUser.LoginPassword == pwhash {
+			if rUser.Username == name && rUser.Pwhash == pwhash {
 				inv = rUser
 				return nil
 			}
@@ -287,7 +284,7 @@ func CheckUsernameCollision(uname string) error {
 				return err
 			}
 			// check names
-			if rUser.LoginUserName == uname {
+			if rUser.Username == uname {
 				return fmt.Errorf("Username collision")
 			}
 		}

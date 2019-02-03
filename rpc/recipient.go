@@ -10,6 +10,7 @@ import (
 	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
 	utils "github.com/OpenFinancing/openfinancing/utils"
 	wallet "github.com/OpenFinancing/openfinancing/wallet"
+	xlm "github.com/OpenFinancing/openfinancing/xlm"
 )
 
 // setupRecipientRPCs sets up all RPCs related to the recipient. Most are similar
@@ -30,6 +31,7 @@ func setupRecipientRPCs() {
 	addEmail()
 	finalizeProject()
 	originateProject()
+	calculateTrustLimit()
 }
 
 func parseRecipient(r *http.Request) (database.Recipient, error) {
@@ -345,7 +347,7 @@ func unlock() {
 			return
 		}
 
-		err = solar.UnlockProject(recipient.U.LoginUserName, recipient.U.LoginPassword, projIndex, seedpwd)
+		err = solar.UnlockProject(recipient.U.Username, recipient.U.Pwhash, projIndex, seedpwd)
 		if err != nil {
 			log.Println(err)
 			errorHandler(w, r, http.StatusNotFound)
@@ -418,5 +420,25 @@ func originateProject() {
 		}
 
 		Send200(w, r)
+	})
+}
+
+func calculateTrustLimit() {
+	http.HandleFunc("/recipient/trustlimit", func(w http.ResponseWriter, r *http.Request) {
+		recipient, err := RecpValidateHelper(w, r)
+		if err != nil || r.URL.Query()["assetName"] == nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		assetName := r.URL.Query()["assetName"][0]
+		trustLimit, err := xlm.GetAssetTrustLimit(recipient.U.PublicKey, assetName)
+		if err != nil {
+			log.Println(err)
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		MarshalSend(w, r, trustLimit)
 	})
 }

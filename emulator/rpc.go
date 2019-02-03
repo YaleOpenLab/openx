@@ -508,3 +508,17 @@ func TrustAsset(username string, pwhash string, assetName string, issuerPubkey s
 	}
 	return x, nil
 }
+
+func GetTrustLimit(username string, pwhash string, assetName string) (string, error) {
+	var x string
+	data, err := GetRequest(ApiUrl + "/recipient/trustlimit?" + "username=" + username + "&pwhash=" +
+		pwhash + "&assetName=" + assetName)
+	if err != nil {
+		return x, err
+	}
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return x, err
+	}
+	return x, nil
+}

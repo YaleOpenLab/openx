@@ -459,7 +459,7 @@ func UnlockProject(username string, pwhash string, projIndex int, seedpwd string
 		return err
 	}
 
-	if recipient.U.LoginPassword != project.ProjectRecipient.U.LoginPassword {
+	if recipient.U.Pwhash != project.ProjectRecipient.U.Pwhash {
 		return fmt.Errorf("Seeds don't match, quitting!")
 	}
 

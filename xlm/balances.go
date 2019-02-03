@@ -98,6 +98,26 @@ func GetAssetBalance(publicKey string, assetName string) (string, error) {
 	return balance, fmt.Errorf("Asset balance not found")
 }
 
+func GetAssetTrustLimit(publicKey string, assetName string) (string, error) {
+	var balance string
+	var err error
+	b, err := GetAccountData(publicKey)
+	if err != nil {
+		return balance, err
+	}
+	var x protocols.Account
+	err = json.Unmarshal(b, &x)
+	if err != nil {
+		return balance, err
+	}
+	for _, balance := range x.Balances {
+		if balance.Asset.Code == assetName {
+			return balance.Limit, nil
+		}
+	}
+	return balance, fmt.Errorf("Asset limit not found")
+}
+
 // GetAllBalances calls the stellar testnet API to get all the balances associated
 // with a certain account.
 func GetAllBalances(publicKey string) ([]horizon.Balance, error) {
