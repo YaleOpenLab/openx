@@ -6,7 +6,9 @@ import (
 	"net/http"
 	"strconv"
 
+	assets "github.com/OpenFinancing/openfinancing/assets"
 	database "github.com/OpenFinancing/openfinancing/database"
+	notif "github.com/OpenFinancing/openfinancing/notif"
 	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
 	utils "github.com/OpenFinancing/openfinancing/utils"
 	wallet "github.com/OpenFinancing/openfinancing/wallet"
@@ -21,6 +23,9 @@ func setupInvestorRPCs() {
 	investInProject()
 	changeReputationInv()
 	voteTowardsProject()
+	addLocalAssetInv()
+	invAssetInv()
+	sendEmail()
 }
 
 func parseInvestor(r *http.Request) (database.Investor, error) {
@@ -196,7 +201,89 @@ func voteTowardsProject() {
 		projIndex := utils.StoI(r.URL.Query()["projIndex"][0])
 		err = solar.VoteTowardsProposedProject(investor.U.Index, votes, projIndex)
 		if err != nil {
-			log.Println("ERROR: ", err)
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+		Send200(w, r)
+	})
+}
+
+func addLocalAssetInv() {
+	http.HandleFunc("/investor/localasset", func(w http.ResponseWriter, r *http.Request) {
+
+		prepInvestor, err := InvValidateHelper(w, r)
+		if err != nil || r.URL.Query()["assetName"] == nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		assetName := r.URL.Query()["assetName"][0]
+		prepInvestor.U.LocalAssets = append(prepInvestor.U.LocalAssets, assetName)
+		err = prepInvestor.Save()
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		Send200(w, r)
+	})
+}
+
+func invAssetInv() {
+	http.HandleFunc("/investor/sendlocalasset", func(w http.ResponseWriter, r *http.Request) {
+		prepInvestor, err := InvValidateHelper(w, r)
+		if err != nil || r.URL.Query()["assetName"] == nil || r.URL.Query()["seedpwd"] == nil ||
+			r.URL.Query()["destination"] == nil || r.URL.Query()["amount"] == nil {
+			log.Println("ERROR HERE?", err)
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		assetName := r.URL.Query()["assetName"][0]
+
+		seedpwd := r.URL.Query()["seedpwd"][0]
+		seed, err := wallet.DecryptSeed(prepInvestor.U.EncryptedSeed, seedpwd)
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		destination := r.URL.Query()["destination"][0]
+		amount := r.URL.Query()["amount"][0]
+
+		found := true
+		for _, elem := range prepInvestor.U.LocalAssets {
+			if elem == assetName {
+				found = true
+			}
+		}
+
+		if !found {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		_, txhash, err := assets.SendAssetFromIssuer(assetName, destination, amount, seed, prepInvestor.U.PublicKey)
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+		MarshalSend(w, r, txhash)
+	})
+}
+
+func sendEmail() {
+	http.HandleFunc("/investor/sendemail", func(w http.ResponseWriter, r *http.Request) {
+		prepInvestor, err := InvValidateHelper(w, r)
+		if err != nil || r.URL.Query()["message"] == nil || r.URL.Query()["to"] == nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		message := r.URL.Query()["message"][0]
+		to := r.URL.Query()["to"][0]
+		err = notif.SendEmail(message, to, prepInvestor.U.Name)
+		if err != nil {
 			errorHandler(w, r, http.StatusNotFound)
 			return
 		}

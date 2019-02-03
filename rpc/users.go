@@ -9,6 +9,8 @@ import (
 	ipfs "github.com/OpenFinancing/openfinancing/ipfs"
 	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
 	utils "github.com/OpenFinancing/openfinancing/utils"
+	wallet "github.com/OpenFinancing/openfinancing/wallet"
+	assets "github.com/OpenFinancing/openfinancing/assets"
 	xlm "github.com/OpenFinancing/openfinancing/xlm"
 )
 
@@ -19,6 +21,11 @@ func setupUserRpcs() {
 	getAssetBalance()
 	getIpfsHash()
 	authKyc()
+	sendXLM()
+	notKycView()
+	kycView()
+	askForCoins()
+	trustAsset()
 }
 
 // we want to pass to the caller whether the user is a recipient or an investor.
@@ -223,5 +230,134 @@ func authKyc() {
 			return
 		}
 		Send200(w, r)
+	})
+}
+
+func sendXLM() {
+	http.HandleFunc("/user/sendxlm", func(w http.ResponseWriter, r *http.Request) {
+		prepUser, err := UserValidateHelper(w, r)
+		if err != nil || r.URL.Query()["destination"] == nil || r.URL.Query()["amount"] == nil ||
+			r.URL.Query()["seedpwd"] == nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		destination := r.URL.Query()["destination"][0]
+		amount := r.URL.Query()["amount"][0]
+
+		seedpwd := r.URL.Query()["seedpwd"][0]
+		seed, err := wallet.DecryptSeed(prepUser.EncryptedSeed, seedpwd)
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		var memo string
+		if r.URL.Query()["memo"] != nil {
+			memo = r.URL.Query()["memo"][0]
+		}
+
+		_, txhash, err := xlm.SendXLM(destination, amount, seed, memo)
+		if err != nil {
+			log.Println(err)
+		}
+		MarshalSend(w, r, txhash)
+	})
+}
+
+func notKycView() {
+	http.HandleFunc("/user/notkycview", func(w http.ResponseWriter, r *http.Request) {
+		prepUser, err := UserValidateHelper(w, r)
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		if !prepUser.Inspector {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		users, err := database.RetrieveAllUsersWithoutKyc()
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		MarshalSend(w, r, users)
+	})
+}
+
+func kycView() {
+	http.HandleFunc("/user/kycview", func(w http.ResponseWriter, r *http.Request) {
+		prepUser, err := UserValidateHelper(w, r)
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		if !prepUser.Inspector {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		users, err := database.RetrieveAllUsersWithKyc()
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		MarshalSend(w, r, users)
+	})
+}
+
+func askForCoins() {
+	http.HandleFunc("/user/askxlm", func(w http.ResponseWriter, r *http.Request) {
+		prepUser, err := UserValidateHelper(w, r)
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		err = xlm.GetXLM(prepUser.PublicKey)
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		Send200(w, r)
+	})
+}
+
+func trustAsset() {
+	http.HandleFunc("/user/trustasset", func(w http.ResponseWriter, r *http.Request) {
+		// since this is testnet, give caller coins from the testnet faucet
+		prepUser, err := UserValidateHelper(w, r)
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		assetCode := r.URL.Query()["assetCode"][0]
+		assetIssuer := r.URL.Query()["assetIssuer"][0]
+		limit := r.URL.Query()["limit"][0]
+
+		seedpwd := r.URL.Query()["seedpwd"][0]
+		seed, err := wallet.DecryptSeed(prepUser.EncryptedSeed, seedpwd)
+		if err != nil {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		// func TrustAsset(assetCode string, assetIssuer string, limit string, PublicKey string, Seed string) (string, error) {
+		log.Println("ASSET CODE, ASSET ISSUER, LIMIT, PublicKey, SEED", assetCode, assetIssuer, limit, prepUser.PublicKey, seed)
+		txhash, err := assets.TrustAsset(assetCode, assetIssuer, limit, prepUser.PublicKey, seed)
+		if err != nil {
+			log.Println("ERR: ", err)
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
+		MarshalSend(w, r, txhash)
 	})
 }

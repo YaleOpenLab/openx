@@ -36,7 +36,7 @@ func Login(username string, pwhash string) (string, error) {
 			return wString, err
 		}
 		LocalInvestor = inv
-		ColorOutput("PLEASE ENTER YOUR SEEDPWD: ", CyanColor)
+		ColorOutput("ENTER YOUR SEEDPWD: ", CyanColor)
 		LocalSeedPwd, err = scan.ScanRawPassword()
 		if err != nil {
 			log.Println(err)

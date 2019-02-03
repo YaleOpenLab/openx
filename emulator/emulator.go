@@ -5,8 +5,6 @@ import (
 	"github.com/chzyer/readline"
 	"github.com/fatih/color"
 	"log"
-	// "os"
-	// "os/signal"
 	"strings"
 
 	consts "github.com/OpenFinancing/openfinancing/consts"
@@ -71,6 +69,8 @@ func LoopInv() error {
 	// we have authenticated the user and stored the details in an appropriate structure
 	// need to repeat this struct everywhere because having separate functions and importing
 	// it doesn't seem to work
+	// the problem with having a conditional statement inside the loop is that it checks
+	// role each time and that's not nice performance wise
 	// TOOD: look at alternatives if possible
 	promptColor := color.New(color.FgHiYellow).SprintFunc()
 	whiteColor := color.New(color.FgHiWhite).SprintFunc()
