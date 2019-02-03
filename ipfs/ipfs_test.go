@@ -34,19 +34,19 @@ func TestIpfs(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Can retrieve non existing hash, quitting!")
 	}
-	_, err = ReadfromPdf("files/test.pdf") // get the data from the pdf as a datastream
+	_, err = ReadfromFile("files/test.pdf") // get the data from the pdf as a datastream
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = ReadfromPdf("blah") // get the data from the pdf as a datastream
+	_, err = ReadfromFile("blah") // get the data from the pdf as a datastream
 	if err == nil {
 		t.Fatal("Can read from non existing pdf.")
 	}
-	hash, err = IpfsHashPdf("files/test.pdf")
+	hash, err = IpfsHashFile("files/test.pdf")
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = IpfsHashPdf("blah")
+	_, err = IpfsHashFile("blah")
 	if err == nil {
 		t.Fatal("Can retrieve non existing pdf file")
 	}
@@ -57,5 +57,15 @@ func TestIpfs(t *testing.T) {
 	err = GetFileFromIpfs("blah", "pdf")
 	if err == nil {
 		t.Fatal("CAn retrieve non exiting file, quitting")
+	}
+	dummy := []byte("Hello World")
+	_, err = IpfsHashData(dummy)
+	if err != nil {
+		t.Fatalf("Can't hash ipfs data")
+	}
+	var dummy2 []byte
+	_, err = IpfsHashData(dummy2)
+	if err != nil {
+		t.Fatalf("Can't hash ipfs data")
 	}
 }

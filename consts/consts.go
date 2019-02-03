@@ -34,3 +34,7 @@ var LoginRefreshInterval = time.Duration(5 * 60)                                
 var PlatformPublicKey = ""                                                           // set this to empty and store during runtime
 var PlatformSeed = ""                                                                // set this to empty and store during runtime
 var LockInterval = int64(1 * 60 * 60 * 24 * 3)                                       // time a recipient is given to unlock the project and redeem investment
+var OneWeekInSecond = 604800 // one week in seconds
+var TwoWeeksInSecond = time.Duration(1209600)                                        // one week in seconds, easier to have it here than call it in multiple places
+var SixWeeksInSecond = time.Duration(3628800)                                        // six months in seconds, send notification
+var CutDownPeriod = time.Duration(4838400)                                           // period when we direct power to the grid

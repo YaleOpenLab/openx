@@ -67,19 +67,30 @@ func GetStringFromIpfs(hash string) (string, error) {
 }
 
 // ReadfromPdf reads a pdf and returns the datastream
-func ReadfromPdf(filepath string) ([]byte, error) {
+func ReadfromFile(filepath string) ([]byte, error) {
 	return ioutil.ReadFile(filepath)
 }
 
 // IpfsHashPdf returns the ipfs hash of a pdf file
-func IpfsHashPdf(filepath string) (string, error) {
+func IpfsHashFile(filepath string) (string, error) {
 	var dummy string
-	dataStream, err := ReadfromPdf(filepath)
+	dataStream, err := ReadfromFile(filepath)
 	if err != nil {
 		return dummy, err
 	}
 	// need to get the ifps hash of this data stream and return hash
 	reader := bytes.NewReader(dataStream)
+	sh := RetrieveShell()
+	hash, err := sh.Add(reader)
+	if err != nil {
+		return dummy, err
+	}
+	return hash, nil
+}
+
+func IpfsHashData(data []byte) (string, error) {
+	var dummy string
+	reader := bytes.NewReader(data)
 	sh := RetrieveShell()
 	hash, err := sh.Add(reader)
 	if err != nil {

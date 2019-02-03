@@ -82,10 +82,6 @@ carefully evaluate trust assumptions wrt platform and data
 
 ## TODOs left over from the Ethereum Smart Contract
 
-### TODO SOLAR ENGINEERING DOCUMENTS
-The developers must present the blueprints of the proposed work before working on it. These must be stored in IPFS and hashed to the contract.
-These documents will have to get updated at the end of the install and are saved as the blueprint of the 'installed system'
-
 ### TODO VERIFICATION OF INSTALMENT & SENSORS
 The signature of a 3rd party verifier should be considered as part of onboarding a system and its data.
 The verifier confirms system was built according to plan, is compliant with regulation, and has the appropriate working sensors and associated public keys.
@@ -99,9 +95,6 @@ Eg. the contractors receives an upfront payment before the process begins but on
 
 ### TODO Renewable Energy certification
 
-### TODO Define the payment cycle
-Consider making payments every two weeks or every month
-
 ### TODO LEGAL OWNERSHIP
 Come up with a step so that when ownership is fully transferred, there is an automatic report that can change a registry that has legal validity
 functions that require no gas, but will check the state of the system
@@ -109,5 +102,4 @@ functions that require no gas, but will check the state of the system
 Returns true if consumer has completely paid off any outstanding balance on the panel at ssAddress within their consumerBuffer period
 
 ### TODO BREACH SCENARIOS
-Add all the situations and scenarios that need to be considered if the payments are not made or the wallet accounts have insufficient funds
-Consider sending email notifications, bringing in the guarantors, activating hardware etc.
+TODO: activate hardware to redirect power to the grid.

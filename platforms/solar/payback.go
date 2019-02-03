@@ -128,7 +128,7 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 	// we need to update the database here
 	// no need to retrieve this project again because we have it already
 	project.Params.BalLeft -= paidAmount
-	project.Params.DateLastPaid = utils.Timestamp()
+	project.Params.DateLastPaid = utils.Unix()
 	if project.Params.BalLeft == 0 {
 		log.Println("YOU HAVE PAID OFF THIS ASSET, TRANSFERRING OWNERSHIP OF ASSET TO YOU")
 		// don't delete the asset from the received assets list, we still need it so

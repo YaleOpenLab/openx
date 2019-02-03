@@ -134,9 +134,110 @@ func SendUnlockNotifToRecipient(projIndex int, to string) error {
 }
 
 func SendEmail(message string, to string, name string) error {
-	// we can't send emails directyl sicne we would need their gmail usernames and password for that
+	// we can't send emails directly sicne we would need their gmail usernames and password for that
 	startString := "Greetings from the opensolar platform! \n\n" +
 		"We're writing to let you know that " + name + " has sent you a message. The message contents follow: \n\n"
 	body := startString + message + "\n\n\n" + footerString
+	return sendMail(body, to)
+}
+
+func SendAlertEmail(message string, to string) error {
+	startString := "Greetings from the opensolar platform! \n\n" +
+		"We're writing to let you know that you have received a message from the platform: \n\n\n" + message
+	body := startString + "\n\n\n" + footerString
+	return sendMail(body, to)
+}
+
+// we don't know if the user has paid
+func SendPaybackAlertEmail(projIndex int, to string) error {
+	startString := "Greetings from the opensolar platform! \n\n" +
+		"This is a kind reminder to let you know that your payment is due this period for project numbered: " + utils.ItoS(projIndex) +
+		"\n\n If you have already paid or have received a donation towards this month, please ignore this alert."
+	body := startString + "\n\n\n" + footerString
+	return sendMail(body, to)
+}
+
+// we know that the user is due in their payment
+func SendNicePaybackAlertEmail(projIndex int, to string) error {
+	startString := "Greetings from the opensolar platform! \n\n" +
+		"This is a kind reminder to let you know that your payment is due this period for project numbered: " + utils.ItoS(projIndex) +
+		"\n\n Please payback at the earliest."
+	body := startString + "\n\n\n" + footerString
+	return sendMail(body, to)
+}
+
+func SendSternPaybackAlertEmail(projIndex int, to string) error {
+	startString := "Greetings from the opensolar platform! \n\n" +
+		"We're writing to let you know that your payment is due this period for project numbered: " + utils.ItoS(projIndex) +
+		"\n\n Please payback within two payback cycles to avoid re-routing of power services."
+	body := startString + "\n\n\n" + footerString
+	return sendMail(body, to)
+}
+
+func SendDisconnectionEmail(projIndex int, to string) error {
+	startString := "Greetings from the opensolar platform! \n\n" +
+		"We're writing to let you know that electricity produced from your project numbered: " + utils.ItoS(projIndex) +
+		"\n\n Had been redirected towards the main power grid. Please contact your guarantor to resume services"
+	body := startString + "\n\n\n" + footerString
+	return sendMail(body, to)
+}
+
+func SendDisconnectionEmailI(projIndex int, to string) error {
+	startString := "Greetings from the opensolar platform! \n\n" +
+		"We're writing to let you know that electricity produced from your project numbered: " + utils.ItoS(projIndex) +
+		"\n\n Had been redirected towards the main power grid due to irregualr payments by the recipient involved.\n\n" +
+		"We are constantly monitoring this situation and will be continuing to send you emails on the same.\n\n" +
+		"Please feel free to write to support with your queries in the meantime."
+	body := startString + "\n\n\n" + footerString
+	return sendMail(body, to)
+}
+
+func SendSternPaybackAlertEmailI(projIndex int, to string) error {
+	startString := "Greetings from the opensolar platform! \n\n" +
+		"We're writing to let you know that we are aware that payments towards the project: " + utils.ItoS(projIndex) +
+		"\n\n haven't been made and we have reached out to the project recipient on the same. If this situation continues for " +
+		"two more payment periods, we will be redirecting power towards the general grid and you would receive payments " +
+		"for all periods where they were due. \n\n" +
+		"We are constantly monitoring this situation and will be continuing to send you emails on the same.\n\n" +
+		"Please feel free to write to support with your queries in the meantime."
+	body := startString + "\n\n\n" + footerString
+	return sendMail(body, to)
+}
+
+func SendSternPaybackAlertEmailG(projIndex int, to string) error {
+	startString := "Greetings from the opensolar platform! \n\n" +
+		"We're writing to let you know that we are aware that payments towards the project: " + utils.ItoS(projIndex) +
+		"\n\n haven't been made and have reached out to the project recipient on the same. If this situation continues for " +
+		"two more payment periods, we will be redirecting power towards the general grid and contact you for further" +
+		"information on how the gurantee towards the project would be realized to investors.\n\n" +
+		"We are constantly monitoring this situation and will be continuing to send you emails on the same.\n\n" +
+		"Please feel free to write to support with your queries in the meantime."
+	body := startString + "\n\n\n" + footerString
+	return sendMail(body, to)
+}
+
+func SendDisconnectionEmailG(projIndex int, to string) error {
+	startString := "Greetings from the opensolar platform! \n\n" +
+		"We're writing to let you know that electricity produced from your project numbered: " + utils.ItoS(projIndex) +
+		"\n\n Had been redirected towards the main power grid due to irregular payments by the recipient involved.\n\n" +
+		"We will be reaching out to you in the coming days on how to proceed with realizing the guarantee towards this " +
+		"project in order to safeguard investors. We will also be contacting the recipient involved to update them on the" +
+		"situation and will make efforts to alleviate this problem as soon as possible." +
+		"We are constantly monitoring this situation and will be continuing to send you emails on the same.\n\n" +
+		"Please feel free to write to support with your queries in the meantime."
+	body := startString + "\n\n\n" + footerString
+	return sendMail(body, to)
+}
+
+func SendContractNotification(Hash1 string, Hash2 string, Hash3 string, Hash4 string, Hash5 string, to string) error {
+	body := "Greetings from the opensolar platform! \n\n" +
+		"We're writing to let you know that you have signed a contract\n\n" +
+		"Your proofs of signing are attached below and may be used as future reference in case of discrepancies:  \n\n" +
+		"Your first hash is: https://testnet.steexp.com/tx/" + Hash1 + "\n" +
+		"Your second hash is: https://testnet.steexp.com/tx/" + Hash2 + "\n" +
+		"Your third hash is: https://testnet.steexp.com/tx/" + Hash3 + "\n" +
+		"Your fourth hash is: https://testnet.steexp.com/tx/" + Hash4 + "\n" +
+		"Your fifth hash is: https://testnet.steexp.com/tx/" + Hash5 + "\n\n\n" +
+		footerString
 	return sendMail(body, to)
 }
