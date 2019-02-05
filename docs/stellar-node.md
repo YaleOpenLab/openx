@@ -16,7 +16,7 @@ This would create a new user `stellar` on your machine and you should be able to
 
 Verify installation by running `stellar-core -h` to see that it was properly installed.
 
-To get control of your terminal, run `script /dev/null` to be able to run a screen session where we can run stellar-core in.
+To get attach a screen with the terminal (to run `stellar-core` in), run `script /dev/null`.
 
 If you try to run horizon at this point, you should notice that psql spits out some nasty errors on its own. If you do want to reinstall postgresql, run
 
@@ -26,7 +26,7 @@ wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-
 sudo apt-get update
 ```
 
-to ensure that your copy of postgresql is not corrupted by some random influence. if you have existing data on postgresql, this step is to be proceeded ahead with caution.
+to ensure that your copy of postgresql is not corrupted by some random influence. if you have existing data on postgresql, this step is to be proceeded ahead with caution. Another alternative is to use sqlite3 in place of postgresql and change config in the appropriate places. This guide assumes that we will be using postgresql since its more suited for production environments than sqlite3 even though the latter has better performance. In addition, under note from the stellar dev team, if one plans to run just a validator, sqlite3 should function just fine.
 
 Open psql: `psql` and create a new database to hold the horizon database (horizon is the query interface for stellar)
 
@@ -122,6 +122,18 @@ Replace 2060000 with a number that is higher than the current latest block numbe
 screen -S horizon stellar-horizon --stellar-core-db-url="postgresql://stellar:password@localhost/stellar" --stellar-core-url="http://localhost:11626" --db-url="postgresql://stellar:password@localhost/horizon" --port 8080 --ingest=true
 ```
 
-to start horizon on port 8080 (change if required). The `ingest` field exists to provide a constant stream of data from `stellar-core` to `stellar-horizon` for continuous indexing. One can now query the given horizon server like the default horizon server run by the stellar foundation.
+to start horizon on port 8080 (change if required). The `ingest` field exists to provide a constant stream of data from `stellar-core` to `stellar-horizon` for continuous indexing. One can now query the given horizon server like the default horizon server run by the stellar foundation. Please do note that you'd have to open the relevant ports in the firewall in order for one to be able to receive / send traffic. The main port that stellar uses is 11625, 11626 is local to the environment that stellar-core is being run in and the `stellar-horizon` port can be configured to run on any port that we want it to.
 
 This document will be updated in the future once the platform transitions to mainnet from testnet.
+
+## References
+
+- https://github.com/stellar/docker-stellar-core-horizon/blob/master/testnet/core/etc/stellar-core.cfg
+- https://github.com/stellar/docs/blob/master/other/stellar-core-validator-example.cfg
+- https://www.stellar.org/developers/stellar-core/software/admin.html#why-run-a-node
+- https://github.com/stellar/stellar-core/blob/master/docs/stellar-core_testnet.cfg
+- https://github.com/stellar/packages
+- https://www.stellar.org/developers/stellar-core/software/testnet.html
+- https://www.postgresql.org/docs/9.2/libpq-connect.html#AEN38419
+- https://www.stellar.org/developers/horizon/reference/admin.html
+- https://www.stellar.org/developers/stellar-core/software/admin.html

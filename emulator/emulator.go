@@ -32,6 +32,7 @@ var (
 	PlatformPublicKey string
 )
 
+//var ApiUrl = "35.192.122.229:11626"
 var ApiUrl = "http://localhost:8080"
 
 func SetupConfig() (string, error) {

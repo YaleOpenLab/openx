@@ -20,6 +20,8 @@ import (
 
 // the server powering the openfinancing platform. There are two clients that can be used
 // with the backned - ofcli and emulator
+// refer https://github.com/stellar/go/blob/master/build/main_test.go in case the stellar
+// go SDK docs are insufficient.
 var opts struct {
 	Port int `short:"p" description:"The port on which the server runs on"`
 }

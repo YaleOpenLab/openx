@@ -15,6 +15,7 @@ import (
 // horizon API that stellar provides, which is incomplete
 
 var TestNetClient = &clients.Client{
+	// URL: "http://35.192.122.229:8080",
 	URL:  "https://horizon-testnet.stellar.org",
 	HTTP: http.DefaultClient,
 }
