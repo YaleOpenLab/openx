@@ -12,8 +12,6 @@ import (
 // place with respect to a specific project / investment
 
 // MWTODO: Get comments on general text here
-// TODO: maybe encrypt the config file so a person with access to this file cannot
-// steal all credentials
 // footerString is a common footer string that is used by all emails
 var footerString = "Have a nice day!\n\nWarm Regards, \nThe OpenSolar Team\n\n\n\n" +
 	"You're receiving this email because your contact was given" +

@@ -12,7 +12,7 @@ import (
 	"net/http"
 )
 
-// TODO: have some nice APi documentation page for this so that we can easily reference
+// TODO: have some nice API documentation page for this so that we can easily reference
 
 type StatusResponse struct {
 	Status int
@@ -46,7 +46,7 @@ func MarshalSend(w http.ResponseWriter, r *http.Request, x interface{}) {
 }
 
 func Send200(w http.ResponseWriter, r *http.Request) {
-	// TODO: have differnet functions that will send the appropriate repsonse codes
+	// TODO: have different functions that will send the appropriate response codes
 	var rt StatusResponse
 	rt.Status = 200
 	MarshalSend(w, r, rt)
