@@ -47,9 +47,6 @@ type Ledger struct {
 }
 
 */
-// we are needing to have to call this API because the go sdk for stellar is
-// incomplete. Once we run a local node / node server, we can call our server's
-// endpoint here
 func GetLedgerData(blockNumber string) ([]byte, error) {
 	var err error
 	var data []byte

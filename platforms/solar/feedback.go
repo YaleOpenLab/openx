@@ -26,6 +26,8 @@ package solar
 
 // TODO: add additional fields here based on what feedback we collect, would depend
 // on the frontend design and implementation as well
+// TODO: complete this area once we have a rudimentary frontend so that we can test stuff
+// more easily
 type Feedback struct {
 	Content string
 	// the content of the feedback, good / bad

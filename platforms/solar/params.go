@@ -1,7 +1,6 @@
 package solar
 
 // TODO: add more parameters here that would help identify a given solar project
-// TODO: migrate suggestions from the github gist to here
 type SolarParams struct {
 	Index int // an Index to keep quick track of how many projects exist
 

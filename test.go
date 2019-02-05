@@ -69,7 +69,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// TODO: need a server to run a public stellar node to test out stuff
 	consts.PlatformPublicKey, consts.PlatformSeed, err = StartPlatform()
 	if err != nil {
 		log.Fatal(err)

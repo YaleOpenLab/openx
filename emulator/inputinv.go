@@ -223,7 +223,6 @@ func ParseInputInv(input []string) error {
 		// end of ipfs
 		// start cases which are unique to investor
 	case "vote":
-		// TODO
 		if len(input) != 3 {
 			log.Println("vote <projIndex> <amount>")
 			break
@@ -251,7 +250,6 @@ func ParseInputInv(input []string) error {
 		break
 		// end of vote
 	case "kyc":
-		// TODO
 		if !LocalInvestor.U.Inspector {
 			ColorOutput("YOU ARE NOT A KYC INSPECTOR", RedColor)
 			break
