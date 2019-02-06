@@ -127,13 +127,23 @@ func InvestInProject(projIndex int, invIndex int, invAmount string, invSeed stri
 		}
 	}
 
+	// offer user to exchange xlm for stableusd and invest directly if the user does not have stableusd
+	// this should be a menu on the Frontend but here we do this automatically
+	err = stablecoin.OfferExchange(investor.U.PublicKey, invSeed, invAmount)
+	if err != nil {
+		log.Println(err)
+		return project, err
+	}
+
 	stableTxHash, err := SendUSDToPlatform(invSeed, invAmount, project.Params.Index)
 	if err != nil {
+		log.Println(err)
 		return project, err
 	}
 
 	issuerPubkey, issuerSeed, err := wallet.RetrieveSeed(issuer.CreatePath(project.Params.Index), consts.IssuerSeedPwd)
 	if err != nil {
+		log.Println(err)
 		return project, err
 	}
 
@@ -433,64 +443,5 @@ func sendPaymentNotif(recpIndex int, projIndex int, email string) {
 		paybackTimes += 1
 		log.Println("Sent: ", email, "a notification on payments for payment cycle: ", paybackTimes)
 		time.Sleep(time.Duration(project.PaybackPeriod * consts.OneWeekInSecond))
-	}
-}
-
-func monitorPaybacks(recpIndex int, projIndex int, debtAssetCode string) {
-	// monitor whether the user is paying back regularly towards the given project
-	// this is a routine similar to the general notification routine but focused more on the
-	// payback and tracking that. Also, if the other thread fails, nothing major happens except
-	// notifications, but if this one fails, we can't track paybacks, so this one has to be
-	// isolated.
-	for {
-		project, err := RetrieveProject(projIndex)
-		if err != nil {
-			log.Println(err)
-		}
-
-		recipient, err := database.RetrieveRecipient(recpIndex)
-		if err != nil {
-			log.Println(err)
-		}
-
-		// this will be our payback period and we need to check if the user pays us back
-
-		nowTime := utils.Unix()
-		timeElapsed := nowTime - project.Params.DateLastPaid            // this would be in seconds (unix time)
-		period := int64(project.PaybackPeriod * consts.OneWeekInSecond) // in seconds due to the const
-		factor := timeElapsed / period
-
-		if factor <= 1 {
-			// don't do anything since the suer has been apying back regularly
-			log.Println("User: ", recipient.U.Email, "is on track paying towards order: ", projIndex)
-			// maybe even update reputation here on a fractional basis depending on a user's timely payments
-		} else if factor >= 2 {
-			// person has not paid back for two consecutive period, send gentle reminder
-			notif.SendNicePaybackAlertEmail(projIndex, recipient.U.Email)
-		} else if factor >= 4 {
-			// person has not paid back for four consecutive cycles, send reminder
-			notif.SendSternPaybackAlertEmail(projIndex, recipient.U.Email)
-			for _, elem := range project.ProjectInvestors {
-				// send an email to recipients to assure them that we're on the issue and will be acting
-				// soon if the recipient fails to pay again.
-				notif.SendSternPaybackAlertEmailI(projIndex, elem.U.Email)
-			}
-			notif.SendSternPaybackAlertEmailG(projIndex, project.Guarantor.U.Email)
-			// send an email out to the guarantor
-		} else if factor >= 6 {
-			// send a disconnection notice to the recipient and let them know we have redirected
-			// power towards the grid. Also maybe email ourselves in this case so that we can
-			// contact them personally to resolve the issue as soon as possible.
-			notif.SendDisconnectionEmail(projIndex, recipient.U.Email)
-			for _, elem := range project.ProjectInvestors {
-				// send an email out to each investor to let them know that the recipient
-				// has defaulted on payments and that we have acted on the issue.
-				notif.SendDisconnectionEmailI(projIndex, elem.U.Email)
-			}
-			notif.SendDisconnectionEmailG(projIndex, project.Guarantor.U.Email)
-			// send an email out to the guarantor
-		}
-
-		time.Sleep(time.Duration(consts.OneWeekInSecond)) // poll every week to ch eck progress on payments
 	}
 }

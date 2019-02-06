@@ -42,6 +42,7 @@ type User struct {
 	// auto generated timestamp
 	Kyc bool
 	// false if kyc is not accepted / reviewed, true if user has been verified.
+	// TODO: evaluate kyc providers and get a trusted partner who can do this for us (see kyc-services.md)
 	Inspector bool
 	// inspector is a kyc inspector who valdiates the data of people who would like
 	// to signup on the platform
@@ -432,7 +433,7 @@ func AgreeToContractConditions(contractHash string, projIndex string,
 	}
 
 	//if user.Notification {
-		notif.SendContractNotification(firstHash, secondHash, thirdHash, fourthHash, fifthHash, "varunramganesh@gmail.com")
+	notif.SendContractNotification(firstHash, secondHash, thirdHash, fourthHash, fifthHash, "varunramganesh@gmail.com")
 	//}
 
 	return nil

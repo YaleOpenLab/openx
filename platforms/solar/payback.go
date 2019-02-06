@@ -3,6 +3,7 @@ package solar
 import (
 	"fmt"
 	"log"
+	"time"
 
 	assets "github.com/OpenFinancing/openfinancing/assets"
 	consts "github.com/OpenFinancing/openfinancing/consts"
@@ -173,4 +174,63 @@ func (project Project) CalculatePayback(amount string) string {
 	amountPB := (amountF / float64(project.Params.TotalValue)) * float64(project.Params.Years*12)
 	amountPBString := utils.FtoS(amountPB)
 	return amountPBString
+}
+
+func monitorPaybacks(recpIndex int, projIndex int, debtAssetCode string) {
+	// monitor whether the user is paying back regularly towards the given project
+	// this is a routine similar to the general notification routine but focused more on the
+	// payback and tracking that. Also, if the other thread fails, nothing major happens except
+	// notifications, but if this one fails, we can't track paybacks, so this one has to be
+	// isolated. various thresholds that we will be using for notification services are defined as constants
+	for {
+		project, err := RetrieveProject(projIndex)
+		if err != nil {
+			log.Println(err)
+		}
+
+		recipient, err := database.RetrieveRecipient(recpIndex)
+		if err != nil {
+			log.Println(err)
+		}
+
+		// this will be our payback period and we need to check if the user pays us back
+
+		nowTime := utils.Unix()
+		timeElapsed := nowTime - project.Params.DateLastPaid            // this would be in seconds (unix time)
+		period := int64(project.PaybackPeriod * consts.OneWeekInSecond) // in seconds due to the const
+		factor := timeElapsed / period
+
+		if factor <= 1 {
+			// don't do anything since the suer has been apying back regularly
+			log.Println("User: ", recipient.U.Email, "is on track paying towards order: ", projIndex)
+			// maybe even update reputation here on a fractional basis depending on a user's timely payments
+		} else if factor > consts.NormalThreshold && factor < consts.AlertThreshold {
+			// person has not paid back for one-two consecutive period, send gentle reminder
+			notif.SendNicePaybackAlertEmail(projIndex, recipient.U.Email)
+		} else if factor >= consts.SternAlertThreshold && factor < consts.DisconnectionThreshold {
+			// person has not paid back for four consecutive cycles, send reminder
+			notif.SendSternPaybackAlertEmail(projIndex, recipient.U.Email)
+			for _, elem := range project.ProjectInvestors {
+				// send an email to recipients to assure them that we're on the issue and will be acting
+				// soon if the recipient fails to pay again.
+				notif.SendSternPaybackAlertEmailI(projIndex, elem.U.Email)
+			}
+			notif.SendSternPaybackAlertEmailG(projIndex, project.Guarantor.U.Email)
+			// send an email out to the guarantor
+		} else if factor >= consts.DisconnectionThreshold {
+			// send a disconnection notice to the recipient and let them know we have redirected
+			// power towards the grid. Also maybe email ourselves in this case so that we can
+			// contact them personally to resolve the issue as soon as possible.
+			notif.SendDisconnectionEmail(projIndex, recipient.U.Email)
+			for _, elem := range project.ProjectInvestors {
+				// send an email out to each investor to let them know that the recipient
+				// has defaulted on payments and that we have acted on the issue.
+				notif.SendDisconnectionEmailI(projIndex, elem.U.Email)
+			}
+			notif.SendDisconnectionEmailG(projIndex, project.Guarantor.U.Email)
+			// send an email out to the guarantor
+		}
+
+		time.Sleep(time.Duration(consts.OneWeekInSecond)) // poll every week to ch eck progress on payments
+	}
 }

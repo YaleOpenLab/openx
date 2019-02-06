@@ -4,7 +4,6 @@ package solar
 // This can be applied as a feedback system to actors that are part of projects
 // (i.e. relate to Entities.go, such as contractors). It allows investors and
 // recipients to give comments on the services provided by these entities in the project.
-// TODO: build and improve this functionality and link it with the reputation system
 // the idea is that after a stage ends, we need to ask feedback on the entity whose
 // work ends at that stage. Examples follow:
 // 1. Originator - the work of an originator ends at stage 1 (after the contract is
@@ -27,7 +26,7 @@ package solar
 // TODO: add additional fields here based on what feedback we collect, would depend
 // on the frontend design and implementation as well
 // TODO: complete this area once we have a rudimentary frontend so that we can test stuff
-// more easily
+// more easily and link it with the reputation system
 type Feedback struct {
 	Content string
 	// the content of the feedback, good / bad

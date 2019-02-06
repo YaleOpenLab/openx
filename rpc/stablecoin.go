@@ -21,17 +21,9 @@ func setupStableCoinRPCs() {
 func getStableCoin() {
 	http.HandleFunc("/stablecoin/get", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
-		log.Println("Calling route")
-		if r.URL.Query() == nil || r.URL.Query()["seed"] == nil || r.URL.Query()["amount"] == nil ||
-			r.URL.Query()["username"] == nil || r.URL.Query()["pwhash"] == nil ||
-			len(r.URL.Query()["pwhash"][0]) != 128 {
-			errorHandler(w, r, http.StatusNotFound)
-			return
-		}
-
 		_, err := database.ValidateUser(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
-		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+		if err != nil || r.URL.Query()["seed"] == nil || r.URL.Query()["amount"] == nil {
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 		// we need to validate the user and check if its a part of the platform. If not,
@@ -41,16 +33,16 @@ func getStableCoin() {
 		receiverPubkey, err := wallet.ReturnPubkey(receiverSeed)
 		if err != nil {
 			log.Println("Error while retrieving pubkey")
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 		log.Println("Pubkey: ", receiverPubkey)
 		err = stablecoin.Exchange(receiverPubkey, receiverSeed, amount)
 		if err != nil {
 			log.Println("error while exchanging", err)
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
-		Send200(w, r)
+		responseHandler(w, r, StatusOK)
 	})
 }

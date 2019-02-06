@@ -7,7 +7,7 @@ package rpc
 // we'll stay with this one for a while
 import (
 	"encoding/json"
-	"fmt"
+	//"fmt"
 	"log"
 	"net/http"
 )
@@ -15,7 +15,8 @@ import (
 // TODO: have some nice API documentation page for this so that we can easily reference
 
 type StatusResponse struct {
-	Status int
+	Code   int
+	Status string
 }
 
 // setupBasicHandlers sets up two handler functions that can be used to serve a default
@@ -28,6 +29,25 @@ func setupBasicHandlers() {
 	setupPingHandler()
 }
 
+// use these standard error codes to send out to request replies so callers can figure
+// out what's going wrong with their requests
+const (
+	StatusOK                  = http.StatusOK                  //  200 RFC 7231, 6.3.1
+	StatusCreated             = http.StatusCreated             //  201 RFC 7231, 6.3.2
+	StatusMovedPermanently    = http.StatusMovedPermanently    //  301 RFC 7231, 6.4.2
+	StatusBadRequest          = http.StatusBadRequest          //  400 RFC 7231, 6.5.1
+	StatusUnauthorized        = http.StatusUnauthorized        //  401 RFC 7235, 3.1
+	StatusPaymentRequired     = http.StatusPaymentRequired     //  402 RFC 7231, 6.5.2
+	StatusNotFound            = http.StatusNotFound            //  404 RFC 7231, 6.5.4
+	StatusInternalServerError = http.StatusInternalServerError //  RFC 7231, 6.6.1
+	StatusBadGateway          = http.StatusBadGateway          //  RFC 7231, 6.6.3
+	StatusLocked              = http.StatusLocked              //  423 RFC 4918, 11.3
+	StatusTooManyRequests     = http.StatusTooManyRequests     //  RFC 6585, 4
+	StatusGatewayTimeout      = http.StatusGatewayTimeout      //  RFC 7231, 6.6.5
+	StatusNotAcceptable       = http.StatusNotAcceptable       // RFC 7231, 6.5.6
+	StatusServiceUnavailable  = http.StatusServiceUnavailable  //  RFC 7231, 6.6.4
+)
+
 func WriteToHandler(w http.ResponseWriter, jsonString []byte) {
 	w.Header().Add("Access-Control-Allow-Headers", "Accept, Authorization, Cache-Control, Content-Type")
 	w.Header().Add("Access-Control-Allow-Methods", "*")
@@ -39,17 +59,10 @@ func WriteToHandler(w http.ResponseWriter, jsonString []byte) {
 func MarshalSend(w http.ResponseWriter, r *http.Request, x interface{}) {
 	xJson, err := json.Marshal(x)
 	if err != nil {
-		errorHandler(w, r, http.StatusNotFound)
+		responseHandler(w, r, StatusInternalServerError)
 		return
 	}
 	WriteToHandler(w, xJson)
-}
-
-func Send200(w http.ResponseWriter, r *http.Request) {
-	// TODO: have different functions that will send the appropriate response codes
-	var rt StatusResponse
-	rt.Status = 200
-	MarshalSend(w, r, rt)
 }
 
 func checkOrigin(w http.ResponseWriter, r *http.Request) {
@@ -74,17 +87,48 @@ func checkPost(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func errorHandler(w http.ResponseWriter, r *http.Request, status int) {
-	w.WriteHeader(status)
-	if status == http.StatusNotFound {
-		fmt.Fprint(w, "404 Page Not Found")
+func responseHandler(w http.ResponseWriter, r *http.Request, status int) {
+	var response StatusResponse
+	response.Code = status
+	switch status {
+	case StatusOK:
+		response.Status = "OK"
+	case StatusCreated:
+		response.Status = "Method Created"
+	case StatusMovedPermanently:
+		response.Status = "Endpoint moved permanently"
+	case StatusBadRequest:
+		response.Status = "Bad Request error!"
+	case StatusUnauthorized:
+		response.Status = "You are unauthorized to make this request"
+	case StatusPaymentRequired:
+		response.Status = "Payment required before you can access this endpoint"
+	case StatusNotFound:
+		response.Status = "404 Error Not Found!"
+	case StatusInternalServerError:
+		response.Status = "Internal Server Error"
+	case StatusLocked:
+		response.Status = "Endpoint locked until further notice"
+	case StatusTooManyRequests:
+		response.Status = "Too many requests made, try again later"
+	case StatusBadGateway:
+		response.Status = "Bad Gateway Error"
+	case StatusServiceUnavailable:
+		response.Status = "Service Unavailable error"
+	case StatusGatewayTimeout:
+		response.Status = "Gateway Timeout Error"
+	case StatusNotAcceptable:
+		response.Status = "Not accepted"
+	default:
+		response.Status = "404 Page Not Found"
 	}
+	MarshalSend(w, r, response)
 }
 
 func setupDefaultHandler() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		// default to 404 for every application not running on localhost
-		errorHandler(w, r, http.StatusNotFound)
+		responseHandler(w, r, StatusNotFound)
 		return
 	})
 }
@@ -92,7 +136,7 @@ func setupDefaultHandler() {
 func setupPingHandler() {
 	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
-		Send200(w, r)
+		responseHandler(w, r, StatusOK)
 	})
 }
 
@@ -100,14 +144,14 @@ func setupPingHandler() {
 // having to define specific endpoints for this because this
 // is the system that would be used by the backend, so has to be built secure.
 func StartServer(port string) {
-	// we have a couple sub handlers for each main handler. these handlers
-	// call the relevant internal endpoints and return a status / data.
+	// we have a sub handlers for each major entity. These handlers
+	// call the relevant internal endpoints and return a StatusResponse message.
 	// we also have to process data from the pi itself, and that should have its own
 	// functions somewhere else that can be accessed by the rpc.
 
 	// also, this is assumed to run on localhost and hence has no authentication mehcanism.
 	// in the case we want to expose the API, we must add some stuff that secures this.
-	// right now, its just the CORS header, since we want to allwo all localhost processes
+	// right now, its just the CORS header, since we want to allow all localhost processes
 	// to access the API
 	// a potential improvement will be to add something like macaroons
 	// so that we can serve over an authenticated channel

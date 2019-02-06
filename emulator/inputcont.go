@@ -203,10 +203,10 @@ func ParseInputCont(input []string) error {
 			log.Println(err)
 			break
 		}
-		if response.Status == 200 {
+		if response.Code == 200 {
 			ColorOutput("SUCCESSFUL, CHECK BALANCES", GreenColor)
 		} else {
-			ColorOutput("RESPONSE STATUS: "+utils.ItoS(response.Status), GreenColor)
+			ColorOutput("RESPONSE STATUS: "+utils.ItoS(response.Code), GreenColor)
 		}
 		// end of exchange
 	case "ipfs":
@@ -223,7 +223,7 @@ func ParseInputCont(input []string) error {
 		fmt.Println("IPFS HASH", hashString)
 		// end of ipfs
 		// start of conttractor only functions
-	case "propose": // TODO: maybe arrive at a way to do this sometime later?
+	case "propose":
 		fmt.Println("Proposing a contract can be done only through the opensolar webui" +
 			"since that involves document verification")
 		break
@@ -257,10 +257,10 @@ func ParseInputCont(input []string) error {
 			break
 		}
 
-		if response.Status == 200 {
+		if response.Code == 200 {
 			ColorOutput("SUCCESSFULLY ADDED COLLATERAL", GreenColor)
 		} else {
-			ColorOutput("RESPONSE STATUS: "+utils.ItoS(response.Status), GreenColor)
+			ColorOutput("RESPONSE STATUS: "+utils.ItoS(response.Code), GreenColor)
 		}
 		break
 	case "mypreoriginated":
@@ -304,7 +304,7 @@ func ParseInputCont(input []string) error {
 				log.Println(err)
 				break
 			}
-			if status.Status == 200 {
+			if status.Code == 200 {
 				ColorOutput("INVESTMENT SUCCESSFUL, CHECK EMAIL", GreenColor)
 			} else {
 				ColorOutput("INVESTMENT NOT SUCCESSFUL", RedColor)
@@ -374,7 +374,7 @@ func ParseInputCont(input []string) error {
 				log.Println(err)
 				break
 			}
-			if status.Status == 200 {
+			if status.Code == 200 {
 				ColorOutput("COIN REQUEST SUCCESSFUL, CHECK EMAIL", GreenColor)
 			} else {
 				ColorOutput("COIN REQUEST NOT SUCCESSFUL", RedColor)
@@ -401,7 +401,7 @@ func ParseInputCont(input []string) error {
 				log.Println(err)
 				break
 			}
-			if status.Status == 200 {
+			if status.Code == 200 {
 				ColorOutput("COIN REQUEST SUCCESSFUL, CHECK EMAIL", GreenColor)
 			} else {
 				ColorOutput("COIN REQUEST NOT SUCCESSFUL", RedColor)

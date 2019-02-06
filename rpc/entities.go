@@ -40,7 +40,7 @@ func validateEntity() {
 		checkGet(w, r)
 		prepEntity, err := EntityValidateHelper(w, r)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 		log.Println("Prepared Entity:", prepEntity)
@@ -53,13 +53,13 @@ func getPreOriginatedContracts() {
 		checkGet(w, r)
 		prepEntity, err := EntityValidateHelper(w, r)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		x, err := solar.RetrieveOriginatorProjects(solar.PreOriginProject, prepEntity.U.Index)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 		MarshalSend(w, r, x)
@@ -71,13 +71,13 @@ func getOriginatedContracts() {
 		checkGet(w, r)
 		prepEntity, err := EntityValidateHelper(w, r)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		x, err := solar.RetrieveOriginatorProjects(solar.OriginProject, prepEntity.U.Index)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 		MarshalSend(w, r, x)
@@ -89,13 +89,13 @@ func getProposedContracts() {
 		checkGet(w, r)
 		prepEntity, err := EntityValidateHelper(w, r)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		x, err := solar.RetrieveContractorProjects(solar.ProposedProject, prepEntity.U.Index)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 		MarshalSend(w, r, x)
@@ -108,23 +108,23 @@ func addCollateral() {
 		checkGet(w, r)
 		prepEntity, err := EntityValidateHelper(w, r)
 		if err != nil || r.URL.Query()["amount"] == nil || r.URL.Query()["collateral"] == nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		collateralAmount, err := utils.StoFWithCheck(r.URL.Query()["amount"][0])
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		collateralData := r.URL.Query()["collateral"][0]
 		err = prepEntity.AddCollateral(collateralAmount, collateralData)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
-		Send200(w, r)
+		responseHandler(w, r, StatusOK)
 	})
 }

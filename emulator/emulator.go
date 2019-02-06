@@ -19,15 +19,15 @@ import (
 // using the same backend that we have right now
 var (
 	// have a global variable for each entity
-	LocalRecipient    database.Recipient
-	LocalUser         database.User
-	LocalInvestor     database.Investor
-	LocalContractor   solar.Entity
-	LocalOriginator   solar.Entity
+	LocalRecipient  database.Recipient
+	LocalUser       database.User
+	LocalInvestor   database.Investor
+	LocalContractor solar.Entity
+	LocalOriginator solar.Entity
 	// store local seed for easy retrieval
-	LocalSeed         string
+	LocalSeed string
 	// store localseedpwd after asking user for it the first time around
-	LocalSeedPwd      string
+	LocalSeedPwd string
 	// store the platform public key
 	PlatformPublicKey string
 )

@@ -104,7 +104,7 @@ func getAllInvestorsPublic() {
 		checkGet(w, r)
 		investors, err := database.RetrieveAllInvestors()
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 		sInvestors := sanitizeAllInvestors(investors)
@@ -119,7 +119,7 @@ func getAllRecipientsPublic() {
 		checkGet(w, r)
 		recipients, err := database.RetrieveAllRecipients()
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 		sRecipients := sanitizeAllRecipients(recipients)
@@ -134,7 +134,7 @@ func getTopReputationPublic() {
 		checkGet(w, r)
 		allUsers, err := database.TopReputationUsers()
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 		sUsers := sanitizeAllUsers(allUsers)
@@ -147,7 +147,7 @@ func getRecpTopReputationPublic() {
 		checkGet(w, r)
 		allRecps, err := database.TopReputationRecipient()
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 		sRecipients := sanitizeAllRecipients(allRecps)
@@ -160,7 +160,7 @@ func getInvTopReputationPublic() {
 		checkGet(w, r)
 		allInvs, err := database.TopReputationInvestors()
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 		sInvestors := sanitizeAllInvestors(allInvs)

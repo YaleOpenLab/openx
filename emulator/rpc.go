@@ -44,7 +44,7 @@ func PingRpc() error {
 		return err
 	}
 	// the result would be the status of the platform
-	ColorOutput("PLATFORM STATUS: "+utils.ItoS(x.Status), GreenColor)
+	ColorOutput("PLATFORM STATUS: "+utils.ItoS(x.Code), GreenColor)
 	return nil
 }
 
@@ -117,7 +117,7 @@ func ProjectPayback(recpIndex string, assetName string,
 	if err != nil {
 		return err
 	}
-	if x.Status == 200 {
+	if x.Code == 200 {
 		ColorOutput("PAID!", GreenColor)
 		return nil
 	}
