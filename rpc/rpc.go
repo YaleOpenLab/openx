@@ -143,7 +143,6 @@ func setupPingHandler() {
 // StartServer runs on the server side ie the server with the frontend.
 // having to define specific endpoints for this because this
 // is the system that would be used by the backend, so has to be built secure.
-// TODO: add auth scheme for accessing API
 func StartServer(port string) {
 	// we have a sub handlers for each major entity. These handlers
 	// call the relevant internal endpoints and return a StatusResponse message.

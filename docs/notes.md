@@ -95,11 +95,5 @@ Eg. the contractors receives an upfront payment before the process begins but on
 
 ### TODO Renewable Energy certification
 
-### TODO LEGAL OWNERSHIP
-Come up with a step so that when ownership is fully transferred, there is an automatic report that can change a registry that has legal validity
-functions that require no gas, but will check the state of the system
-
-Returns true if consumer has completely paid off any outstanding balance on the panel at ssAddress within their consumerBuffer period
-
 ### TODO BREACH SCENARIOS
 TODO: activate hardware to redirect power to the grid.

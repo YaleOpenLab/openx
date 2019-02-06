@@ -223,7 +223,7 @@ func ParseInputCont(input []string) error {
 		fmt.Println("IPFS HASH", hashString)
 		// end of ipfs
 		// start of conttractor only functions
-	case "propose": // TODO: maybe arrive at a way to do this sometime later?
+	case "propose":
 		fmt.Println("Proposing a contract can be done only through the opensolar webui" +
 			"since that involves document verification")
 		break

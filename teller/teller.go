@@ -15,7 +15,6 @@ import (
 
 // package teller contains the remote client code that would be run on the client's
 // side and communicate information with us and with atonomi and other partners.
-// TODO: Figure out how to tie the actual IoT device and its ID with the project
 // that it belongs, the contract, recipient, and eg. person who installed it.
 // Consider doing this with IoT partners, eg. Atonomi.
 

@@ -13,8 +13,8 @@ import (
 )
 
 // TODO: change name of bonds to something better. Add description of the bond platform below
-// TODO: also consider an architecture design which has the various models as the
-// base layer and imports them into a platform wherever needed.
+// TODO: also consider an architecture design which has various models as the
+// base layer and imports them into specific platforms.
 // ConstructionBond contains the paramters for the COnstruciton Bond model of the housing platform
 // paramters defined here are not exhaustive and more can be added if desired
 type ConstructionBond struct {
