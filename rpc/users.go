@@ -83,7 +83,7 @@ func ValidateUser() {
 		// need to pass the pwhash param here
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 		// no we need to see whether this guy is an investor or a recipient.
@@ -101,7 +101,7 @@ func ValidateUser() {
 				prepEntity, err = solar.ValidateEntity(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
 				if err != nil {
 					// not an investor, recipient or entity, error
-					errorHandler(w, r, http.StatusNotFound)
+					responseHandler(w, r, StatusBadRequest)
 					return
 				} else {
 					entity = true
@@ -134,14 +134,14 @@ func getBalances() {
 		checkOrigin(w, r)
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		pubkey := prepUser.PublicKey
 		balances, err := xlm.GetAllBalances(pubkey)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusNotFound)
 			return
 		}
 		MarshalSend(w, r, balances)
@@ -154,7 +154,7 @@ func getXLMBalance() {
 
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
@@ -162,7 +162,7 @@ func getXLMBalance() {
 		log.Println("PUBKEY: ", pubkey)
 		balance, err := xlm.GetNativeBalance(pubkey)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusNotFound)
 			return
 		}
 		MarshalSend(w, r, balance)
@@ -175,7 +175,7 @@ func getAssetBalance() {
 
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["asset"] == nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
@@ -183,7 +183,7 @@ func getAssetBalance() {
 		asset := r.URL.Query()["asset"][0]
 		balance, err := xlm.GetAssetBalance(pubkey, asset)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusNotFound)
 			return
 		}
 		MarshalSend(w, r, balance)
@@ -195,20 +195,20 @@ func getIpfsHash() {
 
 		_, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["string"] == nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		hashString := r.URL.Query()["string"][0]
 		hash, err := ipfs.AddStringToIpfs(hashString)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
 		hashCheck, err := ipfs.GetStringFromIpfs(hash)
 		if err != nil || hashCheck != hashString {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
@@ -221,17 +221,17 @@ func authKyc() {
 
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["userIndex"] == nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		uInput := utils.StoI(r.URL.Query()["userIndex"][0])
 		err = prepUser.Authorize(uInput)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
-		Send200(w, r)
+		responseHandler(w, r, StatusOK)
 	})
 }
 
@@ -240,7 +240,7 @@ func sendXLM() {
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["destination"] == nil || r.URL.Query()["amount"] == nil ||
 			r.URL.Query()["seedpwd"] == nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
@@ -250,7 +250,7 @@ func sendXLM() {
 		seedpwd := r.URL.Query()["seedpwd"][0]
 		seed, err := wallet.DecryptSeed(prepUser.EncryptedSeed, seedpwd)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
@@ -271,18 +271,18 @@ func notKycView() {
 	http.HandleFunc("/user/notkycview", func(w http.ResponseWriter, r *http.Request) {
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		if !prepUser.Inspector {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusUnauthorized)
 			return
 		}
 
 		users, err := database.RetrieveAllUsersWithoutKyc()
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
@@ -294,18 +294,18 @@ func kycView() {
 	http.HandleFunc("/user/kycview", func(w http.ResponseWriter, r *http.Request) {
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		if !prepUser.Inspector {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusUnauthorized)
 			return
 		}
 
 		users, err := database.RetrieveAllUsersWithKyc()
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
@@ -317,17 +317,17 @@ func askForCoins() {
 	http.HandleFunc("/user/askxlm", func(w http.ResponseWriter, r *http.Request) {
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		err = xlm.GetXLM(prepUser.PublicKey)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
-		Send200(w, r)
+		responseHandler(w, r, StatusOK)
 	})
 }
 
@@ -336,7 +336,7 @@ func trustAsset() {
 		// since this is testnet, give caller coins from the testnet faucet
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
@@ -347,7 +347,7 @@ func trustAsset() {
 		seedpwd := r.URL.Query()["seedpwd"][0]
 		seed, err := wallet.DecryptSeed(prepUser.EncryptedSeed, seedpwd)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
@@ -355,8 +355,7 @@ func trustAsset() {
 		log.Println("ASSET CODE, ASSET ISSUER, LIMIT, PublicKey, SEED", assetCode, assetIssuer, limit, prepUser.PublicKey, seed)
 		txhash, err := assets.TrustAsset(assetCode, assetIssuer, limit, prepUser.PublicKey, seed)
 		if err != nil {
-			log.Println("ERR: ", err)
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
@@ -374,14 +373,13 @@ func uploadFile() {
 
 		_, err := UserValidateHelper(w, r)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		file, fileHeader, err := r.FormFile("file")
 		if err != nil {
-			log.Println(err)
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 		defer file.Close()
@@ -401,7 +399,7 @@ func uploadFile() {
 		// can't do anything with extensions, so while decrypting from ipfs, we can attach
 		// all three types and return to the user.
 		if !supportedType {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusNotAcceptable)
 			return
 		}
 
@@ -409,14 +407,14 @@ func uploadFile() {
 		data, err := ioutil.ReadAll(file)
 		if err != nil {
 			log.Println(err)
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
 		hashString, err := ipfs.IpfsHashData(data)
 		if err != nil {
 			log.Println(err)
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 		MarshalSend(w, r, hashString)

@@ -202,10 +202,10 @@ func ParseInputOrig(input []string) error {
 			log.Println(err)
 			break
 		}
-		if response.Status == 200 {
+		if response.Code == 200 {
 			ColorOutput("SUCCESSFUL, CHECK BALANCES", GreenColor)
 		} else {
-			ColorOutput("RESPONSE STATUS: "+utils.ItoS(response.Status), GreenColor)
+			ColorOutput("RESPONSE STATUS: "+utils.ItoS(response.Code), GreenColor)
 		}
 		// end of exchange
 	case "ipfs":
@@ -251,10 +251,10 @@ func ParseInputOrig(input []string) error {
 			break
 		}
 
-		if response.Status == 200 {
+		if response.Code == 200 {
 			ColorOutput("SUCCESSFULLY ADDED COLLATERAL", GreenColor)
 		} else {
-			ColorOutput("RESPONSE STATUS: "+utils.ItoS(response.Status), GreenColor)
+			ColorOutput("RESPONSE STATUS: "+utils.ItoS(response.Code), GreenColor)
 		}
 		break
 		// end of addcollateral
@@ -307,7 +307,7 @@ func ParseInputOrig(input []string) error {
 				log.Println(err)
 				break
 			}
-			if status.Status == 200 {
+			if status.Code == 200 {
 				ColorOutput("INVESTMENT SUCCESSFUL, CHECK EMAIL", GreenColor)
 			} else {
 				ColorOutput("INVESTMENT NOT SUCCESSFUL", RedColor)
@@ -377,7 +377,7 @@ func ParseInputOrig(input []string) error {
 				log.Println(err)
 				break
 			}
-			if status.Status == 200 {
+			if status.Code == 200 {
 				ColorOutput("COIN REQUEST SUCCESSFUL, CHECK EMAIL", GreenColor)
 			} else {
 				ColorOutput("COIN REQUEST NOT SUCCESSFUL", RedColor)
@@ -404,7 +404,7 @@ func ParseInputOrig(input []string) error {
 				log.Println(err)
 				break
 			}
-			if status.Status == 200 {
+			if status.Code == 200 {
 				ColorOutput("COIN REQUEST SUCCESSFUL, CHECK EMAIL", GreenColor)
 			} else {
 				ColorOutput("COIN REQUEST NOT SUCCESSFUL", RedColor)

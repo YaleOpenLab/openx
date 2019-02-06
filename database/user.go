@@ -432,7 +432,7 @@ func AgreeToContractConditions(contractHash string, projIndex string,
 	}
 
 	//if user.Notification {
-		notif.SendContractNotification(firstHash, secondHash, thirdHash, fourthHash, fifthHash, "varunramganesh@gmail.com")
+	notif.SendContractNotification(firstHash, secondHash, thirdHash, fourthHash, fifthHash, "varunramganesh@gmail.com")
 	//}
 
 	return nil

@@ -45,7 +45,7 @@ func PingHandler() {
 	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
 		var pr rpc.StatusResponse
-		pr.Status = 200
+		pr.Code = 200
 		prJson, err := json.Marshal(pr)
 		if err != nil {
 			errorHandler(w, r, http.StatusNotFound)

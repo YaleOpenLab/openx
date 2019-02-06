@@ -21,9 +21,9 @@ type SolarParams struct {
 	BalLeft float64 // denotes the balance left to pay by the party
 	Votes   int     // the number of votes towards a proposed contract by investors
 
-	DateInitiated string  // date the project was created
-	DateFunded    string  // date when the project was funded
-	DateLastPaid  int64 // int64 since we need comparisons on this one
+	DateInitiated string // date the project was created
+	DateFunded    string // date when the project was funded
+	DateLastPaid  int64  // int64 since we need comparisons on this one
 	// Percentage raised is not stored in the database since that can be calculated by the UI
 
 	// extra params based on data available

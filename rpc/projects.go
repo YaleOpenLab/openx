@@ -8,9 +8,10 @@ import (
 	utils "github.com/OpenFinancing/openfinancing/utils"
 )
 
-// collect all handlers in one place so that we can aseemble them easily
+// collect all handlers in one place so that we can assemble them easily
 // there are some repeating RPCs that we would like to avoid and maybe there's some
 // nice way to group them together
+
 // setupProjectRPCs sets up all the RPC calls related to projects that might be used
 func setupProjectRPCs() {
 	insertProject()
@@ -65,15 +66,15 @@ func insertProject() {
 		var prepProject solar.Project
 		prepProject, err := parseProject(r)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 		err = prepProject.Save()
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
-		Send200(w, r)
+		responseHandler(w, r, StatusOK)
 	})
 }
 
@@ -86,7 +87,7 @@ func getAllProjects() {
 		// db, without asking for one
 		allProjects, err := solar.RetrieveAllProjects()
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 		MarshalSend(w, r, allProjects)
@@ -98,13 +99,13 @@ func getProject() {
 	http.HandleFunc("/project/get", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
 		if r.URL.Query()["index"] == nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 		uKey := utils.StoI(r.URL.Query()["index"][0])
 		contract, err := solar.RetrieveProject(uKey)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 		MarshalSend(w, r, contract)
@@ -115,7 +116,7 @@ func projectHandler(w http.ResponseWriter, r *http.Request, stage float64) {
 	checkGet(w, r)
 	allProjects, err := solar.RetrieveProjectsAtStage(stage)
 	if err != nil {
-		errorHandler(w, r, http.StatusNotFound)
+		responseHandler(w, r, StatusInternalServerError)
 		return
 	}
 	fmt.Println("PROJECTS AT STAGE: ", stage, allProjects)

@@ -22,7 +22,7 @@ func GetAllCoops() {
 		checkGet(w, r)
 		allBonds, err := bonds.RetrieveAllBonds()
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 		MarshalSend(w, r, allBonds)
@@ -34,7 +34,7 @@ func getCoopDetails() {
 		checkGet(w, r)
 		// get the details of a specific bond by key
 		if r.URL.Query()["index"] == nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 		uKey := utils.StoI(r.URL.Query()["index"][0])
@@ -44,7 +44,7 @@ func getCoopDetails() {
 		}
 		bondJson, err := json.Marshal(bond)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 		WriteToHandler(w, bondJson)
@@ -62,7 +62,7 @@ func InvestInCoop() {
 		// need the bond index passed so that we can retrieve the bond easily
 		if r.FormValue("MonthlyPayment") == "" || r.FormValue("CoopIndex") == "" || r.FormValue("InvIndex") == "" || r.FormValue("InvSeedPwd") == "" {
 			log.Println("missing params")
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 		}
 
 		issuerSeed := "SBBYVEI4YNKZANRQEFH35U5GPEJ27MBLL7XHEKX5VC75QLJZWAXGX36Y"
@@ -71,7 +71,7 @@ func InvestInCoop() {
 		if err != nil {
 			err = xlm.GetXLM(issuerPk)
 			if err != nil {
-				errorHandler(w, r, http.StatusNotFound)
+				responseHandler(w, r, StatusInternalServerError)
 				return
 			}
 		}
@@ -83,13 +83,13 @@ func InvestInCoop() {
 
 		iCoop, err = bonds.RetrieveCoop(CoopIndex)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 		// pass the investor index, pk and seed
 		iInv, err := database.RetrieveInvestor(invIndex)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
@@ -97,14 +97,14 @@ func InvestInCoop() {
 		if err != nil {
 			err = xlm.GetXLM(iInv.U.PublicKey)
 			if err != nil {
-				errorHandler(w, r, http.StatusNotFound)
+				responseHandler(w, r, StatusInternalServerError)
 				return
 			}
 		}
 		invSeed, err := iInv.U.GetSeed(invSeedPwd)
 		if err != nil {
 			log.Println("Error while getting seed, inv")
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 		err = iCoop.Invest(issuerPk, issuerSeed, &iInv, invAmount, invSeed)
@@ -114,7 +114,7 @@ func InvestInCoop() {
 		log.Println("UPDATED BOND: ", iCoop)
 		bondJson, err := json.Marshal(iCoop)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 		WriteToHandler(w, bondJson)

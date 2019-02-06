@@ -15,11 +15,13 @@ import (
 // horizon API that stellar provides, which is incomplete
 
 var TestNetClient = &clients.Client{
-	// URL: "http://35.192.122.229:8080",
-	URL:  "https://horizon-testnet.stellar.org",
+	URL: "http://35.192.122.229:8080",
+	//URL:  "https://horizon-testnet.stellar.org",
 	HTTP: http.DefaultClient,
 }
 
+// multiple write header calls - need to correct this
+// but the stellar horizon api is up, so that's nice to have and we can optimize it for what we need
 /*
 type Ledger struct {
     Links struct {

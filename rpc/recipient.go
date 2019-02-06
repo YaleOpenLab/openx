@@ -52,7 +52,7 @@ func getAllRecipients() {
 		checkGet(w, r)
 		recipients, err := database.RetrieveAllRecipients()
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 		log.Println("Retrieved all recipients: ", recipients)
@@ -67,34 +67,34 @@ func insertRecipient() {
 		checkPost(w, r)
 		prepRecipient, err := parseRecipient(r)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		log.Println("Parsed recipient:", prepRecipient)
 		err = prepRecipient.Save()
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
-		Send200(w, r)
+		responseHandler(w, r, StatusCreated)
 	})
 }
 
 func validateRecipient() {
 	http.HandleFunc("/recipient/validate", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
-		// need to pass the pwhash param here
+
 		if r.URL.Query() == nil || r.URL.Query()["username"] == nil ||
 			len(r.URL.Query()["pwhash"][0]) != 128 {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		prepRecipient, err := database.ValidateRecipient(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 		log.Println("Parsed recipient:", prepRecipient)
@@ -111,7 +111,7 @@ func payback() {
 		prepRecipient, err := RecpValidateHelper(w, r)
 		if err != nil || r.URL.Query()["assetName"] == nil || r.URL.Query()["amount"] == nil ||
 			r.URL.Query()["platformPublicKey"] == nil || r.URL.Query()["seedpwd"] == nil || r.URL.Query()["projIndex"] == nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
@@ -124,16 +124,16 @@ func payback() {
 
 		recipientSeed, err := wallet.DecryptSeed(prepRecipient.U.EncryptedSeed, seedpwd)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		err = solar.Payback(recpIndex, projIndex, assetName, amount, recipientSeed, platformPublicKey)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
-		Send200(w, r)
+		responseHandler(w, r, StatusOK)
 	})
 }
 
@@ -160,7 +160,7 @@ func storeDeviceId() {
 		// first validate the recipient or anyone would be able to set device ids
 		prepRecipient, err := RecpValidateHelper(w, r)
 		if err != nil || r.URL.Query()["deviceid"] == nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
@@ -168,10 +168,10 @@ func storeDeviceId() {
 		prepRecipient.DeviceId = r.URL.Query()["deviceid"][0]
 		err = prepRecipient.Save()
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
-		Send200(w, r)
+		responseHandler(w, r, StatusOK)
 	})
 }
 
@@ -180,17 +180,17 @@ func storeStartTime() {
 		// first validate the recipient or anyone would be able to set device ids
 		prepRecipient, err := RecpValidateHelper(w, r)
 		if err != nil || r.URL.Query()["start"] == nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		prepRecipient.DeviceStarts = append(prepRecipient.DeviceStarts, r.URL.Query()["start"][0])
 		err = prepRecipient.Save()
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
-		Send200(w, r)
+		responseHandler(w, r, StatusOK)
 	})
 }
 
@@ -199,17 +199,17 @@ func storeDeviceLocation() {
 		// first validate the recipient or anyone would be able to set device ids
 		prepRecipient, err := RecpValidateHelper(w, r)
 		if err != nil || r.URL.Query()["location"] == nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		prepRecipient.DeviceLocation = r.URL.Query()["location"][0]
 		err = prepRecipient.Save()
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
-		Send200(w, r)
+		responseHandler(w, r, StatusOK)
 	})
 }
 
@@ -218,20 +218,20 @@ func changeReputationRecp() {
 	http.HandleFunc("/recipient/reputation", func(w http.ResponseWriter, r *http.Request) {
 		recipient, err := RecpValidateHelper(w, r)
 		if err != nil || r.URL.Query()["reputation"] == nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 		reputation, err := strconv.ParseFloat(r.URL.Query()["reputation"][0], 32) // same as StoI but we need to catch the error here
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 		err = database.ChangeRecpReputation(recipient.U.Index, reputation)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
-		Send200(w, r)
+		responseHandler(w, r, StatusOK)
 	})
 }
 
@@ -239,29 +239,29 @@ func chooseBlindAuction() {
 	http.HandleFunc("/recipient/auction/choose/blind", func(w http.ResponseWriter, r *http.Request) {
 		recipient, err := RecpValidateHelper(w, r)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		allContracts, err := solar.RetrieveRecipientProjects(solar.ProposedProject, recipient.U.Index)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
 		bestContract, err := solar.SelectContractBlind(allContracts)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
 		err = bestContract.SetFinalizedProject()
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
-		Send200(w, r)
+		responseHandler(w, r, StatusOK)
 	})
 }
 
@@ -269,13 +269,13 @@ func chooseVickreyAuction() {
 	http.HandleFunc("/recipient/auction/choose/vickrey", func(w http.ResponseWriter, r *http.Request) {
 		recipient, err := RecpValidateHelper(w, r)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		allContracts, err := solar.RetrieveRecipientProjects(solar.ProposedProject, recipient.U.Index)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
@@ -283,17 +283,17 @@ func chooseVickreyAuction() {
 		// some way to avoid repetition like this
 		bestContract, err := solar.SelectContractVickrey(allContracts)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
 		err = bestContract.SetFinalizedProject()
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
-		Send200(w, r)
+		responseHandler(w, r, StatusOK)
 	})
 }
 
@@ -301,13 +301,13 @@ func chooseTimeAuction() {
 	http.HandleFunc("/recipient/auction/choose/time", func(w http.ResponseWriter, r *http.Request) {
 		recipient, err := RecpValidateHelper(w, r)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		allContracts, err := solar.RetrieveRecipientProjects(solar.ProposedProject, recipient.U.Index)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
@@ -315,17 +315,17 @@ func chooseTimeAuction() {
 		// some way to avoid repetition like this
 		bestContract, err := solar.SelectContractTime(allContracts)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
 		err = bestContract.SetFinalizedProject()
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
-		Send200(w, r)
+		responseHandler(w, r, StatusOK)
 	})
 }
 
@@ -334,7 +334,7 @@ func unlock() {
 		recipient, err := RecpValidateHelper(w, r)
 		if err != nil || r.URL.Query()["seedpwd"] == nil {
 			log.Println(err)
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
@@ -343,18 +343,18 @@ func unlock() {
 		projIndex, err := utils.StoICheck(r.URL.Query()["projIndex"][0])
 		if err != nil {
 			log.Println(err)
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		err = solar.UnlockProject(recipient.U.Username, recipient.U.Pwhash, projIndex, seedpwd)
 		if err != nil {
 			log.Println(err)
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
-		Send200(w, r)
+		responseHandler(w, r, StatusOK)
 	})
 }
 
@@ -363,17 +363,17 @@ func addEmail() {
 		recipient, err := RecpValidateHelper(w, r)
 		if err != nil || r.URL.Query()["email"] == nil {
 			log.Println(err)
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		email := r.URL.Query()["email"][0]
 		err = recipient.AddEmail(email)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
-		Send200(w, r)
+		responseHandler(w, r, StatusOK)
 	})
 }
 
@@ -381,24 +381,24 @@ func finalizeProject() {
 	http.HandleFunc("/recipient/finalize", func(w http.ResponseWriter, r *http.Request) {
 		_, err := RecpValidateHelper(w, r)
 		if err != nil || r.URL.Query()["projIndex"] == nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		projIndex := utils.StoI(r.URL.Query()["projIndex"][0])
 		project, err := solar.RetrieveProject(projIndex)
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		err = project.SetFinalizedProject()
 		if err != nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
-		Send200(w, r)
+		responseHandler(w, r, StatusOK)
 	})
 }
 
@@ -407,7 +407,7 @@ func originateProject() {
 		recipient, err := RecpValidateHelper(w, r)
 		if err != nil || r.URL.Query()["projIndex"] == nil {
 			log.Println("ERROR WHILE HANDLIGN RECPS: ", err)
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
@@ -415,11 +415,11 @@ func originateProject() {
 		err = solar.RecipientAuthorize(projIndex, recipient.U.Index)
 		if err != nil {
 			log.Println("ERROR WHILE AUTHORIZING")
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
-		Send200(w, r)
+		responseHandler(w, r, StatusOK)
 	})
 }
 
@@ -427,7 +427,7 @@ func calculateTrustLimit() {
 	http.HandleFunc("/recipient/trustlimit", func(w http.ResponseWriter, r *http.Request) {
 		recipient, err := RecpValidateHelper(w, r)
 		if err != nil || r.URL.Query()["assetName"] == nil {
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
@@ -435,7 +435,7 @@ func calculateTrustLimit() {
 		trustLimit, err := xlm.GetAssetTrustLimit(recipient.U.PublicKey, assetName)
 		if err != nil {
 			log.Println(err)
-			errorHandler(w, r, http.StatusNotFound)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
