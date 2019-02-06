@@ -39,13 +39,13 @@ const (
 	StatusUnauthorized        = http.StatusUnauthorized        //  401 RFC 7235, 3.1
 	StatusPaymentRequired     = http.StatusPaymentRequired     //  402 RFC 7231, 6.5.2
 	StatusNotFound            = http.StatusNotFound            //  404 RFC 7231, 6.5.4
-	StatusInternalServerError = http.StatusInternalServerError //  RFC 7231, 6.6.1
-	StatusBadGateway          = http.StatusBadGateway          //  RFC 7231, 6.6.3
+	StatusInternalServerError = http.StatusInternalServerError //  500 RFC 7231, 6.6.1
+	StatusBadGateway          = http.StatusBadGateway          //  502 RFC 7231, 6.6.3
 	StatusLocked              = http.StatusLocked              //  423 RFC 4918, 11.3
-	StatusTooManyRequests     = http.StatusTooManyRequests     //  RFC 6585, 4
-	StatusGatewayTimeout      = http.StatusGatewayTimeout      //  RFC 7231, 6.6.5
-	StatusNotAcceptable       = http.StatusNotAcceptable       // RFC 7231, 6.5.6
-	StatusServiceUnavailable  = http.StatusServiceUnavailable  //  RFC 7231, 6.6.4
+	StatusTooManyRequests     = http.StatusTooManyRequests     //  429 RFC 6585, 4
+	StatusGatewayTimeout      = http.StatusGatewayTimeout      //  504 RFC 7231, 6.6.5
+	StatusNotAcceptable       = http.StatusNotAcceptable       //  406 RFC 7231, 6.5.6
+	StatusServiceUnavailable  = http.StatusServiceUnavailable  //  503 RFC 7231, 6.6.4
 )
 
 func WriteToHandler(w http.ResponseWriter, jsonString []byte) {

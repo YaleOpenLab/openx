@@ -124,6 +124,8 @@ screen -S horizon stellar-horizon --stellar-core-db-url="postgresql://stellar:pa
 
 to start horizon on port 8080 (change if required). The `ingest` field exists to provide a constant stream of data from `stellar-core` to `stellar-horizon` for continuous indexing. One can now query the given horizon server like the default horizon server run by the stellar foundation. Please do note that you'd have to open the relevant ports in the firewall in order for one to be able to receive / send traffic. The main port that stellar uses is 11625, 11626 is local to the environment that stellar-core is being run in and the `stellar-horizon` port can be configured to run on any port that we want it to.
 
+The stellar node takes ~20 hours to completely sync testnet from scratch and takes about 20GB of space on an Ubuntu 16.04LTS machine.
+
 This document will be updated in the future once the platform transitions to mainnet from testnet.
 
 ## References

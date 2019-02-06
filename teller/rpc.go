@@ -69,7 +69,7 @@ func GetInvestors() error {
 		return err
 	}
 	// the result would be the status of the platform
-	ColorOutput("REUQEST SUCCEEDED", GreenColor)
+	ColorOutput("REQUEST SUCCEEDED", GreenColor)
 	log.Println(x)
 	return nil
 }
