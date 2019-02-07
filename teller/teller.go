@@ -25,6 +25,11 @@ import (
 // Teller tracks whenever the device starts and goes off, so we know when exactly the device was
 // switched off. This is enough as proof that the device was running in between. This also
 // avoids needing to poll the blockchain often and saves on the (minimal, still) tx fee.
+
+// Since we can't compile this directly on the raspberry pi, we need to cross compile he
+// go executable and transfer it over to the raspberry pi
+// the following should do the trick for us
+// env GOOS=linux GOARCH=arm GOARM=5 go build
 var (
 	LocalRecipient    database.Recipient
 	RecpSeed          string

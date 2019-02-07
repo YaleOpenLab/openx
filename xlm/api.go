@@ -16,7 +16,7 @@ import (
 
 var TestNetClient = &clients.Client{
 	URL: "http://35.192.122.229:8080",
-	//URL:  "https://horizon-testnet.stellar.org",
+	// default URL:  "https://horizon-testnet.stellar.org",
 	HTTP: http.DefaultClient,
 }
 
@@ -76,7 +76,7 @@ func GetBlockHash(blockNumber string) (string, error) {
 }
 
 func GetLatestBlockHash() (string, error) {
-	url := "https://horizon-testnet.stellar.org/ledgers?cursor=now&order=desc&limit=1"
+	url := TestNetClient.URL + "/ledgers?cursor=now&order=desc&limit=1"
 	resp, err := http.Get(url)
 	if err != nil || resp.Status != "200 OK" {
 		return "", fmt.Errorf("API Request did not succeed")

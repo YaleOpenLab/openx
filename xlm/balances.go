@@ -10,9 +10,6 @@ import (
 	protocols "github.com/stellar/go/protocols/horizon"
 )
 
-// TODO: probably query balance from a couple of servers to avoid the chance for a mitm attack
-// this also makes it asset independent, means we can require people to hold a
-// specific amount of "X TOKEN" which can be either be a currency like btc / usd / xlm
 /*
 type Account struct {
     Links struct {

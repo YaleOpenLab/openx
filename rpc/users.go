@@ -159,7 +159,6 @@ func getXLMBalance() {
 		}
 
 		pubkey := prepUser.PublicKey
-		log.Println("PUBKEY: ", pubkey)
 		balance, err := xlm.GetNativeBalance(pubkey)
 		if err != nil {
 			responseHandler(w, r, StatusNotFound)
