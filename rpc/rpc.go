@@ -166,6 +166,7 @@ func StartServer(port string) {
 	setupStableCoinRPCs()
 	setupPublicRoutes()
 	setupEntityRPCs()
+	setupParticleHandlers()
 
 	portString := ":" + port // weird construction, but this should work
 	log.Fatal(http.ListenAndServe(portString, nil))
