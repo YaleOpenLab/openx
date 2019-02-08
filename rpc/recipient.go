@@ -2,7 +2,7 @@ package rpc
 
 import (
 	"fmt"
-	"log"
+	// "log"
 	"net/http"
 	"strconv"
 
@@ -34,6 +34,8 @@ func setupRecipientRPCs() {
 	calculateTrustLimit()
 }
 
+// parseRecipient parses a recipient from the passed form data and returns a recipient strucutre if
+// the form data passed was accurate
 func parseRecipient(r *http.Request) (database.Recipient, error) {
 	var prepRecipient database.Recipient
 	err := r.ParseForm()
@@ -43,10 +45,10 @@ func parseRecipient(r *http.Request) (database.Recipient, error) {
 	}
 
 	prepRecipient.U, err = database.NewUser(r.FormValue("username"), r.FormValue("pwhash"), r.FormValue("Name"), r.FormValue("EPassword"))
-	log.Println("Parsed recipient: ", prepRecipient)
 	return prepRecipient, err
 }
 
+// getAllRecipients gets a list of all the recipients who have registered on the platform
 func getAllRecipients() {
 	http.HandleFunc("/recipient/all", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
@@ -55,11 +57,11 @@ func getAllRecipients() {
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
-		log.Println("Retrieved all recipients: ", recipients)
 		MarshalSend(w, r, recipients)
 	})
 }
 
+// insertRecipient inserts a particular recipient into the database
 func insertRecipient() {
 	// this should be a post method since you want to accept an project and then insert
 	// that into the database
@@ -71,7 +73,6 @@ func insertRecipient() {
 			return
 		}
 
-		log.Println("Parsed recipient:", prepRecipient)
 		err = prepRecipient.Save()
 		if err != nil {
 			responseHandler(w, r, StatusInternalServerError)
@@ -82,6 +83,7 @@ func insertRecipient() {
 	})
 }
 
+// validateRecipient validates a recipient on the platform
 func validateRecipient() {
 	http.HandleFunc("/recipient/validate", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
@@ -97,11 +99,11 @@ func validateRecipient() {
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
-		log.Println("Parsed recipient:", prepRecipient)
 		MarshalSend(w, r, prepRecipient)
 	})
 }
 
+// payback pays back towards a specific invested order
 func payback() {
 	// func Payback(recpIndex int, projIndex int, assetName string, amount string, recipientSeed string,
 	// 	platformPubkey string) error {
@@ -137,6 +139,7 @@ func payback() {
 	})
 }
 
+// RecpValidateHelper is a helper that helps validates recipients in routes
 func RecpValidateHelper(w http.ResponseWriter, r *http.Request) (database.Recipient, error) {
 	// first validate the recipient or anyone would be able to set device ids
 	checkGet(w, r)
@@ -155,6 +158,7 @@ func RecpValidateHelper(w http.ResponseWriter, r *http.Request) (database.Recipi
 	return prepRecipient, nil
 }
 
+// storeDeviceId st ores the recipient's device id from the teller. Called by the teller
 func storeDeviceId() {
 	http.HandleFunc("/recipient/deviceId", func(w http.ResponseWriter, r *http.Request) {
 		// first validate the recipient or anyone would be able to set device ids
@@ -175,6 +179,8 @@ func storeDeviceId() {
 	})
 }
 
+// storeStartTime stores the start time of the remote device installed as part of an invested project.
+// Called by the teller
 func storeStartTime() {
 	http.HandleFunc("/recipient/startdevice", func(w http.ResponseWriter, r *http.Request) {
 		// first validate the recipient or anyone would be able to set device ids
@@ -194,6 +200,7 @@ func storeStartTime() {
 	})
 }
 
+// storeDeviceLocation stores the location of the remote device when it starts up. Called by the teller
 func storeDeviceLocation() {
 	http.HandleFunc("/recipient/storelocation", func(w http.ResponseWriter, r *http.Request) {
 		// first validate the recipient or anyone would be able to set device ids
@@ -235,6 +242,8 @@ func changeReputationRecp() {
 	})
 }
 
+// chooseBlindAuction chooses a blind auction method to choose for the winner. Also commonly
+// known as a 1st price auction.
 func chooseBlindAuction() {
 	http.HandleFunc("/recipient/auction/choose/blind", func(w http.ResponseWriter, r *http.Request) {
 		recipient, err := RecpValidateHelper(w, r)
@@ -265,6 +274,8 @@ func chooseBlindAuction() {
 	})
 }
 
+// chooseVickreyAuction chooses a vickrey auction method to choose the winning contractor.
+// also known as a second price auction
 func chooseVickreyAuction() {
 	http.HandleFunc("/recipient/auction/choose/vickrey", func(w http.ResponseWriter, r *http.Request) {
 		recipient, err := RecpValidateHelper(w, r)
@@ -297,6 +308,7 @@ func chooseVickreyAuction() {
 	})
 }
 
+// chooseTimeAuction chooses the winning contractor based on least completion time
 func chooseTimeAuction() {
 	http.HandleFunc("/recipient/auction/choose/time", func(w http.ResponseWriter, r *http.Request) {
 		recipient, err := RecpValidateHelper(w, r)
@@ -329,27 +341,25 @@ func chooseTimeAuction() {
 	})
 }
 
+// unlock unlocks a speciifc projectwhich has been invested in, signalling that the recipient
+// has accepted the investment.
 func unlock() {
 	http.HandleFunc("/recipient/unlock", func(w http.ResponseWriter, r *http.Request) {
 		recipient, err := RecpValidateHelper(w, r)
 		if err != nil || r.URL.Query()["seedpwd"] == nil {
-			log.Println(err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		seedpwd := r.URL.Query()["seedpwd"][0]
-		log.Println("SEEDPWD: ", seedpwd)
 		projIndex, err := utils.StoICheck(r.URL.Query()["projIndex"][0])
 		if err != nil {
-			log.Println(err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		err = solar.UnlockProject(recipient.U.Username, recipient.U.Pwhash, projIndex, seedpwd)
 		if err != nil {
-			log.Println(err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -358,11 +368,11 @@ func unlock() {
 	})
 }
 
+// addEmail adds an email address to the recipient's profile
 func addEmail() {
 	http.HandleFunc("/recipient/addemail", func(w http.ResponseWriter, r *http.Request) {
 		recipient, err := RecpValidateHelper(w, r)
 		if err != nil || r.URL.Query()["email"] == nil {
-			log.Println(err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -377,6 +387,9 @@ func addEmail() {
 	})
 }
 
+// finalizeProject finalizes (ie moves from stage 2 to 3) a specific project. usually
+// this shouldn't be called directly since tehre would be auctions for choosign the winning
+// contractor
 func finalizeProject() {
 	http.HandleFunc("/recipient/finalize", func(w http.ResponseWriter, r *http.Request) {
 		_, err := RecpValidateHelper(w, r)
@@ -402,11 +415,11 @@ func finalizeProject() {
 	})
 }
 
+// originateProject originates (ie moves from stage 0 to 1) a project
 func originateProject() {
 	http.HandleFunc("/recipient/originate", func(w http.ResponseWriter, r *http.Request) {
 		recipient, err := RecpValidateHelper(w, r)
 		if err != nil || r.URL.Query()["projIndex"] == nil {
-			log.Println("ERROR WHILE HANDLIGN RECPS: ", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -414,7 +427,6 @@ func originateProject() {
 		projIndex := utils.StoI(r.URL.Query()["projIndex"][0])
 		err = solar.RecipientAuthorize(projIndex, recipient.U.Index)
 		if err != nil {
-			log.Println("ERROR WHILE AUTHORIZING")
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -423,6 +435,7 @@ func originateProject() {
 	})
 }
 
+// calculateTrustLimit calculates the trust limit associated with a specific asset.
 func calculateTrustLimit() {
 	http.HandleFunc("/recipient/trustlimit", func(w http.ResponseWriter, r *http.Request) {
 		recipient, err := RecpValidateHelper(w, r)
@@ -434,7 +447,6 @@ func calculateTrustLimit() {
 		assetName := r.URL.Query()["assetName"][0]
 		trustLimit, err := xlm.GetAssetTrustLimit(recipient.U.PublicKey, assetName)
 		if err != nil {
-			log.Println(err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}

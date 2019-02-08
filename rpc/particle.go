@@ -2,7 +2,7 @@ package rpc
 
 import (
 	"encoding/json"
-	"log"
+	//"log"
 	"net/http"
 	//utils "github.com/OpenFinancing/openfinancing/utils"
 	"io"
@@ -28,6 +28,7 @@ func setupParticleHandlers() {
 	getAllSims()
 }
 
+// define structs to parse the returned particle.io data
 type ParticleDevice struct {
 	Id                      string `json:"id"`
 	Name                    string `json:"name"`
@@ -100,6 +101,7 @@ type ParticleUser struct {
 	Cellular_device_count int      `json:"cellular_device_count"`
 }
 
+// GetAndSendJson is a handler that makes a get request and returns json data
 func GetAndSendJson(w http.ResponseWriter, r *http.Request, body string, x interface{}) {
 	data, err := GetRequest(body)
 	if err != nil {
@@ -109,13 +111,15 @@ func GetAndSendJson(w http.ResponseWriter, r *http.Request, body string, x inter
 	// now data is in byte, we need the other strucutre now
 	err = json.Unmarshal(data, &x)
 	if err != nil {
-		log.Println(err)
-		responseHandler(w, r, StatusBadRequest)
+		responseHandler(w, r, StatusInternalServerError)
 		return
 	}
 	MarshalSend(w, r, x)
 }
 
+// GetAndSendByte is a handler that makes a get request and returns byte data. THis is used
+// in cases for which we don;t know the format of the returned data, so we can't parse
+// what stuff is in here.
 func GetAndSendByte(w http.ResponseWriter, r *http.Request, body string) {
 	data, err := GetRequest(body)
 	if err != nil {
@@ -126,6 +130,7 @@ func GetAndSendByte(w http.ResponseWriter, r *http.Request, body string) {
 	w.Write(data)
 }
 
+// PutAndSend is a handler that PUTs data and returns the response
 func PutAndSend(w http.ResponseWriter, r *http.Request, body string, payload io.Reader) {
 	data, err := PutRequest(body, payload)
 	if err != nil {
@@ -135,13 +140,13 @@ func PutAndSend(w http.ResponseWriter, r *http.Request, body string, payload io.
 	var x ParticlePingResponse
 	err = json.Unmarshal(data, &x)
 	if err != nil {
-		log.Println(err)
-		responseHandler(w, r, StatusBadRequest)
+		responseHandler(w, r, StatusInternalServerError)
 		return
 	}
 	MarshalSend(w, r, x)
 }
 
+// listAllDevices lists all the devices registered to the user holding the specific access token
 func listAllDevices() {
 	// make a curl request out to lcoalhost and get the ping response
 	http.HandleFunc("/particle/devices", func(w http.ResponseWriter, r *http.Request) {
@@ -159,6 +164,7 @@ func listAllDevices() {
 	})
 }
 
+// listProductInfo liusts all the producsts belonging to the user with the access token
 func listProductInfo() {
 	http.HandleFunc("/particle/productinfo", func(w http.ResponseWriter, r *http.Request) {
 
@@ -177,6 +183,7 @@ func listProductInfo() {
 	})
 }
 
+// getDeviceInfo returns the information of a specific device. REquires device id and the accesstoken
 func getDeviceInfo() {
 	http.HandleFunc("/particle/deviceinfo", func(w http.ResponseWriter, r *http.Request) {
 		// validate if the person requesting this is a vlaid user on the platform
@@ -195,6 +202,8 @@ func getDeviceInfo() {
 	})
 }
 
+// pingDevice pings a specific device and sees whether its up. Could be useful to create a monitoring
+// dashboard of sorts where people can see if their devices are online or not
 func pingDevice() {
 	http.HandleFunc("/particle/deviceping", func(w http.ResponseWriter, r *http.Request) {
 
@@ -213,12 +222,14 @@ func pingDevice() {
 	})
 }
 
+// signalDevice sends a rainbow signal to the device and the device flashes in rainbow colors
+// on receiving this signal. Can be set to on or off depending on whether we want the device to flash
+// in rainbow colors or not
 func signalDevice() {
 	http.HandleFunc("/particle/devicesignal", func(w http.ResponseWriter, r *http.Request) {
 
 		_, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["signal"] == nil || r.URL.Query()["accessToken"] == nil {
-			log.Println("1")
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -245,6 +256,7 @@ func signalDevice() {
 	})
 }
 
+// serialNumberInfo gets the device id of a device on recipt of the serial number
 func serialNumberInfo() {
 	http.HandleFunc("/particle/getdeviceid", func(w http.ResponseWriter, r *http.Request) {
 
@@ -263,6 +275,7 @@ func serialNumberInfo() {
 	})
 }
 
+// getDiagnosticsLast gets a list of the last diagnostic report that belongs to the specific device
 func getDiagnosticsLast() {
 	http.HandleFunc("/particle/diag/last", func(w http.ResponseWriter, r *http.Request) {
 
@@ -280,6 +293,8 @@ func getDiagnosticsLast() {
 	})
 }
 
+// getAllDiagnostics gets all the past diagnostic reports of the assocaited device id. Requires
+// accessToken for authentication
 func getAllDiagnostics() {
 	http.HandleFunc("/particle/diag/all", func(w http.ResponseWriter, r *http.Request) {
 
@@ -297,6 +312,7 @@ func getAllDiagnostics() {
 	})
 }
 
+// getParticleUserInfo gets the information of a particular user associated with an accessToken
 func getParticleUserInfo() {
 	http.HandleFunc("/particle/user/info", func(w http.ResponseWriter, r *http.Request) {
 
@@ -313,6 +329,7 @@ func getParticleUserInfo() {
 	})
 }
 
+// getAllSims gets the informatiomn of all sim card that areassociated with the particular accessToken
 func getAllSims() {
 	http.HandleFunc("/particle/sims", func(w http.ResponseWriter, r *http.Request) {
 

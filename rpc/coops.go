@@ -2,7 +2,7 @@ package rpc
 
 import (
 	"encoding/json"
-	"log"
+	// "log"
 	"net/http"
 
 	database "github.com/OpenFinancing/openfinancing/database"
@@ -17,6 +17,7 @@ func setupCoopRPCs() {
 	GetAllCoops()
 }
 
+// GetAllCoops gets a list of all the coops  that are registered on the platform
 func GetAllCoops() {
 	http.HandleFunc("/coop/all", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
@@ -29,6 +30,7 @@ func GetAllCoops() {
 	})
 }
 
+// getCoopDetails gets teh details of a particular coop
 func getCoopDetails() {
 	http.HandleFunc("/coop/get", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
@@ -40,7 +42,8 @@ func getCoopDetails() {
 		uKey := utils.StoI(r.URL.Query()["index"][0])
 		bond, err := bonds.RetrieveCoop(uKey)
 		if err != nil {
-			log.Println(err)
+			responseHandler(w, r, StatusBadRequest)
+			return
 		}
 		bondJson, err := json.Marshal(bond)
 		if err != nil {
@@ -53,6 +56,7 @@ func getCoopDetails() {
 
 // curl request attached for convenience
 // curl -X POST -H "Content-Type: application/x-www-form-urlencoded" -H "Origin: localhost" -H "Cache-Control: no-cache" -d 'MonthlyPayment=1000&CoopIndex=1&InvIndex=2&InvSeedPwd=x' "http://localhost:8080/coop/invest"
+// InvestInCoop invests in a coop of the user's choice
 func InvestInCoop() {
 	http.HandleFunc("/coop/invest", func(w http.ResponseWriter, r *http.Request) {
 		checkPost(w, r)
@@ -61,8 +65,8 @@ func InvestInCoop() {
 		// need to receive a whole lot of parameters here
 		// need the bond index passed so that we can retrieve the bond easily
 		if r.FormValue("MonthlyPayment") == "" || r.FormValue("CoopIndex") == "" || r.FormValue("InvIndex") == "" || r.FormValue("InvSeedPwd") == "" {
-			log.Println("missing params")
 			responseHandler(w, r, StatusBadRequest)
+			return
 		}
 
 		issuerSeed := "SBBYVEI4YNKZANRQEFH35U5GPEJ27MBLL7XHEKX5VC75QLJZWAXGX36Y"
@@ -103,15 +107,14 @@ func InvestInCoop() {
 		}
 		invSeed, err := iInv.U.GetSeed(invSeedPwd)
 		if err != nil {
-			log.Println("Error while getting seed, inv")
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 		err = iCoop.Invest(issuerPk, issuerSeed, &iInv, invAmount, invSeed)
 		if err != nil {
-			log.Println(err)
+			responseHandler(w, r, StatusInternalServerError)
+			return
 		}
-		log.Println("UPDATED BOND: ", iCoop)
 		bondJson, err := json.Marshal(iCoop)
 		if err != nil {
 			responseHandler(w, r, StatusInternalServerError)

@@ -2,7 +2,7 @@ package rpc
 
 import (
 	"fmt"
-	"log"
+	//"log"
 	"net/http"
 	"strconv"
 
@@ -28,6 +28,8 @@ func setupInvestorRPCs() {
 	sendEmail()
 }
 
+// parseInvestor is a helper that can be used to validate POST data and assigns the passed form
+// data to an Investor struct
 func parseInvestor(r *http.Request) (database.Investor, error) {
 	var prepInvestor database.Investor
 	err := r.ParseForm()
@@ -40,6 +42,7 @@ func parseInvestor(r *http.Request) (database.Investor, error) {
 	return prepInvestor, err
 }
 
+// insertInvestor inserts an investor in to the main platform database
 func insertInvestor() {
 	// this should be a post method since you want to accetp an project and then insert
 	// that into the database
@@ -50,7 +53,6 @@ func insertInvestor() {
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
-		log.Println("Prepared Investor:", prepInvestor)
 		err = prepInvestor.Save()
 		if err != nil {
 			responseHandler(w, r, StatusInternalServerError)
@@ -75,7 +77,6 @@ func validateInvestor() {
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
-		log.Println("Prepared Investor:", prepInvestor)
 		MarshalSend(w, r, prepInvestor)
 	})
 }
@@ -94,6 +95,7 @@ func getAllInvestors() {
 	})
 }
 
+// investInProject invests in a specific project of the user's choice
 func investInProject() {
 	http.HandleFunc("/investor/invest", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
@@ -145,6 +147,7 @@ func investInProject() {
 	})
 }
 
+// InvValidateHelper is a helper that is used to validate an ivnestor on the platform
 func InvValidateHelper(w http.ResponseWriter, r *http.Request) (database.Investor, error) {
 	// first validate the investor or anyone would be able to set device ids
 	checkGet(w, r)
@@ -163,6 +166,8 @@ func InvValidateHelper(w http.ResponseWriter, r *http.Request) (database.Investo
 	return prepInvestor, nil
 }
 
+// changeReputationInv can be used to change the reputation of a sepcific investor on the platform
+// on completion of a contract or on evaluation of feedback proposed by other entities on the system
 func changeReputationInv() {
 	http.HandleFunc("/investor/reputation", func(w http.ResponseWriter, r *http.Request) {
 		investor, err := InvValidateHelper(w, r)
@@ -184,6 +189,7 @@ func changeReputationInv() {
 	})
 }
 
+// voteTowardsProject votes towards a specific propsoed project of the user's choice.
 func voteTowardsProject() {
 	http.HandleFunc("/investor/vote", func(w http.ResponseWriter, r *http.Request) {
 		investor, err := InvValidateHelper(w, r)
@@ -203,6 +209,9 @@ func voteTowardsProject() {
 	})
 }
 
+// addLocalAssetInv adds a local asset that can be traded in a p2p fashion wihtout direct invlvement
+// from the platform. The platform can have a UI that will deal with this or this can be
+// made an emualtor only function so that only experienced users use this.
 func addLocalAssetInv() {
 	http.HandleFunc("/investor/localasset", func(w http.ResponseWriter, r *http.Request) {
 
@@ -224,12 +233,12 @@ func addLocalAssetInv() {
 	})
 }
 
+// invAssetInv sends a local asset to a remote peer
 func invAssetInv() {
 	http.HandleFunc("/investor/sendlocalasset", func(w http.ResponseWriter, r *http.Request) {
 		prepInvestor, err := InvValidateHelper(w, r)
 		if err != nil || r.URL.Query()["assetName"] == nil || r.URL.Query()["seedpwd"] == nil ||
 			r.URL.Query()["destination"] == nil || r.URL.Query()["amount"] == nil {
-			log.Println("ERROR HERE?", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -267,6 +276,7 @@ func invAssetInv() {
 	})
 }
 
+// sendEmail sends an email to a specific entity
 func sendEmail() {
 	http.HandleFunc("/investor/sendemail", func(w http.ResponseWriter, r *http.Request) {
 		prepInvestor, err := InvValidateHelper(w, r)

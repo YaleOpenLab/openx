@@ -24,6 +24,8 @@ func setupProjectRPCs() {
 	getFundedProjects()
 }
 
+// parseProject is a helper that is used to validate POST data. This returns a project struct
+// on successful parsing of the received form data
 func parseProject(r *http.Request) (solar.Project, error) {
 	// we need to create an instance of the Project
 	// and then map values if they do exist
@@ -56,6 +58,7 @@ func parseProject(r *http.Request) (solar.Project, error) {
 	return prepProject, nil
 }
 
+// insertProject inserts a project into the database.
 func insertProject() {
 	// this should be a post method since you want to accept an project and then insert
 	// that into the database
@@ -78,6 +81,7 @@ func insertProject() {
 	})
 }
 
+// getAllProjects gets a list of all the projects that registered on the platform.
 func getAllProjects() {
 	http.HandleFunc("/project/all", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
@@ -94,6 +98,7 @@ func getAllProjects() {
 	})
 }
 
+// getProject gets the details of a specific project.
 func getProject() {
 	// we need to read passed the key from the URL that the user calls
 	http.HandleFunc("/project/get", func(w http.ResponseWriter, r *http.Request) {
@@ -112,6 +117,7 @@ func getProject() {
 	})
 }
 
+// projectHandler gets proejcts at a specific stage from the database
 func projectHandler(w http.ResponseWriter, r *http.Request, stage float64) {
 	checkGet(w, r)
 	allProjects, err := solar.RetrieveProjectsAtStage(stage)
@@ -123,6 +129,7 @@ func projectHandler(w http.ResponseWriter, r *http.Request, stage float64) {
 	MarshalSend(w, r, allProjects)
 }
 
+// various handlers for fetching projects which are at different stages on the platform
 func getPreOriginProjects() {
 	http.HandleFunc("/project/preorigin", func(w http.ResponseWriter, r *http.Request) {
 		projectHandler(w, r, 0)

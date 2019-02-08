@@ -37,9 +37,13 @@ func setupPublicRoutes() {
 }
 
 // MWTODO: get feedback on what routes to make public
+
 // public contains all the RPC routes that we explicitly intend to make public. Other
 // routes such as the invest route are thigns we could make private as well, but that
 // doesn't change the security model since we ask for username+pwauth
+
+// sanitizeInvestor removes sensitive fields frm the investor struct in order to be able
+// to return the investor field in a public route
 func sanitizeInvestor(investor database.Investor) SnInvestor {
 	// this is a public route, so we shouldn't ideally return all parameters that are present
 	// in the investor struct
@@ -54,6 +58,8 @@ func sanitizeInvestor(investor database.Investor) SnInvestor {
 	return sanitize
 }
 
+// sanitizeRecipient removes sensitive fields from the recipient struct in order to be
+// able to return the recipient fields in a public route
 func sanitizeRecipient(recipient database.Recipient) SnRecipient {
 	// this is a public route, so we shouldn't ideally return all parameters that are present
 	// in the investor struct
@@ -65,6 +71,7 @@ func sanitizeRecipient(recipient database.Recipient) SnRecipient {
 	return sanitize
 }
 
+// sanitizeAllInvestors sanitizes an array of investors
 func sanitizeAllInvestors(investors []database.Investor) []SnInvestor {
 	var arr []SnInvestor
 	for _, elem := range investors {
@@ -73,6 +80,7 @@ func sanitizeAllInvestors(investors []database.Investor) []SnInvestor {
 	return arr
 }
 
+// sanitizeUser sanitizes a particular user
 func sanitizeUser(user database.User) SnUser {
 	var sanitize SnUser
 	sanitize.Name = user.Name
@@ -81,6 +89,7 @@ func sanitizeUser(user database.User) SnUser {
 	return sanitize
 }
 
+// sanitizeAllRecipients sanitizes an array of recipients
 func sanitizeAllRecipients(recipients []database.Recipient) []SnRecipient {
 	var arr []SnRecipient
 	for _, elem := range recipients {
@@ -89,6 +98,7 @@ func sanitizeAllRecipients(recipients []database.Recipient) []SnRecipient {
 	return arr
 }
 
+// sanitizeAllUsers sanitizes an arryay of users
 func sanitizeAllUsers(users []database.User) []SnUser {
 	var arr []SnUser
 	for _, elem := range users {
@@ -142,6 +152,7 @@ func getTopReputationPublic() {
 	})
 }
 
+// getRecpTopReputationPublic gets a list of the recipients who have the best reputation on the platform
 func getRecpTopReputationPublic() {
 	http.HandleFunc("/public/recipient/reputation/top", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
@@ -155,6 +166,7 @@ func getRecpTopReputationPublic() {
 	})
 }
 
+// getInvTopReputationPublic gets a lsit of the investors who have the best reputation on the platform
 func getInvTopReputationPublic() {
 	http.HandleFunc("/public/investor/reputation/top", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)

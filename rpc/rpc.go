@@ -7,11 +7,10 @@ package rpc
 // we'll stay with this one for a while
 import (
 	"encoding/json"
-	"fmt"
+	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
-	"io/ioutil"
-	"io"
 )
 
 // API documentation over at the apidocs repo
@@ -57,6 +56,7 @@ func WriteToHandler(w http.ResponseWriter, jsonString []byte) {
 	w.Write(jsonString)
 }
 
+// MarshalSend marshals and writes a json string into the writer
 func MarshalSend(w http.ResponseWriter, r *http.Request, x interface{}) {
 	xJson, err := json.Marshal(x)
 	if err != nil {
@@ -66,6 +66,7 @@ func MarshalSend(w http.ResponseWriter, r *http.Request, x interface{}) {
 	WriteToHandler(w, xJson)
 }
 
+// checkOrigin checks the origin of the incoming request
 func checkOrigin(w http.ResponseWriter, r *http.Request) {
 	// re-enable this function for all private routes
 	// if r.Header.Get("Origin") != "localhost" { // allow only our frontend UI to connect to our RPC instance
@@ -73,6 +74,7 @@ func checkOrigin(w http.ResponseWriter, r *http.Request) {
 	// }
 }
 
+// checkGet checks if the invoming request is a GET request
 func checkGet(w http.ResponseWriter, r *http.Request) {
 	checkOrigin(w, r)
 	if r.Method != "GET" {
@@ -80,15 +82,15 @@ func checkGet(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// checkPost checks whether the incomign request is a POST request
 func checkPost(w http.ResponseWriter, r *http.Request) {
 	checkOrigin(w, r)
-	log.Println("Checking POST")
 	if r.Method != "POST" {
 		http.Error(w, "404 page not found", http.StatusNotFound)
 	}
 }
 
-// handler to make easy get requests to a remote host
+// GetRequest is a handler that makes it easy to send out GET requests
 func GetRequest(url string) ([]byte, error) {
 	// make a curl request out to lcoalhost and get the ping response
 	var dummy []byte
@@ -106,6 +108,7 @@ func GetRequest(url string) ([]byte, error) {
 	return ioutil.ReadAll(res.Body)
 }
 
+// PutRequest is a handler that makes it easy to send out POST requests
 func PutRequest(body string, payload io.Reader) ([]byte, error) {
 
 	// the body must be the param that you usually pass to curl's -d option
@@ -114,20 +117,25 @@ func PutRequest(body string, payload io.Reader) ([]byte, error) {
 	if err != nil {
 		return dummy, err
 	}
+	// need to add this header or we'll get a negative response
 	req.Header.Add("content-type", "application/x-www-form-urlencoded")
-	req.Header.Add("origin", "localhost")
-	req.Header.Add("cache-control", "no-cache")
 
-	res, _ := http.DefaultClient.Do(req)
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return dummy, err
+	}
 
 	defer res.Body.Close()
-	x, _ := ioutil.ReadAll(res.Body)
+	x, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return dummy, err
+	}
 
-	fmt.Println(x)
-	log.Println(string(x))
 	return x, nil
 }
 
+// responseHandler is teh default response handler that sends out response codes on successful
+// completion of certain calls
 func responseHandler(w http.ResponseWriter, r *http.Request, status int) {
 	var response StatusResponse
 	response.Code = status
@@ -166,6 +174,7 @@ func responseHandler(w http.ResponseWriter, r *http.Request, status int) {
 	MarshalSend(w, r, response)
 }
 
+// setupDefaultHandler sets up the default handler (ie returns 404 for invalid routes)
 func setupDefaultHandler() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		// default to 404 for every application not running on localhost
@@ -174,6 +183,7 @@ func setupDefaultHandler() {
 	})
 }
 
+// setupPingHandler is a ping route for remote callers to check if the platform is up
 func setupPingHandler() {
 	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)

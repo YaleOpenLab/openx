@@ -2,7 +2,7 @@ package rpc
 
 import (
 	"fmt"
-	"log"
+	//"log"
 	"net/http"
 
 	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
@@ -17,6 +17,7 @@ func setupEntityRPCs() {
 	addCollateral()
 }
 
+// EntityValidateHelper is a helper that helps validate an entity
 func EntityValidateHelper(w http.ResponseWriter, r *http.Request) (solar.Entity, error) {
 	// first validate the investor or anyone would be able to set device ids
 	checkGet(w, r)
@@ -35,6 +36,7 @@ func EntityValidateHelper(w http.ResponseWriter, r *http.Request) (solar.Entity,
 	return prepEntity, nil
 }
 
+// validateEntity is an endpoint that vlaidates is a specific entity is registered on the platform
 func validateEntity() {
 	http.HandleFunc("/entity/validate", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
@@ -43,11 +45,11 @@ func validateEntity() {
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
-		log.Println("Prepared Entity:", prepEntity)
 		MarshalSend(w, r, prepEntity)
 	})
 }
 
+// getPreOriginatedContracts gets a list of all the pre origianted contracts on the platform
 func getPreOriginatedContracts() {
 	http.HandleFunc("/entity/getpreorigin", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
@@ -66,6 +68,7 @@ func getPreOriginatedContracts() {
 	})
 }
 
+// getOriginatedContracts gets a list of all the originated contracts on the platform
 func getOriginatedContracts() {
 	http.HandleFunc("/entity/getorigin", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
@@ -84,6 +87,7 @@ func getOriginatedContracts() {
 	})
 }
 
+// getProposedContracts gets a list of all the proposed contracts on the platform
 func getProposedContracts() {
 	http.HandleFunc("/entity/getproposed", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
@@ -102,6 +106,8 @@ func getProposedContracts() {
 	})
 }
 
+// addCollateral is a route that can be used to add collateral to a specific contractor who wishes
+// to propose a contract towards a specific originated project.
 func addCollateral() {
 	//func (contractor *Entity) AddCollateral(amount float64, data string) error {
 	http.HandleFunc("/entity/addcollateral", func(w http.ResponseWriter, r *http.Request) {

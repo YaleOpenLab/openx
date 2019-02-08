@@ -1,7 +1,7 @@
 package rpc
 
 import (
-	"log"
+	// "log"
 	"net/http"
 
 	database "github.com/OpenFinancing/openfinancing/database"
@@ -18,6 +18,7 @@ func setupStableCoinRPCs() {
 	getStableCoin()
 }
 
+// getStableCoin gets stablecoin in exchange for xlm
 func getStableCoin() {
 	http.HandleFunc("/stablecoin/get", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
@@ -32,14 +33,11 @@ func getStableCoin() {
 		amount := r.URL.Query()["amount"][0] // in string
 		receiverPubkey, err := wallet.ReturnPubkey(receiverSeed)
 		if err != nil {
-			log.Println("Error while retrieving pubkey")
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
-		log.Println("Pubkey: ", receiverPubkey)
 		err = stablecoin.Exchange(receiverPubkey, receiverSeed, amount)
 		if err != nil {
-			log.Println("error while exchanging", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
