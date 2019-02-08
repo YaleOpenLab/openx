@@ -6,8 +6,8 @@ import (
 
 	assets "github.com/OpenFinancing/openfinancing/assets"
 	consts "github.com/OpenFinancing/openfinancing/consts"
-	utils "github.com/OpenFinancing/openfinancing/utils"
 	oracle "github.com/OpenFinancing/openfinancing/oracle"
+	utils "github.com/OpenFinancing/openfinancing/utils"
 	xlm "github.com/OpenFinancing/openfinancing/xlm"
 )
 

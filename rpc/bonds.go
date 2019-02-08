@@ -1,7 +1,7 @@
 package rpc
 
 import (
-	"log"
+	//"log"
 	"net/http"
 	"strings"
 
@@ -18,6 +18,7 @@ func setupBondRPCs() {
 	GetAllBonds()
 }
 
+// CreateBond creates a new bond with the parameters passed to it
 func CreateBond() {
 	// newParams(mdate string, mrights string, stype string, intrate float64, rating string, bIssuer string, uWriter string
 	// unitCost float64, itype string, nUnits int, tax string
@@ -28,7 +29,6 @@ func CreateBond() {
 	if err != nil {
 		return
 	}
-	log.Println("BOND INDEX: ", bond1.Params.Index)
 	_, err = bonds.RetrieveBond(bond1.Params.Index)
 	if err != nil {
 		return
@@ -37,6 +37,7 @@ func CreateBond() {
 
 // curl request attached for convenience
 // curl -X POST -H "Content-Type: application/x-www-form-urlencoded" -H "Origin: localhost" -H "Cache-Control: no-cache" -d 'InvestmentAmount=1000&BondIndex=1&InvIndex=2&InvSeedPwd=x&RecSeedPwd=x' "http://localhost:8080/bond/invest"
+// InvestInBond invests a specific amount in a bond of the user's choice
 func InvestInBond() {
 	http.HandleFunc("/bond/invest", func(w http.ResponseWriter, r *http.Request) {
 		checkPost(w, r)
@@ -101,26 +102,25 @@ func InvestInBond() {
 
 		invSeed, err := iInv.U.GetSeed(invSeedPwd)
 		if err != nil {
-			log.Println("Error while getting seed, inv")
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 		recSeed, err := iRec.U.GetSeed(recSeedPwd)
 		if err != nil {
-			log.Println("Error while getting seed, rec")
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		err = iBond.Invest(issuerPk, issuerSeed, &iInv, &iRec, invAmount, invSeed, recSeed)
 		if err != nil {
-			log.Println(err)
+			responseHandler(w, r, StatusBadRequest)
+			return
 		}
-		log.Println("UPDATED BOND: ", iBond)
 		MarshalSend(w, r, iBond)
 	})
 }
 
+// getBondDetails gets the details of a particular bond
 func getBondDetails() {
 	http.HandleFunc("/bond/get", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
@@ -132,12 +132,14 @@ func getBondDetails() {
 		uKey := utils.StoI(r.URL.Query()["index"][0])
 		bond, err := bonds.RetrieveBond(uKey)
 		if err != nil {
-			log.Println(err)
+			responseHandler(w, r, StatusInternalServerError)
+			return
 		}
 		MarshalSend(w, r, bond)
 	})
 }
 
+// GetAllBonds gets the list of all bonds that are registered on the platfomr
 func GetAllBonds() {
 	http.HandleFunc("/bond/all", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
@@ -150,6 +152,7 @@ func GetAllBonds() {
 	})
 }
 
+// Search can be used for searching bonds and coops to a limited capacity
 func Search() {
 	http.HandleFunc("/search", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)

@@ -3,7 +3,7 @@ package rpc
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
+	// "log"
 	"net/http"
 
 	assets "github.com/OpenFinancing/openfinancing/assets"
@@ -38,6 +38,7 @@ type ValidateParams struct {
 	Entity interface{}
 }
 
+// removeSeedRecp removes the encrypted seed from the recipient structure
 func removeSeedRecp(recipient database.Recipient) database.Recipient {
 	// any field that is private needs to be set to null here. A person using the API
 	// knows the username and password anyway, so the route must return all routes
@@ -47,18 +48,21 @@ func removeSeedRecp(recipient database.Recipient) database.Recipient {
 	return recipient
 }
 
+// removeSeedInv removes the encrypted seed from the investor structure
 func removeSeedInv(investor database.Investor) database.Investor {
 	var dummy []byte
 	investor.U.EncryptedSeed = dummy
 	return investor
 }
 
+// removeSeedEntity removes the encrypted seed from the entity structure
 func removeSeedEntity(entity solar.Entity) solar.Entity {
 	var dummy []byte
 	entity.U.EncryptedSeed = dummy
 	return entity
 }
 
+// UserValidateHelper is a helper that validates a user on the platform
 func UserValidateHelper(w http.ResponseWriter, r *http.Request) (database.User, error) {
 	checkGet(w, r)
 	var prepUser database.User
@@ -76,6 +80,7 @@ func UserValidateHelper(w http.ResponseWriter, r *http.Request) (database.User, 
 	return prepUser, nil
 }
 
+// ValidateUser is a route that helps validate users on the platform
 func ValidateUser() {
 	http.HandleFunc("/user/validate", func(w http.ResponseWriter, r *http.Request) {
 		checkOrigin(w, r)
@@ -129,6 +134,7 @@ func ValidateUser() {
 	})
 }
 
+// getBalances returns a list of all balances (assets and coins) held by the user
 func getBalances() {
 	http.HandleFunc("/user/balances", func(w http.ResponseWriter, r *http.Request) {
 		checkOrigin(w, r)
@@ -148,6 +154,7 @@ func getBalances() {
 	})
 }
 
+// getXLMBalance gets the XLM balance of a user's account
 func getXLMBalance() {
 	http.HandleFunc("/user/balance/xlm", func(w http.ResponseWriter, r *http.Request) {
 		checkOrigin(w, r)
@@ -168,6 +175,7 @@ func getXLMBalance() {
 	})
 }
 
+// getAssetBalance gets the balance of a specific asset
 func getAssetBalance() {
 	http.HandleFunc("/user/balance/asset", func(w http.ResponseWriter, r *http.Request) {
 		checkOrigin(w, r)
@@ -189,6 +197,7 @@ func getAssetBalance() {
 	})
 }
 
+// getIpfsHash gets the ipfs hash of the passed string
 func getIpfsHash() {
 	http.HandleFunc("/ipfs/hash", func(w http.ResponseWriter, r *http.Request) {
 
@@ -215,6 +224,8 @@ func getIpfsHash() {
 	})
 }
 
+// authKyc authenticates a user. Should ideally be part of a callback from the third
+// party service that we choose
 func authKyc() {
 	http.HandleFunc("/user/kyc", func(w http.ResponseWriter, r *http.Request) {
 
@@ -234,6 +245,7 @@ func authKyc() {
 	})
 }
 
+// sendXLM sends a given amount of XLM to the destination address specified.
 func sendXLM() {
 	http.HandleFunc("/user/sendxlm", func(w http.ResponseWriter, r *http.Request) {
 		prepUser, err := UserValidateHelper(w, r)
@@ -260,12 +272,14 @@ func sendXLM() {
 
 		_, txhash, err := xlm.SendXLM(destination, amount, seed, memo)
 		if err != nil {
-			log.Println(err)
+			responseHandler(w, r, StatusBadRequest)
+			return
 		}
 		MarshalSend(w, r, txhash)
 	})
 }
 
+// notKycView returns a list of all the users who have not yet been verified through KYC. Called by KYC Inspectors
 func notKycView() {
 	http.HandleFunc("/user/notkycview", func(w http.ResponseWriter, r *http.Request) {
 		prepUser, err := UserValidateHelper(w, r)
@@ -289,6 +303,7 @@ func notKycView() {
 	})
 }
 
+// kycView returns a list of all the users who have been verified through KYC. Called by KYC Inspectors
 func kycView() {
 	http.HandleFunc("/user/kycview", func(w http.ResponseWriter, r *http.Request) {
 		prepUser, err := UserValidateHelper(w, r)
@@ -312,6 +327,7 @@ func kycView() {
 	})
 }
 
+// askForCoins asks for coins from the testnet faucet. Will be disabled once we move to testnet
 func askForCoins() {
 	http.HandleFunc("/user/askxlm", func(w http.ResponseWriter, r *http.Request) {
 		prepUser, err := UserValidateHelper(w, r)
@@ -330,6 +346,7 @@ func askForCoins() {
 	})
 }
 
+// trustAsset creates a trustline for the given limit with a remote peer for receiving that asset.
 func trustAsset() {
 	http.HandleFunc("/user/trustasset", func(w http.ResponseWriter, r *http.Request) {
 		// since this is testnet, give caller coins from the testnet faucet
@@ -351,7 +368,6 @@ func trustAsset() {
 		}
 
 		// func TrustAsset(assetCode string, assetIssuer string, limit string, PublicKey string, Seed string) (string, error) {
-		log.Println("ASSET CODE, ASSET ISSUER, LIMIT, PublicKey, SEED", assetCode, assetIssuer, limit, prepUser.PublicKey, seed)
 		txhash, err := assets.TrustAsset(assetCode, assetIssuer, limit, prepUser.PublicKey, seed)
 		if err != nil {
 			responseHandler(w, r, StatusInternalServerError)
@@ -405,14 +421,12 @@ func uploadFile() {
 		// file type is supported, store in ipfs
 		data, err := ioutil.ReadAll(file)
 		if err != nil {
-			log.Println(err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
 		hashString, err := ipfs.IpfsHashData(data)
 		if err != nil {
-			log.Println(err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
