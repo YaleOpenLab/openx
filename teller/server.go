@@ -56,7 +56,7 @@ func PingHandler() {
 }
 
 func DataHandler() {
-	// TODO: we need to read the data from the zigbee devices here
+	// TODO: we need to read the data from the zigbee devices here or read from the particle.io stream
 	// also clients which want this information can use the API directly without
 	// the teller requiring a streaming service to inform them about changes. The client
 	// can call the teller and ask for data at the instant and  the API should respond.

@@ -3,9 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
-	"net/http"
 
 	database "github.com/OpenFinancing/openfinancing/database"
 	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
@@ -14,26 +12,9 @@ import (
 	"github.com/stellar/go/protocols/horizon"
 )
 
-func GetRequest(url string) ([]byte, error) {
-	// make a curl request out to lcoalhost and get the ping response
-	var dummy []byte
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return dummy, err
-	}
-	req.Header.Set("Origin", "localhost")
-	res, err := client.Do(req)
-	if err != nil {
-		return dummy, err
-	}
-	defer res.Body.Close()
-	return ioutil.ReadAll(res.Body)
-}
-
 func PingRpc() error {
 	// make a curl request out to lcoalhost and get the ping response
-	data, err := GetRequest(ApiUrl + "/ping")
+	data, err := rpc.GetRequest(ApiUrl + "/ping")
 	if err != nil {
 		return err
 	}
@@ -49,7 +30,7 @@ func PingRpc() error {
 }
 
 func GetInvestors() error {
-	data, err := GetRequest(ApiUrl + "/investor/all")
+	data, err := rpc.GetRequest(ApiUrl + "/investor/all")
 	if err != nil {
 		return err
 	}
@@ -59,13 +40,13 @@ func GetInvestors() error {
 		return err
 	}
 	// the result would be the status of the platform
-	ColorOutput("REUQEST SUCCEEDED", GreenColor)
+	ColorOutput("REQUEST SUCCEEDED", GreenColor)
 	log.Println(x)
 	return nil
 }
 
 func GetRecipients() error {
-	data, err := GetRequest(ApiUrl + "/recipient/all")
+	data, err := rpc.GetRequest(ApiUrl + "/recipient/all")
 	if err != nil {
 		return err
 	}
@@ -80,7 +61,7 @@ func GetRecipients() error {
 }
 
 func GetProjectIndex(assetName string) (int, error) {
-	data, err := GetRequest(ApiUrl + "/project/funded")
+	data, err := rpc.GetRequest(ApiUrl + "/project/funded")
 	if err != nil {
 		return -1, err
 	}
@@ -106,7 +87,7 @@ func ProjectPayback(recpIndex string, assetName string,
 	}
 	projIndex := utils.ItoS(projIndexI)
 	PlatformPublicKey := "GDULAIM6N6SIW7MWS3NDJPY3UIFOHSM4766WQ6O6EKFDBC7PF53VKYLY" // this will be public, so hardcode
-	data, err := GetRequest(ApiUrl + "/recipient/payback?" + "recpIndex=" + recpIndex +
+	data, err := rpc.GetRequest(ApiUrl + "/recipient/payback?" + "recpIndex=" + recpIndex +
 		"&projIndex=" + projIndex + "&assetName=" + assetName + "&recipientSeed=" +
 		recipientSeed + "&amount=" + amount + "&platformPublicKey=" + PlatformPublicKey)
 	if err != nil {
@@ -129,7 +110,7 @@ func RetrieveProject(stage float64) ([]solar.Project, error) {
 	var x []solar.Project
 	switch stage {
 	case 0:
-		data, err := GetRequest(ApiUrl + "/project/preorigin")
+		data, err := rpc.GetRequest(ApiUrl + "/project/preorigin")
 		if err != nil {
 			return x, err
 		}
@@ -140,7 +121,7 @@ func RetrieveProject(stage float64) ([]solar.Project, error) {
 		}
 		return x, nil
 	case 1:
-		data, err := GetRequest(ApiUrl + "/project/origin")
+		data, err := rpc.GetRequest(ApiUrl + "/project/origin")
 		if err != nil {
 			return x, err
 		}
@@ -151,7 +132,7 @@ func RetrieveProject(stage float64) ([]solar.Project, error) {
 		}
 		return x, nil
 	case 2:
-		data, err := GetRequest(ApiUrl + "/project/proposed")
+		data, err := rpc.GetRequest(ApiUrl + "/project/proposed")
 		if err != nil {
 			return x, err
 		}
@@ -162,7 +143,7 @@ func RetrieveProject(stage float64) ([]solar.Project, error) {
 		}
 		return x, nil
 	case 3:
-		data, err := GetRequest(ApiUrl + "/project/final")
+		data, err := rpc.GetRequest(ApiUrl + "/project/final")
 		if err != nil {
 			return x, err
 		}
@@ -173,7 +154,7 @@ func RetrieveProject(stage float64) ([]solar.Project, error) {
 		}
 		return x, nil
 	case 4:
-		data, err := GetRequest(ApiUrl + "/project/funded")
+		data, err := rpc.GetRequest(ApiUrl + "/project/funded")
 		if err != nil {
 			return x, err
 		}
@@ -190,7 +171,7 @@ func RetrieveProject(stage float64) ([]solar.Project, error) {
 func GetBalances(username string, pwhash string) ([]horizon.Balance, error) {
 	// get the balance from the balances API
 	var x []horizon.Balance
-	data, err := GetRequest(ApiUrl + "/user/balances?" + "username=" + username + "&pwhash=" + pwhash)
+	data, err := rpc.GetRequest(ApiUrl + "/user/balances?" + "username=" + username + "&pwhash=" + pwhash)
 	if err != nil {
 		return x, err
 	}
@@ -204,7 +185,7 @@ func GetBalances(username string, pwhash string) ([]horizon.Balance, error) {
 func GetXLMBalance(username string, pwhash string) (string, error) {
 	// get the balance from the balances API
 	var x string
-	data, err := GetRequest(ApiUrl + "/user/balance/xlm?" + "username=" + username + "&pwhash=" + pwhash)
+	data, err := rpc.GetRequest(ApiUrl + "/user/balance/xlm?" + "username=" + username + "&pwhash=" + pwhash)
 	if err != nil {
 		return x, err
 	}
@@ -218,7 +199,7 @@ func GetXLMBalance(username string, pwhash string) (string, error) {
 func GetAssetBalance(username string, pwhash string, asset string) (string, error) {
 	// get the balance from the balances API
 	var x string
-	data, err := GetRequest(ApiUrl + "/user/balance/asset?" + "username=" + username + "&pwhash=" + pwhash + "&asset=" + asset)
+	data, err := rpc.GetRequest(ApiUrl + "/user/balance/asset?" + "username=" + username + "&pwhash=" + pwhash + "&asset=" + asset)
 	if err != nil {
 		return x, err
 	}
@@ -231,7 +212,7 @@ func GetAssetBalance(username string, pwhash string, asset string) (string, erro
 
 func GetStableCoin(username string, pwhash string, seed string, amount string) (rpc.StatusResponse, error) {
 	var x rpc.StatusResponse
-	data, err := GetRequest(ApiUrl + "/stablecoin/get?" + "seed=" + seed + "&amount=" +
+	data, err := rpc.GetRequest(ApiUrl + "/stablecoin/get?" + "seed=" + seed + "&amount=" +
 		amount + "&username=" + username + "&pwhash=" + pwhash)
 	if err != nil {
 		return x, err
@@ -245,7 +226,7 @@ func GetStableCoin(username string, pwhash string, seed string, amount string) (
 
 func GetIpfsHash(username string, pwhash string, hashString string) (string, error) {
 	var x string
-	data, err := GetRequest(ApiUrl + "/ipfs/hash?" + "string=" + hashString +
+	data, err := rpc.GetRequest(ApiUrl + "/ipfs/hash?" + "string=" + hashString +
 		"&username=" + username + "&pwhash=" + pwhash)
 	if err != nil {
 		return x, err
@@ -259,7 +240,7 @@ func GetIpfsHash(username string, pwhash string, hashString string) (string, err
 
 func InvestInProject(projIndex string, amount string, username string, pwhash string, seedpwd string) (rpc.StatusResponse, error) {
 	var x rpc.StatusResponse
-	data, err := GetRequest(ApiUrl + "/investor/invest?" + "username=" + username + "&pwhash=" + pwhash +
+	data, err := rpc.GetRequest(ApiUrl + "/investor/invest?" + "username=" + username + "&pwhash=" + pwhash +
 		"&seedpwd=" + seedpwd + "&projIndex=" + projIndex + "&amount=" + amount)
 	if err != nil {
 		return x, err
@@ -273,7 +254,7 @@ func InvestInProject(projIndex string, amount string, username string, pwhash st
 
 func VoteTowardsProject(projIndex string, amount string, username string, pwhash string) (rpc.StatusResponse, error) {
 	var x rpc.StatusResponse
-	data, err := GetRequest(ApiUrl + "/investor/vote?" + "username=" + username + "&pwhash=" + pwhash +
+	data, err := rpc.GetRequest(ApiUrl + "/investor/vote?" + "username=" + username + "&pwhash=" + pwhash +
 		"&projIndex=" + projIndex + "&votes=" + amount)
 	if err != nil {
 		return x, err
@@ -287,7 +268,7 @@ func VoteTowardsProject(projIndex string, amount string, username string, pwhash
 
 func AuthKyc(userIndex string, username string, pwhash string) (rpc.StatusResponse, error) {
 	var x rpc.StatusResponse
-	data, err := GetRequest(ApiUrl + "/user/kyc?" + "username=" + username + "&pwhash=" + pwhash +
+	data, err := rpc.GetRequest(ApiUrl + "/user/kyc?" + "username=" + username + "&pwhash=" + pwhash +
 		"&userIndex=" + userIndex)
 	if err != nil {
 		return x, err
@@ -302,7 +283,7 @@ func AuthKyc(userIndex string, username string, pwhash string) (rpc.StatusRespon
 func Payback(projIndex string, seedpwd string, username string, pwhash string, assetName string,
 	amount string) (rpc.StatusResponse, error) {
 	var x rpc.StatusResponse
-	data, err := GetRequest(ApiUrl + "/recipient/payback?" + "username=" + username + "&pwhash=" + pwhash +
+	data, err := rpc.GetRequest(ApiUrl + "/recipient/payback?" + "username=" + username + "&pwhash=" + pwhash +
 		"&projIndex=" + projIndex + "&seedpwd=" + seedpwd + "&amount=" + amount + "&assetName=" + assetName +
 		"&platformPublicKey=" + PlatformPublicKey)
 	if err != nil {
@@ -317,7 +298,7 @@ func Payback(projIndex string, seedpwd string, username string, pwhash string, a
 
 func UnlockProject(username string, pwhash string, seedpwd string, projIndex string) (rpc.StatusResponse, error) {
 	var x rpc.StatusResponse
-	data, err := GetRequest(ApiUrl + "/recipient/unlock?" + "username=" + username + "&pwhash=" + pwhash +
+	data, err := rpc.GetRequest(ApiUrl + "/recipient/unlock?" + "username=" + username + "&pwhash=" + pwhash +
 		"&projIndex=" + projIndex + "&seedpwd=" + seedpwd)
 	if err != nil {
 		return x, err
@@ -331,7 +312,7 @@ func UnlockProject(username string, pwhash string, seedpwd string, projIndex str
 
 func FinalizeProject(username string, pwhash string, projIndex string) (rpc.StatusResponse, error) {
 	var x rpc.StatusResponse
-	data, err := GetRequest(ApiUrl + "/recipient/finalize?" + "username=" + username + "&pwhash=" + pwhash +
+	data, err := rpc.GetRequest(ApiUrl + "/recipient/finalize?" + "username=" + username + "&pwhash=" + pwhash +
 		"&projIndex=" + projIndex)
 	if err != nil {
 		return x, err
@@ -345,7 +326,7 @@ func FinalizeProject(username string, pwhash string, projIndex string) (rpc.Stat
 
 func OriginateProject(username string, pwhash string, projIndex string) (rpc.StatusResponse, error) {
 	var x rpc.StatusResponse
-	data, err := GetRequest(ApiUrl + "/recipient/originate?" + "username=" + username + "&pwhash=" + pwhash +
+	data, err := rpc.GetRequest(ApiUrl + "/recipient/originate?" + "username=" + username + "&pwhash=" + pwhash +
 		"&projIndex=" + projIndex)
 	if err != nil {
 		return x, err
@@ -359,7 +340,7 @@ func OriginateProject(username string, pwhash string, projIndex string) (rpc.Sta
 
 func GetOriginatedContracts(username string, pwhash string) ([]solar.Project, error) {
 	var x []solar.Project
-	data, err := GetRequest(ApiUrl + "/entity/getorigin?" + "username=" + username + "&pwhash=" + pwhash)
+	data, err := rpc.GetRequest(ApiUrl + "/entity/getorigin?" + "username=" + username + "&pwhash=" + pwhash)
 	if err != nil {
 		return x, err
 	}
@@ -372,7 +353,7 @@ func GetOriginatedContracts(username string, pwhash string) ([]solar.Project, er
 
 func GetPreOriginatedContracts(username string, pwhash string) ([]solar.Project, error) {
 	var x []solar.Project
-	data, err := GetRequest(ApiUrl + "/entity/getpreorigin?" + "username=" + username + "&pwhash=" + pwhash)
+	data, err := rpc.GetRequest(ApiUrl + "/entity/getpreorigin?" + "username=" + username + "&pwhash=" + pwhash)
 	if err != nil {
 		return x, err
 	}
@@ -385,7 +366,7 @@ func GetPreOriginatedContracts(username string, pwhash string) ([]solar.Project,
 
 func GetProposedContracts(username string, pwhash string) ([]solar.Project, error) {
 	var x []solar.Project
-	data, err := GetRequest(ApiUrl + "/entity/getproposed?" + "username=" + username + "&pwhash=" + pwhash)
+	data, err := rpc.GetRequest(ApiUrl + "/entity/getproposed?" + "username=" + username + "&pwhash=" + pwhash)
 	if err != nil {
 		return x, err
 	}
@@ -398,7 +379,7 @@ func GetProposedContracts(username string, pwhash string) ([]solar.Project, erro
 
 func AddCollateral(username string, pwhash string, collateral string, amount string) (rpc.StatusResponse, error) {
 	var x rpc.StatusResponse
-	data, err := GetRequest(ApiUrl + "/entity/addcollateral?" + "username=" + username + "&pwhash=" + pwhash +
+	data, err := rpc.GetRequest(ApiUrl + "/entity/addcollateral?" + "username=" + username + "&pwhash=" + pwhash +
 		"&collateral=" + collateral + "&amount=" + amount)
 	if err != nil {
 		return x, err
@@ -412,7 +393,7 @@ func AddCollateral(username string, pwhash string, collateral string, amount str
 
 func CreateAssetInv(username string, pwhash string, assetName string, pubkey string) (rpc.StatusResponse, error) {
 	var x rpc.StatusResponse
-	data, err := GetRequest(ApiUrl + "/investor/localasset?" + "username=" + username + "&pwhash=" + pwhash +
+	data, err := rpc.GetRequest(ApiUrl + "/investor/localasset?" + "username=" + username + "&pwhash=" + pwhash +
 		"&assetName=" + assetName)
 	if err != nil {
 		return x, err
@@ -428,7 +409,7 @@ func SendLocalAsset(username string, pwhash string, seedpwd string, assetName st
 	destination string, amount string) (string, error) {
 	var x string
 
-	data, err := GetRequest(ApiUrl + "/investor/sendlocalasset?" + "username=" + username + "&pwhash=" + pwhash +
+	data, err := rpc.GetRequest(ApiUrl + "/investor/sendlocalasset?" + "username=" + username + "&pwhash=" + pwhash +
 		"&assetName=" + assetName + "&destination=" + destination + "&amount=" + amount + "&seedpwd=" + seedpwd)
 	if err != nil {
 		return x, err
@@ -443,7 +424,7 @@ func SendLocalAsset(username string, pwhash string, seedpwd string, assetName st
 func SendXLM(username string, pwhash string, seedpwd string, destination string,
 	amount string, memo string) (string, error) {
 	var x string
-	data, err := GetRequest(ApiUrl + "/user/sendxlm?" + "username=" + username + "&pwhash=" + pwhash +
+	data, err := rpc.GetRequest(ApiUrl + "/user/sendxlm?" + "username=" + username + "&pwhash=" + pwhash +
 		"&destination=" + destination + "&amount=" + amount + "&seedpwd=" + seedpwd)
 	if err != nil {
 		return x, err
@@ -457,7 +438,7 @@ func SendXLM(username string, pwhash string, seedpwd string, destination string,
 
 func NotKycView(username string, pwhash string) ([]database.User, error) {
 	var x []database.User
-	data, err := GetRequest(ApiUrl + "/user/notkycview?" + "username=" + username + "&pwhash=" + pwhash)
+	data, err := rpc.GetRequest(ApiUrl + "/user/notkycview?" + "username=" + username + "&pwhash=" + pwhash)
 	if err != nil {
 		return x, err
 	}
@@ -470,7 +451,7 @@ func NotKycView(username string, pwhash string) ([]database.User, error) {
 
 func KycView(username string, pwhash string) ([]database.User, error) {
 	var x []database.User
-	data, err := GetRequest(ApiUrl + "/user/kycview?" + "username=" + username + "&pwhash=" + pwhash)
+	data, err := rpc.GetRequest(ApiUrl + "/user/kycview?" + "username=" + username + "&pwhash=" + pwhash)
 	if err != nil {
 		return x, err
 	}
@@ -483,7 +464,7 @@ func KycView(username string, pwhash string) ([]database.User, error) {
 
 func AskXLM(username string, pwhash string) (rpc.StatusResponse, error) {
 	var x rpc.StatusResponse
-	data, err := GetRequest(ApiUrl + "/user/askxlm?" + "username=" + username + "&pwhash=" + pwhash)
+	data, err := rpc.GetRequest(ApiUrl + "/user/askxlm?" + "username=" + username + "&pwhash=" + pwhash)
 	if err != nil {
 		return x, err
 	}
@@ -497,7 +478,7 @@ func AskXLM(username string, pwhash string) (rpc.StatusResponse, error) {
 func TrustAsset(username string, pwhash string, assetName string, issuerPubkey string,
 	limit string, seedpwd string) (rpc.StatusResponse, error) {
 	var x rpc.StatusResponse
-	data, err := GetRequest(ApiUrl + "/user/trustasset?" + "username=" + username + "&pwhash=" + pwhash +
+	data, err := rpc.GetRequest(ApiUrl + "/user/trustasset?" + "username=" + username + "&pwhash=" + pwhash +
 		"&assetCode=" + assetName + "&assetIssuer=" + issuerPubkey + "&limit=" + limit + "&seedpwd=" + seedpwd)
 	if err != nil {
 		return x, err
@@ -511,7 +492,7 @@ func TrustAsset(username string, pwhash string, assetName string, issuerPubkey s
 
 func GetTrustLimit(username string, pwhash string, assetName string) (string, error) {
 	var x string
-	data, err := GetRequest(ApiUrl + "/recipient/trustlimit?" + "username=" + username + "&pwhash=" +
+	data, err := rpc.GetRequest(ApiUrl + "/recipient/trustlimit?" + "username=" + username + "&pwhash=" +
 		pwhash + "&assetName=" + assetName)
 	if err != nil {
 		return x, err
