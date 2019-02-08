@@ -14,7 +14,7 @@ import (
 
 func Login(username string, pwhash string) (string, error) {
 	var wString string
-	data, err := GetRequest(ApiUrl + "/user/validate?" + "username=" + username + "&pwhash=" + pwhash)
+	data, err := rpc.GetRequest(ApiUrl + "/user/validate?" + "username=" + username + "&pwhash=" + pwhash)
 	if err != nil {
 		return wString, err
 	}
@@ -26,7 +26,7 @@ func Login(username string, pwhash string) (string, error) {
 	switch x.Role {
 	case "Investor":
 		wString = "Investor"
-		data, err = GetRequest(ApiUrl + "/investor/validate?" + "username=" + username + "&pwhash=" + pwhash)
+		data, err = rpc.GetRequest(ApiUrl + "/investor/validate?" + "username=" + username + "&pwhash=" + pwhash)
 		if err != nil {
 			return wString, err
 		}
@@ -49,7 +49,7 @@ func Login(username string, pwhash string) (string, error) {
 		}
 	case "Recipient":
 		wString = "Recipient"
-		data, err = GetRequest(ApiUrl + "/recipient/validate?" + "username=" + username + "&pwhash=" + pwhash)
+		data, err = rpc.GetRequest(ApiUrl + "/recipient/validate?" + "username=" + username + "&pwhash=" + pwhash)
 		if err != nil {
 			return wString, err
 		}
@@ -71,7 +71,7 @@ func Login(username string, pwhash string) (string, error) {
 			return wString, err
 		}
 	case "Entity":
-		data, err = GetRequest(ApiUrl + "/entity/validate?" + "username=" + username + "&pwhash=" + pwhash)
+		data, err = rpc.GetRequest(ApiUrl + "/entity/validate?" + "username=" + username + "&pwhash=" + pwhash)
 		if err != nil {
 			return wString, err
 		}

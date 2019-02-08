@@ -2,15 +2,17 @@ package rpc
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"log"
 	"net/http"
-	"strings"
 	//utils "github.com/OpenFinancing/openfinancing/utils"
+	"io"
+	"strings"
 )
 
 // we need to call the endpoitns and display the stuff returned from that endpoint.
-// TODO: in the future, we must define returnde user structs so that we can parse them a bit easier
+// TODO: what do we do with the returned event streams? We could analyse it and provide a live feed
+// of sorts but people who need to verify it have access to the portal anwyay. A more efficient way
+// would be to write those details to a separate file and then parse that to retrieve results.
 
 // function to setup all the particle related endpoints
 func setupParticleHandlers() {
@@ -24,42 +26,6 @@ func setupParticleHandlers() {
 	getAllDiagnostics()
 	getParticleUserInfo()
 	getAllSims()
-}
-
-// handler to make easy get requests to a remote host
-func GetRequest(url string) ([]byte, error) {
-	// make a curl request out to lcoalhost and get the ping response
-	var dummy []byte
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return dummy, err
-	}
-	req.Header.Set("Origin", "localhost")
-	res, err := client.Do(req)
-	if err != nil {
-		return dummy, err
-	}
-	defer res.Body.Close()
-	return ioutil.ReadAll(res.Body)
-}
-
-func PutRequest(url string, body string) ([]byte, error) {
-
-	// the body must be the param that you usually pass to curl's -d option
-	respbody := strings.NewReader(body)
-	var dummy []byte
-	client := &http.Client{}
-	req, err := http.NewRequest("PUT", url, respbody)
-	if err != nil {
-		return dummy, err
-	}
-	res, err := client.Do(req)
-	if err != nil {
-		return dummy, err
-	}
-	defer res.Body.Close()
-	return ioutil.ReadAll(res.Body)
 }
 
 type ParticleDevice struct {
@@ -134,6 +100,48 @@ type ParticleUser struct {
 	Cellular_device_count int      `json:"cellular_device_count"`
 }
 
+func GetAndSendJson(w http.ResponseWriter, r *http.Request, body string, x interface{}) {
+	data, err := GetRequest(body)
+	if err != nil {
+		responseHandler(w, r, StatusBadRequest)
+		return
+	}
+	// now data is in byte, we need the other strucutre now
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		log.Println(err)
+		responseHandler(w, r, StatusBadRequest)
+		return
+	}
+	MarshalSend(w, r, x)
+}
+
+func GetAndSendByte(w http.ResponseWriter, r *http.Request, body string) {
+	data, err := GetRequest(body)
+	if err != nil {
+		responseHandler(w, r, StatusBadRequest)
+		return
+	}
+
+	w.Write(data)
+}
+
+func PutAndSend(w http.ResponseWriter, r *http.Request, body string, payload io.Reader) {
+	data, err := PutRequest(body, payload)
+	if err != nil {
+		responseHandler(w, r, StatusBadRequest)
+		return
+	}
+	var x ParticlePingResponse
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		log.Println(err)
+		responseHandler(w, r, StatusBadRequest)
+		return
+	}
+	MarshalSend(w, r, x)
+}
+
 func listAllDevices() {
 	// make a curl request out to lcoalhost and get the ping response
 	http.HandleFunc("/particle/devices", func(w http.ResponseWriter, r *http.Request) {
@@ -145,20 +153,9 @@ func listAllDevices() {
 		}
 
 		accessToken := r.URL.Query()["accessToken"][0]
-		data, err := GetRequest("https://api.particle.io/v1/devices?access_token=" + accessToken)
-		if err != nil {
-			responseHandler(w, r, StatusBadRequest)
-			return
-		}
+		body := "https://api.particle.io/v1/devices?access_token=" + accessToken
 		var x []ParticleDevice
-		// now data is in byte, we need the other strucutre now
-		err = json.Unmarshal(data, &x)
-		if err != nil {
-			log.Println(err)
-			responseHandler(w, r, StatusBadRequest)
-			return
-		}
-		MarshalSend(w, r, x)
+		GetAndSendJson(w, r, body, x)
 	})
 }
 
@@ -174,21 +171,9 @@ func listProductInfo() {
 		accessToken := r.URL.Query()["accessToken"][0]
 		productInfo := r.URL.Query()["productInfo"][0]
 
-		data, err := GetRequest("https://api.particle.io/v1/products/" + productInfo + "/devices?access_token=" + accessToken)
-		if err != nil {
-			responseHandler(w, r, StatusBadRequest)
-			return
-		}
-
+		body := "https://api.particle.io/v1/products/" + productInfo + "/devices?access_token=" + accessToken
 		var x ParticleProductInfo
-		err = json.Unmarshal(data, &x)
-		if err != nil {
-			log.Println(err)
-			responseHandler(w, r, StatusBadRequest)
-			return
-		}
-		MarshalSend(w, r, x)
-
+		GetAndSendJson(w, r, body, x)
 	})
 }
 
@@ -204,20 +189,9 @@ func getDeviceInfo() {
 		accessToken := r.URL.Query()["accessToken"][0]
 		deviceId := r.URL.Query()["deviceId"][0]
 
-		data, err := GetRequest("https://api.particle.io/v1/devices/" + deviceId + "?access_token=" + accessToken)
-		if err != nil {
-			responseHandler(w, r, StatusBadRequest)
-			return
-		}
+		body := "https://api.particle.io/v1/devices/" + deviceId + "?access_token=" + accessToken
 		var x ParticleDevice
-		// now data is in byte, we need the other strucutre now
-		err = json.Unmarshal(data, &x)
-		if err != nil {
-			log.Println(err)
-			responseHandler(w, r, StatusBadRequest)
-			return
-		}
-		MarshalSend(w, r, x)
+		GetAndSendJson(w, r, body, x)
 	})
 }
 
@@ -232,22 +206,10 @@ func pingDevice() {
 
 		accessToken := r.URL.Query()["accessToken"][0]
 		deviceId := r.URL.Query()["deviceId"][0]
-		body := "access_token=" + accessToken // the part which would be passed as -d in curl
+		body := "https://api.particle.io/v1/devices/" + deviceId + "/ping"
+		payload := strings.NewReader("access_token=" + accessToken)
 
-		data, err := PutRequest("https://api.particle.io/v1/devices/"+deviceId, body)
-		if err != nil {
-			responseHandler(w, r, StatusBadRequest)
-			return
-		}
-		var x ParticlePingResponse
-		// now data is in byte, we need the other strucutre now
-		err = json.Unmarshal(data, &x)
-		if err != nil {
-			log.Println(err)
-			responseHandler(w, r, StatusBadRequest)
-			return
-		}
-		MarshalSend(w, r, x)
+		PutAndSend(w, r, body, payload)
 	})
 }
 
@@ -270,27 +232,16 @@ func signalDevice() {
 		}
 
 		var body string
+		var payload io.Reader
+		body = "https://api.particle.io/v1/devices/" + deviceId
 		if signal == "ok" {
-			body = "signal=" + "1" + "accessToken=" + accessToken
+			payload = strings.NewReader("signal=" + "1" + "&access_token=" + accessToken)
+			body += "?signal=" + "1" + "&accessToken=" + accessToken
 		} else {
-			body = "signal=" + "0" + "accessToken=" + accessToken
+			payload = strings.NewReader("signal=" + "0" + "&access_token=" + accessToken)
 		}
 
-		data, err := PutRequest("https://api.particle.io/v1/devices/"+deviceId, body)
-		if err != nil {
-			log.Println("2")
-			responseHandler(w, r, StatusBadRequest)
-			return
-		}
-		var x SignalResponse
-		// now data is in byte, we need the other strucutre now
-		err = json.Unmarshal(data, &x)
-		if err != nil {
-			log.Println("3")
-			responseHandler(w, r, StatusBadRequest)
-			return
-		}
-		MarshalSend(w, r, x)
+		PutAndSend(w, r, body, payload)
 	})
 }
 
@@ -299,7 +250,6 @@ func serialNumberInfo() {
 
 		_, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["serialNumber"] == nil || r.URL.Query()["accessToken"] == nil {
-			log.Println("1")
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -308,20 +258,8 @@ func serialNumberInfo() {
 		accessToken := r.URL.Query()["accessToken"][0]
 
 		body := "https://api.particle.io/v1/serial_numbers/" + serialNumber + "?access_token=" + accessToken
-		data, err := GetRequest(body)
-		if err != nil {
-			responseHandler(w, r, StatusBadRequest)
-			return
-		}
-
 		var x SerialNumberResponse
-		err = json.Unmarshal(data, &x)
-		if err != nil {
-			log.Println("3")
-			responseHandler(w, r, StatusBadRequest)
-			return
-		}
-		MarshalSend(w, r, x)
+		GetAndSendJson(w, r, body, x)
 	})
 }
 
@@ -338,15 +276,7 @@ func getDiagnosticsLast() {
 		deviceId := r.URL.Query()["deviceId"][0]
 
 		body := "https://api.particle.io/v1/diagnostics/" + deviceId + "/last?access_token=" + accessToken
-		log.Println(body)
-
-		data, err := GetRequest(body)
-		if err != nil {
-			responseHandler(w, r, StatusBadRequest)
-			return
-		}
-
-		w.Write(data) // don't know the struct of this since we don't ahve anythign to test against
+		GetAndSendByte(w, r, body)
 	})
 }
 
@@ -363,14 +293,7 @@ func getAllDiagnostics() {
 		deviceId := r.URL.Query()["deviceId"][0]
 
 		body := "https://api.particle.io/v1/diagnostics/" + deviceId + "?access_token=" + accessToken
-
-		data, err := GetRequest(body)
-		if err != nil {
-			responseHandler(w, r, StatusBadRequest)
-			return
-		}
-
-		w.Write(data) // don't know the struct of this since we don't ahve anythign to test against
+		GetAndSendByte(w, r, body)
 	})
 }
 
@@ -385,20 +308,8 @@ func getParticleUserInfo() {
 
 		accessToken := r.URL.Query()["accessToken"][0]
 		body := "https://api.particle.io/v1/user?access_token=" + accessToken
-
-		data, err := GetRequest(body)
-		if err != nil {
-			responseHandler(w, r, StatusBadRequest)
-			return
-		}
-
 		var x ParticleUser
-		err = json.Unmarshal(data, &x)
-		if err != nil {
-			responseHandler(w, r, StatusBadRequest)
-			return
-		}
-		MarshalSend(w, r, x)
+		GetAndSendJson(w, r, body, x)
 	})
 }
 
@@ -414,12 +325,6 @@ func getAllSims() {
 		accessToken := r.URL.Query()["accessToken"][0]
 
 		body := "https://api.particle.io/v1/sims?access_token=" + accessToken
-		data, err := GetRequest(body)
-		if err != nil {
-			responseHandler(w, r, StatusBadRequest)
-			return
-		}
-
-		w.Write(data)
+		GetAndSendByte(w, r, body)
 	})
 }

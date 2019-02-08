@@ -7,13 +7,14 @@ package rpc
 // we'll stay with this one for a while
 import (
 	"encoding/json"
-	//"fmt"
+	"fmt"
 	"log"
 	"net/http"
+	"io/ioutil"
+	"io"
 )
 
-// TODO: have some nice API documentation page for this so that we can easily reference
-
+// API documentation over at the apidocs repo
 type StatusResponse struct {
 	Code   int
 	Status string
@@ -85,6 +86,46 @@ func checkPost(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, "404 page not found", http.StatusNotFound)
 	}
+}
+
+// handler to make easy get requests to a remote host
+func GetRequest(url string) ([]byte, error) {
+	// make a curl request out to lcoalhost and get the ping response
+	var dummy []byte
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return dummy, err
+	}
+	req.Header.Set("Origin", "localhost")
+	res, err := client.Do(req)
+	if err != nil {
+		return dummy, err
+	}
+	defer res.Body.Close()
+	return ioutil.ReadAll(res.Body)
+}
+
+func PutRequest(body string, payload io.Reader) ([]byte, error) {
+
+	// the body must be the param that you usually pass to curl's -d option
+	var dummy []byte
+	req, err := http.NewRequest("PUT", body, payload)
+	if err != nil {
+		return dummy, err
+	}
+	req.Header.Add("content-type", "application/x-www-form-urlencoded")
+	req.Header.Add("origin", "localhost")
+	req.Header.Add("cache-control", "no-cache")
+
+	res, _ := http.DefaultClient.Do(req)
+
+	defer res.Body.Close()
+	x, _ := ioutil.ReadAll(res.Body)
+
+	fmt.Println(x)
+	log.Println(string(x))
+	return x, nil
 }
 
 func responseHandler(w http.ResponseWriter, r *http.Request, status int) {
