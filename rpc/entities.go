@@ -5,8 +5,8 @@ import (
 	//"log"
 	"net/http"
 
-	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
-	utils "github.com/OpenFinancing/openfinancing/utils"
+	solar "github.com/YaleOpenLab/openx/platforms/solar"
+	utils "github.com/YaleOpenLab/openx/utils"
 )
 
 func setupEntityRPCs() {

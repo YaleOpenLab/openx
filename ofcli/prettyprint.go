@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	database "github.com/OpenFinancing/openfinancing/database"
-	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
+	database "github.com/YaleOpenLab/openx/database"
+	solar "github.com/YaleOpenLab/openx/platforms/solar"
 	"github.com/stellar/go/protocols/horizon"
 )
 

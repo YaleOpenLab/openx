@@ -3,9 +3,9 @@ GO ?= latest
 
 GO_BUILD_EX_ARGS ?=
 
-all: openfinancing emulator teller test
+all: openx emulator teller test
 
-.PHONY: openfinancing emulator teller test tests clean
+.PHONY: openx emulator teller test tests clean
 
 goget:
 	go get github.com/stellar/go
@@ -14,9 +14,9 @@ goget:
 	cd ${GOBIN}/gopath/src/github.com/stellar/go
 	build/env.sh go get -v ./...
 
-openfinancing: goget
+openx: goget
 	build/env.sh go build ${GO_BUILD_EX_ARGS}
-	@echo "Run \"$(GOBIN)/openfinancing\" to launch openfinancing."
+	@echo "Run \"$(GOBIN)/openx\" to launch openx."
 
 emulator: goget
 	build/env.sh go build ${GO_BUILD_EX_ARGS} ./emulator/emulator
@@ -31,7 +31,7 @@ clean:
 	go clean .
 	go clean ./emulator/emulator
 	rm -rf build/_workspace/
-	rm -f openfinancing emulator/emulator teller/teller
+	rm -f openx emulator/emulator teller/teller
 
-test tests: openfinancing
+test tests: openx
 	build/env.sh go test -v ./...

@@ -12,8 +12,8 @@ import (
 	"os"
 	"strings"
 
-	consts "github.com/OpenFinancing/openfinancing/consts"
-	utils "github.com/OpenFinancing/openfinancing/utils"
+	consts "github.com/YaleOpenLab/openx/consts"
+	utils "github.com/YaleOpenLab/openx/utils"
 	shell "github.com/ipfs/go-ipfs-api"
 )
 

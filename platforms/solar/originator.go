@@ -3,8 +3,8 @@ package solar
 import (
 	"fmt"
 
-	database "github.com/OpenFinancing/openfinancing/database"
-	utils "github.com/OpenFinancing/openfinancing/utils"
+	database "github.com/YaleOpenLab/openx/database"
+	utils "github.com/YaleOpenLab/openx/utils"
 )
 
 // An originator is someone who approaches the recipient in real life and proposes

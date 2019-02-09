@@ -9,8 +9,8 @@ import (
 	"os/signal"
 	"strings"
 
-	consts "github.com/OpenFinancing/openfinancing/consts"
-	database "github.com/OpenFinancing/openfinancing/database"
+	consts "github.com/YaleOpenLab/openx/consts"
+	database "github.com/YaleOpenLab/openx/database"
 )
 
 // package teller contains the remote client code that would be run on the client's

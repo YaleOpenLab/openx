@@ -6,9 +6,9 @@ import (
 	"log"
 	"net/http"
 
-	consts "github.com/OpenFinancing/openfinancing/consts"
-	rpc "github.com/OpenFinancing/openfinancing/rpc"
-	utils "github.com/OpenFinancing/openfinancing/utils"
+	consts "github.com/YaleOpenLab/openx/consts"
+	rpc "github.com/YaleOpenLab/openx/rpc"
+	utils "github.com/YaleOpenLab/openx/utils"
 )
 
 type Data struct {

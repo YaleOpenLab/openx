@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"log"
 
-	database "github.com/OpenFinancing/openfinancing/database"
-	platform "github.com/OpenFinancing/openfinancing/platforms"
-	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
-	scan "github.com/OpenFinancing/openfinancing/scan"
-	xlm "github.com/OpenFinancing/openfinancing/xlm"
+	database "github.com/YaleOpenLab/openx/database"
+	platform "github.com/YaleOpenLab/openx/platforms"
+	solar "github.com/YaleOpenLab/openx/platforms/solar"
+	scan "github.com/YaleOpenLab/openx/scan"
+	xlm "github.com/YaleOpenLab/openx/xlm"
 )
 
 func StartPlatform() (string, string, error) {

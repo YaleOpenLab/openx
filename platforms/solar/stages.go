@@ -1,7 +1,7 @@
 package solar
 
 import (
-	database "github.com/OpenFinancing/openfinancing/database"
+	database "github.com/YaleOpenLab/openx/database"
 )
 
 var (

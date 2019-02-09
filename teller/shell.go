@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strings"
 
-	utils "github.com/OpenFinancing/openfinancing/utils"
-	xlm "github.com/OpenFinancing/openfinancing/xlm"
+	utils "github.com/YaleOpenLab/openx/utils"
+	xlm "github.com/YaleOpenLab/openx/xlm"
 )
 
 func WriteToHandler(w http.ResponseWriter, jsonString []byte) {

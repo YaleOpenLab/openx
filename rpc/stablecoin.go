@@ -4,9 +4,9 @@ import (
 	// "log"
 	"net/http"
 
-	database "github.com/OpenFinancing/openfinancing/database"
-	stablecoin "github.com/OpenFinancing/openfinancing/stablecoin"
-	wallet "github.com/OpenFinancing/openfinancing/wallet"
+	database "github.com/YaleOpenLab/openx/database"
+	stablecoin "github.com/YaleOpenLab/openx/stablecoin"
+	wallet "github.com/YaleOpenLab/openx/wallet"
 )
 
 // this file handles the RPCs necessary for converting a fixed amount of XLM into

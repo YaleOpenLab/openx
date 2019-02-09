@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"log"
 
-	database "github.com/OpenFinancing/openfinancing/database"
-	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
-	rpc "github.com/OpenFinancing/openfinancing/rpc"
-	utils "github.com/OpenFinancing/openfinancing/utils"
+	database "github.com/YaleOpenLab/openx/database"
+	solar "github.com/YaleOpenLab/openx/platforms/solar"
+	rpc "github.com/YaleOpenLab/openx/rpc"
+	utils "github.com/YaleOpenLab/openx/utils"
 	geo "github.com/martinlindhe/google-geolocate"
 )
 

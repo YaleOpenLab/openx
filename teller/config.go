@@ -4,9 +4,9 @@ import (
 	"log"
 	"time"
 
-	consts "github.com/OpenFinancing/openfinancing/consts"
-	utils "github.com/OpenFinancing/openfinancing/utils"
-	wallet "github.com/OpenFinancing/openfinancing/wallet"
+	consts "github.com/YaleOpenLab/openx/consts"
+	utils "github.com/YaleOpenLab/openx/utils"
+	wallet "github.com/YaleOpenLab/openx/wallet"
 	"github.com/spf13/viper"
 )
 
@@ -43,7 +43,7 @@ func SetupConfig() error {
 	seedpwd := viper.Get("seedpwd").(string)                   // seed password used to unlock the seed of the recipient on the platform
 	username := viper.Get("username").(string)                 // username of the recipient on the platform
 	password := utils.SHA3hash(viper.Get("password").(string)) // password of the recipient on the platform
-	ApiUrl = viper.Get("apiurl").(string)                      // ApiUrl of the remote / local openfinancing node
+	ApiUrl = viper.Get("apiurl").(string)                      // ApiUrl of the remote / local openx node
 	mapskey := viper.Get("mapskey").(string)                   // google maps API key. Need to activate it
 
 	err = LoginToPlatForm(username, password)

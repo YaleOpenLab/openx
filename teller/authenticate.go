@@ -4,11 +4,11 @@ import (
 	"log"
 	"time"
 
-	consts "github.com/OpenFinancing/openfinancing/consts"
-	ipfs "github.com/OpenFinancing/openfinancing/ipfs"
-	oracle "github.com/OpenFinancing/openfinancing/oracle"
-	utils "github.com/OpenFinancing/openfinancing/utils"
-	xlm "github.com/OpenFinancing/openfinancing/xlm"
+	consts "github.com/YaleOpenLab/openx/consts"
+	ipfs "github.com/YaleOpenLab/openx/ipfs"
+	oracle "github.com/YaleOpenLab/openx/oracle"
+	utils "github.com/YaleOpenLab/openx/utils"
+	xlm "github.com/YaleOpenLab/openx/xlm"
 )
 
 func BlockStamp() (string, error) {

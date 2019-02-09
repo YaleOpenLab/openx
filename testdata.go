@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"log"
 
-	database "github.com/OpenFinancing/openfinancing/database"
-	bonds "github.com/OpenFinancing/openfinancing/platforms/bonds"
-	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
-	utils "github.com/OpenFinancing/openfinancing/utils"
+	database "github.com/YaleOpenLab/openx/database"
+	bonds "github.com/YaleOpenLab/openx/platforms/bonds"
+	solar "github.com/YaleOpenLab/openx/platforms/solar"
+	utils "github.com/YaleOpenLab/openx/utils"
 )
 
 func InsertDummyData() error {

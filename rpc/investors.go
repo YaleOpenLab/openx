@@ -6,13 +6,13 @@ import (
 	"net/http"
 	"strconv"
 
-	assets "github.com/OpenFinancing/openfinancing/assets"
-	database "github.com/OpenFinancing/openfinancing/database"
-	notif "github.com/OpenFinancing/openfinancing/notif"
-	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
-	utils "github.com/OpenFinancing/openfinancing/utils"
-	wallet "github.com/OpenFinancing/openfinancing/wallet"
-	xlm "github.com/OpenFinancing/openfinancing/xlm"
+	assets "github.com/YaleOpenLab/openx/assets"
+	database "github.com/YaleOpenLab/openx/database"
+	notif "github.com/YaleOpenLab/openx/notif"
+	solar "github.com/YaleOpenLab/openx/platforms/solar"
+	utils "github.com/YaleOpenLab/openx/utils"
+	wallet "github.com/YaleOpenLab/openx/wallet"
+	xlm "github.com/YaleOpenLab/openx/xlm"
 )
 
 // setupInvestorRPCs sets up all RPCs related to the investor
