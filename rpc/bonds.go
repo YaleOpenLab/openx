@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	database "github.com/YaleOpenLab/openx/database"
-	bonds "github.com/YaleOpenLab/openx/platforms/bonds"
+	bonds "github.com/YaleOpenLab/openx/platforms/ozones"
 	utils "github.com/YaleOpenLab/openx/utils"
 	xlm "github.com/YaleOpenLab/openx/xlm"
 )

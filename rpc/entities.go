@@ -5,7 +5,7 @@ import (
 	//"log"
 	"net/http"
 
-	solar "github.com/YaleOpenLab/openx/platforms/solar"
+	solar "github.com/YaleOpenLab/openx/platforms/opensolar"
 	utils "github.com/YaleOpenLab/openx/utils"
 )
 
