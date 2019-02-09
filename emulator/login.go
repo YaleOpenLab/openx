@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"log"
 
-	database "github.com/OpenFinancing/openfinancing/database"
-	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
-	rpc "github.com/OpenFinancing/openfinancing/rpc"
-	scan "github.com/OpenFinancing/openfinancing/scan"
-	wallet "github.com/OpenFinancing/openfinancing/wallet"
+	database "github.com/YaleOpenLab/openx/database"
+	solar "github.com/YaleOpenLab/openx/platforms/solar"
+	rpc "github.com/YaleOpenLab/openx/rpc"
+	scan "github.com/YaleOpenLab/openx/scan"
+	wallet "github.com/YaleOpenLab/openx/wallet"
 )
 
 func Login(username string, pwhash string) (string, error) {

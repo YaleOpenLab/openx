@@ -10,7 +10,7 @@ fi
 # Create fake Go workspace if it doesn't exist yet.
 workspace="$PWD/build/_workspace"
 root="$PWD"
-homedir="$workspace/src/github.com/OpenFinancing"
+homedir="$workspace/src/github.com/YaleOpenLab"
 
 # Are we actually doing cleanup?
 if [ "$1" = "clean" ]; then
@@ -19,11 +19,11 @@ if [ "$1" = "clean" ]; then
 fi
 
 # Create the homedir
-if [ ! -L "$homedir/openfinancing" ]; then
+if [ ! -L "$homedir/openx" ]; then
     mkdir -p $homedir
     back=$(pwd)
     cd $homedir
-    ln -s ../../../../../. OpenFinancing
+    ln -s ../../../../../. openx
     cd $back
 fi
 
@@ -32,8 +32,8 @@ GOPATH="$workspace"
 export GOPATH
 
 # Run the command inside the workspace.
-cd "$homedir/openfinancing"
-PWD="$homedir/openfinancing"
+cd "$homedir/openx"
+PWD="$homedir/openx"
 
 # Launch the arguments with the configured environment.
 if [ ! -z "$1" ]; then

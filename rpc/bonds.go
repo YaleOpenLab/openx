@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"strings"
 
-	database "github.com/OpenFinancing/openfinancing/database"
-	bonds "github.com/OpenFinancing/openfinancing/platforms/bonds"
-	utils "github.com/OpenFinancing/openfinancing/utils"
-	xlm "github.com/OpenFinancing/openfinancing/xlm"
+	database "github.com/YaleOpenLab/openx/database"
+	bonds "github.com/YaleOpenLab/openx/platforms/bonds"
+	utils "github.com/YaleOpenLab/openx/utils"
+	xlm "github.com/YaleOpenLab/openx/xlm"
 )
 
 func setupBondRPCs() {

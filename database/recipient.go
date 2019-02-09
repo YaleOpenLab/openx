@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	utils "github.com/OpenFinancing/openfinancing/utils"
+	utils "github.com/YaleOpenLab/openx/utils"
 	"github.com/boltdb/bolt"
 )
 

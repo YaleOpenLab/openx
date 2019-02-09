@@ -10,7 +10,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	utils "github.com/OpenFinancing/openfinancing/utils"
+	utils "github.com/YaleOpenLab/openx/utils"
 )
 
 // Encrypt encrypts a given data stream with a given passphrase

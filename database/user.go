@@ -6,11 +6,11 @@ import (
 	"log"
 	"strings"
 
-	aes "github.com/OpenFinancing/openfinancing/aes"
-	notif "github.com/OpenFinancing/openfinancing/notif"
-	utils "github.com/OpenFinancing/openfinancing/utils"
-	wallet "github.com/OpenFinancing/openfinancing/wallet"
-	xlm "github.com/OpenFinancing/openfinancing/xlm"
+	aes "github.com/YaleOpenLab/openx/aes"
+	notif "github.com/YaleOpenLab/openx/notif"
+	utils "github.com/YaleOpenLab/openx/utils"
+	wallet "github.com/YaleOpenLab/openx/wallet"
+	xlm "github.com/YaleOpenLab/openx/xlm"
 	"github.com/boltdb/bolt"
 )
 

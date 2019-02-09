@@ -7,9 +7,9 @@ import (
 	"os"
 	"testing"
 
-	consts "github.com/OpenFinancing/openfinancing/consts"
-	wallet "github.com/OpenFinancing/openfinancing/wallet"
-	xlm "github.com/OpenFinancing/openfinancing/xlm"
+	consts "github.com/YaleOpenLab/openx/consts"
+	wallet "github.com/YaleOpenLab/openx/wallet"
+	xlm "github.com/YaleOpenLab/openx/xlm"
 	"github.com/stellar/go/build"
 )
 
@@ -124,7 +124,7 @@ func TestDb(t *testing.T) {
 		t.Fatalf("Able to change reputation in database with invalid path")
 	}
 	// set the db directory back to normal so that we can test stuff which goes inside the db
-	consts.DbDir = os.Getenv("HOME") + "/.openfinancing/database"
+	consts.DbDir = os.Getenv("HOME") + "/.openx/database"
 	err = os.MkdirAll(consts.DbDir, os.ModePerm) // create the db
 	if err != nil {
 		t.Fatal(err)

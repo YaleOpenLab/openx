@@ -4,7 +4,7 @@ package oracle
 // right now, most are just placehlders, but in the future, they should call
 // remote APIs and act as oracles
 import (
-	utils "github.com/OpenFinancing/openfinancing/utils"
+	utils "github.com/YaleOpenLab/openx/utils"
 )
 
 // PriceOracle returns the power tariffs and any data that we need to certify

@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 
-	consts "github.com/OpenFinancing/openfinancing/consts"
+	consts "github.com/YaleOpenLab/openx/consts"
 )
 
 // deviceid sets the deviceid and stores it in a retrievable location

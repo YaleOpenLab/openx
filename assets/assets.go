@@ -37,8 +37,8 @@
 package assets
 
 import (
-	utils "github.com/OpenFinancing/openfinancing/utils"
-	xlm "github.com/OpenFinancing/openfinancing/xlm"
+	utils "github.com/YaleOpenLab/openx/utils"
+	xlm "github.com/YaleOpenLab/openx/xlm"
 	"github.com/stellar/go/build"
 )
 

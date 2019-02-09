@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"log"
 
-	assets "github.com/OpenFinancing/openfinancing/assets"
-	consts "github.com/OpenFinancing/openfinancing/consts"
-	database "github.com/OpenFinancing/openfinancing/database"
-	utils "github.com/OpenFinancing/openfinancing/utils"
+	assets "github.com/YaleOpenLab/openx/assets"
+	consts "github.com/YaleOpenLab/openx/consts"
+	database "github.com/YaleOpenLab/openx/database"
+	utils "github.com/YaleOpenLab/openx/utils"
 	"github.com/boltdb/bolt"
 )
 

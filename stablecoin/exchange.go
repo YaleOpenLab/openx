@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"log"
 
-	assets "github.com/OpenFinancing/openfinancing/assets"
-	consts "github.com/OpenFinancing/openfinancing/consts"
-	oracle "github.com/OpenFinancing/openfinancing/oracle"
-	utils "github.com/OpenFinancing/openfinancing/utils"
-	xlm "github.com/OpenFinancing/openfinancing/xlm"
+	assets "github.com/YaleOpenLab/openx/assets"
+	consts "github.com/YaleOpenLab/openx/consts"
+	oracle "github.com/YaleOpenLab/openx/oracle"
+	utils "github.com/YaleOpenLab/openx/utils"
+	xlm "github.com/YaleOpenLab/openx/xlm"
 )
 
 func Exchange(recipientPK string, recipientSeed string, convAmount string) error {

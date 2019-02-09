@@ -4,10 +4,10 @@ import (
 	"log"
 	"os"
 
-	consts "github.com/OpenFinancing/openfinancing/consts"
-	utils "github.com/OpenFinancing/openfinancing/utils"
-	wallet "github.com/OpenFinancing/openfinancing/wallet"
-	xlm "github.com/OpenFinancing/openfinancing/xlm"
+	consts "github.com/YaleOpenLab/openx/consts"
+	utils "github.com/YaleOpenLab/openx/utils"
+	wallet "github.com/YaleOpenLab/openx/wallet"
+	xlm "github.com/YaleOpenLab/openx/xlm"
 )
 
 // issuer defines the issuer of asset for a specific project. We should generate a
