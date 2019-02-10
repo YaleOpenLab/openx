@@ -6,7 +6,7 @@ import (
 	"log"
 
 	database "github.com/YaleOpenLab/openx/database"
-	solar "github.com/YaleOpenLab/openx/platforms/solar"
+	solar "github.com/YaleOpenLab/openx/platforms/opensolar"
 	rpc "github.com/YaleOpenLab/openx/rpc"
 	utils "github.com/YaleOpenLab/openx/utils"
 	geo "github.com/martinlindhe/google-geolocate"

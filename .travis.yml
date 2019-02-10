@@ -11,7 +11,7 @@ before_install:
   #- echo -e "Host *\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
   #- rm Gopkg.lock
   - dep ensure -v
-  - cd ${TRAVIS_HOME}/gopath/src/github.com/OpenFinancing/openfinancing
+  - cd ${TRAVIS_HOME}/gopath/src/github.com/YaleOpenLab/openx
 script:
   - go test --tags="travis" -race -coverprofile=coverage.txt -covermode=atomic ./...
 after_success:

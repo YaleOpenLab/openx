@@ -9,7 +9,7 @@ import (
 	assets "github.com/YaleOpenLab/openx/assets"
 	database "github.com/YaleOpenLab/openx/database"
 	ipfs "github.com/YaleOpenLab/openx/ipfs"
-	solar "github.com/YaleOpenLab/openx/platforms/opensolar"
+	platform "github.com/YaleOpenLab/openx/platforms/opensolar"
 	utils "github.com/YaleOpenLab/openx/utils"
 	wallet "github.com/YaleOpenLab/openx/wallet"
 	xlm "github.com/YaleOpenLab/openx/xlm"
@@ -56,7 +56,7 @@ func removeSeedInv(investor database.Investor) database.Investor {
 }
 
 // removeSeedEntity removes the encrypted seed from the entity structure
-func removeSeedEntity(entity solar.Entity) solar.Entity {
+func removeSeedEntity(entity platform.Entity) platform.Entity {
 	var dummy []byte
 	entity.U.EncryptedSeed = dummy
 	return entity
@@ -94,7 +94,7 @@ func ValidateUser() {
 		// no we need to see whether this guy is an investor or a recipient.
 		var prepInvestor database.Investor
 		var prepRecipient database.Recipient
-		var prepEntity solar.Entity
+		var prepEntity platform.Entity
 		rec := false
 		entity := false
 		prepInvestor, err = database.RetrieveInvestor(prepUser.Index)
@@ -103,7 +103,7 @@ func ValidateUser() {
 			prepRecipient, err = database.ValidateRecipient(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
 			if err != nil {
 				// it is not a recipient either
-				prepEntity, err = solar.ValidateEntity(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
+				prepEntity, err = platform.ValidateEntity(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
 				if err != nil {
 					// not an investor, recipient or entity, error
 					responseHandler(w, r, StatusBadRequest)

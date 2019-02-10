@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	database "github.com/YaleOpenLab/openx/database"
-	solar "github.com/YaleOpenLab/openx/platforms/solar"
+	solar "github.com/YaleOpenLab/openx/platforms/opensolar"
 	"github.com/stellar/go/protocols/horizon"
 )
 

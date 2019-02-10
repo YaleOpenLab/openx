@@ -1,4 +1,4 @@
-package solar
+package opensolar
 
 // General Concept:
 // This can be applied as a feedback system to actors that are part of projects

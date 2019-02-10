@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	database "github.com/YaleOpenLab/openx/database"
-	solar "github.com/YaleOpenLab/openx/platforms/opensolar"
+	platform "github.com/YaleOpenLab/openx/platforms/opensolar"
 	utils "github.com/YaleOpenLab/openx/utils"
 	wallet "github.com/YaleOpenLab/openx/wallet"
 	xlm "github.com/YaleOpenLab/openx/xlm"
@@ -130,7 +130,7 @@ func payback() {
 			return
 		}
 
-		err = solar.Payback(recpIndex, projIndex, assetName, amount, recipientSeed, platformPublicKey)
+		err = platform.Payback(recpIndex, projIndex, assetName, amount, recipientSeed, platformPublicKey)
 		if err != nil {
 			responseHandler(w, r, StatusInternalServerError)
 			return
@@ -252,13 +252,13 @@ func chooseBlindAuction() {
 			return
 		}
 
-		allContracts, err := solar.RetrieveRecipientProjects(solar.ProposedProject, recipient.U.Index)
+		allContracts, err := platform.RetrieveRecipientProjects(platform.ProposedProject, recipient.U.Index)
 		if err != nil {
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
-		bestContract, err := solar.SelectContractBlind(allContracts)
+		bestContract, err := platform.SelectContractBlind(allContracts)
 		if err != nil {
 			responseHandler(w, r, StatusInternalServerError)
 			return
@@ -284,7 +284,7 @@ func chooseVickreyAuction() {
 			return
 		}
 
-		allContracts, err := solar.RetrieveRecipientProjects(solar.ProposedProject, recipient.U.Index)
+		allContracts, err := platform.RetrieveRecipientProjects(platform.ProposedProject, recipient.U.Index)
 		if err != nil {
 			responseHandler(w, r, StatusInternalServerError)
 			return
@@ -292,7 +292,7 @@ func chooseVickreyAuction() {
 
 		// the only differing part in the three auction routes. Would be nice if there were
 		// some way to avoid repetition like this
-		bestContract, err := solar.SelectContractVickrey(allContracts)
+		bestContract, err := platform.SelectContractVickrey(allContracts)
 		if err != nil {
 			responseHandler(w, r, StatusInternalServerError)
 			return
@@ -317,7 +317,7 @@ func chooseTimeAuction() {
 			return
 		}
 
-		allContracts, err := solar.RetrieveRecipientProjects(solar.ProposedProject, recipient.U.Index)
+		allContracts, err := platform.RetrieveRecipientProjects(platform.ProposedProject, recipient.U.Index)
 		if err != nil {
 			responseHandler(w, r, StatusInternalServerError)
 			return
@@ -325,7 +325,7 @@ func chooseTimeAuction() {
 
 		// the only differing part in the three auction routes. Would be nice if there were
 		// some way to avoid repetition like this
-		bestContract, err := solar.SelectContractTime(allContracts)
+		bestContract, err := platform.SelectContractTime(allContracts)
 		if err != nil {
 			responseHandler(w, r, StatusInternalServerError)
 			return
@@ -358,7 +358,7 @@ func unlock() {
 			return
 		}
 
-		err = solar.UnlockProject(recipient.U.Username, recipient.U.Pwhash, projIndex, seedpwd)
+		err = platform.UnlockProject(recipient.U.Username, recipient.U.Pwhash, projIndex, seedpwd)
 		if err != nil {
 			responseHandler(w, r, StatusInternalServerError)
 			return
@@ -399,7 +399,7 @@ func finalizeProject() {
 		}
 
 		projIndex := utils.StoI(r.URL.Query()["projIndex"][0])
-		project, err := solar.RetrieveProject(projIndex)
+		project, err := platform.RetrieveProject(projIndex)
 		if err != nil {
 			responseHandler(w, r, StatusBadRequest)
 			return
@@ -425,7 +425,7 @@ func originateProject() {
 		}
 
 		projIndex := utils.StoI(r.URL.Query()["projIndex"][0])
-		err = solar.RecipientAuthorize(projIndex, recipient.U.Index)
+		err = platform.RecipientAuthorize(projIndex, recipient.U.Index)
 		if err != nil {
 			responseHandler(w, r, StatusInternalServerError)
 			return

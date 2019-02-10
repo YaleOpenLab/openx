@@ -1,4 +1,4 @@
-package solar
+package opensolar
 
 import (
 	"fmt"

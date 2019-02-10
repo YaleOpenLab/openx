@@ -6,7 +6,7 @@ import (
 
 	database "github.com/YaleOpenLab/openx/database"
 	platform "github.com/YaleOpenLab/openx/platforms"
-	solar "github.com/YaleOpenLab/openx/platforms/solar"
+	solar "github.com/YaleOpenLab/openx/platforms/opensolar"
 	scan "github.com/YaleOpenLab/openx/scan"
 	xlm "github.com/YaleOpenLab/openx/xlm"
 )
