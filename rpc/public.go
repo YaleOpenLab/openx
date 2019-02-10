@@ -36,7 +36,6 @@ func setupPublicRoutes() {
 	getInvTopReputationPublic()
 }
 
-// MWTODO: get feedback on what routes to make public
 
 // public contains all the RPC routes that we explicitly intend to make public. Other
 // routes such as the invest route are thigns we could make private as well, but that
@@ -122,7 +121,7 @@ func getAllInvestorsPublic() {
 	})
 }
 
-// getAllInvestors gets a list of all the investors in the system so that we can
+// getAllRecipients gets a list of all the investors in the system so that we can
 // display it to some entity that is interested to view such stats
 func getAllRecipientsPublic() {
 	http.HandleFunc("/public/recipient/all", func(w http.ResponseWriter, r *http.Request) {
@@ -138,7 +137,7 @@ func getAllRecipientsPublic() {
 }
 
 // this is to publish a list of the users with the best feedback in the system in order
-// to award them abdges or something similar
+// to award them badges or something similar
 func getTopReputationPublic() {
 	http.HandleFunc("/public/reputation/top", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
