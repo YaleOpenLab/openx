@@ -6,22 +6,22 @@ import (
 	"log"
 	"os"
 
-	consts "github.com/OpenFinancing/openfinancing/consts"
-	database "github.com/OpenFinancing/openfinancing/database"
-	ipfs "github.com/OpenFinancing/openfinancing/ipfs"
-	// platform "github.com/OpenFinancing/openfinancing/platforms"
-	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
-	rpc "github.com/OpenFinancing/openfinancing/rpc"
-	scan "github.com/OpenFinancing/openfinancing/scan"
-	stablecoin "github.com/OpenFinancing/openfinancing/stablecoin"
-	utils "github.com/OpenFinancing/openfinancing/utils"
-	wallet "github.com/OpenFinancing/openfinancing/wallet"
-	// xlm "github.com/OpenFinancing/openfinancing/xlm"
+	consts "github.com/YaleOpenLab/openx/consts"
+	database "github.com/YaleOpenLab/openx/database"
+	ipfs "github.com/YaleOpenLab/openx/ipfs"
+	// platform "github.com/YaleOpenLab/openx/platforms"
+	solar "github.com/YaleOpenLab/openx/platforms/solar"
+	rpc "github.com/YaleOpenLab/openx/rpc"
+	scan "github.com/YaleOpenLab/openx/scan"
+	stablecoin "github.com/YaleOpenLab/openx/stablecoin"
+	utils "github.com/YaleOpenLab/openx/utils"
+	wallet "github.com/YaleOpenLab/openx/wallet"
+	// xlm "github.com/YaleOpenLab/openx/xlm"
 	flags "github.com/jessevdk/go-flags"
 )
 
 // test.go drives the CLI interface and is intended to be a CLI client that can be used
-// to interact with the openfinancing platform
+// to interact with the openx platform
 // TODO: move to the teller based config system mimicking the frontend once we have RPCs
 // for functions that will be used by the frontend.
 var opts struct {

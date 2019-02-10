@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	assets "github.com/OpenFinancing/openfinancing/assets"
-	utils "github.com/OpenFinancing/openfinancing/utils"
-	xlm "github.com/OpenFinancing/openfinancing/xlm"
+	assets "github.com/YaleOpenLab/openx/assets"
+	utils "github.com/YaleOpenLab/openx/utils"
+	xlm "github.com/YaleOpenLab/openx/xlm"
 	"github.com/boltdb/bolt"
 	"github.com/stellar/go/build"
 )

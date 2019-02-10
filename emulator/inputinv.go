@@ -5,8 +5,8 @@ import (
 	"log"
 	"strings"
 
-	consts "github.com/OpenFinancing/openfinancing/consts"
-	utils "github.com/OpenFinancing/openfinancing/utils"
+	consts "github.com/YaleOpenLab/openx/consts"
+	utils "github.com/YaleOpenLab/openx/utils"
 	"github.com/chzyer/readline"
 	"github.com/fatih/color"
 )

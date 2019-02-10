@@ -5,7 +5,7 @@ package issuer
 import (
 	"testing"
 
-	xlm "github.com/OpenFinancing/openfinancing/xlm"
+	xlm "github.com/YaleOpenLab/openx/xlm"
 )
 
 func TestIssuer(t *testing.T) {

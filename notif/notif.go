@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/smtp"
 
-	utils "github.com/OpenFinancing/openfinancing/utils"
+	utils "github.com/YaleOpenLab/openx/utils"
 	"github.com/spf13/viper"
 )
 

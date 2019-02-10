@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
-	utils "github.com/OpenFinancing/openfinancing/utils"
+	solar "github.com/YaleOpenLab/openx/platforms/solar"
+	utils "github.com/YaleOpenLab/openx/utils"
 )
 
 // collect all handlers in one place so that we can assemble them easily

@@ -5,16 +5,16 @@ import (
 	"log"
 	"time"
 
-	assets "github.com/OpenFinancing/openfinancing/assets"
-	consts "github.com/OpenFinancing/openfinancing/consts"
-	database "github.com/OpenFinancing/openfinancing/database"
-	issuer "github.com/OpenFinancing/openfinancing/issuer"
-	notif "github.com/OpenFinancing/openfinancing/notif"
-	oracle "github.com/OpenFinancing/openfinancing/oracle"
-	stablecoin "github.com/OpenFinancing/openfinancing/stablecoin"
-	utils "github.com/OpenFinancing/openfinancing/utils"
-	wallet "github.com/OpenFinancing/openfinancing/wallet"
-	xlm "github.com/OpenFinancing/openfinancing/xlm"
+	assets "github.com/YaleOpenLab/openx/assets"
+	consts "github.com/YaleOpenLab/openx/consts"
+	database "github.com/YaleOpenLab/openx/database"
+	issuer "github.com/YaleOpenLab/openx/issuer"
+	notif "github.com/YaleOpenLab/openx/notif"
+	oracle "github.com/YaleOpenLab/openx/oracle"
+	stablecoin "github.com/YaleOpenLab/openx/stablecoin"
+	utils "github.com/YaleOpenLab/openx/utils"
+	wallet "github.com/YaleOpenLab/openx/wallet"
+	xlm "github.com/YaleOpenLab/openx/xlm"
 )
 
 // Payback is called when the receiver of the DebtAsset wants to pay a fixed amount

@@ -3,7 +3,7 @@ package rpc
 import (
 	"net/http"
 
-	database "github.com/OpenFinancing/openfinancing/database"
+	database "github.com/YaleOpenLab/openx/database"
 )
 
 type SnInvestor struct {

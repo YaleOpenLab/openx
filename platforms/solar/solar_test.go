@@ -7,15 +7,15 @@ import (
 	"os"
 	"testing"
 
-	consts "github.com/OpenFinancing/openfinancing/consts"
-	database "github.com/OpenFinancing/openfinancing/database"
+	consts "github.com/YaleOpenLab/openx/consts"
+	database "github.com/YaleOpenLab/openx/database"
 )
 
 // go test --tags="all" -coverprofile=test.txt .
 func TestDb(t *testing.T) {
 	var err error
-	os.Remove(os.Getenv("HOME") + "/.openfinancing/database/" + "/yol.db")
-	err = os.MkdirAll(os.Getenv("HOME")+"/.openfinancing/database", os.ModePerm)
+	os.Remove(os.Getenv("HOME") + "/.openx/database/" + "/yol.db")
+	err = os.MkdirAll(os.Getenv("HOME")+"/.openx/database", os.ModePerm)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -734,5 +734,5 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	os.Remove(os.Getenv("HOME") + "/.openfinancing/database/" + "/yol.db")
+	os.Remove(os.Getenv("HOME") + "/.openx/database/" + "/yol.db")
 }

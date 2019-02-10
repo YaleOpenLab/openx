@@ -4,21 +4,21 @@ import (
 	"log"
 	"os"
 
-	consts "github.com/OpenFinancing/openfinancing/consts"
-	database "github.com/OpenFinancing/openfinancing/database"
-	// ipfs "github.com/OpenFinancing/openfinancing/ipfs"
-	platform "github.com/OpenFinancing/openfinancing/platforms"
-	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
-	rpc "github.com/OpenFinancing/openfinancing/rpc"
-	// scan "github.com/OpenFinancing/openfinancing/scan"
-	stablecoin "github.com/OpenFinancing/openfinancing/stablecoin"
-	utils "github.com/OpenFinancing/openfinancing/utils"
-	// wallet "github.com/OpenFinancing/openfinancing/wallet"
-	// xlm "github.com/OpenFinancing/openfinancing/xlm"
+	consts "github.com/YaleOpenLab/openx/consts"
+	database "github.com/YaleOpenLab/openx/database"
+	// ipfs "github.com/YaleOpenLab/openx/ipfs"
+	platform "github.com/YaleOpenLab/openx/platforms"
+	solar "github.com/YaleOpenLab/openx/platforms/solar"
+	rpc "github.com/YaleOpenLab/openx/rpc"
+	// scan "github.com/YaleOpenLab/openx/scan"
+	stablecoin "github.com/YaleOpenLab/openx/stablecoin"
+	utils "github.com/YaleOpenLab/openx/utils"
+	// wallet "github.com/YaleOpenLab/openx/wallet"
+	// xlm "github.com/YaleOpenLab/openx/xlm"
 	flags "github.com/jessevdk/go-flags"
 )
 
-// the server powering the openfinancing platform. There are two clients that can be used
+// the server powering the openx platform of platforms. There are two clients that can be used
 // with the backned - ofcli and emulator
 // refer https://github.com/stellar/go/blob/master/build/main_test.go in case the stellar
 // go SDK docs are insufficient.

@@ -6,13 +6,13 @@ import (
 	// "log"
 	"net/http"
 
-	assets "github.com/OpenFinancing/openfinancing/assets"
-	database "github.com/OpenFinancing/openfinancing/database"
-	ipfs "github.com/OpenFinancing/openfinancing/ipfs"
-	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
-	utils "github.com/OpenFinancing/openfinancing/utils"
-	wallet "github.com/OpenFinancing/openfinancing/wallet"
-	xlm "github.com/OpenFinancing/openfinancing/xlm"
+	assets "github.com/YaleOpenLab/openx/assets"
+	database "github.com/YaleOpenLab/openx/database"
+	ipfs "github.com/YaleOpenLab/openx/ipfs"
+	solar "github.com/YaleOpenLab/openx/platforms/solar"
+	utils "github.com/YaleOpenLab/openx/utils"
+	wallet "github.com/YaleOpenLab/openx/wallet"
+	xlm "github.com/YaleOpenLab/openx/xlm"
 )
 
 func setupUserRpcs() {

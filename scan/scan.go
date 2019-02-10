@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"syscall"
 
-	utils "github.com/OpenFinancing/openfinancing/utils"
+	utils "github.com/YaleOpenLab/openx/utils"
 	"golang.org/x/crypto/ssh/terminal"
 )
 

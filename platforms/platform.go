@@ -5,13 +5,13 @@ import (
 	"log"
 	"os"
 
-	assets "github.com/OpenFinancing/openfinancing/assets"
-	consts "github.com/OpenFinancing/openfinancing/consts"
-	scan "github.com/OpenFinancing/openfinancing/scan"
-	stablecoin "github.com/OpenFinancing/openfinancing/stablecoin"
-	utils "github.com/OpenFinancing/openfinancing/utils"
-	wallet "github.com/OpenFinancing/openfinancing/wallet"
-	xlm "github.com/OpenFinancing/openfinancing/xlm"
+	assets "github.com/YaleOpenLab/openx/assets"
+	consts "github.com/YaleOpenLab/openx/consts"
+	scan "github.com/YaleOpenLab/openx/scan"
+	stablecoin "github.com/YaleOpenLab/openx/stablecoin"
+	utils "github.com/YaleOpenLab/openx/utils"
+	wallet "github.com/YaleOpenLab/openx/wallet"
+	xlm "github.com/YaleOpenLab/openx/xlm"
 )
 
 // the platform structure is the backend representation of the frontend UI.

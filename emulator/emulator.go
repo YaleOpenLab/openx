@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log"
 
-	database "github.com/OpenFinancing/openfinancing/database"
-	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
-	scan "github.com/OpenFinancing/openfinancing/scan"
+	database "github.com/YaleOpenLab/openx/database"
+	solar "github.com/YaleOpenLab/openx/platforms/solar"
+	scan "github.com/YaleOpenLab/openx/scan"
 	"github.com/spf13/viper"
 )
 
