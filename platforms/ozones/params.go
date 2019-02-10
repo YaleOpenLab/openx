@@ -1,4 +1,4 @@
-package bonds
+package ozones
 
 // this param is shared by both bonds and coops, could add other stuff in here as well
 // the idea is to ahve a common set of params for each platform and then each model

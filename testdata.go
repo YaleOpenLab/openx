@@ -5,8 +5,8 @@ import (
 	"log"
 
 	database "github.com/YaleOpenLab/openx/database"
-	bonds "github.com/YaleOpenLab/openx/platforms/bonds"
-	solar "github.com/YaleOpenLab/openx/platforms/solar"
+	solar "github.com/YaleOpenLab/openx/platforms/opensolar"
+	bonds "github.com/YaleOpenLab/openx/platforms/ozones"
 	utils "github.com/YaleOpenLab/openx/utils"
 )
 

@@ -7,8 +7,8 @@ import (
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
 	// ipfs "github.com/YaleOpenLab/openx/ipfs"
-	platform "github.com/YaleOpenLab/openx/platforms"
-	solar "github.com/YaleOpenLab/openx/platforms/solar"
+	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
+	solar "github.com/YaleOpenLab/openx/platforms/opensolar"
 	rpc "github.com/YaleOpenLab/openx/rpc"
 	// scan "github.com/YaleOpenLab/openx/scan"
 	stablecoin "github.com/YaleOpenLab/openx/stablecoin"
@@ -58,7 +58,7 @@ func StartPlatform() (string, string, error) {
 			return publicKey, seed, err
 		}
 	}
-	publicKey, seed, err = platform.InitializePlatform()
+	publicKey, seed, err = opensolar.InitializePlatform()
 	return publicKey, seed, err
 }
 

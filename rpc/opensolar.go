@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	solar "github.com/YaleOpenLab/openx/platforms/solar"
+	platform "github.com/YaleOpenLab/openx/platforms/opensolar"
 	utils "github.com/YaleOpenLab/openx/utils"
 )
 
@@ -26,19 +26,19 @@ func setupProjectRPCs() {
 
 // parseProject is a helper that is used to validate POST data. This returns a project struct
 // on successful parsing of the received form data
-func parseProject(r *http.Request) (solar.Project, error) {
+func parseProject(r *http.Request) (platform.Project, error) {
 	// we need to create an instance of the Project
 	// and then map values if they do exist
 	// note that we just prepare the project here and don't invest in it
 	// for that, we need new a new investor struct and a recipient struct
-	var prepProject solar.Project
+	var prepProject platform.Project
 	err := r.ParseForm()
 	if err != nil {
 		return prepProject, err
 	}
 	// if we're inserting this in, we need to get the next index number
 	// so that we can set this without causing some weird bugs
-	allProjects, err := solar.RetrieveAllProjects()
+	allProjects, err := platform.RetrieveAllProjects()
 	if err != nil {
 		return prepProject, fmt.Errorf("Error in assigning index")
 	}
@@ -66,7 +66,7 @@ func insertProject() {
 	// look into a way where we can define originators in the route as well
 	http.HandleFunc("/project/insert", func(w http.ResponseWriter, r *http.Request) {
 		checkPost(w, r)
-		var prepProject solar.Project
+		var prepProject platform.Project
 		prepProject, err := parseProject(r)
 		if err != nil {
 			responseHandler(w, r, StatusInternalServerError)
@@ -89,7 +89,7 @@ func getAllProjects() {
 		// while making this call, the rpc should not be aware of the db we are using
 		// and stuff. So we need to have another route that would open the existing
 		// db, without asking for one
-		allProjects, err := solar.RetrieveAllProjects()
+		allProjects, err := platform.RetrieveAllProjects()
 		if err != nil {
 			responseHandler(w, r, StatusInternalServerError)
 			return
@@ -108,7 +108,7 @@ func getProject() {
 			return
 		}
 		uKey := utils.StoI(r.URL.Query()["index"][0])
-		contract, err := solar.RetrieveProject(uKey)
+		contract, err := platform.RetrieveProject(uKey)
 		if err != nil {
 			responseHandler(w, r, StatusInternalServerError)
 			return
@@ -120,7 +120,7 @@ func getProject() {
 // projectHandler gets proejcts at a specific stage from the database
 func projectHandler(w http.ResponseWriter, r *http.Request, stage float64) {
 	checkGet(w, r)
-	allProjects, err := solar.RetrieveProjectsAtStage(stage)
+	allProjects, err := platform.RetrieveProjectsAtStage(stage)
 	if err != nil {
 		responseHandler(w, r, StatusInternalServerError)
 		return

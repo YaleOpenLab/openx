@@ -5,7 +5,7 @@ import (
 	//"log"
 	"net/http"
 
-	solar "github.com/YaleOpenLab/openx/platforms/solar"
+	platform "github.com/YaleOpenLab/openx/platforms/opensolar"
 	utils "github.com/YaleOpenLab/openx/utils"
 )
 
@@ -18,17 +18,17 @@ func setupEntityRPCs() {
 }
 
 // EntityValidateHelper is a helper that helps validate an entity
-func EntityValidateHelper(w http.ResponseWriter, r *http.Request) (solar.Entity, error) {
+func EntityValidateHelper(w http.ResponseWriter, r *http.Request) (platform.Entity, error) {
 	// first validate the investor or anyone would be able to set device ids
 	checkGet(w, r)
-	var prepInvestor solar.Entity
+	var prepInvestor platform.Entity
 	// need to pass the pwhash param here
 	if r.URL.Query() == nil || r.URL.Query()["username"] == nil ||
 		len(r.URL.Query()["pwhash"][0]) != 128 {
 		return prepInvestor, fmt.Errorf("Invalid params passed")
 	}
 
-	prepEntity, err := solar.ValidateEntity(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
+	prepEntity, err := platform.ValidateEntity(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
 	if err != nil {
 		return prepEntity, err
 	}
@@ -59,7 +59,7 @@ func getPreOriginatedContracts() {
 			return
 		}
 
-		x, err := solar.RetrieveOriginatorProjects(solar.PreOriginProject, prepEntity.U.Index)
+		x, err := platform.RetrieveOriginatorProjects(platform.PreOriginProject, prepEntity.U.Index)
 		if err != nil {
 			responseHandler(w, r, StatusInternalServerError)
 			return
@@ -78,7 +78,7 @@ func getOriginatedContracts() {
 			return
 		}
 
-		x, err := solar.RetrieveOriginatorProjects(solar.OriginProject, prepEntity.U.Index)
+		x, err := platform.RetrieveOriginatorProjects(platform.OriginProject, prepEntity.U.Index)
 		if err != nil {
 			responseHandler(w, r, StatusInternalServerError)
 			return
@@ -97,7 +97,7 @@ func getProposedContracts() {
 			return
 		}
 
-		x, err := solar.RetrieveContractorProjects(solar.ProposedProject, prepEntity.U.Index)
+		x, err := platform.RetrieveContractorProjects(platform.ProposedProject, prepEntity.U.Index)
 		if err != nil {
 			responseHandler(w, r, StatusInternalServerError)
 			return

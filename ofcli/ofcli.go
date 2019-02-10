@@ -10,7 +10,7 @@ import (
 	database "github.com/YaleOpenLab/openx/database"
 	ipfs "github.com/YaleOpenLab/openx/ipfs"
 	// platform "github.com/YaleOpenLab/openx/platforms"
-	solar "github.com/YaleOpenLab/openx/platforms/solar"
+	solar "github.com/YaleOpenLab/openx/platforms/opensolar"
 	rpc "github.com/YaleOpenLab/openx/rpc"
 	scan "github.com/YaleOpenLab/openx/scan"
 	stablecoin "github.com/YaleOpenLab/openx/stablecoin"

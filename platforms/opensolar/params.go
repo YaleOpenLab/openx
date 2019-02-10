@@ -1,4 +1,4 @@
-package solar
+package opensolar
 
 // TODO: add more parameters here that would help identify a given solar project
 type SolarParams struct {

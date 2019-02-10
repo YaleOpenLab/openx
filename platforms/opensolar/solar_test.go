@@ -1,6 +1,6 @@
 // +build all travis
 
-package solar
+package opensolar
 
 import (
 	"log"
@@ -129,19 +129,15 @@ func TestDb(t *testing.T) {
 	if VerifyBeforeAuthorizing(1) {
 		t.Fatalf("Can verify with invalid db, quitting!")
 	}
-	_, _, _, err = PreInvestmentCheck(1, 1, 1, "")
+	_, _, err = PreInvestmentCheck(1, 1, "")
 	if err == nil {
 		t.Fatalf("PreInvestmentCheck succeeds, quitting!")
 	}
-	_, err = SendUSDToPlatform("", "", 1)
-	if err == nil {
-		t.Fatalf("SendUSDToPlatform succeeds, quitting!")
-	}
-	_, err = InvestInProject(1, 1, "", "")
+	err = InvestInProject(1, 1, "", "")
 	if err == nil {
 		t.Fatalf("InvestInProject succeeds, quitting!")
 	}
-	_, err = SeedInvestInProject(1, 1, 1, "", "", "")
+	err = SeedInvestInProject(1, 1, 1, "", "", "")
 	if err == nil {
 		t.Fatalf("SeedInvestInProject succeeds, quitting!")
 	}

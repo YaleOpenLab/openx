@@ -1,4 +1,4 @@
-package solar
+package opensolar
 
 // this should contain the future guarantor related functions once we define them concretely
 func NewGuarantor(uname string, pwd string, seedpwd string, Name string,

@@ -1,4 +1,4 @@
-package solar
+package opensolar
 
 import (
 	database "github.com/YaleOpenLab/openx/database"
