@@ -16,7 +16,7 @@ import (
 	wallet "github.com/YaleOpenLab/openx/wallet"
 )
 
-func SingleInvestmentModelInv(investor database.Investor, invSeed string, invAmount string,
+func MunibondInvest(investor database.Investor, invSeed string, invAmount string,
 	projIndex int, invAssetCode string, totalValue float64) error {
 	// offer user to exchange xlm for stableusd and invest directly if the user does not have stableusd
 	// this should be a menu on the Frontend but here we do this automatically
@@ -68,7 +68,7 @@ func SingleInvestmentModelInv(investor database.Investor, invSeed string, invAmo
 	return nil
 }
 
-func SingleInvestmentModelRecp(recipient database.Recipient, projIndex int, detbAssetId string,
+func MunibondReceive(recipient database.Recipient, projIndex int, detbAssetId string,
 	paybackAssetId string, years int, recpSeed string, totalValue float64, paybackPeriod int) error {
 	issuerPubkey, issuerSeed, err := wallet.RetrieveSeed(issuer.CreatePath(projIndex), consts.IssuerSeedPwd)
 	if err != nil {

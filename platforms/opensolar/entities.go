@@ -10,24 +10,18 @@ import (
 )
 
 // the contractor super struct comprises of various entities within it. Its a
-// super class because combining them results in less duplication of code
+// super struct because combining them results in less duplication of code
+
 type Entity struct {
-	// User defines common params such as name, seed, publickey
 	U database.User
+	// inherit the base user class
+	Contractor bool
 	// the name of the contractor / company that is contracting
 	// A contractor is party who proposes a specific some of money towards a
 	// particular project. This is the actual amount that the investors invest in.
 	// This ideally must include the developer fee within it, so that investors
 	// don't have to invest in two things. It would also make sense because the contractors
 	// sometimes would hire developers themselves.
-	Contractor bool
-	// A guarantor is somebody who can assure investors that the school will get paid
-	// on time. This authority should be trusted and either should be vetted by the law
-	// or have a multisig paying out to the investors beyond a certain timeline if they
-	// don't get paid by the school. This way, the guarantor can be anonymous, like the
-	// nice Pineapple Fund guy. This can also be an insurance company, who is willing to
-	// guarantee for specific school and the school can pay him out of chain / have
-	// that as fee within the contract the originator
 	Developer bool
 	// A developer is someone who installs the required equipment (Raspberry Pi,
 	// network adapters, anti tamper installations and similar) In the initial
@@ -47,9 +41,13 @@ type Entity struct {
 	// and shown to potential investors. The originators get paid only when the project
 	// is live, else they can just spam, without any actual investment
 	Guarantor bool
-	// A Guarantor is someone who can vouch for the recipient and fill in for them
-	// in case they default on payment. They can c harge a fee and this must be
-	// put inside the contract itself.
+	// A guarantor is somebody who can assure investors that the school will get paid
+	// on time. This authority should be trusted and either should be vetted by the law
+	// or have a multisig paying out to the investors beyond a certain timeline if they
+	// don't get paid by the school. This way, the guarantor can be anonymous, like the
+	// nice Pineapple Fund guy. This can also be an insurance company, who is willing to
+	// guarantee for specific school and the school can pay him out of chain / have
+	// that as fee within the contract the originator
 	PastContracts []Project
 	// list of all the contracts that the contractor has won in the past
 	ProposedContracts []Project
@@ -74,6 +72,7 @@ type Entity struct {
 	// collateral would be set to 5000 USD and CollateralData would be "Cash Bond")
 }
 
+// Save stores the entity in the database
 func (a *Entity) Save() error {
 	db, err := database.OpenDB()
 	if err != nil {
@@ -91,7 +90,7 @@ func (a *Entity) Save() error {
 	return err
 }
 
-// gets all the proposed contracts for a particular recipient
+// RetrieveAllEntitiesWithoutRole gets all the proposed contracts for a particular recipient
 func RetrieveAllEntitiesWithoutRole() ([]Entity, error) {
 	var arr []Entity
 	temp, err := database.RetrieveAllUsers()
@@ -125,7 +124,7 @@ func RetrieveAllEntitiesWithoutRole() ([]Entity, error) {
 	return arr, err
 }
 
-// gets all the proposed contracts for a particular recipient
+// RetrieveAllEntities gets all the proposed contracts for a particular recipient
 func RetrieveAllEntities(role string) ([]Entity, error) {
 	var arr []Entity
 	temp, err := database.RetrieveAllUsers()
@@ -180,6 +179,7 @@ func RetrieveAllEntities(role string) ([]Entity, error) {
 	return arr, err
 }
 
+// RetrieveEntity retrieves a specific entity from the database
 func RetrieveEntity(key int) (Entity, error) {
 	var a Entity
 	db, err := database.OpenDB()
@@ -198,6 +198,7 @@ func RetrieveEntity(key int) (Entity, error) {
 	return a, err
 }
 
+// newEntity creates a new entity based on the role passed
 func newEntity(uname string, pwd string, seedpwd string, Name string, Address string, Description string, role string) (Entity, error) {
 	var a Entity
 	var err error
@@ -205,10 +206,10 @@ func newEntity(uname string, pwd string, seedpwd string, Name string, Address st
 	if err != nil {
 		return a, err
 	}
-	// set all auto fields above
+
 	a.U.Address = Address
 	a.U.Description = Description
-	// insertion into the database will be a separate handler, pass this Entity there
+
 	switch role {
 	case "contractor":
 		a.Contractor = true
@@ -221,10 +222,12 @@ func newEntity(uname string, pwd string, seedpwd string, Name string, Address st
 	default:
 		return a, fmt.Errorf("invalid entity type passed!")
 	}
+
 	err = a.Save()
 	return a, err
 }
 
+// ChangeReputation changes the reputation associated with a particular entity
 func ChangeReputation(entityIndex int, reputation float64) error {
 	a, err := RetrieveEntity(entityIndex)
 	if err != nil {
@@ -241,8 +244,8 @@ func ChangeReputation(entityIndex int, reputation float64) error {
 	return a.Save()
 }
 
+// TopReputationEntitiesWithoutRole returns the list of all the top reputed entities in descending order
 func TopReputationEntitiesWithoutRole() ([]Entity, error) {
-	// TopReputationEntities returns entities with reputation in descending order
 	allEntities, err := RetrieveAllEntitiesWithoutRole()
 	if err != nil {
 		return allEntities, err
@@ -259,6 +262,7 @@ func TopReputationEntitiesWithoutRole() ([]Entity, error) {
 	return allEntities, nil
 }
 
+// TopReputationEntities returns the list of all the top reputed entities with the specific role in descending order
 func TopReputationEntities(role string) ([]Entity, error) {
 	// caller knows what role he needs this list for, so directly retrieve and do stuff here
 	allEntities, err := RetrieveAllEntities(role)
@@ -277,6 +281,7 @@ func TopReputationEntities(role string) ([]Entity, error) {
 	return allEntities, nil
 }
 
+// ValidateEntity validates the entity with the specific name and pwhash and returns true if everything matches the thing on record
 func ValidateEntity(name string, pwhash string) (Entity, error) {
 	var rec Entity
 	user, err := database.ValidateUser(name, pwhash)

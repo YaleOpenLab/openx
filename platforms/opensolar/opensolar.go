@@ -1,29 +1,52 @@
 package opensolar
 
 import (
-	"encoding/json"
-	"fmt"
-
 	database "github.com/YaleOpenLab/openx/database"
-	utils "github.com/YaleOpenLab/openx/utils"
-	"github.com/boltdb/bolt"
+	platform "github.com/YaleOpenLab/openx/platforms"
 )
 
-// A legal contract should ideally be stored on ipfs and we must keep track of the
-// ipfs hash so that we can retrieve it later when required
-// A Project is what is stored in the database and what is used by other packages
-// Project imports SolarParams since having everythin inside one struct is tedious
-// and SolarParams already has lots of keys. Also, this doesn't affect the way its
-// actually stored in the database, so its a nice way to do it.
-// SolarParams is also what's needed by the assets and other stuff whereas the other fields
-// are needed in other parts, another nice distinction
+// A Project is the investment structure that will be invested in by people. In the case
+// of the opensolar platform, this is a solar system.
+
+// TODO: add more parameters here that would help identify a given solar project
 type Project struct {
-	Params SolarParams // Params is the former Order struct imported into the new Project structure
+	Index int // an Index to keep quick track of how many projects exist
+
+	TotalValue   float64 // the total money that we need from investors
+	MoneyRaised  float64 // total money that has been raised until now
+	Years        int     // number of years the recipient is expected to repay the initial investment amount by
+	InterestRate float64 // the interest rate provided to potential investors
+	BalLeft      float64 // denotes the balance left to pay by the party, percentage raised is not stored in the database since that can be calculated
+	Votes        int     // the number of votes towards a proposed contract by investors
+
+	// different assets associated with the platform
+	InvestorAssetCode string
+	DebtAssetCode     string
+	PaybackAssetCode  string
+	SeedAssetCode     string
+
+	// dates on which the project was initiated, funded an last paid towards
+	DateInitiated string
+	DateFunded    string
+	DateLastPaid  int64 // int64 ie unix time since we need comparisons on this one
+
+	// params that help define the specifications of the installation
+	Location        string // where this specific solar panel is located
+	PanelSize       string // size of the given panel, for diplsaying to the user who wants to bid stuff
+	Inverter        string
+	ChargeRegulator string
+	ControlPanel    string
+	CommBox         string
+	ACTransfer      string
+	SolarCombiner   string
+	Batteries       string
+	IoTHub          string
+	Metadata        string // any other metadata can be stored here
 
 	// List of entities other than the contractor
-	Originator    Entity  // a specific contract must hold the person who originated it
-	OriginatorFee float64 // fee paid to the originator from the total fee of the project
-	Developer     Entity  // the developer who would be responsible for isntallign the solar panels and the IoT hubs
+	Originator    Entity
+	OriginatorFee float64 // fee paid to the originator included in the total value of the project
+	Developer     Entity  // the developer who is responsible for installing the solar panels and the IoT hubs
 	Guarantor     Entity  // the person guaranteeing the specific project in question
 
 	// List of contractor entities
@@ -36,8 +59,8 @@ type Project struct {
 	DeveloperFee           float64 // the fee charged by the developer
 
 	ProjectRecipient database.Recipient  // The recipient of the project in question
-	ProjectInvestors []database.Investor // The various investors who are invested in the project
-	SeedInvestors    []database.Investor // investors who took part before the contract was at stage 3
+	ProjectInvestors []database.Investor // The various investors who have invested in the project
+	SeedInvestors    []database.Investor // Investors who took part before the contract was at stage 3
 
 	Stage       float64 // the stage at which the contract is at, float due to potential support of 0.5 state changes in the future
 	AuctionType string  // the type of the auction in question. Default is blind auction unless explicitly mentioned
@@ -47,436 +70,26 @@ type Project struct {
 	ContractorContractHash  string // the contract between the contractor and the platform at stage ProposeProject
 	InvPlatformContractHash string // the contract between the investor and the platform at stage FundedProject
 	RecPlatformContractHash string // the contract between the recipient and the platform at stage FundedProject
-	SpecSheetHash           string // the ipfs hash of the specification document containing installation details and similar stuff
+	SpecSheetHash           string // the ipfs hash of the specification document containing installation details
 
 	Reputation float64 // the positive reputation associated with a given project
-	// MWTODO: get feedback on Reputation weighting
-	Lock    bool   // lock investment in order to wait for recipient's confirmation
-	LockPwd string // the recipient's seedpwd. Will be set to null as soon as we use it.
+	Lock       bool    // lock investment in order to wait for recipient's confirmation
+	LockPwd    string  // the recipient's seedpwd. Will be set to null as soon as we use it.
 
-	InvestmentType string // the type of investment - equity crowdfunding, municipal bond, normal crowdfunding, etc.
-	// TODO: evaluate how this can be transformed into its own contract construction
-	PaybackPeriod int // the frequency in number of weeks that the recipient has to payback the platform
-	// this has to be set to atelast a week since hte payback monitoring thread runs every week. Ideally, we could
-	/// provide users with a predefined list of payback perios periods
+	InvestmentType string // the type of investment - equity crowdfunding, municipal bond, normal crowdfunding, etc defined in models
+
+	PaybackPeriod int // the frequency in number of weeks that the recipient has to pay the platform.
+	// this has to be set to atleast a week since the payback monitoring thread runs every week. Ideally, we could
+	/// provide users with a predefined list of payback periods periods
 }
 
-// so a project's rough workflow is like
-// origincontract (0) -> approval by recipient (1) -> OpenForMoneyStage (1.5) -> ...
-// NewOriginProject returns a new project passed a project and originator to assign to
-// Save or Insert inserts a specific Project into the database
-func (a *Project) Save() error {
-	db, err := database.OpenDB()
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-	err = db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(database.ProjectsBucket)
-		encoded, err := json.Marshal(a)
-		if err != nil {
-			return err
-		}
-		return b.Put([]byte(utils.ItoB(a.Params.Index)), encoded)
-	})
-	return err
+// import handlers from the main platform struct that are necessary for starting the platform
+func InitializePlatform() (string, string, error) {
+	return platform.InitializePlatform()
 }
 
-// RetrieveProject retrieves the project with the specified index from the database
-func RetrieveProject(key int) (Project, error) {
-	var inv Project
-	db, err := database.OpenDB()
-	if err != nil {
-		return inv, err
-	}
-	defer db.Close()
-	err = db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket(database.ProjectsBucket)
-		x := b.Get(utils.ItoB(key))
-		if x == nil {
-			return fmt.Errorf("Retrieved project nil")
-		}
-		return json.Unmarshal(x, &inv)
-	})
-	return inv, err
-}
-
-// RetrieveAllProjects retrieves all projects from the database
-func RetrieveAllProjects() ([]Project, error) {
-	var arr []Project
-	db, err := database.OpenDB()
-	if err != nil {
-		return arr, err
-	}
-	defer db.Close()
-	err = db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket(database.ProjectsBucket)
-		for i := 1; ; i++ {
-			var rProject Project
-			x := b.Get(utils.ItoB(i))
-			if x == nil {
-				break
-			}
-			err := json.Unmarshal(x, &rProject)
-			if err != nil {
-				return err
-			}
-			// append only contracts which are open for funding and below
-			arr = append(arr, rProject)
-		}
-		return nil
-	})
-	return arr, err
-}
-
-func RetrieveProjectsAtStage(stage float64) ([]Project, error) {
-	var arr []Project
-	db, err := database.OpenDB()
-	if err != nil {
-		return arr, err
-	}
-	defer db.Close()
-	err = db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket(database.ProjectsBucket)
-		for i := 1; ; i++ {
-			var rProject Project
-			x := b.Get(utils.ItoB(i))
-			if x == nil {
-				break
-			}
-			err := json.Unmarshal(x, &rProject)
-			if err != nil {
-				return err
-			}
-			// append only contracts which are open for funding and below
-			if rProject.Stage == stage {
-				arr = append(arr, rProject)
-			}
-		}
-		return nil
-	})
-	return arr, err
-}
-
-func RetrieveContractorProjects(stage float64, index int) ([]Project, error) {
-	var arr []Project
-	db, err := database.OpenDB()
-	if err != nil {
-		return arr, err
-	}
-	defer db.Close()
-	err = db.View(func(tx *bolt.Tx) error {
-		// this is Update to cover the case where the  bucket doesn't exists and we're
-		// trying to retrieve a list of keys
-		b := tx.Bucket(database.ProjectsBucket)
-		for i := 1; ; i++ {
-			var rProject Project
-			x := b.Get(utils.ItoB(i))
-			if x == nil {
-				// this is where the key does not exist
-				return nil
-			}
-			err := json.Unmarshal(x, &rProject)
-			if err != nil {
-				// we've reached the end of input, so this is not an error
-				// ideal error would be "unexpected JSON input" or something similar
-				return nil
-			}
-			if rProject.Stage == stage && rProject.Contractor.U.Index == index {
-				// return contracts which have been originated and are not final yet
-				arr = append(arr, rProject)
-			}
-		}
-		return nil
-	})
-	return arr, err
-}
-
-// RetrieveOriginProjectsIO is used when we want to display the list of originated
-// contracts to the originator
-func RetrieveOriginatorProjects(stage float64, index int) ([]Project, error) {
-	var arr []Project
-	db, err := database.OpenDB()
-	if err != nil {
-		return arr, err
-	}
-	defer db.Close()
-	err = db.View(func(tx *bolt.Tx) error {
-		// this is Update to cover the case where the  bucket doesn't exists and we're
-		// trying to retrieve a list of keys
-		b := tx.Bucket(database.ProjectsBucket)
-		for i := 1; ; i++ {
-			var rProject Project
-			x := b.Get(utils.ItoB(i))
-			if x == nil {
-				return nil
-			}
-			err := json.Unmarshal(x, &rProject)
-			if err != nil {
-				return err
-			}
-			if rProject.Stage == stage && rProject.Originator.U.Index == index {
-				// return contracts which have been originated and are not final yet
-				arr = append(arr, rProject)
-			}
-		}
-		return nil
-	})
-	return arr, err
-}
-
-func RetrieveRecipientProjects(stage float64, index int) ([]Project, error) {
-	var arr []Project
-	db, err := database.OpenDB()
-	if err != nil {
-		return arr, err
-	}
-	defer db.Close()
-	err = db.View(func(tx *bolt.Tx) error {
-		// this is Update to cover the case where the  bucket doesn't exists and we're
-		// trying to retrieve a list of keys
-		b := tx.Bucket(database.ProjectsBucket)
-		for i := 1; ; i++ {
-			var rProject Project
-			x := b.Get(utils.ItoB(i))
-			if x == nil {
-				return nil
-			}
-			err := json.Unmarshal(x, &rProject)
-			if err != nil {
-				return nil
-			}
-			if rProject.Stage == stage && rProject.ProjectRecipient.U.Index == index {
-				// return contracts which have been originated and are not final yet
-				arr = append(arr, rProject)
-			}
-		}
-		return nil
-	})
-	return arr, err
-}
-
-// TODO: Consider that for this authorization to happen, there could be a
-// verification requirement (eg. that the project is relatively feasible),
-// and that it may need several approvals for it (eg. Recipient can be two
-// figures here — the school entity (more visible) and the department of
-// education (more admin) who is the actual issuer) along with a validation
-// requirement
-func VerifyBeforeAuthorizing(projIndex int) bool {
-	// here we verify some information related to the originator
-	project, err := RetrieveProject(projIndex)
-	if err != nil {
-		return false
-	}
-	// print out the originator's name here. In the future, this would involve
-	// the kyc operator to check the originator's credentials
-	fmt.Printf("ORIGINATOR'S NAME IS: %s and PROJECT's METADATA IS: %s", project.Originator.U.Name, project.Params.Metadata)
-	return true
-}
-
-// RecipientAuthorize is used to originate a specific project and take it to stage 1
-func RecipientAuthorize(projIndex int, recpIndex int) error {
-	project, err := RetrieveProject(projIndex)
-	if err != nil {
-		return err
-	}
-	if project.Stage != 0 { // project stage not at zero, shouldn't be called here
-		return fmt.Errorf("Project stage not zero")
-	}
-	if !VerifyBeforeAuthorizing(projIndex) {
-		// not verified, quit Here
-		return fmt.Errorf("Originator not verified")
-	}
-	recipient, err := database.RetrieveRecipient(recpIndex)
-	if err != nil {
-		return err
-	}
-	if project.ProjectRecipient.U.Name != recipient.U.Name {
-		return fmt.Errorf("You can't authorize a project which is not assigned to you!")
-	}
-	// set the project as both originated and ready for investors' money
-	err = project.SetOriginProject()
-	if err != nil {
-		return err
-	}
-	// once a specific project has been originated, set the reputation for the originator
-	// depending on the value proposed by the recipient. This reputation will increase
-	// automatically once the project has been invested in users because the total value
-	// would be higher, so we needn't have a separate mechanism that deals with this.
-	err = RepOriginatedProject(project.Originator.U.Index, project.Params.Index)
-	if err != nil {
-		return err
-	}
-	/*
-		err = project.SetOpenForMoneyStage()
-		if err != nil {
-			return err
-		}
-	*/
-	return nil
-}
-
-func VoteTowardsProposedProject(invIndex int, votes int, projectIndex int) error {
-	inv, err := database.RetrieveInvestor(invIndex)
-	if err != nil {
-		return err
-	}
-	if votes > inv.VotingBalance {
-		return fmt.Errorf("Can't vote with an amount greater than available balance")
-	}
-	project, err := RetrieveProject(projectIndex)
-	if err != nil {
-		return err
-	}
-	if project.Stage != 2 {
-		return fmt.Errorf("You can't vote for a project with stage less than 2")
-	}
-	// we have the specific contract and need to upgrade the number of votes on this one
-	project.Params.Votes += votes
-	err = project.Save()
-	if err != nil {
-		return err
-	}
-	err = inv.DeductVotingBalance(votes)
-	if err != nil {
-		return err
-	}
-	fmt.Println("CAST VOTE TOWARDS PROJECT SUCCESSFULLY")
-	return nil
-}
-
-// stage is set automatically to 1 by the call to SetOriginProject
-// this function is used exclusively for testing
-func newOriginProject(project SolarParams, originator Entity) (Project, error) {
-	// need variadic params to store optional stuff
-	var proposedProject Project
-	proposedProject.Params = project
-	proposedProject.Originator = originator
-	proposedProject.Stage = 1
-	err := proposedProject.Save()
-	return proposedProject, err
-}
-
-// A function to find a project within an array of projects, given the key or index
-func findInKey(key int, arr []Project) (Project, error) {
-	var dummy Project
-	for _, elem := range arr {
-		if elem.Params.Index == key {
-			return elem, nil
-		}
-	}
-	return dummy, fmt.Errorf("Not found")
-}
-
-func (project *Project) updateRecipient(a database.Recipient) error {
-	pos := -1
-	for i, mem := range a.ReceivedSolarProjects {
-		if mem == project.Params.DebtAssetCode {
-			// rewrite the thing in memory that we have
-			pos = i
-			break
-		}
-	}
-	if pos != -1 {
-		// rewrite the thing in memory
-		a.ReceivedSolarProjects[pos] = project.Params.DebtAssetCode
-		err := a.Save()
-		return err
-	}
-	return nil
-}
-
-func SaveOriginatorMoU(projIndex int, hash string) error {
-	a, err := RetrieveProject(projIndex)
-	if err != nil {
-		return err
-	}
-	a.OriginatorMoUHash = hash
-	return a.Save()
-}
-
-func SaveContractHash(projIndex int, hash string) error {
-	a, err := RetrieveProject(projIndex)
-	if err != nil {
-		return err
-	}
-	a.ContractorContractHash = hash
-	return a.Save()
-}
-
-func SaveInvPlatformContract(projIndex int, hash string) error {
-	a, err := RetrieveProject(projIndex)
-	if err != nil {
-		return err
-	}
-	a.InvPlatformContractHash = hash
-	return a.Save()
-}
-
-func SaveRecPlatformContract(projIndex int, hash string) error {
-	a, err := RetrieveProject(projIndex)
-	if err != nil {
-		return err
-	}
-	a.RecPlatformContractHash = hash
-	return a.Save()
-}
-
-func RetrieveLockedProjects() ([]Project, error) {
-	var arr []Project
-	db, err := database.OpenDB()
-	if err != nil {
-		return arr, err
-	}
-	defer db.Close()
-	err = db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket(database.ProjectsBucket)
-		for i := 1; ; i++ {
-			var rProject Project
-			x := b.Get(utils.ItoB(i))
-			if x == nil {
-				break
-			}
-			err := json.Unmarshal(x, &rProject)
-			if err != nil {
-				return err
-			}
-			// append only contracts which are open for funding and below
-			if rProject.Lock {
-				arr = append(arr, rProject)
-			}
-		}
-		return nil
-	})
-	return arr, err
-}
-
-func UnlockProject(username string, pwhash string, projIndex int, seedpwd string) error {
-	fmt.Println("UNLOCKING PROJECT")
-	project, err := RetrieveProject(projIndex)
-	if err != nil {
-		return err
-	}
-
-	recipient, err := database.ValidateRecipient(username, pwhash)
-	if err != nil {
-		return err
-	}
-
-	if recipient.U.Pwhash != project.ProjectRecipient.U.Pwhash {
-		return fmt.Errorf("Seeds don't match, quitting!")
-	}
-
-	if !project.Lock {
-		return fmt.Errorf("Project not locked")
-	}
-
-	project.LockPwd = seedpwd
-	project.Lock = false
-	fmt.Println("Project unlocked and lock password set to seed password! SEEDPWD: ", seedpwd)
-	err = project.Save()
-	if err != nil {
-		return err
-	}
-	return nil
+// RefillPlatform checks whether the publicKey passed has any xlm and if its balance
+// is less than 21 XLM, it proceeds to ask the friendbot for more test xlm
+func RefillPlatform(publicKey string) error {
+	return platform.RefillPlatform(publicKey)
 }

@@ -4,6 +4,9 @@ import (
 	database "github.com/YaleOpenLab/openx/database"
 )
 
+// this file contains the different stages associated with an opensolar project and the handlers
+// that are used to modify them
+
 var (
 	PreOriginProject      = float64(0) // Stage 0: Originator approaches the recipient to originate an order. This is a project proposal.
 	LegalContractStage    = 0.5        // Stage 0.5: Legal agreement (eg. MOU or letter of intent) between the originator and the recipient, out of blockchain. Can use a 2 of 2 multisig.
@@ -17,10 +20,6 @@ var (
 	DebtPaidOffStage      = float64(7) // Stage 7: The stage at which the recipient pays back for his solar panels
 )
 
-// the following functions are helper functions to set the stage for a specific
-// project
-// we could also alternately define contract states and then read the state from
-// our side and then compress this into a single function
 func (a *Project) SetPreOriginProject() error {
 	a.Stage = 0
 	return a.Save()
@@ -48,14 +47,12 @@ func (a *Project) SetProposedProject() error {
 
 func (a *Project) SetFinalizedProject() error {
 	a.Stage = 3
-	a.Reputation = a.Params.TotalValue
-	// upgrade reputation since totalValue would have changed originated contract
+	a.Reputation = a.TotalValue // upgrade reputation since totalValue might have changed from the originated contract
 	err := a.Save()
 	if err != nil {
 		return err
 	}
-	// modify originator reputation now that the final price is fixed
-	return RepOriginatedProject(a.Originator.U.Index, a.Params.Index)
+	return RepOriginatedProject(a.Originator.U.Index, a.Index) // modify originator reputation now that the final price is fixed
 }
 
 func (a *Project) SetFundedProject() error {
@@ -69,17 +66,19 @@ func (a *Project) SetInstalledProjectStage() error {
 	if err != nil {
 		return err
 	}
-	// modify contractor Reputation now that a project has been installed
-	err = a.Contractor.U.IncreaseReputation(a.Params.TotalValue * ContractorWeight)
+
+	err = a.Contractor.U.IncreaseReputation(a.TotalValue * ContractorWeight) // modify contractor Reputation now that a project has been installed
 	if err != nil {
 		return err
 	}
+
 	for _, elem := range a.ProjectInvestors {
-		err := database.ChangeInvReputation(elem.U.Index, a.Params.TotalValue*InvestorWeight)
+		err := database.ChangeInvReputation(elem.U.Index, a.TotalValue*InvestorWeight)
 		if err != nil {
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -89,6 +88,6 @@ func (a *Project) SetPowerGenerationStage() error {
 	if err != nil {
 		return err
 	}
-	// set the reputation for the recipient here
-	return database.ChangeRecpReputation(a.ProjectRecipient.U.Index, a.Params.TotalValue*RecipientWeight)
+
+	return database.ChangeRecpReputation(a.ProjectRecipient.U.Index, a.TotalValue*RecipientWeight) // modify recipient reputation now that the system had begun power generation
 }

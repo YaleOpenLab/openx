@@ -5,18 +5,17 @@ import (
 	"log"
 
 	database "github.com/YaleOpenLab/openx/database"
-	bonds "github.com/YaleOpenLab/openx/platforms/ozones"
 	solar "github.com/YaleOpenLab/openx/platforms/opensolar"
+	bonds "github.com/YaleOpenLab/openx/platforms/ozones"
 	utils "github.com/YaleOpenLab/openx/utils"
 )
 
 func InsertDummyData() error {
 	var err error
 	// populate database with dumym data
-	var project1 solar.SolarParams
-	var contract1 solar.Project
-	var contract2 solar.Project
-	var contract3 solar.Project
+	var project1 solar.Project
+	var project2 solar.Project
+	var project3 solar.Project
 	var rec database.Recipient
 	allRecs, err := database.RetrieveAllRecipients()
 	if err != nil {
@@ -29,6 +28,7 @@ func InsertDummyData() error {
 		if err != nil {
 			log.Fatal(err)
 		}
+		rec.U.Notification = true
 		err = rec.AddEmail("varunramganesh@gmail.com")
 		if err != nil {
 			log.Fatal(err)
@@ -68,6 +68,7 @@ func InsertDummyData() error {
 		if err != nil {
 			log.Fatal(err)
 		}
+		inv.U.Notification = true
 		err = inv.AddEmail("varunramganesh@gmail.com")
 		if err != nil {
 			log.Fatal(err)
@@ -136,57 +137,54 @@ func InsertDummyData() error {
 	project1.PaybackAssetCode = ""
 	project1.DateInitiated = utils.Timestamp()
 	project1.Years = 3
-	contract1.Params = project1
-	contract1.ProjectRecipient = rec
-	contract1.Contractor = c1
-	contract1.Originator = newOriginator
-	contract1.Stage = 3
-	contract1.AuctionType = "blind"
-	err = contract1.Save()
+	project1.ProjectRecipient = rec
+	project1.Contractor = c1
+	project1.Originator = newOriginator
+	project1.Stage = 3
+	project1.AuctionType = "blind"
+	err = project1.Save()
 	if err != nil {
 		return fmt.Errorf("Error inserting project into db")
 	}
 
-	project1.Index = 2
-	project1.PanelSize = "180 1200 sq.ft homes in a high rise building 0.1mi from Kendall Square"
-	project1.TotalValue = 30000
-	project1.Location = "Kendall Square, Boston"
-	project1.MoneyRaised = 0
-	project1.Metadata = "Kendall Square is set in the heart of Cambridge and is a popular startup IT hub"
-	project1.InvestorAssetCode = ""
-	project1.DebtAssetCode = ""
-	project1.PaybackAssetCode = ""
-	project1.DateInitiated = utils.Timestamp()
-	project1.Years = 5
-	contract2.ProjectRecipient = rec
-	contract2.Params = project1
-	contract2.Contractor = c1
-	contract2.Originator = newOriginator
-	contract2.Stage = 3
-	contract2.AuctionType = "blind"
-	err = contract2.Save()
+	project2.Index = 2
+	project2.PanelSize = "180 1200 sq.ft homes in a high rise building 0.1mi from Kendall Square"
+	project2.TotalValue = 30000
+	project2.Location = "Kendall Square, Boston"
+	project2.MoneyRaised = 0
+	project2.Metadata = "Kendall Square is set in the heart of Cambridge and is a popular startup IT hub"
+	project2.InvestorAssetCode = ""
+	project2.DebtAssetCode = ""
+	project2.PaybackAssetCode = ""
+	project2.DateInitiated = utils.Timestamp()
+	project2.Years = 5
+	project2.ProjectRecipient = rec
+	project2.Contractor = c1
+	project2.Originator = newOriginator
+	project2.Stage = 3
+	project2.AuctionType = "blind"
+	err = project2.Save()
 	if err != nil {
 		return fmt.Errorf("Error inserting project into db")
 	}
 
-	project1.Index = 3
-	project1.PanelSize = "260 1500 sq.ft homes set in a medieval cathedral style construction"
-	project1.TotalValue = 40000
-	project1.Location = "Trafalgar Square, London"
-	project1.MoneyRaised = 0
-	project1.Metadata = "Trafalgar Square is set in the heart of London's financial district, with big banks all over"
-	project1.InvestorAssetCode = ""
-	project1.DebtAssetCode = ""
-	project1.PaybackAssetCode = ""
-	project1.DateInitiated = utils.Timestamp()
-	project1.Years = 7
-	contract3.ProjectRecipient = rec
-	contract3.Params = project1
-	contract3.Contractor = c1
-	contract3.Originator = newOriginator
-	contract3.Stage = 3
-	contract3.AuctionType = "blind"
-	err = contract3.Save()
+	project3.Index = 3
+	project3.PanelSize = "260 1500 sq.ft homes set in a medieval cathedral style construction"
+	project3.TotalValue = 40000
+	project3.Location = "Trafalgar Square, London"
+	project3.MoneyRaised = 0
+	project3.Metadata = "Trafalgar Square is set in the heart of London's financial district, with big banks all over"
+	project3.InvestorAssetCode = ""
+	project3.DebtAssetCode = ""
+	project3.PaybackAssetCode = ""
+	project3.DateInitiated = utils.Timestamp()
+	project3.Years = 7
+	project3.ProjectRecipient = rec
+	project3.Contractor = c1
+	project3.Originator = newOriginator
+	project3.Stage = 3
+	project3.AuctionType = "blind"
+	err = project3.Save()
 	if err != nil {
 		return fmt.Errorf("Error inserting project into db")
 	}
@@ -196,7 +194,7 @@ func InsertDummyData() error {
 		log.Fatal(err)
 	}
 
-	_, err = solar.RetrieveProject(pc.Params.Index)
+	_, err = solar.RetrieveProject(pc.Index)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -219,10 +217,87 @@ func InsertDummyData() error {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	_, err = solar.RetrieveAllEntities("contractor")
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	// MWTODO: get comments on various fileds in this file
+	demoInv, err := database.NewInvestor("Yale OpenLab", "p", "x", "Yale OpenLab")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	demoRec, err := database.NewRecipient("S.U. Pasto School, Puerto Rico", "p", "x", "S.U. Pasto School")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	demoOrig, err := solar.NewOriginator("MIT Digital Curreny Initiative", "p", "x", "MIT DCI", "MIT Building E14-15", "The MIT Media Lab's Digital Currency Initiative")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	demoCont, err := solar.NewContractor("Martin Wainstein", "p", "x", "Martin Wainstein", "254 Elm Street, New Haven, CT", "Martin Wainstein from the Yale OpenLab")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	demoDevel, err := solar.NewDeveloper("Genmoji Solar", "p", "x", "Genmoji Solar", "Genmoji, San Juan, Puerto Rico", "Genmoji Solar")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	demoGuar, err := solar.NewGuarantor("MIT Media Lab", "p", "x", "MIT Media Lab", "MIT Building E14-15", "The MIT Media Lab is an interdisciplinary lab with innovators from all around the globe")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var demoProject solar.Project
+
+	indexHelp, err := solar.RetrieveAllProjects()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	demoProject.Index = len(indexHelp) + 1
+	demoProject.PanelSize = "10x 100W Komaes Solar Panels"
+	demoProject.TotalValue = 8000 + 2000
+	demoProject.Location = "S.U. Pasto School, Puerto Rico"
+	demoProject.MoneyRaised = 10000
+	demoProject.Years = 5
+	demoProject.InterestRate = 0.029
+	demoProject.Metadata = "This is a pilot initiative of the MIT-Yale effort to integrate solar platforms with IoT data and blockchain based payment systems to help develop community shelters in Puerto Rico"
+	demoProject.Inverter = "Schneider Conext SW 230V 2024"
+	demoProject.ChargeRegulator = "Schneider MPPT60"
+	demoProject.ControlPanel = "Schneider XW SCP"
+	demoProject.CommBox = "Schneider Conext Insight"
+	demoProject.ACTransfer = "Eaton Manual throw switches between grid and solar+grid setups"
+	demoProject.SolarCombiner = "MidNite"
+	demoProject.Batteries = "Advance Autoparts Deep cycle 600A"
+	demoProject.IoTHub = "Raspberry Pi 3"
+	demoProject.DateInitiated = "01/23/2018"
+	demoProject.DateFunded = "06/19/2018"
+	demoProject.BalLeft = 10000 // assume recipient has not paid anything back to us yet
+
+	demoProject.Originator = demoOrig
+	demoProject.Contractor = demoCont
+	demoProject.Developer = demoDevel
+	demoProject.Guarantor = demoGuar
+	demoProject.ContractorFee = 2000
+	demoProject.DeveloperFee = 6000
+	demoProject.ProjectRecipient = demoRec
+	demoProject.Stage = 6
+	demoProject.AuctionType = "private"
+	demoProject.SpecSheetHash = "ipfshash" // TODO: replace this with the real ipfs hash for the demo
+	demoProject.Reputation = 10000         // fix this equal to total value
+	demoProject.ProjectInvestors = append(demoProject.ProjectInvestors, demoInv)
+	demoProject.InvestmentType = "Municipal Bond"
+
+	err = demoProject.Save()
+	if err != nil {
+		log.Fatal(err)
+	}
 	return nil
 }

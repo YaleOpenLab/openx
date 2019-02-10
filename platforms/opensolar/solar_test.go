@@ -133,13 +133,13 @@ func TestDb(t *testing.T) {
 	if err == nil {
 		t.Fatalf("PreInvestmentCheck succeeds, quitting!")
 	}
-	err = InvestInProject(1, 1, "", "")
+	err = Invest(1, 1, "", "")
 	if err == nil {
-		t.Fatalf("InvestInProject succeeds, quitting!")
+		t.Fatalf("Invest succeeds, quitting!")
 	}
-	err = SeedInvestInProject(1, 1, 1, "", "", "")
+	err = SeedInvest(1, 1, 1, "", "", "")
 	if err == nil {
-		t.Fatalf("SeedInvestInProject succeeds, quitting!")
+		t.Fatalf("SeedInvest succeeds, quitting!")
 	}
 	var tmpProj Project
 	var tmpRecp database.Recipient
@@ -161,7 +161,6 @@ func TestDb(t *testing.T) {
 		t.Fatal(err)
 	}
 	db.Close() // close immmediately after check
-	var testProjectParams SolarParams
 	var dummy Project
 	// investors entity testing over, test recipients below in the same way
 	// now we repeat the same tests for all other entities
@@ -194,18 +193,17 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	testProjectParams.Index = 1
-	testProjectParams.PanelSize = "100 1000 sq.ft homes each with their own private spaces for luxury"
-	testProjectParams.TotalValue = 14000
-	testProjectParams.Location = "India Basin, San Francisco"
-	testProjectParams.MoneyRaised = 0
-	testProjectParams.Metadata = "India Basin is an upcoming creative project based in San Francisco that seeks to invite innovators from all around to participate"
-	testProjectParams.InvestorAssetCode = ""
-	testProjectParams.DebtAssetCode = ""
-	testProjectParams.PaybackAssetCode = ""
-	testProjectParams.DateInitiated = ""
-	testProjectParams.Years = 3
-	dummy.Params = testProjectParams
+	dummy.Index = 1
+	dummy.PanelSize = "100 1000 sq.ft homes each with their own private spaces for luxury"
+	dummy.TotalValue = 14000
+	dummy.Location = "India Basin, San Francisco"
+	dummy.MoneyRaised = 0
+	dummy.Metadata = "India Basin is an upcoming creative project based in San Francisco that seeks to invite innovators from all around to participate"
+	dummy.InvestorAssetCode = ""
+	dummy.DebtAssetCode = ""
+	dummy.PaybackAssetCode = ""
+	dummy.DateInitiated = ""
+	dummy.Years = 3
 	dummy.ProjectRecipient = recp
 	dummy.Contractor = contractor
 	dummy.Originator = newCE2
@@ -215,20 +213,20 @@ func TestDb(t *testing.T) {
 		t.Errorf("Inserting an project into the database failed")
 		// shouldn't really fatal here, but this is in main, so we can't return
 	}
-	project, err := RetrieveProject(dummy.Params.Index)
+	project, err := RetrieveProject(dummy.Index)
 	if err != nil {
 		log.Println(err)
 		t.Errorf("Retrieving project from the database failed")
 		// again, shouldn't really fat a here, but we're in main
 	}
 	klx1, err := RetrieveProject(1000)
-	if klx1.Params.Index != 0 {
+	if klx1.Index != 0 {
 		t.Fatalf("REtrieved project which does not exist, quitting!")
 	}
-	if project.Params.Index != dummy.Params.Index {
+	if project.Index != dummy.Index {
 		t.Fatalf("Indices don't match, quitting!")
 	}
-	dummy.Params.Index = 2 // change index and try inserting another project
+	dummy.Index = 2 // change index and try inserting another project
 	err = dummy.Save()
 	if err != nil {
 		log.Println(err)
@@ -240,7 +238,7 @@ func TestDb(t *testing.T) {
 		log.Println("Retrieve all error: ", err)
 		t.Errorf("Failed in retrieving all projects")
 	}
-	if projects[0].Params.Index != 1 {
+	if projects[0].Index != 1 {
 		t.Fatalf("Index of first element doesn't match, quitting!")
 	}
 	oProjects, err := RetrieveProjectsAtStage(OriginProject)
@@ -252,14 +250,14 @@ func TestDb(t *testing.T) {
 		log.Println("OPROJECTS: ", len(oProjects))
 		t.Fatalf("Originated projects present!")
 	}
-	err = database.DeleteKeyFromBucket(dummy.Params.Index, database.ProjectsBucket)
+	err = database.DeleteKeyFromBucket(dummy.Index, database.ProjectsBucket)
 	if err != nil {
 		log.Println(err)
 		t.Errorf("Deleting an order from the db failed")
 	}
 	// err = DeleteProject(1000) this would work becuase the key will not be found and hence would not return an error
-	pp1, err := RetrieveProject(dummy.Params.Index)
-	if err == nil && pp1.Params.Index != 0 {
+	pp1, err := RetrieveProject(dummy.Index)
+	if err == nil && pp1.Index != 0 {
 		log.Println(err)
 		// this should fail because we're trying to read an empty key value pair
 		t.Errorf("Found deleted entry, quitting!")
@@ -340,7 +338,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if rPC.Params.Index != rOx.Params.Index {
+	if rPC.Index != rOx.Index {
 		t.Fatal("Indices don't match")
 	}
 
@@ -380,12 +378,15 @@ func TestDb(t *testing.T) {
 		log.Println("Length of all Stage 6 Projects: ", len(allOOs))
 		t.Fatalf("Length of all stage 6 projects doesn't match")
 	}
+	var	testProject Project
 	indexCheck, err := RetrieveAllProjects()
 	if err != nil {
 		t.Fatalf("Projects could not be retrieved!")
 	}
-	testProjectParams.Index = len(indexCheck) + 1
-	testProject, err := newOriginProject(testProjectParams, newCE2)
+	testProject = dummy
+	testProject.Index = len(indexCheck) + 1
+	testProject.Originator = newCE2
+	err = testProject.Save()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -496,7 +497,7 @@ func TestDb(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Can vote greater than the voting balance!")
 	}
-	recp.ReceivedSolarProjects = append(recp.ReceivedSolarProjects, testProjectParams.DebtAssetCode)
+	recp.ReceivedSolarProjects = append(recp.ReceivedSolarProjects, dummy.DebtAssetCode)
 	// the above thing is to test the function itself and not the functionality since
 	// DebtAssetCode for testProjectParams should be empty
 	err = recp.Save()
@@ -505,6 +506,7 @@ func TestDb(t *testing.T) {
 	}
 	chk := testProject.CalculatePayback("100")
 	if chk != "0.257143" {
+		log.Println(chk)
 		t.Fatalf("Balance doesn't match , quitting!")
 	}
 	var arr []Project
@@ -520,7 +522,7 @@ func TestDb(t *testing.T) {
 	var arrDup []Project
 	var testProject2 Project
 	testProject2 = testProject
-	testProject2.Params.TotalValue = 0
+	testProject2.TotalValue = 0
 	err = testProject2.Save()
 	if err != nil {
 		t.Fatal(err)
@@ -559,14 +561,14 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if x.Params.Index != testProject.Params.Index {
+	if x.Index != testProject.Index {
 		t.Fatalf("Indices don't match, quitting!")
 	}
 	y, err = SelectContractTime(arr)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if y.Params.Index != testProject.Params.Index {
+	if y.Index != testProject.Index {
 		t.Fatalf("Indices don't match, quitting!")
 	}
 	err = testProject.SetAuctionType("blind")
@@ -597,7 +599,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = RepInstalledProject(contractor.U.Index, testProjectParams.Index)
+	err = RepInstalledProject(contractor.U.Index, dummy.Index)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -625,23 +627,23 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = SaveOriginatorMoU(testProject.Params.Index, "blah")
+	err = SaveOriginatorMoU(testProject.Index, "blah")
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = SaveContractHash(testProject.Params.Index, "blah")
+	err = SaveContractHash(testProject.Index, "blah")
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = SaveInvPlatformContract(testProject.Params.Index, "blah")
+	err = SaveInvPlatformContract(testProject.Index, "blah")
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = SaveRecPlatformContract(testProject.Params.Index, "blah")
+	err = SaveRecPlatformContract(testProject.Index, "blah")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !VerifyBeforeAuthorizing(testProject.Params.Index) {
+	if !VerifyBeforeAuthorizing(testProject.Index) {
 		t.Fatalf("Can't verify contract, quitting!")
 	}
 	_, err = RetrieveEntity(1000)
@@ -657,7 +659,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = RecipientAuthorize(testProject.Params.Index, recp.U.Index)
+	err = RecipientAuthorize(testProject.Index, recp.U.Index)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -666,16 +668,16 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = RecipientAuthorize(testProject.Params.Index, recp.U.Index)
+	err = RecipientAuthorize(testProject.Index, recp.U.Index)
 	if err == nil {
 		t.Fatalf("Failed to catch stage 0 error")
 	}
 	testProject.ProjectRecipient = tmpRecp
-	err = RecipientAuthorize(testProject.Params.Index, recp.U.Index)
+	err = RecipientAuthorize(testProject.Index, recp.U.Index)
 	if err == nil {
 		t.Fatalf("Failed to catch stage recp index error")
 	}
-	err = VoteTowardsProposedProject(inv.U.Index, 100, testProject.Params.Index)
+	err = VoteTowardsProposedProject(inv.U.Index, 100, testProject.Index)
 	if err == nil {
 		t.Fatalf("Can vote greater than the voting balance!")
 	}
@@ -721,7 +723,7 @@ func TestDb(t *testing.T) {
 		t.Fatalf("not able to catch invalid entity error")
 	}
 	var recpx database.Recipient
-	recpx.ReceivedSolarProjects = append(recpx.ReceivedSolarProjects, dummy.Params.DebtAssetCode)
+	recpx.ReceivedSolarProjects = append(recpx.ReceivedSolarProjects, dummy.DebtAssetCode)
 	err = dummy.updateRecipient(recpx)
 	if err != nil {
 		t.Fatal(err)
