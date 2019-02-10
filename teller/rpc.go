@@ -81,8 +81,8 @@ func GetProjectIndex(assetName string) (int, error) {
 		return -1, err
 	}
 	for _, elem := range x {
-		if elem.Params.DebtAssetCode == assetName {
-			return elem.Params.Index, nil
+		if elem.DebtAssetCode == assetName {
+			return elem.Index, nil
 		}
 	}
 	return -1, fmt.Errorf("Not found")

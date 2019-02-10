@@ -212,12 +212,12 @@ func ProposeContractPrompt(contractor *solar.Entity) error {
 	}
 	log.Println("YOUR CONTRACT IS: ")
 	PrintProject(rContract)
-	if rContract.Params.Index == 0 || rContract.Stage != 1 {
+	if rContract.Index == 0 || rContract.Stage != 1 {
 		// prevent people form porposing contracts for non originated contracts
 		return fmt.Errorf("Invalid contract index")
 	}
-	panelSize := rContract.Params.PanelSize
-	location := rContract.Params.Location
+	panelSize := rContract.PanelSize
+	location := rContract.Location
 	fmt.Println("ENTER THE COST OF PROJECT")
 	totalValue, err := scan.ScanForFloat()
 	if err != nil {

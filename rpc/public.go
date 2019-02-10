@@ -36,7 +36,6 @@ func setupPublicRoutes() {
 	getInvTopReputationPublic()
 }
 
-
 // public contains all the RPC routes that we explicitly intend to make public. Other
 // routes such as the invest route are thigns we could make private as well, but that
 // doesn't change the security model since we ask for username+pwauth

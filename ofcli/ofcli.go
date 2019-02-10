@@ -214,9 +214,9 @@ func main() {
 					fmt.Println("YOU HAVE DECIDED TO CANCEL THE PAYBACK ORDER")
 					break
 				}
-				fmt.Printf("PAYING BACK %s TOWARDS PROJECT NUMBER: %d\n", paybackAmount, rtContract.Params.Index) // use the rtContract.Params here instead of using projectNumber from long ago
+				fmt.Printf("PAYING BACK %s TOWARDS PROJECT NUMBER: %d\n", paybackAmount, rtContract.Index) // use the rtContract.Params here instead of using projectNumber from long ago
 
-				err = solar.Payback(recipient.U.Index, rtContract.Params.Index, rtContract.Params.DebtAssetCode, paybackAmount, recipientSeed, consts.PlatformPublicKey)
+				err = solar.Payback(recipient.U.Index, rtContract.Index, rtContract.DebtAssetCode, paybackAmount, recipientSeed, consts.PlatformPublicKey)
 				if err != nil {
 					log.Println("PAYBACK TX FAILED, PLEASE TRY AGAIN!", err)
 					break

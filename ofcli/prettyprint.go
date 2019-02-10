@@ -16,13 +16,13 @@ func PrintProjects(projects []solar.Project) {
 
 // this function pretty prints out some stuff that we need in main.go
 func PrintProject(project solar.Project) {
-	fmt.Println("          PROJECT INDEX: ", project.Params.Index)
-	fmt.Println("          Panel Size: ", project.Params.PanelSize)
-	fmt.Println("          Total Value: ", project.Params.TotalValue)
-	fmt.Println("          Location: ", project.Params.Location)
-	fmt.Println("          Money Raised: ", project.Params.MoneyRaised)
-	fmt.Println("          Metadata: ", project.Params.Metadata)
-	fmt.Println("          Years: ", project.Params.Years)
+	fmt.Println("          PROJECT INDEX: ", project.Index)
+	fmt.Println("          Panel Size: ", project.PanelSize)
+	fmt.Println("          Total Value: ", project.TotalValue)
+	fmt.Println("          Location: ", project.Location)
+	fmt.Println("          Money Raised: ", project.MoneyRaised)
+	fmt.Println("          Metadata: ", project.Metadata)
+	fmt.Println("          Years: ", project.Years)
 	fmt.Println("          Auction Type: ", project.AuctionType)
 	fmt.Println("          PROJECT ORIGINATOR: ")
 	PrintEntity(project.Originator)
@@ -32,21 +32,21 @@ func PrintProject(project solar.Project) {
 	if project.Stage >= 2 {
 		fmt.Println("          PROJECT CONTRACTOR: ")
 		PrintEntity(project.Contractor)
-		fmt.Println("          Votes: ", project.Params.Votes)
+		fmt.Println("          Votes: ", project.Votes)
 	}
 	if project.Stage >= 3 {
-		fmt.Println("          Investor Asset Code: ", project.Params.InvestorAssetCode)
+		fmt.Println("          Investor Asset Code: ", project.InvestorAssetCode)
 		fmt.Println("          INVESTORS: ")
 		for _, investor := range project.ProjectInvestors {
 			PrintInvestor(investor)
 		}
 	}
 	if project.Stage == 4 {
-		fmt.Println("          Debt Asset Code: ", project.Params.DebtAssetCode)
-		fmt.Println("          Payback Asset Code: ", project.Params.PaybackAssetCode)
-		fmt.Println("          Balance Left: ", project.Params.BalLeft)
-		fmt.Println("          Date Initiated: ", project.Params.DateInitiated)
-		fmt.Println("          Date Last Paid: ", project.Params.DateLastPaid)
+		fmt.Println("          Debt Asset Code: ", project.DebtAssetCode)
+		fmt.Println("          Payback Asset Code: ", project.PaybackAssetCode)
+		fmt.Println("          Balance Left: ", project.BalLeft)
+		fmt.Println("          Date Initiated: ", project.DateInitiated)
+		fmt.Println("          Date Last Paid: ", project.DateLastPaid)
 	}
 }
 

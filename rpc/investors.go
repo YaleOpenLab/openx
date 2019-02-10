@@ -20,7 +20,7 @@ func setupInvestorRPCs() {
 	insertInvestor()
 	validateInvestor()
 	getAllInvestors()
-	investInProject()
+	Invest()
 	changeReputationInv()
 	voteTowardsProject()
 	addLocalAssetInv()
@@ -95,8 +95,8 @@ func getAllInvestors() {
 	})
 }
 
-// investInProject invests in a specific project of the user's choice
-func investInProject() {
+// Invest invests in a specific project of the user's choice
+func Invest() {
 	http.HandleFunc("/investor/invest", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
 		// need the following params to invest in a project:
@@ -138,7 +138,7 @@ func investInProject() {
 		// make it so in the UI that only they can accept an investment so we can get their
 		// seed and send them assets. By not accepting, they would forfeit their investment,
 		// so incentive would be there to unlock the seed.
-		err = platform.InvestInProject(projIndex, investor.U.Index, amount, investorSeed)
+		err = platform.Invest(projIndex, investor.U.Index, amount, investorSeed)
 		if err != nil {
 			responseHandler(w, r, StatusNotFound)
 			return

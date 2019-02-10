@@ -9,14 +9,14 @@ import (
 
 // An originator is someone who approaches the recipient in real life and proposes
 // that he can start a contract on the opensolar platform that will be open ot investors
-// he needs to make clear that he is an originatot and if interested, he can volunteer
+// he needs to make clear that he is an originator and if interested, he can volunteer
 // to be the contractor as well, in which case there will be no auction and we can go
 // straight ahead to the auction phase with investors investing in the contract. A MOU
 // must also be sigend between the originator and the recipient defining terms of agreement
 // as per legal standards
-// This function is returns a new entity with the bool "originator" as true
+
 // TODO: Consider any other information needed for originators that should be added
-// to the Users/Entities struct, or create a new struct altogether
+
 func NewOriginator(uname string, pwd string, seedpwd string, Name string,
 	Address string, Description string) (Entity, error) {
 	return newEntity(uname, pwd, seedpwd, Name, Address, Description, "originator")
@@ -28,19 +28,18 @@ func (contractor *Entity) Originate(panelSize string, totalValue float64, locati
 
 	var pc Project
 	var err error
-	// for this, create a new  contract and store in the contracts db. Wea re sorting
-	// by stage, so it shouldn't matter a whole lot
+
 	indexCheck, err := RetrieveAllProjects()
 	if err != nil {
 		return pc, fmt.Errorf("Projects could not be retrieved!")
 	}
-	pc.Params.Index = len(indexCheck) + 1
-	pc.Params.PanelSize = panelSize
-	pc.Params.TotalValue = totalValue
-	pc.Params.Location = location
-	pc.Params.Years = years
-	pc.Params.Metadata = metadata
-	pc.Params.DateInitiated = utils.Timestamp()
+	pc.Index = len(indexCheck) + 1
+	pc.PanelSize = panelSize
+	pc.TotalValue = totalValue
+	pc.Location = location
+	pc.Years = years
+	pc.Metadata = metadata
+	pc.DateInitiated = utils.Timestamp()
 	iRecipient, err := database.RetrieveRecipient(recIndex)
 	if err != nil { // recipient does not exist
 		return pc, err
@@ -56,6 +55,7 @@ func (contractor *Entity) Originate(panelSize string, totalValue float64, locati
 	return pc, err
 }
 
+// RepOriginatedProject adds reputation to an originator on successful origination of a contract
 func RepOriginatedProject(origIndex int, projIndex int) error {
 	originator, err := RetrieveEntity(origIndex)
 	if err != nil {
@@ -65,5 +65,5 @@ func RepOriginatedProject(origIndex int, projIndex int) error {
 	if err != nil {
 		return err
 	}
-	return originator.U.IncreaseReputation(project.Params.TotalValue * OriginatorWeight)
+	return originator.U.IncreaseReputation(project.TotalValue * OriginatorWeight)
 }

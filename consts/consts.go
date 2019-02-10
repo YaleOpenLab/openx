@@ -38,7 +38,3 @@ const OneWeekInSecond = 604800                                                  
 const TwoWeeksInSecond = time.Duration(1209600)                                      // one week in seconds, easier to have it here than call it in multiple places
 const SixWeeksInSecond = time.Duration(3628800)                                      // six months in seconds, send notification
 const CutDownPeriod = time.Duration(4838400)                                         // period when we direct power to the grid
-const NormalThreshold = 1                                                            // NormalThreshold is the normal payback interval of 1 payback period. Regular notifications are sent regardless of whether the user has paid back towards the project.
-const AlertThreshold = 2                                                             // AlertThreshold is the threshold above which the user gets a nice email requesting a quick payback whenever possible
-const SternAlertThreshold = 4                                                        // SternAlertThreshold is the threshold above the user gets a warning that services will be disconnected if the user doesn't payback soon
-const DisconnectionThreshold = 6                                                     // DisconnectionThreshold is the threshold above which the user gets a notification telling that services have been disconnected.

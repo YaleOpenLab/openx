@@ -42,19 +42,19 @@ func parseProject(r *http.Request) (platform.Project, error) {
 	if err != nil {
 		return prepProject, fmt.Errorf("Error in assigning index")
 	}
-	prepProject.Params.Index = len(allProjects) + 1
+	prepProject.Index = len(allProjects) + 1
 	if r.FormValue("PanelSize") == "" || r.FormValue("TotalValue") == "" || r.FormValue("Location") == "" || r.FormValue("Metadata") == "" || r.FormValue("Stage") == "" {
 		return prepProject, fmt.Errorf("One of given params is missing: PanelSize, TotalValue, Location, Metadata")
 	}
 
-	prepProject.Params.PanelSize = r.FormValue("PanelSize")
-	prepProject.Params.TotalValue = utils.StoF(r.FormValue("TotalValue"))
-	prepProject.Params.Location = r.FormValue("Location")
-	prepProject.Params.Metadata = r.FormValue("Metadata")
+	prepProject.PanelSize = r.FormValue("PanelSize")
+	prepProject.TotalValue = utils.StoF(r.FormValue("TotalValue"))
+	prepProject.Location = r.FormValue("Location")
+	prepProject.Metadata = r.FormValue("Metadata")
 	prepProject.Stage = utils.StoF(r.FormValue("Stage"))
-	prepProject.Params.MoneyRaised = 0
-	prepProject.Params.BalLeft = float64(0)
-	prepProject.Params.DateInitiated = utils.Timestamp()
+	prepProject.MoneyRaised = 0
+	prepProject.BalLeft = float64(0)
+	prepProject.DateInitiated = utils.Timestamp()
 	return prepProject, nil
 }
 
