@@ -11,11 +11,8 @@ import (
 	issuer "github.com/YaleOpenLab/openx/issuer"
 	model "github.com/YaleOpenLab/openx/models/munibond"
 	notif "github.com/YaleOpenLab/openx/notif"
-	oracle "github.com/YaleOpenLab/openx/oracle"
-	stablecoin "github.com/YaleOpenLab/openx/stablecoin"
 	utils "github.com/YaleOpenLab/openx/utils"
 	wallet "github.com/YaleOpenLab/openx/wallet"
-	xlm "github.com/YaleOpenLab/openx/xlm"
 )
 
 // the smart contract that powers this particular platform. Designed to be monolithic by design
@@ -73,7 +70,7 @@ func RecipientAuthorize(projIndex int, recpIndex int) error {
 	if err != nil {
 		return err
 	}
-	if project.ProjectRecipient.U.Name != recipient.U.Name {
+	if project.RecipientIndex != recipient.U.Index {
 		return fmt.Errorf("You can't authorize a project which is not assigned to you!")
 	}
 
@@ -130,8 +127,8 @@ func VoteTowardsProposedProject(invIndex int, votes int, projectIndex int) error
 	return nil
 }
 
-// the PreInvestmentChecks associated with the opensolar platform
-func PreInvestmentCheck(projIndex int, invIndex int, invAmount string) (Project, database.Investor, error) {
+// the preInvestmentChecks associated with the opensolar platform
+func preInvestmentCheck(projIndex int, invIndex int, invAmount string) (Project, database.Investor, error) {
 	var project Project
 	var investor database.Investor
 	var err error
@@ -183,7 +180,7 @@ func PreInvestmentCheck(projIndex int, invIndex int, invAmount string) (Project,
 func SeedInvest(projIndex int, invIndex int, recpIndex int, invAmount string,
 	invSeed string, recpSeed string) error {
 
-	project, investor, err := PreInvestmentCheck(projIndex, invIndex, invAmount)
+	project, investor, err := preInvestmentCheck(projIndex, invIndex, invAmount)
 	if err != nil {
 		return err
 	}
@@ -194,7 +191,7 @@ func SeedInvest(projIndex int, invIndex int, recpIndex int, invAmount string,
 		return err
 	}
 
-	err = project.UpdateProjectAfterInvestment(invAmount, investor)
+	err = project.updateProjectAfterInvestment(invAmount, invIndex)
 	if err != nil {
 		return err
 	}
@@ -206,7 +203,7 @@ func SeedInvest(projIndex int, invIndex int, recpIndex int, invAmount string,
 func Invest(projIndex int, invIndex int, invAmount string, invSeed string) error {
 	var err error
 
-	project, investor, err := PreInvestmentCheck(projIndex, invIndex, invAmount)
+	project, investor, err := preInvestmentCheck(projIndex, invIndex, invAmount)
 	if err != nil {
 		return err
 	}
@@ -217,7 +214,7 @@ func Invest(projIndex int, invIndex int, invAmount string, invSeed string) error
 		return err
 	}
 
-	err = project.UpdateProjectAfterInvestment(invAmount, investor)
+	err = project.updateProjectAfterInvestment(invAmount, invIndex)
 	if err != nil {
 		return err
 	}
@@ -225,12 +222,12 @@ func Invest(projIndex int, invIndex int, invAmount string, invSeed string) error
 	return err
 }
 
-// the UpdateProjectAfterInvestment of the opensolar platform
-func (project *Project) UpdateProjectAfterInvestment(invAmount string, investor database.Investor) error {
+// the updateProjectAfterInvestment of the opensolar platform
+func (project *Project) updateProjectAfterInvestment(invAmount string, invIndex int) error {
 
 	var err error
 	project.MoneyRaised += utils.StoF(invAmount)
-	project.ProjectInvestors = append(project.ProjectInvestors, investor)
+	project.InvestorIndices = append(project.InvestorIndices, invIndex)
 	err = project.Save()
 	if err != nil {
 		return err
@@ -252,7 +249,8 @@ func (project *Project) UpdateProjectAfterInvestment(invAmount string, investor 
 // sendRecipientNotification sends the notification to the recipient requesting them
 // to logon to the platform and unlock the project that has just been invested in
 func (project *Project) sendRecipientNotification() {
-	notif.SendUnlockNotifToRecipient(project.Index, project.ProjectRecipient.U.Email)
+	recipient, _ := database.RetrieveRecipient(project.RecipientIndex) // don't catch error because email sending need not necessarily succeed
+	notif.SendUnlockNotifToRecipient(project.Index, recipient.U.Email)
 }
 
 // UnlockProject unlocks a specific project that has just been invested in
@@ -268,8 +266,25 @@ func UnlockProject(username string, pwhash string, projIndex int, seedpwd string
 		return err
 	}
 
-	if recipient.U.Pwhash != project.ProjectRecipient.U.Pwhash {
+	if recipient.U.Index != project.RecipientIndex {
 		return fmt.Errorf("Seeds don't match, quitting!")
+	}
+
+	recpSeed, err := wallet.DecryptSeed(recipient.U.EncryptedSeed, seedpwd)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	checkPubkey, err := wallet.ReturnPubkey(recpSeed)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	if checkPubkey != recipient.U.PublicKey {
+		log.Println("Invalid seed")
+		return fmt.Errorf("Failed to unlock project")
 	}
 
 	if !project.Lock {
@@ -287,10 +302,6 @@ func UnlockProject(username string, pwhash string, projIndex int, seedpwd string
 
 // sendRecipientAssets sends a recipient the debt asset and the payback asset associated with
 // the opensolar platform
-// this project covers up the amount nedeed for the project, so set the DebtAssetCode
-// and PaybackAssetCodes, generate them and give to the recipient
-// we need the recipient's seed here, so we need to wait on the frontend and require
-// confirmation from the recipient or something
 func sendRecipientAssets(projIndex int) error {
 	startTime := utils.Unix()
 	project, err := RetrieveProject(projIndex)
@@ -318,24 +329,31 @@ func sendRecipientAssets(projIndex int) error {
 		return err
 	}
 
-	recpSeed, err := wallet.DecryptSeed(project.ProjectRecipient.U.EncryptedSeed, project.LockPwd)
+	recipient, err := database.RetrieveRecipient(project.RecipientIndex)
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 
+	recpSeed, err := wallet.DecryptSeed(recipient.U.EncryptedSeed, project.LockPwd)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	project.LockPwd = "" // set lockpwd to nil immediately after retrieving seed
 	metadata := project.Metadata
 
 	project.DebtAssetCode = assets.AssetID(consts.DebtAssetPrefix + metadata)
 	project.PaybackAssetCode = assets.AssetID(consts.PaybackAssetPrefix + metadata)
 
-	err = model.MunibondReceive(project.ProjectRecipient, projIndex, project.DebtAssetCode,
+	err = model.MunibondReceive(project.RecipientIndex, projIndex, project.DebtAssetCode,
 		project.PaybackAssetCode, project.Years, recpSeed, project.TotalValue, project.PaybackPeriod)
 	if err != nil {
 		return err
 	}
 
-	err = project.UpdateProjectAfterAcceptance()
+	err = project.updateProjectAfterAcceptance()
 	if err != nil {
 		return err
 	}
@@ -343,26 +361,20 @@ func sendRecipientAssets(projIndex int) error {
 	return nil
 }
 
-// UpdateProjectAfterAcceptance updates the project after acceptance of investment
+// updateProjectAfterAcceptance updates the project after acceptance of investment
 // by the recipient
-func (project *Project) UpdateProjectAfterAcceptance() error {
-
-	recipient, err := database.RetrieveRecipient(project.ProjectRecipient.U.Index)
-	if err != nil {
-		return err
-	}
+func (project *Project) updateProjectAfterAcceptance() error {
 
 	project.BalLeft = float64(project.TotalValue)
-	project.ProjectRecipient = recipient // need to udpate project.Params each time recipient is mutated
 	project.Stage = FundedProject        // set funded project stage
 
-	err = project.Save()
+	err := project.Save()
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 
-	go monitorPaybacks(recipient.U.Index, project.Index, project.DebtAssetCode)
+	go monitorPaybacks(project.RecipientIndex, project.Index)
 	return nil
 }
 
@@ -371,77 +383,19 @@ func (project *Project) UpdateProjectAfterAcceptance() error {
 // in the particular time frame
 // If we allow a user to hold balances in btc / xlm, we could direct them to exchange the coin for STABLEUSD
 // (or we could setup a payment provider which accepts fiat + crypto and do this ourselves)
-func Payback(recpIndex int, projIndex int, assetName string, amount string, recipientSeed string,
-	platformPubkey string) error {
-	issuerPubkey, _, err := wallet.RetrieveSeed(issuer.CreatePath(projIndex), consts.IssuerSeedPwd)
-	if err != nil {
-		return err
-	}
-
-	recipient, err := database.RetrieveRecipient(recpIndex)
-	if err != nil {
-		return err
-	}
+func Payback(recpIndex int, projIndex int, assetName string, amount string, recipientSeed string) error {
 
 	project, err := RetrieveProject(projIndex)
 	if err != nil {
 		return err
 	}
 
-	StableBalance, err := xlm.GetAssetBalance(recipient.U.PublicKey, "STABLEUSD")
-	if err != nil || (utils.StoF(StableBalance) < utils.StoF(amount)) {
-		log.Println("You do not have the required stablecoin balance, please refill")
-		return err
-	}
-	// pay stableUSD back to platform
-	_, stableUSDHash, err := assets.SendAsset(stablecoin.Code, consts.StableCoinAddress, platformPubkey, amount, recipientSeed, recipient.U.PublicKey, "Opensolar payback: "+utils.ItoS(projIndex))
-	if err != nil {
-		log.Println("SEND ASSET ERR:", err, platformPubkey, amount, recipientSeed, recipient.U.PublicKey)
-		return err
-	}
-	log.Println("Paid back platform in  stableUSD, txhash: ", stableUSDHash)
-
-	DEBAssetBalance, err := xlm.GetAssetBalance(recipient.U.PublicKey, assetName)
-	if err != nil {
-		fmt.Println("Don't have the debt asset in possession", err)
-		return err
-	}
-
-	monthlyBill := oracle.MonthlyBill()
-	if err != nil {
-		log.Println("Unable to fetch oracle price, exiting")
-		return err
-	}
-
-	log.Println("Retrieved average price from oracle: ", monthlyBill)
-	confHeight, debtPaybackHash, err := assets.SendAssetToIssuer(assetName, issuerPubkey, amount, recipientSeed, recipient.U.PublicKey)
-	if err != nil {
-		log.Println(err)
-		return err
-	}
-
-	log.Println("Paid debt amount: ", amount, " back to issuer, tx hash: ", debtPaybackHash, " ", confHeight)
-	newBalance, err := xlm.GetAssetBalance(recipient.U.PublicKey, assetName)
+	err = model.MunibondPayback(recpIndex, amount, recipientSeed, projIndex, assetName, project.InvestorIndices)
 	if err != nil {
 		return err
 	}
 
-	newBalanceFloat := utils.StoF(newBalance)
-	DEBAssetBalanceFloat := utils.StoF(DEBAssetBalance)
-	mBillFloat := utils.StoF(monthlyBill)
-
-	paidAmount := DEBAssetBalanceFloat - newBalanceFloat
-	log.Println("Old Balance: ", DEBAssetBalanceFloat, " New Balance: ", newBalanceFloat, " Paid: ", paidAmount, " Bill Amount: ", mBillFloat)
-
-	if paidAmount < mBillFloat {
-		log.Println("Amount paid is less than amount required, please make sure to cover this next time")
-	} else if paidAmount > mBillFloat {
-		log.Println("You've chosen to pay more than what is required for this month. Adjusting payback period accordingly")
-	} else {
-		log.Println("You've paid exactly what is required for this month. Payback period remains as usual")
-	}
-
-	project.BalLeft -= paidAmount
+	project.BalLeft -= utils.StoF(amount) // can directly change this since we've checked for it in the MunibondPayback call
 	project.DateLastPaid = utils.Unix()
 	if project.BalLeft == 0 {
 		log.Println("YOU HAVE PAID OFF THIS ASSET, TRANSFERRING OWNERSHIP OF ASSET TO YOU")
@@ -451,23 +405,11 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 		// invested because the trustline will not allow such an incident to happen
 	}
 
-	err = project.updateRecipient(recipient)
-	if err != nil {
-		return err
-	}
 	err = project.Save()
 	if err != nil {
 		return err
 	}
 
-	if recipient.U.Notification {
-		notif.SendPaybackNotifToRecipient(projIndex, recipient.U.Email, stableUSDHash, debtPaybackHash)
-	}
-	for _, elem := range project.ProjectInvestors {
-		if elem.U.Notification {
-			notif.SendPaybackNotifToInvestor(projIndex, elem.U.Email, stableUSDHash, debtPaybackHash)
-		}
-	}
 	return err
 }
 
@@ -482,7 +424,7 @@ func (project Project) CalculatePayback(amount string) string {
 
 // monitorPaybacks monitors whether the user is paying back regularly towards the given project
 // thread has to be isolated since if this fails, we stop tracking paybacks by the recipient.
-func monitorPaybacks(recpIndex int, projIndex int, debtAssetCode string) {
+func monitorPaybacks(recpIndex int, projIndex int) {
 	for {
 		project, err := RetrieveProject(projIndex)
 		if err != nil {
@@ -511,10 +453,17 @@ func monitorPaybacks(recpIndex int, projIndex int, debtAssetCode string) {
 		} else if factor >= SternAlertThreshold && factor < DisconnectionThreshold {
 			// person has not paid back for four consecutive cycles, send reminder
 			notif.SendSternPaybackAlertEmail(projIndex, recipient.U.Email)
-			for _, elem := range project.ProjectInvestors {
+			for _, i := range project.InvestorIndices {
 				// send an email to recipients to assure them that we're on the issue and will be acting
 				// soon if the recipient fails to pay again.
-				notif.SendSternPaybackAlertEmailI(projIndex, elem.U.Email)
+				investor, err := database.RetrieveInvestor(i)
+				if err != nil {
+					log.Println(err)
+					continue
+				}
+				if investor.U.Notification {
+					notif.SendSternPaybackAlertEmailI(projIndex, investor.U.Email)
+				}
 			}
 			notif.SendSternPaybackAlertEmailG(projIndex, project.Guarantor.U.Email)
 			// send an email out to the guarantor
@@ -523,10 +472,17 @@ func monitorPaybacks(recpIndex int, projIndex int, debtAssetCode string) {
 			// power towards the grid. Also maybe email ourselves in this case so that we can
 			// contact them personally to resolve the issue as soon as possible.
 			notif.SendDisconnectionEmail(projIndex, recipient.U.Email)
-			for _, elem := range project.ProjectInvestors {
-				// send an email out to each investor to let them know that the recipient
-				// has defaulted on payments and that we have acted on the issue.
-				notif.SendDisconnectionEmailI(projIndex, elem.U.Email)
+			for _, i := range project.InvestorIndices {
+				// send an email to recipients to assure them that we're on the issue and will be acting
+				// soon if the recipient fails to pay again.
+				investor, err := database.RetrieveInvestor(i)
+				if err != nil {
+					log.Println(err)
+					continue
+				}
+				if investor.U.Notification {
+					notif.SendDisconnectionEmailI(projIndex, investor.U.Email)
+				}
 			}
 			notif.SendDisconnectionEmailG(projIndex, project.Guarantor.U.Email)
 			// send an email out to the guarantor

@@ -27,8 +27,7 @@ func PrintProject(project solar.Project) {
 	fmt.Println("          PROJECT ORIGINATOR: ")
 	PrintEntity(project.Originator)
 	fmt.Println("          PROJECT STAGE: ", project.Stage)
-	fmt.Println("          RECIPIENT: ")
-	PrintRecipient(project.ProjectRecipient)
+	fmt.Println("          RECIPIENT: ", project.RecipientIndex)
 	if project.Stage >= 2 {
 		fmt.Println("          PROJECT CONTRACTOR: ")
 		PrintEntity(project.Contractor)
@@ -36,10 +35,7 @@ func PrintProject(project solar.Project) {
 	}
 	if project.Stage >= 3 {
 		fmt.Println("          Investor Asset Code: ", project.InvestorAssetCode)
-		fmt.Println("          INVESTORS: ")
-		for _, investor := range project.ProjectInvestors {
-			PrintInvestor(investor)
-		}
+		fmt.Println("          INVESTORS: ", project.InvestorIndices)
 	}
 	if project.Stage == 4 {
 		fmt.Println("          Debt Asset Code: ", project.DebtAssetCode)

@@ -86,10 +86,9 @@ func ProjectPayback(recpIndex string, assetName string,
 		return fmt.Errorf("Couldn't pay")
 	}
 	projIndex := utils.ItoS(projIndexI)
-	PlatformPublicKey := "GDULAIM6N6SIW7MWS3NDJPY3UIFOHSM4766WQ6O6EKFDBC7PF53VKYLY" // this will be public, so hardcode
 	data, err := rpc.GetRequest(ApiUrl + "/recipient/payback?" + "recpIndex=" + recpIndex +
 		"&projIndex=" + projIndex + "&assetName=" + assetName + "&recipientSeed=" +
-		recipientSeed + "&amount=" + amount + "&platformPublicKey=" + PlatformPublicKey)
+		recipientSeed + "&amount=" + amount)
 	if err != nil {
 		return err
 	}
@@ -298,8 +297,10 @@ func Payback(projIndex string, seedpwd string, username string, pwhash string, a
 
 func UnlockProject(username string, pwhash string, seedpwd string, projIndex string) (rpc.StatusResponse, error) {
 	var x rpc.StatusResponse
-	data, err := rpc.GetRequest(ApiUrl + "/recipient/unlock?" + "username=" + username + "&pwhash=" + pwhash +
-		"&projIndex=" + projIndex + "&seedpwd=" + seedpwd)
+	body := ApiUrl + "/recipient/unlock?" + "username=" + username + "&pwhash=" + pwhash +
+		"&projIndex=" + projIndex + "&seedpwd=" + seedpwd
+
+	data, err := rpc.GetRequest(body)
 	if err != nil {
 		return x, err
 	}

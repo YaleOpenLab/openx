@@ -122,7 +122,6 @@ func payback() {
 		assetName := r.URL.Query()["assetName"][0]
 		seedpwd := r.URL.Query()["seedpwd"][0]
 		amount := r.URL.Query()["amount"][0]
-		platformPublicKey := r.URL.Query()["platformPublicKey"][0]
 
 		recipientSeed, err := wallet.DecryptSeed(prepRecipient.U.EncryptedSeed, seedpwd)
 		if err != nil {
@@ -130,7 +129,7 @@ func payback() {
 			return
 		}
 
-		err = platform.Payback(recpIndex, projIndex, assetName, amount, recipientSeed, platformPublicKey)
+		err = platform.Payback(recpIndex, projIndex, assetName, amount, recipientSeed)
 		if err != nil {
 			responseHandler(w, r, StatusInternalServerError)
 			return

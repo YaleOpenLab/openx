@@ -129,7 +129,7 @@ func TestDb(t *testing.T) {
 	if VerifyBeforeAuthorizing(1) {
 		t.Fatalf("Can verify with invalid db, quitting!")
 	}
-	_, _, err = PreInvestmentCheck(1, 1, "")
+	_, _, err = preInvestmentCheck(1, 1, "")
 	if err == nil {
 		t.Fatalf("PreInvestmentCheck succeeds, quitting!")
 	}
@@ -204,7 +204,7 @@ func TestDb(t *testing.T) {
 	dummy.PaybackAssetCode = ""
 	dummy.DateInitiated = ""
 	dummy.Years = 3
-	dummy.ProjectRecipient = recp
+	dummy.RecipientIndex = recp.U.Index
 	dummy.Contractor = contractor
 	dummy.Originator = newCE2
 	dummy.Stage = 3
@@ -321,7 +321,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	rOx.ProjectRecipient = recp
+	rOx.RecipientIndex = recp.U.Index
 	err = rOx.Save()
 	if err != nil {
 		t.Fatal(err)
@@ -390,7 +390,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	testProject.ProjectRecipient = recp
+	testProject.RecipientIndex = recp.U.Index
 	err = testProject.Save()
 	if err != nil {
 		t.Fatal(err)
@@ -672,7 +672,7 @@ func TestDb(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Failed to catch stage 0 error")
 	}
-	testProject.ProjectRecipient = tmpRecp
+	testProject.RecipientIndex = tmpRecp.U.Index
 	err = RecipientAuthorize(testProject.Index, recp.U.Index)
 	if err == nil {
 		t.Fatalf("Failed to catch stage recp index error")
@@ -685,7 +685,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	testProject.ProjectInvestors = append(testProject.ProjectInvestors, inv3)
+	testProject.InvestorIndices = append(testProject.InvestorIndices, inv3.U.Index)
 	err = testProject.Save()
 	if err != nil {
 		t.Fatal(err)
@@ -714,7 +714,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = Payback(1, 1, "", "", "", "")
+	err = Payback(1, 1, "", "", "")
 	if err == nil {
 		t.Fatal("Invalid params not caught, exiting!")
 	}
@@ -724,13 +724,5 @@ func TestDb(t *testing.T) {
 	}
 	var recpx database.Recipient
 	recpx.ReceivedSolarProjects = append(recpx.ReceivedSolarProjects, dummy.DebtAssetCode)
-	err = dummy.updateRecipient(recpx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = dummy.updateRecipient(tmpRecp)
-	if err != nil {
-		t.Fatal(err)
-	}
 	os.Remove(os.Getenv("HOME") + "/.openx/database/" + "/yol.db")
 }

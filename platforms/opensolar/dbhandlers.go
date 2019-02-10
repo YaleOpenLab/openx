@@ -180,7 +180,7 @@ func RetrieveRecipientProjects(stage float64, index int) ([]Project, error) {
 			if err != nil {
 				return nil
 			}
-			if rProject.Stage == stage && rProject.ProjectRecipient.U.Index == index {
+			if rProject.Stage == stage && rProject.RecipientIndex == index {
 				arr = append(arr, rProject)
 			}
 		}

@@ -14,6 +14,8 @@ import (
 	stablecoin "github.com/YaleOpenLab/openx/stablecoin"
 	utils "github.com/YaleOpenLab/openx/utils"
 	wallet "github.com/YaleOpenLab/openx/wallet"
+	xlm "github.com/YaleOpenLab/openx/xlm"
+	oracle "github.com/YaleOpenLab/openx/oracle"
 )
 
 func MunibondInvest(investor database.Investor, invSeed string, invAmount string,
@@ -26,7 +28,6 @@ func MunibondInvest(investor database.Investor, invSeed string, invAmount string
 		log.Println(err)
 		return err
 	}
-
 	stableTxHash, err := SendUSDToPlatform(invSeed, invAmount, "Opensolar investment: "+utils.ItoS(projIndex))
 	if err != nil {
 		log.Println(err)
@@ -68,8 +69,15 @@ func MunibondInvest(investor database.Investor, invSeed string, invAmount string
 	return nil
 }
 
-func MunibondReceive(recipient database.Recipient, projIndex int, detbAssetId string,
+func MunibondReceive(recpIndex int, projIndex int, detbAssetId string,
 	paybackAssetId string, years int, recpSeed string, totalValue float64, paybackPeriod int) error {
+
+	recipient, err := database.RetrieveRecipient(recpIndex)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
 	issuerPubkey, issuerSeed, err := wallet.RetrieveSeed(issuer.CreatePath(projIndex), consts.IssuerSeedPwd)
 	if err != nil {
 		log.Println(err)
@@ -162,6 +170,90 @@ func sendPaymentNotif(recpIndex int, projIndex int, paybackPeriod int, email str
 		log.Println("Sent: ", email, "a notification on payments for payment cycle: ", paybackTimes)
 		time.Sleep(time.Duration(paybackPeriod * consts.OneWeekInSecond))
 	}
+}
+
+func MunibondPayback(recpIndex int, amount string, recipientSeed string, projIndex int,
+		assetName string, projectInvestors []int) error {
+
+	recipient, err := database.RetrieveRecipient(recpIndex)
+	if err != nil {
+		return err
+	}
+
+	issuerPubkey, _, err := wallet.RetrieveSeed(issuer.CreatePath(projIndex), consts.IssuerSeedPwd)
+	if err != nil {
+		return err
+	}
+
+	StableBalance, err := xlm.GetAssetBalance(recipient.U.PublicKey, "STABLEUSD")
+	if err != nil || (utils.StoF(StableBalance) < utils.StoF(amount)) {
+		log.Println("You do not have the required stablecoin balance, please refill")
+		return err
+	}
+	// pay stableUSD back to platform
+	_, stableUSDHash, err := assets.SendAsset(stablecoin.Code, consts.StableCoinAddress, consts.PlatformPublicKey, amount, recipientSeed, recipient.U.PublicKey, "Opensolar payback: "+utils.ItoS(projIndex))
+	if err != nil {
+		log.Println("SEND ASSET ERR:", err, consts.PlatformPublicKey, amount, recipientSeed, recipient.U.PublicKey)
+		return err
+	}
+	log.Println("Paid back platform in  stableUSD, txhash: ", stableUSDHash)
+
+	DEBAssetBalance, err := xlm.GetAssetBalance(recipient.U.PublicKey, assetName)
+	if err != nil {
+		fmt.Println("Don't have the debt asset in possession", err)
+		return err
+	}
+
+	monthlyBill := oracle.MonthlyBill()
+	if err != nil {
+		log.Println("Unable to fetch oracle price, exiting")
+		return err
+	}
+
+	log.Println("Retrieved average price from oracle: ", monthlyBill)
+	confHeight, debtPaybackHash, err := assets.SendAssetToIssuer(assetName, issuerPubkey, amount, recipientSeed, recipient.U.PublicKey)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	log.Println("Paid debt amount: ", amount, " back to issuer, tx hash: ", debtPaybackHash, " ", confHeight)
+	newBalance, err := xlm.GetAssetBalance(recipient.U.PublicKey, assetName)
+	if err != nil {
+		return err
+	}
+
+	newBalanceFloat := utils.StoF(newBalance)
+	DEBAssetBalanceFloat := utils.StoF(DEBAssetBalance)
+	mBillFloat := utils.StoF(monthlyBill)
+
+	paidAmount := DEBAssetBalanceFloat - newBalanceFloat
+	log.Println("Old Balance: ", DEBAssetBalanceFloat, " New Balance: ", newBalanceFloat, " Paid: ", paidAmount, " Bill Amount: ", mBillFloat)
+
+	if paidAmount < mBillFloat {
+		log.Println("Amount paid is less than amount required, please make sure to cover this next time")
+	} else if paidAmount > mBillFloat {
+		log.Println("You've chosen to pay more than what is required for this month. Adjusting payback period accordingly")
+	} else {
+		log.Println("You've paid exactly what is required for this month. Payback period remains as usual")
+	}
+
+	if recipient.U.Notification {
+		notif.SendPaybackNotifToRecipient(projIndex, recipient.U.Email, stableUSDHash, debtPaybackHash)
+	}
+
+	for _, i := range projectInvestors {
+		investor, err := database.RetrieveInvestor(i)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		if investor.U.Notification {
+			notif.SendPaybackNotifToInvestor(projIndex, investor.U.Email, stableUSDHash, debtPaybackHash)
+		}
+	}
+
+	return nil
 }
 
 func SendUSDToPlatform(invSeed string, invAmount string, memo string) (string, error) {

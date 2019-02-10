@@ -44,7 +44,7 @@ func (contractor *Entity) Originate(panelSize string, totalValue float64, locati
 	if err != nil { // recipient does not exist
 		return pc, err
 	}
-	pc.ProjectRecipient = iRecipient
+	pc.RecipientIndex = iRecipient.U.Index
 	pc.Stage = 0 // 0 since we need to filter this out while retrieving the propsoed contracts
 	pc.AuctionType = auctionType
 	pc.Originator = *contractor

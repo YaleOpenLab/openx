@@ -29,9 +29,11 @@ func SendUSDToPlatform(invSeed string, invAmount string, memo string) (string, e
 		return "", err
 	}
 
-	oldPlatformBalance, err := xlm.GetAssetBalance(platformPubkey, stablecoin.Code)
+	var oldPlatformBalance string
+	oldPlatformBalance, err = xlm.GetAssetBalance(platformPubkey, stablecoin.Code)
 	if err != nil {
-		return "", err
+		// platform does not have stablecoin
+		oldPlatformBalance = "0"
 	}
 
 	_, txhash, err := assets.SendAsset(stablecoin.Code, stablecoin.PublicKey, platformPubkey, invAmount, invSeed, invPubkey, memo)

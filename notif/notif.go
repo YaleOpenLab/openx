@@ -175,7 +175,7 @@ func SendSternPaybackAlertEmail(projIndex int, to string) error {
 func SendDisconnectionEmail(projIndex int, to string) error {
 	startString := "Greetings from the opensolar platform! \n\n" +
 		"We're writing to let you know that electricity produced from your project numbered: " + utils.ItoS(projIndex) +
-		"\n\n Had been redirected towards the main power grid. Please contact your guarantor to resume services"
+		"\n\nHas been redirected towards the main power grid. Please contact your guarantor to resume services"
 	body := startString + "\n\n\n" + footerString
 	return sendMail(body, to)
 }
@@ -183,7 +183,7 @@ func SendDisconnectionEmail(projIndex int, to string) error {
 func SendDisconnectionEmailI(projIndex int, to string) error {
 	startString := "Greetings from the opensolar platform! \n\n" +
 		"We're writing to let you know that electricity produced from your project numbered: " + utils.ItoS(projIndex) +
-		"\n\n Had been redirected towards the main power grid due to irregualr payments by the recipient involved.\n\n" +
+		"\n\nHas been redirected towards the main power grid due to irregular payments by the recipient involved.\n\n" +
 		"We are constantly monitoring this situation and will be continuing to send you emails on the same.\n\n" +
 		"Please feel free to write to support with your queries in the meantime."
 	body := startString + "\n\n\n" + footerString
@@ -217,7 +217,7 @@ func SendSternPaybackAlertEmailG(projIndex int, to string) error {
 func SendDisconnectionEmailG(projIndex int, to string) error {
 	startString := "Greetings from the opensolar platform! \n\n" +
 		"We're writing to let you know that electricity produced from your project numbered: " + utils.ItoS(projIndex) +
-		"\n\n Had been redirected towards the main power grid due to irregular payments by the recipient involved.\n\n" +
+		"\n\nHas been redirected towards the main power grid due to irregular payments by the recipient involved.\n\n" +
 		"We will be reaching out to you in the coming days on how to proceed with realizing the guarantee towards this " +
 		"project in order to safeguard investors. We will also be contacting the recipient involved to update them on the" +
 		"situation and will make efforts to alleviate this problem as soon as possible." +
