@@ -137,7 +137,7 @@ func InsertDummyData() error {
 	project1.PaybackAssetCode = ""
 	project1.DateInitiated = utils.Timestamp()
 	project1.Years = 3
-	project1.ProjectRecipient = rec
+	project1.RecipientIndex = rec.U.Index
 	project1.Contractor = c1
 	project1.Originator = newOriginator
 	project1.Stage = 3
@@ -158,7 +158,7 @@ func InsertDummyData() error {
 	project2.PaybackAssetCode = ""
 	project2.DateInitiated = utils.Timestamp()
 	project2.Years = 5
-	project2.ProjectRecipient = rec
+	project2.RecipientIndex = rec.U.Index
 	project2.Contractor = c1
 	project2.Originator = newOriginator
 	project2.Stage = 3
@@ -179,7 +179,7 @@ func InsertDummyData() error {
 	project3.PaybackAssetCode = ""
 	project3.DateInitiated = utils.Timestamp()
 	project3.Years = 7
-	project3.ProjectRecipient = rec
+	project3.RecipientIndex = rec.U.Index
 	project3.Contractor = c1
 	project3.Originator = newOriginator
 	project3.Stage = 3
@@ -287,12 +287,12 @@ func InsertDummyData() error {
 	demoProject.Guarantor = demoGuar
 	demoProject.ContractorFee = 2000
 	demoProject.DeveloperFee = 6000
-	demoProject.ProjectRecipient = demoRec
+	demoProject.RecipientIndex = demoRec.U.Index
 	demoProject.Stage = 6
 	demoProject.AuctionType = "private"
 	demoProject.SpecSheetHash = "ipfshash" // TODO: replace this with the real ipfs hash for the demo
 	demoProject.Reputation = 10000         // fix this equal to total value
-	demoProject.ProjectInvestors = append(demoProject.ProjectInvestors, demoInv)
+	demoProject.InvestorIndices = append(demoProject.InvestorIndices, demoInv.U.Index)
 	demoProject.InvestmentType = "Municipal Bond"
 
 	err = demoProject.Save()

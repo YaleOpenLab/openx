@@ -20,10 +20,11 @@ func Exchange(recipientPK string, recipientSeed string, convAmount string) error
 	// check whether user has enough xlm to pay. If not, quit
 	balance, err := xlm.GetNativeBalance(recipientPK)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 
-	if utils.StoF(balance) != utils.StoF(convAmount) {
+	if utils.StoF(balance) <= utils.StoF(convAmount) {
 		return fmt.Errorf("insufficient balance")
 	}
 

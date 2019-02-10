@@ -42,7 +42,7 @@ func (contractor *Entity) Propose(panelSize string, totalValue float64, location
 	if err != nil {
 		return pc, err
 	}
-	pc.ProjectRecipient = iRecipient
+	pc.RecipientIndex = iRecipient.U.Index
 	pc.Stage = 2 // 2 since we need to filter this out while retrieving the propsoed contracts
 	pc.AuctionType = auctionType
 	pc.Contractor = *contractor

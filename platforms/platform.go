@@ -67,6 +67,16 @@ func InitializePlatform() (string, string, error) {
 			return publicKey, seed, err
 		}
 		err = xlm.GetXLM(publicKey)
+		if err != nil {
+			log.Println(err)
+			return publicKey, seed, err
+		}
+		err = stablecoin.InitStableCoin()
+		if err != nil {
+			log.Println(err)
+			return publicKey, seed, err
+		}
+
 	} else {
 		// no file, retrieve pukbey
 		// user has given us a seed, validate
@@ -93,6 +103,13 @@ func InitializePlatform() (string, string, error) {
 	if err != nil {
 		return publicKey, seed, err
 	}
+
+	_, _, err = assets.SendAssetFromIssuer(stablecoin.Code, publicKey, "10", stablecoin.Seed, stablecoin.PublicKey)
+	if err != nil {
+		log.Println("SEED: ", stablecoin.Seed)
+		return publicKey, seed, err
+	}
+
 	log.Println("Platform trusts stablecoin: ", txhash)
 	return publicKey, seed, err
 }

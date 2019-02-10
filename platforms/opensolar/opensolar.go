@@ -1,7 +1,6 @@
 package opensolar
 
 import (
-	database "github.com/YaleOpenLab/openx/database"
 	platform "github.com/YaleOpenLab/openx/platforms"
 )
 
@@ -58,9 +57,9 @@ type Project struct {
 	TertiaryContractorFee  float64 // the fee to be paid towards the tertiary contractor
 	DeveloperFee           float64 // the fee charged by the developer
 
-	ProjectRecipient database.Recipient  // The recipient of the project in question
-	ProjectInvestors []database.Investor // The various investors who have invested in the project
-	SeedInvestors    []database.Investor // Investors who took part before the contract was at stage 3
+	RecipientIndex      int   // The index of the project's recipient
+	InvestorIndices     []int // The various investors who have invested in the project
+	SeedInvestorIndices []int // Investors who took part before the contract was at stage 3
 
 	Stage       float64 // the stage at which the contract is at, float due to potential support of 0.5 state changes in the future
 	AuctionType string  // the type of the auction in question. Default is blind auction unless explicitly mentioned

@@ -1,6 +1,7 @@
 package opensolar
 
 import (
+	"log"
 	database "github.com/YaleOpenLab/openx/database"
 )
 
@@ -72,8 +73,13 @@ func (a *Project) SetInstalledProjectStage() error {
 		return err
 	}
 
-	for _, elem := range a.ProjectInvestors {
-		err := database.ChangeInvReputation(elem.U.Index, a.TotalValue*InvestorWeight)
+	for _, i := range a.InvestorIndices {
+		elem, err := database.RetrieveInvestor(i)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		err = database.ChangeInvReputation(elem.U.Index, a.TotalValue*InvestorWeight)
 		if err != nil {
 			return err
 		}
@@ -89,5 +95,5 @@ func (a *Project) SetPowerGenerationStage() error {
 		return err
 	}
 
-	return database.ChangeRecpReputation(a.ProjectRecipient.U.Index, a.TotalValue*RecipientWeight) // modify recipient reputation now that the system had begun power generation
+	return database.ChangeRecpReputation(a.RecipientIndex, a.TotalValue*RecipientWeight) // modify recipient reputation now that the system had begun power generation
 }

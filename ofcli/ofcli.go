@@ -216,7 +216,7 @@ func main() {
 				}
 				fmt.Printf("PAYING BACK %s TOWARDS PROJECT NUMBER: %d\n", paybackAmount, rtContract.Index) // use the rtContract.Params here instead of using projectNumber from long ago
 
-				err = solar.Payback(recipient.U.Index, rtContract.Index, rtContract.DebtAssetCode, paybackAmount, recipientSeed, consts.PlatformPublicKey)
+				err = solar.Payback(recipient.U.Index, rtContract.Index, rtContract.DebtAssetCode, paybackAmount, recipientSeed)
 				if err != nil {
 					log.Println("PAYBACK TX FAILED, PLEASE TRY AGAIN!", err)
 					break
