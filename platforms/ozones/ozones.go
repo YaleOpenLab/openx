@@ -1,171 +1,28 @@
 package ozones
 
 import (
-	"encoding/json"
-	"fmt"
-	"log"
-
-	assets "github.com/YaleOpenLab/openx/assets"
-	consts "github.com/YaleOpenLab/openx/consts"
+	platform "github.com/YaleOpenLab/openx/platforms"
 	database "github.com/YaleOpenLab/openx/database"
-	utils "github.com/YaleOpenLab/openx/utils"
-	"github.com/boltdb/bolt"
 )
 
-// the coop struct uses the same base params as the bond model
-type Coop struct {
-	Params         BondCoopParams
-	UnitsSold      int
-	TotalAmount    float64
-	TypeOfUnit     string
-	MonthlyPayment float64
-	Residents      []database.Investor
-}
-
-// NewCoop returns a new living coop and automatically saves it
-func NewCoop(mdate string, mrights string, stype string, intrate float64, rating string,
-	bIssuer string, uWriter string, totalAmount float64, typeOfUnit string, monthlyPayment float64,
-	title string, location string, description string) (Coop, error) {
-	var cCoop Coop
-	cCoop.Params = newParams(mdate, mrights, stype, intrate, rating, bIssuer, uWriter, title, location, description)
-	x, err := RetrieveAllCoops()
-	if err != nil {
-		return cCoop, err
-	}
-
-	cCoop.Params.Index = len(x) + 1
-	cCoop.UnitsSold = 0
-	cCoop.TotalAmount = totalAmount
-	cCoop.TypeOfUnit = typeOfUnit
-	cCoop.MonthlyPayment = monthlyPayment
-	err = cCoop.Save()
-	return cCoop, err
-}
-
-func (a *Coop) Save() error {
-	db, err := database.OpenDB()
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-	err = db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(database.CoopBucket)
-		encoded, err := json.Marshal(a)
-		if err != nil {
-			log.Println("Failed to encode this data into json")
-			return err
-		}
-		return b.Put([]byte(utils.ItoB(a.Params.Index)), encoded)
-	})
-	return err
-}
-
-// RetrieveAllCoops gets a list of all User in the database
-func RetrieveAllCoops() ([]Coop, error) {
-	var arr []Coop
-	db, err := database.OpenDB()
-	if err != nil {
-		return arr, err
-	}
-	defer db.Close()
-
-	err = db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket(database.CoopBucket)
-		for i := 1; ; i++ {
-			var rCoop Coop
-			x := b.Get(utils.ItoB(i))
-			if x == nil {
-				return nil
-			}
-			err := json.Unmarshal(x, &rCoop)
-			if err != nil {
-				return err
-			}
-			arr = append(arr, rCoop)
-		}
-		return nil
-	})
-	return arr, err
-}
-
-// RetrieveCoop retrieves a specifi coop from the database
-func RetrieveCoop(key int) (Coop, error) {
-	var bond Coop
-	db, err := database.OpenDB()
-	if err != nil {
-		return bond, err
-	}
-	defer db.Close()
-
-	err = db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(database.CoopBucket)
-		x := b.Get(utils.ItoB(key))
-		if x == nil {
-			return fmt.Errorf("Retrieved Coop nil")
-		}
-		return json.Unmarshal(x, &bond)
-	})
-	return bond, err
-}
-
-// for the demo, the publickey and seed must be hardcoded and  given as a binary I guess
-// or worse, hardcode the seed and pubkey in the functions themselves
-// TODO: add the recipient's role here, whether to give him an asset or do nothing
-func (a *Coop) Invest(issuerPublicKey string, issuerSeed string, investor *database.Investor,
-	investmentAmountS string, investorSeed string) error {
-	// we want to invest in this specific bond
-	var err error
-	investmentAmount := utils.StoI(investmentAmountS)
-	// check if investment amount is greater than the cost of a unit
-	if float64(investmentAmount) > a.MonthlyPayment || float64(investmentAmount) < a.MonthlyPayment {
-		fmt.Println("You are trying to invest more or less than a month's payment")
-		return fmt.Errorf("You are trying to invest more or less than a month's payment")
-	}
-	assetName := assets.AssetID(a.Params.MaturationDate + a.Params.SecurityType + a.Params.Rating + a.Params.BondIssuer) // get a unique assetID
-
-	if a.Params.InvestorAssetCode == "" {
-		// this person is the first investor, set the investor token name
-		InvestorAssetCode := assets.AssetID(consts.CoopAssetPrefix + assetName)
-		a.Params.InvestorAssetCode = InvestorAssetCode             // set the investeor code
-		_ = assets.CreateAsset(InvestorAssetCode, issuerPublicKey) // create the asset itself, since it would not have bene created earlier
-	}
-	/*
-		dont check stableUSD balance for now
-		if !investor.CanInvest(investor.U.PublicKey, investmentAmountS) {
-			log.Println("Investor has less balance than what is required to ivnest in this asset")
-			return a, err
-		}
-	*/
-	// make investor trust the asset that we provide
-	txHash, err := assets.TrustAsset(a.Params.InvestorAssetCode, issuerPublicKey, utils.FtoS(a.TotalAmount), investor.U.PublicKey, investorSeed)
-	// trust upto the total value of the asset
-	if err != nil {
-		return err
-	}
-	log.Println("Investor trusted asset: ", a.Params.InvestorAssetCode, " tx hash: ", txHash)
-	log.Println("Sending INVAsset: ", a.Params.InvestorAssetCode, "for: ", investmentAmount)
-	_, txHash, err = assets.SendAssetFromIssuer(a.Params.InvestorAssetCode, investor.U.PublicKey, investmentAmountS, issuerSeed, issuerPublicKey)
-	if err != nil {
-		return err
-	}
-	log.Printf("Sent INVAsset %s to investor %s with txhash %s", a.Params.InvestorAssetCode, investor.U.PublicKey, txHash)
-	// investor asset sent, update a.Params's BalLeft
-	a.UnitsSold += 1
-	investor.AmountInvested += float64(investmentAmount)
-	investor.InvestedCoops = append(investor.InvestedCoops, a.Params.InvestorAssetCode)
-	err = investor.Save() // save investor creds now that we're done
-	if err != nil {
-		return err
-	}
-	a.Residents = append(a.Residents, *investor)
-	err = a.Save()
-	return err
+type BondCoopParams struct {
+	Index             int
+	MaturationDate    string
+	MemberRights      string
+	SecurityType      string
+	InterestRate      float64
+	Rating            string
+	BondIssuer        string
+	Underwriter       string
+	DateInitiated     string // date the project was created
+	InvestorAssetCode string
+	Title             string
+	Description       string
+	Location          string
 }
 
 // TODO: change name of bonds to something better. Add description of the bond platform below
-// TODO: also consider an architecture design which has various models as the
-// base layer and imports them into specific platforms.
-// ConstructionBond contains the paramters for the COnstruciton Bond model of the housing platform
+// ConstructionBond contains the paramters for the Construction Bond model of the housing platform
 // paramters defined here are not exhaustive and more can be added if desired
 type ConstructionBond struct {
 	Params BondCoopParams
@@ -179,159 +36,22 @@ type ConstructionBond struct {
 	RecipientIndex int
 }
 
-// newParams defiens a common function for all the sub parts of the open housing platform. Can be thoguht
-// of more like a common subset on which paramters for different models are defined on
-func newParams(mdate string, mrights string, stype string, intrate float64, rating string,
-	bIssuer string, uWriter string, title string, location string, description string) BondCoopParams {
-	var rParams BondCoopParams
-	rParams.MaturationDate = mdate
-	rParams.MemberRights = mrights
-	rParams.SecurityType = stype
-	rParams.InterestRate = intrate
-	rParams.Rating = rating
-	rParams.BondIssuer = bIssuer
-	rParams.Underwriter = uWriter
-	rParams.Title = title
-	rParams.Location = location
-	rParams.Description = description
-	rParams.DateInitiated = utils.Timestamp()
-	return rParams
+// the coop struct uses the same base params as the bond model
+type Coop struct {
+	Params         BondCoopParams
+	UnitsSold      int
+	TotalAmount    float64
+	TypeOfUnit     string
+	MonthlyPayment float64
+	Residents      []database.Investor
 }
 
-// NewBond returns a New Construction Bond and automatically stores it in the db
-func NewBond(mdate string, mrights string, stype string, intrate float64, rating string,
-	bIssuer string, uWriter string, unitCost float64, itype string, nUnits int, tax string, recIndex int,
-	title string, location string, description string) (ConstructionBond, error) {
-	var cBond ConstructionBond
-	cBond.Params = newParams(mdate, mrights, stype, intrate, rating, bIssuer, uWriter, title, location, description)
-	x, err := RetrieveAllBonds()
-	if err != nil {
-		return cBond, err
-	}
-
-	cBond.Params.Index = len(x) + 1
-	cBond.CostOfUnit = unitCost
-	cBond.InstrumentType = itype
-	cBond.NoOfUnits = nUnits
-	cBond.Tax = tax
-	cBond.RecipientIndex = recIndex
-	err = cBond.Save()
-	return cBond, err
+func InitializePlatform() (string, string, error) {
+	return platform.InitializePlatform()
 }
 
-func (a *ConstructionBond) Save() error {
-	db, err := database.OpenDB()
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-	err = db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(database.BondBucket)
-		encoded, err := json.Marshal(a)
-		if err != nil {
-			log.Println("Failed to encode this data into json")
-			return err
-		}
-		return b.Put([]byte(utils.ItoB(a.Params.Index)), encoded)
-	})
-	return err
-}
-
-// RetrieveAllBonds gets a list of all User in the database
-func RetrieveAllBonds() ([]ConstructionBond, error) {
-	var arr []ConstructionBond
-	db, err := database.OpenDB()
-	if err != nil {
-		return arr, err
-	}
-	defer db.Close()
-
-	err = db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket(database.BondBucket)
-		for i := 1; ; i++ {
-			var rBond ConstructionBond
-			x := b.Get(utils.ItoB(i))
-			if x == nil {
-				return nil
-			}
-			err := json.Unmarshal(x, &rBond)
-			if err != nil {
-				return err
-			}
-			arr = append(arr, rBond)
-		}
-		return nil
-	})
-	return arr, err
-}
-
-func RetrieveBond(key int) (ConstructionBond, error) {
-	var bond ConstructionBond
-	db, err := database.OpenDB()
-	if err != nil {
-		return bond, err
-	}
-	defer db.Close()
-
-	err = db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket(database.BondBucket)
-		x := b.Get(utils.ItoB(key))
-		if x == nil {
-			return fmt.Errorf("Retreived Bond returns nil")
-		}
-		return json.Unmarshal(x, &bond)
-	})
-	return bond, err
-}
-
-// DEMOSPECIFIC: for the demo, the publickey and seed must be hardcoded and given as a binary I guess
-// or worse, hardcode the seed and pubkey in the functions themselves.
-func (a *ConstructionBond) Invest(issuerPublicKey string, issuerSeed string, investor *database.Investor,
-	recipient *database.Recipient, investmentAmountS string, investorSeed string, recipientSeed string) error {
-	// we want to invest in this specific bond
-	var err error
-	investmentAmount := utils.StoI(investmentAmountS)
-	// check if investment amount is greater than the cost of a unit
-	if float64(investmentAmount) > a.CostOfUnit {
-		return fmt.Errorf("You are trying to invest more than a unit's cost, do you want to invest in two units?")
-	}
-	assetName := assets.AssetID(a.Params.MaturationDate + a.Params.SecurityType + a.Params.Rating + a.Params.BondIssuer) // get a unique assetID
-
-	if a.Params.InvestorAssetCode == "" {
-		// this person is the first investor, set the investor token name
-		InvestorAssetCode := assets.AssetID(consts.BondAssetPrefix + assetName)
-		a.Params.InvestorAssetCode = InvestorAssetCode             // set the investeor code
-		_ = assets.CreateAsset(InvestorAssetCode, issuerPublicKey) // create the asset itself, since it would not have bene created earlier
-	}
-	/*
-		dont check stableUSD balance for now
-		if !investor.CanInvest(investor.U.PublicKey, investmentAmountS) {
-			log.Println("Investor has less balance than what is required to ivnest in this asset")
-			return a, err
-		}
-	*/
-	// make in v estor trust the asset that we provide
-	txHash, err := assets.TrustAsset(a.Params.InvestorAssetCode, issuerPublicKey, utils.FtoS(a.CostOfUnit*float64(a.NoOfUnits)), investor.U.PublicKey, investorSeed)
-	// trust upto the total value of the asset
-	if err != nil {
-		return err
-	}
-	log.Println("Investor trusted asset: ", a.Params.InvestorAssetCode, " tx hash: ", txHash)
-	log.Println("Sending INVAsset: ", a.Params.InvestorAssetCode, "for: ", investmentAmount)
-	_, txHash, err = assets.SendAssetFromIssuer(a.Params.InvestorAssetCode, investor.U.PublicKey, investmentAmountS, issuerSeed, issuerPublicKey)
-	if err != nil {
-		return err
-	}
-	log.Printf("Sent INVAsset %s to investor %s with txhash %s", a.Params.InvestorAssetCode, investor.U.PublicKey, txHash)
-	// investor asset sent, update a.Params's BalLeft
-	a.AmountRaised += float64(investmentAmount)
-	investor.AmountInvested += float64(investmentAmount)
-	investor.InvestedBonds = append(investor.InvestedBonds, a.Params.InvestorAssetCode)
-	err = investor.Save() // save investor creds now that we're done
-	if err != nil {
-		return err
-	}
-	a.Investors = append(a.Investors, *investor)
-	err = a.Save()
-	return err
+// RefillPlatform checks whether the publicKey passed has any xlm and if its balance
+// is less than 21 XLM, it proceeds to ask the friendbot for more test xlm
+func RefillPlatform(publicKey string) error {
+	return platform.RefillPlatform(publicKey)
 }

@@ -88,10 +88,10 @@ func RecipientAuthorize(projIndex int, recpIndex int) error {
 	}
 
 	/* set the open for money stage if we choose to have it in the end
-		err = project.SetOpenForMoneyStage()
-		if err != nil {
-			return err
-		}
+	err = project.SetOpenForMoneyStage()
+	if err != nil {
+		return err
+	}
 	*/
 	return nil
 }

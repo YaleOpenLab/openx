@@ -13,9 +13,8 @@ import (
 // super struct because combining them results in less duplication of code
 
 type Entity struct {
-
 	U database.User
-	 // inherit the base user class
+	// inherit the base user class
 	Contractor bool
 	// the name of the contractor / company that is contracting
 	// A contractor is party who proposes a specific some of money towards a
