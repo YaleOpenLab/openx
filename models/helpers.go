@@ -7,7 +7,6 @@ import (
 
 	assets "github.com/YaleOpenLab/openx/assets"
 	consts "github.com/YaleOpenLab/openx/consts"
-	stablecoin "github.com/YaleOpenLab/openx/stablecoin"
 	utils "github.com/YaleOpenLab/openx/utils"
 	wallet "github.com/YaleOpenLab/openx/wallet"
 	xlm "github.com/YaleOpenLab/openx/xlm"
@@ -19,10 +18,6 @@ func SendUSDToPlatform(invSeed string, invAmount string, memo string) (string, e
 	// send stableusd to the platform (not the issuer) since the issuer will be locked
 	// and we can't use the funds. We also need ot be able to redeem the stablecoin for fiat
 	// so we can't burn them
-	platformPubkey, err := wallet.ReturnPubkey(consts.PlatformSeed)
-	if err != nil {
-		return "", err
-	}
 
 	invPubkey, err := wallet.ReturnPubkey(invSeed)
 	if err != nil {
@@ -30,22 +25,22 @@ func SendUSDToPlatform(invSeed string, invAmount string, memo string) (string, e
 	}
 
 	var oldPlatformBalance string
-	oldPlatformBalance, err = xlm.GetAssetBalance(platformPubkey, stablecoin.Code)
+	oldPlatformBalance, err = xlm.GetAssetBalance(consts.PlatformPublicKey, consts.Code)
 	if err != nil {
-		// platform does not have stablecoin
+		// platform does not have stablecoin, shouldn't arrive here ideally
 		oldPlatformBalance = "0"
 	}
 
-	_, txhash, err := assets.SendAsset(stablecoin.Code, stablecoin.PublicKey, platformPubkey, invAmount, invSeed, invPubkey, memo)
+	_, txhash, err := assets.SendAsset(consts.Code, consts.StablecoinPublicKey, consts.PlatformPublicKey, invAmount, invSeed, invPubkey, memo)
 	if err != nil {
-		log.Println("Sending stableusd to platform failed", platformPubkey, invAmount, invSeed, invPubkey)
+		log.Println("Sending stableusd to platform failed", consts.PlatformPublicKey, invAmount, invSeed, invPubkey)
 		return txhash, err
 	}
 
 	log.Println("Sent STABLEUSD to platform, confirmation: ", txhash)
 	time.Sleep(5 * time.Second) // wait for a block
 
-	newPlatformBalance, err := xlm.GetAssetBalance(platformPubkey, stablecoin.Code)
+	newPlatformBalance, err := xlm.GetAssetBalance(consts.PlatformPublicKey, consts.Code)
 	if err != nil {
 		return txhash, err
 	}

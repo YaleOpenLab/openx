@@ -28,13 +28,13 @@ func Exchange(recipientPK string, recipientSeed string, convAmount string) error
 		return fmt.Errorf("insufficient balance")
 	}
 
-	hash, err := assets.TrustAsset(Code, consts.StableCoinAddress, consts.StablecoinTrustLimit, recipientPK, recipientSeed)
+	hash, err := assets.TrustAsset(consts.Code, consts.StableCoinAddress, consts.StablecoinTrustLimit, recipientPK, recipientSeed)
 	if err != nil {
 		return err
 	}
 	log.Println("tx hash for trusting stableUSD: ", hash)
 	// now send coins across and see if our tracker detects it
-	_, hash, err = xlm.SendXLM(PublicKey, convAmount, recipientSeed, "Sending XLM to bootstrap")
+	_, hash, err = xlm.SendXLM(consts.StablecoinPublicKey, convAmount, recipientSeed, "Exchange XLM for stablecoin")
 	if err != nil {
 		return err
 	}
@@ -46,7 +46,7 @@ func Exchange(recipientPK string, recipientSeed string, convAmount string) error
 // stableUSD to compelte the payment
 func OfferExchange(publicKey string, seed string, invAmount string) error {
 
-	balance, err := xlm.GetAssetBalance(publicKey, Code)
+	balance, err := xlm.GetAssetBalance(publicKey, consts.Code)
 	if err != nil {
 		return err
 	}

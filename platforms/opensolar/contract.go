@@ -128,29 +128,29 @@ func VoteTowardsProposedProject(invIndex int, votes int, projectIndex int) error
 }
 
 // the preInvestmentChecks associated with the opensolar platform
-func preInvestmentCheck(projIndex int, invIndex int, invAmount string) (Project, database.Investor, error) {
+func preInvestmentCheck(projIndex int, invIndex int, invAmount string) (Project, error) {
 	var project Project
 	var investor database.Investor
 	var err error
 
 	project, err = RetrieveProject(projIndex)
 	if err != nil {
-		return project, investor, err
+		return project, err
 	}
 
 	investor, err = database.RetrieveInvestor(invIndex)
 	if err != nil {
-		return project, investor, err
+		return project, err
 	}
 
 	if !investor.CanInvest(invAmount) {
 		log.Println("Investor has less balance than what is required to ivnest in this asset")
-		return project, investor, fmt.Errorf("Investor has less balance than what is required to ivnest in this asset")
+		return project, fmt.Errorf("Investor has less balance than what is required to ivnest in this asset")
 	}
 
 	// check if investment amount is greater than or equal to the project requirements
 	if utils.StoF(invAmount) > project.TotalValue-project.MoneyRaised {
-		return project, investor, err
+		return project, err
 	}
 
 	// user has decided to invest in a part of the project (don't know if full yet)
@@ -161,31 +161,31 @@ func preInvestmentCheck(projIndex int, invIndex int, invAmount string) (Project,
 		project.InvestorAssetCode = assets.AssetID(consts.InvestorAssetPrefix + project.Metadata) // you can retrieve asetCodes anywhere since metadata is assumed to be unique
 		err = project.Save()
 		if err != nil {
-			return project, investor, err
+			return project, err
 		}
 		err = issuer.InitIssuer(projIndex, consts.IssuerSeedPwd)
 		if err != nil {
-			return project, investor, err
+			return project, err
 		}
 		err = issuer.FundIssuer(projIndex, consts.IssuerSeedPwd, consts.PlatformSeed)
 		if err != nil {
-			return project, investor, err
+			return project, err
 		}
 	}
 
-	return project, investor, nil
+	return project, nil
 }
 
 // the SeedInvest function of the opensolar platform
 func SeedInvest(projIndex int, invIndex int, recpIndex int, invAmount string,
 	invSeed string, recpSeed string) error {
 
-	project, investor, err := preInvestmentCheck(projIndex, invIndex, invAmount)
+	project, err := preInvestmentCheck(projIndex, invIndex, invAmount)
 	if err != nil {
 		return err
 	}
 
-	err = model.MunibondInvest(investor, invSeed, invAmount, projIndex,
+	err = model.MunibondInvest(invIndex, invSeed, invAmount, projIndex,
 		project.SeedAssetCode, project.TotalValue)
 	if err != nil {
 		return err
@@ -203,12 +203,12 @@ func SeedInvest(projIndex int, invIndex int, recpIndex int, invAmount string,
 func Invest(projIndex int, invIndex int, invAmount string, invSeed string) error {
 	var err error
 
-	project, investor, err := preInvestmentCheck(projIndex, invIndex, invAmount)
+	project, err := preInvestmentCheck(projIndex, invIndex, invAmount)
 	if err != nil {
 		return err
 	}
 
-	err = model.MunibondInvest(investor, invSeed, invAmount, projIndex,
+	err = model.MunibondInvest(invIndex, invSeed, invAmount, projIndex,
 		project.InvestorAssetCode, project.TotalValue)
 	if err != nil {
 		return err
@@ -239,7 +239,12 @@ func (project *Project) updateProjectAfterInvestment(invAmount string, invIndex 
 		if err != nil {
 			return err
 		}
-		project.sendRecipientNotification()
+
+		err = project.sendRecipientNotification()
+		if err != nil {
+			return err
+		}
+
 		go sendRecipientAssets(project.Index)
 	}
 
@@ -248,9 +253,13 @@ func (project *Project) updateProjectAfterInvestment(invAmount string, invIndex 
 
 // sendRecipientNotification sends the notification to the recipient requesting them
 // to logon to the platform and unlock the project that has just been invested in
-func (project *Project) sendRecipientNotification() {
-	recipient, _ := database.RetrieveRecipient(project.RecipientIndex) // don't catch error because email sending need not necessarily succeed
+func (project *Project) sendRecipientNotification() error {
+	recipient, err := database.RetrieveRecipient(project.RecipientIndex)
+	if err != nil {
+		return err
+	}
 	notif.SendUnlockNotifToRecipient(project.Index, recipient.U.Email)
+	return nil
 }
 
 // UnlockProject unlocks a specific project that has just been invested in
@@ -366,7 +375,7 @@ func sendRecipientAssets(projIndex int) error {
 func (project *Project) updateProjectAfterAcceptance() error {
 
 	project.BalLeft = float64(project.TotalValue)
-	project.Stage = FundedProject        // set funded project stage
+	project.Stage = FundedProject // set funded project stage
 
 	err := project.Save()
 	if err != nil {

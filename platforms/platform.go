@@ -8,7 +8,6 @@ import (
 	assets "github.com/YaleOpenLab/openx/assets"
 	consts "github.com/YaleOpenLab/openx/consts"
 	scan "github.com/YaleOpenLab/openx/scan"
-	stablecoin "github.com/YaleOpenLab/openx/stablecoin"
 	utils "github.com/YaleOpenLab/openx/utils"
 	wallet "github.com/YaleOpenLab/openx/wallet"
 	xlm "github.com/YaleOpenLab/openx/xlm"
@@ -29,7 +28,7 @@ import (
 // so that we act as a trustless entity, which is cool. This has to be done on the frontend preferably
 // the main platform still has its pubkey and seed pair and sends funds out to issuers
 // but is not directly involved in the setting up of trustlines
-func InitializePlatform() (string, string, error) {
+func InitializePlatform() error {
 	var publicKey string
 	var seed string
 	var err error
@@ -41,17 +40,17 @@ func InitializePlatform() (string, string, error) {
 		password, err := scan.ScanRawPassword()
 		if err != nil {
 			log.Println(err)
-			return publicKey, seed, err
+			return err
 		}
 		publicKey, seed, err = wallet.RetrieveSeed(consts.PlatformSeedFile, password)
-		return publicKey, seed, err
+		return err
 	}
 	// platform doesn't exist or user doesn't have encrypted file. Ask
 	fmt.Println("DO YOU HAVE YOUR RAW SEED? IF SO, ENTER SEED. ELSE ENTER N")
 	seed, err = scan.ScanForString()
 	if err != nil {
 		log.Println(err)
-		return publicKey, seed, err
+		return err
 	}
 	if seed == "N" || seed == "n" {
 		// no seed, no file, create new keypair
@@ -59,36 +58,30 @@ func InitializePlatform() (string, string, error) {
 		fmt.Println("Enter a password to encrypt your master seed. Please store this in a very safe place. This prompt will not ask to confirm your password")
 		password, err := scan.ScanRawPassword()
 		if err != nil {
-			return publicKey, seed, err
+			return err
 		}
 		publicKey, seed, err = wallet.NewSeed(consts.PlatformSeedFile, password)
 		if err != nil {
 			log.Println(err)
-			return publicKey, seed, err
+			return err
 		}
 		err = xlm.GetXLM(publicKey)
 		if err != nil {
 			log.Println(err)
-			return publicKey, seed, err
+			return err
 		}
-		err = stablecoin.InitStableCoin()
-		if err != nil {
-			log.Println(err)
-			return publicKey, seed, err
-		}
-
 	} else {
 		// no file, retrieve pukbey
 		// user has given us a seed, validate
 		log.Println("ENTER A PASSWORD TO DECRYPT YOUR SEED")
 		password, err := scan.ScanRawPassword()
 		if err != nil {
-			return publicKey, seed, err
+			return err
 		}
 		publicKey, err = wallet.RetrieveAndStorePubkey(seed, consts.PlatformSeedFile, password)
 		if err != nil {
 			log.Println(err)
-			return publicKey, seed, err
+			return err
 		}
 	}
 	_ = xlm.GetXLM(publicKey) // the API request errors out even on success, so
@@ -99,19 +92,21 @@ func InitializePlatform() (string, string, error) {
 		log.Println("ERROR WHILE SETTING OPTIONS")
 	}
 	// make the platform trust the stablecoin for receiving payments
-	txhash, err = assets.TrustAsset(stablecoin.Code, stablecoin.PublicKey, "10000000000", publicKey, seed)
+	txhash, err = assets.TrustAsset(consts.Code, consts.StablecoinPublicKey, "10000000000", publicKey, seed)
 	if err != nil {
-		return publicKey, seed, err
+		return err
 	}
 
-	_, _, err = assets.SendAssetFromIssuer(stablecoin.Code, publicKey, "10", stablecoin.Seed, stablecoin.PublicKey)
+	_, _, err = assets.SendAssetFromIssuer(consts.Code, publicKey, "10", consts.StablecoinSeed, consts.StablecoinPublicKey)
 	if err != nil {
-		log.Println("SEED: ", stablecoin.Seed)
-		return publicKey, seed, err
+		log.Println("SEED: ", consts.StablecoinSeed)
+		return err
 	}
 
 	log.Println("Platform trusts stablecoin: ", txhash)
-	return publicKey, seed, err
+	consts.PlatformPublicKey = publicKey
+	consts.PlatformSeed = seed
+	return err
 }
 
 // RefillPlatform checks whether the publicKey passed has any xlm and if its balance

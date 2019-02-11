@@ -46,7 +46,7 @@ type Coop struct {
 	Residents      []database.Investor
 }
 
-func InitializePlatform() (string, string, error) {
+func InitializePlatform() error {
 	return platform.InitializePlatform()
 }
 

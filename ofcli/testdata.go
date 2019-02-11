@@ -291,7 +291,7 @@ func InsertDummyData() error {
 	demoProject.Stage = 6
 	demoProject.AuctionType = "private"
 	demoProject.SpecSheetHash = "ipfshash" // TODO: replace this with the real ipfs hash for the demo
-	demoProject.Reputation = 10000         // fix this equal to total value
+	demoProject.Reputation = 10000         // fix this equal to totalValue
 	demoProject.InvestorIndices = append(demoProject.InvestorIndices, demoInv.U.Index)
 	demoProject.InvestmentType = "Municipal Bond"
 
