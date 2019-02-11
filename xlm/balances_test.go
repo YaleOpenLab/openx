@@ -21,8 +21,15 @@ func TestBalances(t *testing.T) {
 	}
 	_, err = GetAccountData("blah")
 	if err == nil {
-		t.Fatalf("Account doesn't exist, quitting!")
+		t.Fatalf("Invalid account exists, quitting!")
 	}
+	oldTc := TestNetClient.URL
+	TestNetClient.URL = "blah"
+	_, err = GetAccountData("blah")
+	if err == nil {
+		t.Fatalf("Can return data with invalid url, quitting!")
+	}
+	TestNetClient.URL = oldTc
 	if balance != "9.9999900" {
 		t.Fatalf("Balance doesn't match with remote API, quitting!")
 	}

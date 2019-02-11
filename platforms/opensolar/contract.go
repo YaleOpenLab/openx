@@ -276,6 +276,7 @@ func UnlockProject(username string, pwhash string, projIndex int, seedpwd string
 	}
 
 	if recipient.U.Index != project.RecipientIndex {
+		log.Println("CHECKINDEICE", recipient.U.Index, project.RecipientIndex)
 		return fmt.Errorf("Seeds don't match, quitting!")
 	}
 
@@ -450,6 +451,9 @@ func monitorPaybacks(recpIndex int, projIndex int) {
 		nowTime := utils.Unix()
 		timeElapsed := nowTime - project.DateLastPaid                   // this would be in seconds (unix time)
 		period := int64(project.PaybackPeriod * consts.OneWeekInSecond) // in seconds due to the const
+		if period == 0 {
+			period = 1 // for the test suite
+		}
 		factor := timeElapsed / period
 
 		if factor <= 1 {

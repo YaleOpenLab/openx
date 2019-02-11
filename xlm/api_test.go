@@ -45,5 +45,11 @@ func TestApi(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	//t.Fatal(hash)
+	oldTc := TestNetClient.URL
+	TestNetClient.URL = "blah"
+	_, err = GetLatestBlockHash()
+	if err == nil {
+		t.Fatalf("can call with invalid client URL")
+	}
+	TestNetClient.URL = oldTc
 }

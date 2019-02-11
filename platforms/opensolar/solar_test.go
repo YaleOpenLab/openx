@@ -9,6 +9,7 @@ import (
 
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
+	xlm "github.com/YaleOpenLab/openx/xlm"
 )
 
 // go test --tags="all" -coverprofile=test.txt .
@@ -25,7 +26,6 @@ func TestDb(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Able to create entity with invalid db, quitting!")
 	}
-
 	_, err = x1.Propose("100 16x32 panels", 28000, "Puerto Rico", 6, "LEED+ Gold rated panels and this is random data out of nowhere and we supply our own devs and provide insurance guarantee as well. Dual audit maintenance upto 1 year. Returns capped as per defaults", 1, 1, "blind")
 	// 1 for retrieving martin as the recipient and 1 is the project Index
 	if err == nil {
@@ -143,6 +143,10 @@ func TestDb(t *testing.T) {
 	}
 	var tmpProj Project
 	var tmpRecp database.Recipient
+	err = tmpProj.updateProjectAfterInvestment("0", 1)
+	if err == nil {
+		t.Fatalf("Can updateProjectAfterAcceptance in the prsence of an invalid db")
+	}
 	tmpProj.SetInstalledProjectStage()
 	if err == nil {
 		t.Fatalf("Setting stage works with invalid db, quitting!")
@@ -284,6 +288,19 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	_, err = ValidateEntity("OrigTest", "9f88a8d40b90616715f868ed195d24e5df994f56bce34eddb022c213484eb0f220d8907e4ecd8f64ddd364cb30bb5758b32ee26541f340b930f7e5bf756907a4")
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = xlm.GetXLM(contractor.U.PublicKey)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = AgreeToContractConditions("hash", "1", "blah", contractor.U.Index, "blah")
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	allOrigs, err := RetrieveAllEntities("originator")
 	if err != nil {
 		t.Fatal(err)
@@ -725,5 +742,67 @@ func TestDb(t *testing.T) {
 	}
 	var recpx database.Recipient
 	recpx.ReceivedSolarProjects = append(recpx.ReceivedSolarProjects, dummy.DebtAssetCode)
+
+	_, err = NewDeveloper("", "", "", "", "", "")
+	if err != nil {
+		t.Fatalf("Couldn't create new developer")
+	}
+	_, err = NewGuarantor("", "", "", "", "", "")
+	if err != nil {
+		t.Fatalf("Couldn't create new guarantor")
+	}
+	_, err = RetrieveLockedProjects()
+	if err != nil {
+		t.Fatal(err)
+	}
+	testrecp, err := database.NewRecipient("testrecipient", "blah", "blah", "cool")
+	if err != nil {
+		t.Fatal(err)
+	}
+	dummy.Lock = true
+	dummy.RecipientIndex = testrecp.U.Index
+	err = dummy.Save()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = UnlockProject("testrecipient", "ed2df20bb16ecb0b4b149cf8e7d9819afd608b22999e707364196187fca0cf38544c9f3eb981ad81cef18562e4c818370eab068992639af7d70488945265197f", dummy.Index, "blah")
+	if err != nil {
+		x, err := database.RetrieveAllUsers()
+		if err != nil {
+			t.Fatal(err)
+		}
+		log.Println("X=", x)
+		log.Println("INDICES", dummy.RecipientIndex, testrecp.U.Index)
+		t.Fatal(err)
+	}
+	err = dummy.Save()
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = RetrieveLockedProjects()
+	if err != nil {
+		t.Fatal(err)
+	}
+	dummy.MoneyRaised = dummy.TotalValue
+	err = dummy.Save()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = sendRecipientAssets(100)
+	if err == nil {
+		t.Fatal("Cant catch sendRecipientAssets error!")
+	}
+	err = dummy.updateProjectAfterInvestment("0", 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = dummy.sendRecipientNotification()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = dummy.updateProjectAfterAcceptance()
+	if err != nil {
+		t.Fatal(err)
+	}
 	os.Remove(os.Getenv("HOME") + "/.openx/database/" + "/yol.db")
 }
