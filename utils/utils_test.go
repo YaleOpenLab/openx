@@ -117,4 +117,14 @@ func TestUtils(t *testing.T) {
 	if I64toS(123412341234) != "123412341234" {
 		t.Fatalf("I64 to string doesn't work, quitting!")
 	}
+
+	_, err = StoFWithCheck("blah")
+	if err == nil {
+		t.Fatalf("Not able to catch invalid string to float error!")
+	}
+
+	_, err = StoICheck("blah")
+	if err == nil {
+		t.Fatalf("Not able to catch invalid string to float error!")
+	}
 }
