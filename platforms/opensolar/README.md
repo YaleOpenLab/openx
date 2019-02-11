@@ -107,36 +107,6 @@ A rough path taken by a specific project would be:
 11. Once the paid amount matches that agreed upon in the contract, ownership of the installed system is granted to the recipient. The Project's stage is upgraded from stage 6 to stage 7.
 
 
-
 ### CODE & REPOSITORY ARCHITECTURE
 The diagram below explains how scripts and folders in the repository are linked.
 ![Scripts and Repo Architecture](../../docs/figures/RepoArchitecture.png)
-
-
-# Running, Testing and Contributing
-
-In order to be able to run this, you need to have the latest version of go installed. [Here](https://medium.com/@patdhlk/how-to-install-go-1-9-1-on-ubuntu-16-04-ee64c073cd79) is a quick tutorial on how to get go installed on a Linux / macOS machine.
-
-Once you have go installed, you need to get the packages in this repo. This can be done using `go get -v ./...`. The `stellar/go` package might print out errors due to its problems with `go get`, in which case you need to get the package separately and then run `dep ensure -v` on the project, proceeded by `go get`ing the other packages as normal.
-
-Then you need to build the stellar package `go build` and then run the executable like `./stellar`.
-
-You will be faced with a CLI interface with which you can interact with
-
-#### Installing IPFS
-
-ipfs is used by some parts of the program to store legal contracts, files that the user might want to store permanently. Download a release from https://github.com/ipfs/go-ipfs/releases and run install.sh. In case you face an issue with migration between various ipfs versions, you might need to run [fs-repo-migrations](https://github.com/ipfs/fs-repo-migrations/blob/master/run.md) to migrate to a newer version. If you don't have anything valuable, you can delete the directory and run `ipfs init` again (this will delete the data stored in ipfs prior to deletion)
-
-You need to keep your peer key (`ipfs.key` usually) in a safe place for future reference. Start ipfs using `ipfs daemon` and you can test if it worked by creating a test file `test.txt` and run `ipfs add test.txt` to see if it succeeds. The resultant hash can be decrypted using `curl "http://127.0.0.1:8080/ipfs/hash"` where 8080 is the endpoint of the ipfs server or by doing `cat /ipfs/hash` directly. You can also refer to [this helpful tutorial](https://michalzalecki.com/set-up-ipfs-node-on-the-server/) in order to get easily started with ipfs.
-
-#### Running tests
-
-Running tests is mostly simple with `go test` but the tests have flags since some require running other software in the background (`ipfs`). There are two kinds of flags right now - `travis` and `all`. If you need the coverage stats as well, you need to
-```
-go get golang.org/x/tools/cmd/cover
-```
-if you already don't have the package. Then running `go test --tags="all" -coverprofile=test.txt ./...` should run all the tests and provide coverage data. Running with the tag `travis` will omit the tests in `ipfs/` which requires [a local `go-ipfs` node running](https://michalzalecki.com/set-up-ipfs-node-on-the-server/) as described above.
-
-#### Contributing
-This is an open source project and everyone is invited to contribute value to it. It is part of an open innovation framework and published using an MIT License so that it allows compatibility with proprietary layers.
-![Open Contributions](../../docs/figures/OpenContributions.png)

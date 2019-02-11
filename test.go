@@ -39,27 +39,31 @@ func ParseConfig(args []string) (string, error) {
 	return port, nil
 }
 
-func StartPlatform() (string, string, error) {
-	var publicKey string
-	var seed string
-	database.CreateHomeDir()
+func StartPlatform() error {
 
-	// InsertDummyData()
+	database.CreateHomeDir()
 	allContracts, err := solar.RetrieveAllProjects()
 	if err != nil {
 		log.Println("Error retrieving all projects from the database")
-		return publicKey, seed, err
+		return err
 	}
 
 	if len(allContracts) == 0 {
 		log.Println("Populating database with test values")
 		err = InsertDummyData()
 		if err != nil {
-			return publicKey, seed, err
+			return err
 		}
 	}
-	publicKey, seed, err = opensolar.InitializePlatform()
-	return publicKey, seed, err
+
+	// init stablecoin before platform so we don't have to create a stablecoin in case our dbdir is wiped
+	err = stablecoin.InitStableCoin() // start the stablecoin daemon
+	if err != nil {
+		return err
+	}
+
+	err = opensolar.InitializePlatform()
+	return err
 }
 
 func main() {
@@ -69,17 +73,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	consts.PlatformPublicKey, consts.PlatformSeed, err = StartPlatform()
+	err = StartPlatform()
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	log.Printf("PLATFORM SEED IS: %s\n PLATFORM PUBLIC KEY IS: %s\n", consts.PlatformSeed, consts.PlatformPublicKey)
-
-	err = stablecoin.InitStableCoin() // start the stablecoin daemon
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	log.Printf("STABLECOIN PUBLICKEY IS: %s, SEED is: %s", consts.StablecoinPublicKey, consts.StablecoinSeed)
 	rpc.StartServer(port)
 }

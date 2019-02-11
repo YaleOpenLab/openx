@@ -83,7 +83,7 @@ type Project struct {
 }
 
 // import handlers from the main platform struct that are necessary for starting the platform
-func InitializePlatform() (string, string, error) {
+func InitializePlatform() error {
 	return platform.InitializePlatform()
 }
 

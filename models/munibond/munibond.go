@@ -18,11 +18,17 @@ import (
 	oracle "github.com/YaleOpenLab/openx/oracle"
 )
 
-func MunibondInvest(investor database.Investor, invSeed string, invAmount string,
+func MunibondInvest(invIndex int, invSeed string, invAmount string,
 	projIndex int, invAssetCode string, totalValue float64) error {
 	// offer user to exchange xlm for stableusd and invest directly if the user does not have stableusd
 	// this should be a menu on the Frontend but here we do this automatically
 	var err error
+
+	investor, err := database.RetrieveInvestor(invIndex)
+	if err != nil {
+		return err
+	}
+
 	err = stablecoin.OfferExchange(investor.U.PublicKey, invSeed, invAmount)
 	if err != nil {
 		log.Println(err)
@@ -191,7 +197,7 @@ func MunibondPayback(recpIndex int, amount string, recipientSeed string, projInd
 		return err
 	}
 	// pay stableUSD back to platform
-	_, stableUSDHash, err := assets.SendAsset(stablecoin.Code, consts.StableCoinAddress, consts.PlatformPublicKey, amount, recipientSeed, recipient.U.PublicKey, "Opensolar payback: "+utils.ItoS(projIndex))
+	_, stableUSDHash, err := assets.SendAsset(consts.Code, consts.StableCoinAddress, consts.PlatformPublicKey, amount, recipientSeed, recipient.U.PublicKey, "Opensolar payback: "+utils.ItoS(projIndex))
 	if err != nil {
 		log.Println("SEND ASSET ERR:", err, consts.PlatformPublicKey, amount, recipientSeed, recipient.U.PublicKey)
 		return err

@@ -28,14 +28,8 @@ import (
 	utils "github.com/YaleOpenLab/openx/utils"
 	wallet "github.com/YaleOpenLab/openx/wallet"
 	xlm "github.com/YaleOpenLab/openx/xlm"
-	"github.com/stellar/go/build"
 	"github.com/stellar/go/clients/horizon"
 )
-
-var StableUSD build.Asset
-var PublicKey string
-var Seed string
-var Code = "STABLEUSD"
 
 // InitStableCoin returns the platform structure and the seed
 func InitStableCoin() error {
@@ -65,11 +59,8 @@ func InitStableCoin() error {
 	if err != nil {
 		return err
 	}
-	PublicKey = publicKey
-	Seed = seed
-	StableUSD.Issuer = PublicKey
-	StableUSD.Code = "STABLEUSD"
-	log.Printf("STABLECOIN PUBLICKEY IS: %s, SEED is: %s", PublicKey, Seed)
+	consts.StablecoinPublicKey = publicKey
+	consts.StablecoinSeed = seed
 	go ListenForPayments()
 	return err
 }
@@ -117,7 +108,7 @@ func ListenForPayments() {
 			xlmWorth := oracle.ExchangeXLMforUSD(amount)
 			log.Println("The deposited amount is worth: ", xlmWorth)
 			// now send the stableusd asset over to this guy
-			_, hash, err := assets.SendAssetFromIssuer(Code, payee, utils.FtoS(xlmWorth), Seed, PublicKey)
+			_, hash, err := assets.SendAssetFromIssuer(consts.Code, payee, utils.FtoS(xlmWorth), consts.StablecoinSeed, consts.StablecoinPublicKey)
 			if err != nil {
 				log.Println("Error while sending USD Assets back to payee: ", payee)
 				log.Println(err)

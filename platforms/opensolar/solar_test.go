@@ -129,7 +129,7 @@ func TestDb(t *testing.T) {
 	if VerifyBeforeAuthorizing(1) {
 		t.Fatalf("Can verify with invalid db, quitting!")
 	}
-	_, _, err = preInvestmentCheck(1, 1, "")
+	_, err = preInvestmentCheck(1, 1, "")
 	if err == nil {
 		t.Fatalf("PreInvestmentCheck succeeds, quitting!")
 	}
@@ -294,6 +294,7 @@ func TestDb(t *testing.T) {
 		t.Fatalf("Category which does not exist exists?")
 	}
 	if len(allOrigs) != 2 || allOrigs[0].U.Name != "NameOrigTest2" {
+		log.Println(allOrigs[0].U.Name)
 		t.Fatal("Names don't match, quitting!")
 	}
 	_, err = RetrieveAllEntities("guarantor")
