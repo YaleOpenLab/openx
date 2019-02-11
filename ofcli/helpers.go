@@ -28,7 +28,7 @@ func StartPlatform() (string, string, error) {
 			return publicKey, seed, err
 		}
 	}
-	publicKey, seed, err = platform.InitializePlatform()
+	err = platform.InitializePlatform()
 	return publicKey, seed, err
 }
 
