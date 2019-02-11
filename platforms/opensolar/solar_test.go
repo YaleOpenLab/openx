@@ -725,5 +725,27 @@ func TestDb(t *testing.T) {
 	}
 	var recpx database.Recipient
 	recpx.ReceivedSolarProjects = append(recpx.ReceivedSolarProjects, dummy.DebtAssetCode)
+
+	_, err = NewDeveloper("", "", "", "", "", "")
+	if err != nil {
+		t.Fatalf("Couldn't create new developer")
+	}
+	_, err = NewGuarantor("", "", "", "", "", "")
+	if err != nil {
+		t.Fatalf("Couldn't create new guarantor")
+	}
+	_, err = RetrieveLockedProjects()
+	if err != nil {
+		t.Fatal(err)
+	}
+	dummy.Lock = true
+	err = dummy.Save()
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = RetrieveLockedProjects()
+	if err != nil {
+		t.Fatal(err)
+	}
 	os.Remove(os.Getenv("HOME") + "/.openx/database/" + "/yol.db")
 }
