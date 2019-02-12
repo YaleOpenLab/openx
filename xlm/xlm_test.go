@@ -97,7 +97,7 @@ func TestXLM(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, _ , err = sendAssetFromIssuer("BLAH1", address, "8", testseed, pk)
+	_, _, err = sendAssetFromIssuer("BLAH1", address, "8", testseed, pk)
 	if err != nil {
 		t.Fatal(err)
 	}

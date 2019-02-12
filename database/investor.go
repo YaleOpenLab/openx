@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	assets "github.com/YaleOpenLab/openx/assets"
+	oracle "github.com/YaleOpenLab/openx/oracle"
 	utils "github.com/YaleOpenLab/openx/utils"
 	xlm "github.com/YaleOpenLab/openx/xlm"
 	"github.com/boltdb/bolt"
@@ -178,11 +179,25 @@ func (a *Investor) TrustAsset(asset build.Asset, limit string, seed string) (str
 
 // CanInvest checks whether an investor has the required balance to invest in a project
 func (a *Investor) CanInvest(targetBalance string) bool {
-	balance, err := xlm.GetAssetBalance(a.U.PublicKey, "STABLEUSD")
+	fmt.Println("CALLED IN CANINVEST")
+	usdBalance, err := xlm.GetAssetBalance(a.U.PublicKey, "STABLEUSD")
 	if err != nil {
-		return false
+		usdBalance = "0"
 	}
-	return utils.StoF(balance) >= utils.StoF(targetBalance)
+
+	xlmBalance, err := xlm.GetNativeBalance(a.U.PublicKey)
+	if err != nil {
+		xlmBalance = "0"
+	}
+
+	// need to fetch the oracle price here for the order
+	oraclePrice := oracle.ExchangeXLMforUSD(xlmBalance)
+	fmt.Println("ORACLE PRICE: ", oraclePrice, "")
+	if (utils.StoF(usdBalance) > utils.StoF(targetBalance)) || oraclePrice > utils.StoF(targetBalance) {
+		// return true since the user has enough USD balance to pay for the order
+		return true
+	}
+	return false
 }
 
 // the following two functions on reputation are repeated for recipients and entities

@@ -11,11 +11,11 @@ import (
 	issuer "github.com/YaleOpenLab/openx/issuer"
 	models "github.com/YaleOpenLab/openx/models"
 	notif "github.com/YaleOpenLab/openx/notif"
+	oracle "github.com/YaleOpenLab/openx/oracle"
 	stablecoin "github.com/YaleOpenLab/openx/stablecoin"
 	utils "github.com/YaleOpenLab/openx/utils"
 	wallet "github.com/YaleOpenLab/openx/wallet"
 	xlm "github.com/YaleOpenLab/openx/xlm"
-	oracle "github.com/YaleOpenLab/openx/oracle"
 )
 
 func MunibondInvest(invIndex int, invSeed string, invAmount string,
@@ -34,6 +34,7 @@ func MunibondInvest(invIndex int, invSeed string, invAmount string,
 		log.Println(err)
 		return err
 	}
+
 	stableTxHash, err := SendUSDToPlatform(invSeed, invAmount, "Opensolar investment: "+utils.ItoS(projIndex))
 	if err != nil {
 		log.Println(err)
@@ -52,7 +53,7 @@ func MunibondInvest(invIndex int, invSeed string, invAmount string,
 		return err
 	}
 
-	log.Println("Investor trusted asset: ", InvestorAsset.Code, " tx hash: ", invTrustTxHash)
+	log.Printf("Investor trusts InvAsset %s with txhash %s", InvestorAsset.Code, invTrustTxHash)
 	_, invAssetTxHash, err := assets.SendAssetFromIssuer(InvestorAsset.Code, investor.U.PublicKey, invAmount, issuerSeed, issuerPubkey)
 	if err != nil {
 		return err
@@ -101,21 +102,21 @@ func MunibondReceive(recpIndex int, projIndex int, detbAssetId string,
 		return err
 	}
 
-	log.Println("Recipient Trusts Debt asset: ", DebtAsset.Code, " tx hash: ", recpPbTrustHash)
+	log.Printf("Recipient Trusts Debt asset %s with txhash", DebtAsset.Code, recpPbTrustHash)
 	_, recpAssetHash, err := assets.SendAssetFromIssuer(PaybackAsset.Code, recipient.U.PublicKey, pbAmtTrust, issuerSeed, issuerPubkey) // same amount as debt
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 
-	log.Printf("Sent PaybackAsset to recipient %s with txhash %s", recipient.U.PublicKey, recpAssetHash)
+	log.Printf("Sent DebtAsset to recipient %s with txhash %s", recipient.U.PublicKey, recpAssetHash)
 	recpDebtTrustHash, err := assets.TrustAsset(DebtAsset.Code, issuerPubkey, utils.FtoS(totalValue*2), recipient.U.PublicKey, recpSeed)
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 
-	log.Println("Recipient Trusts Payback asset: ", PaybackAsset.Code, " tx hash: ", recpDebtTrustHash)
+	log.Println("Recipient Trusts Payback asset %s with txhash %s", PaybackAsset.Code, recpDebtTrustHash)
 	_, recpDebtAssetHash, err := assets.SendAssetFromIssuer(DebtAsset.Code, recipient.U.PublicKey, utils.FtoS(totalValue), issuerSeed, issuerPubkey) // same amount as debt
 	if err != nil {
 		log.Println(err)
@@ -179,7 +180,7 @@ func sendPaymentNotif(recpIndex int, projIndex int, paybackPeriod int, email str
 }
 
 func MunibondPayback(recpIndex int, amount string, recipientSeed string, projIndex int,
-		assetName string, projectInvestors []int) error {
+	assetName string, projectInvestors []int) error {
 
 	recipient, err := database.RetrieveRecipient(recpIndex)
 	if err != nil {
@@ -191,18 +192,22 @@ func MunibondPayback(recpIndex int, amount string, recipientSeed string, projInd
 		return err
 	}
 
+	err = stablecoin.OfferExchange(recipient.U.PublicKey, recipientSeed, amount)
+	if err != nil {
+		return err
+	}
+
 	StableBalance, err := xlm.GetAssetBalance(recipient.U.PublicKey, "STABLEUSD")
 	if err != nil || (utils.StoF(StableBalance) < utils.StoF(amount)) {
 		log.Println("You do not have the required stablecoin balance, please refill")
 		return err
 	}
-	// pay stableUSD back to platform
+
 	_, stableUSDHash, err := assets.SendAsset(consts.Code, consts.StableCoinAddress, consts.PlatformPublicKey, amount, recipientSeed, recipient.U.PublicKey, "Opensolar payback: "+utils.ItoS(projIndex))
 	if err != nil {
-		log.Println("SEND ASSET ERR:", err, consts.PlatformPublicKey, amount, recipientSeed, recipient.U.PublicKey)
 		return err
 	}
-	log.Println("Paid back platform in  stableUSD, txhash: ", stableUSDHash)
+	log.Printf("Paid %s back to platform in stableUSD, txhash %s ", amount, stableUSDHash)
 
 	DEBAssetBalance, err := xlm.GetAssetBalance(recipient.U.PublicKey, assetName)
 	if err != nil {
@@ -217,13 +222,13 @@ func MunibondPayback(recpIndex int, amount string, recipientSeed string, projInd
 	}
 
 	log.Println("Retrieved average price from oracle: ", monthlyBill)
-	confHeight, debtPaybackHash, err := assets.SendAssetToIssuer(assetName, issuerPubkey, amount, recipientSeed, recipient.U.PublicKey)
+	_, debtPaybackHash, err := assets.SendAssetToIssuer(assetName, issuerPubkey, amount, recipientSeed, recipient.U.PublicKey)
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 
-	log.Println("Paid debt amount: ", amount, " back to issuer, tx hash: ", debtPaybackHash, " ", confHeight)
+	log.Println("Paid %s back to platform in DebtAsset, txhash %s ", amount, debtPaybackHash,)
 	newBalance, err := xlm.GetAssetBalance(recipient.U.PublicKey, assetName)
 	if err != nil {
 		return err
@@ -234,14 +239,15 @@ func MunibondPayback(recpIndex int, amount string, recipientSeed string, projInd
 	mBillFloat := utils.StoF(monthlyBill)
 
 	paidAmount := DEBAssetBalanceFloat - newBalanceFloat
-	log.Println("Old Balance: ", DEBAssetBalanceFloat, " New Balance: ", newBalanceFloat, " Paid: ", paidAmount, " Bill Amount: ", mBillFloat)
-
+	//log.Println("Old Balance: ", DEBAssetBalanceFloat, " New Balance: ", newBalanceFloat, " Paid: ", paidAmount, " Bill Amount: ", mBillFloat)
+	// right now, we accept whatever amount the recipient chooses to payback. If we choose to enforce
+	// strict payback, we should check this first and then exchange STABLEUSD and DebtAssets
 	if paidAmount < mBillFloat {
-		log.Println("Amount paid is less than amount required, please make sure to cover this next time")
+		log.Println("Amount paid is less than amount required, please make sure to cover next time")
 	} else if paidAmount > mBillFloat {
-		log.Println("You've chosen to pay more than what is required for this month. Adjusting payback period accordingly")
+		log.Println("You've chosen to pay more than what is required for this month")
 	} else {
-		log.Println("You've paid exactly what is required for this month. Payback period remains as usual")
+		log.Println("You've paid exactly what is required for this month")
 	}
 
 	if recipient.U.Notification {

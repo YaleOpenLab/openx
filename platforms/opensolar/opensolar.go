@@ -40,7 +40,7 @@ type Project struct {
 	SolarCombiner   string
 	Batteries       string
 	IoTHub          string
-	Metadata        string // any other metadata can be stored here
+	Metadata        string // other metadata which does not have an explicit name can be stored here. Used to derive assetIDs
 
 	// List of entities other than the contractor
 	Originator    Entity

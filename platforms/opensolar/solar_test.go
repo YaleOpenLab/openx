@@ -396,7 +396,7 @@ func TestDb(t *testing.T) {
 		log.Println("Length of all Stage 6 Projects: ", len(allOOs))
 		t.Fatalf("Length of all stage 6 projects doesn't match")
 	}
-	var	testProject Project
+	var testProject Project
 	indexCheck, err := RetrieveAllProjects()
 	if err != nil {
 		t.Fatalf("Projects could not be retrieved!")
@@ -803,6 +803,11 @@ func TestDb(t *testing.T) {
 	err = dummy.updateProjectAfterAcceptance()
 	if err != nil {
 		t.Fatal(err)
+	}
+	_, err = preInvestmentCheck(dummy.Index, inv.U.Index, "")
+	if err == nil {
+		// it should error out at the canInvest call
+		t.Fatalf("PreInvestmentCheck succeeds, quitting!")
 	}
 	os.Remove(os.Getenv("HOME") + "/.openx/database/" + "/yol.db")
 }
