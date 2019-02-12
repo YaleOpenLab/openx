@@ -36,13 +36,13 @@ func InitializePlatform() error {
 	// now we can be sure we have the directory, check for seed
 	if _, err := os.Stat(consts.PlatformSeedFile); !os.IsNotExist(err) {
 		// the seed exists
-		fmt.Println("ENTER YOUR PASSWORD TO DECRYPT THE SEED FILE")
+		fmt.Println("ENTER YOUR PASSWORD TO DECRYPT THE PLATFORM SEED FILE")
 		password, err := scan.ScanRawPassword()
 		if err != nil {
 			log.Println(err)
 			return err
 		}
-		publicKey, seed, err = wallet.RetrieveSeed(consts.PlatformSeedFile, password)
+		consts.PlatformPublicKey, consts.PlatformSeed, err = wallet.RetrieveSeed(consts.PlatformSeedFile, password)
 		return err
 	}
 	// platform doesn't exist or user doesn't have encrypted file. Ask

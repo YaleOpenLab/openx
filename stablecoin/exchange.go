@@ -46,9 +46,11 @@ func Exchange(recipientPK string, recipientSeed string, convAmount string) error
 // stableUSD to compelte the payment
 func OfferExchange(publicKey string, seed string, invAmount string) error {
 
+	log.Println("OFFERING EXCHANGE TO INVESTOR")
 	balance, err := xlm.GetAssetBalance(publicKey, consts.Code)
 	if err != nil {
-		return err
+		// the user does not have a balance in STABLEUSD
+		balance = "0"
 	}
 
 	balF := utils.StoF(balance)
@@ -56,10 +58,25 @@ func OfferExchange(publicKey string, seed string, invAmount string) error {
 	if balF < invF {
 		// user's stablecoin balance is less than the amount he wishes to invest, get stablecoin
 		// equal to the amount he wishes to exchange
-		diff := invF - balF
+		diff := invF - balF + 1 // the extra 1 is to cover for fees
 		// checking whether the user has enough xlm balance to cover for the exchange is done by Exchange()
-		amount := oracle.ExchangeXLMforUSD(utils.FtoS(diff))
-		err := Exchange(publicKey, seed, utils.FtoS(amount))
+		xlmBalance, err := xlm.GetNativeBalance(publicKey)
+		if err != nil {
+			return err
+		}
+
+		totalUSD := oracle.ExchangeXLMforUSD(xlmBalance) // amount in stablecoin that the user would receive for diff
+
+		if totalUSD < diff {
+			return fmt.Errorf("User does not have enough funds to compelte this transaction")
+		}
+
+		// now we need to exchange XLM equal to diff in stablecoin
+		exchangeRate := oracle.ExchangeXLMforUSD("1")
+		// 1 xlm can fetch exchangeRate USD, how much xlm does diff USD need?
+		amountToExchange := diff / exchangeRate
+
+		err = Exchange(publicKey, seed, utils.FtoS(amountToExchange))
 		if err != nil {
 			return fmt.Errorf("Unable to exchange XLM for USD and automate payment. Please get more STABLEUSD to fulfil the payment")
 		}

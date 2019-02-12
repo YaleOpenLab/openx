@@ -1,8 +1,8 @@
 package opensolar
 
 import (
-	"log"
 	database "github.com/YaleOpenLab/openx/database"
+	"log"
 )
 
 // this file contains the different stages associated with an opensolar project and the handlers

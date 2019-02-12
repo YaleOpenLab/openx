@@ -1,8 +1,8 @@
 package ozones
 
 import (
-	platform "github.com/YaleOpenLab/openx/platforms"
 	database "github.com/YaleOpenLab/openx/database"
+	platform "github.com/YaleOpenLab/openx/platforms"
 )
 
 type BondCoopParams struct {

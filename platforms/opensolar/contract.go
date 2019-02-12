@@ -143,6 +143,8 @@ func preInvestmentCheck(projIndex int, invIndex int, invAmount string) (Project,
 		return project, err
 	}
 
+	// here we should check whether the investor has adequate STABLEUSD or XLM and not just the stablecoin
+	// since we automate asset conversion in the MunibondInvest function
 	if !investor.CanInvest(invAmount) {
 		log.Println("Investor has less balance than what is required to ivnest in this asset")
 		return project, fmt.Errorf("Investor has less balance than what is required to ivnest in this asset")
@@ -153,8 +155,6 @@ func preInvestmentCheck(projIndex int, invIndex int, invAmount string) (Project,
 		return project, err
 	}
 
-	// user has decided to invest in a part of the project (don't know if full yet)
-	// no asset codes assigned yet, we need to create them
 	if project.SeedAssetCode == "" && project.InvestorAssetCode == "" {
 		// this project does not have an issuer associated with it yet since there has been
 		// no seed round and an investment round
@@ -203,17 +203,20 @@ func SeedInvest(projIndex int, invIndex int, recpIndex int, invAmount string,
 func Invest(projIndex int, invIndex int, invAmount string, invSeed string) error {
 	var err error
 
+	// run preinvestment checks to make sure everything is okay
 	project, err := preInvestmentCheck(projIndex, invIndex, invAmount)
 	if err != nil {
 		return err
 	}
 
+	// call the model and invest in the particular project
 	err = model.MunibondInvest(invIndex, invSeed, invAmount, projIndex,
 		project.InvestorAssetCode, project.TotalValue)
 	if err != nil {
 		return err
 	}
 
+	// once the investment is complete, update the project and store in the database
 	err = project.updateProjectAfterInvestment(invAmount, invIndex)
 	if err != nil {
 		return err
@@ -276,8 +279,7 @@ func UnlockProject(username string, pwhash string, projIndex int, seedpwd string
 	}
 
 	if recipient.U.Index != project.RecipientIndex {
-		log.Println("CHECKINDEICE", recipient.U.Index, project.RecipientIndex)
-		return fmt.Errorf("Seeds don't match, quitting!")
+		return fmt.Errorf("Recipient Indices don't match, quitting!")
 	}
 
 	recpSeed, err := wallet.DecryptSeed(recipient.U.EncryptedSeed, seedpwd)

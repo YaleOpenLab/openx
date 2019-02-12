@@ -20,7 +20,7 @@ func setupInvestorRPCs() {
 	insertInvestor()
 	validateInvestor()
 	getAllInvestors()
-	Invest()
+	invest()
 	changeReputationInv()
 	voteTowardsProject()
 	addLocalAssetInv()
@@ -96,7 +96,7 @@ func getAllInvestors() {
 }
 
 // Invest invests in a specific project of the user's choice
-func Invest() {
+func invest() {
 	http.HandleFunc("/investor/invest", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
 		// need the following params to invest in a project:

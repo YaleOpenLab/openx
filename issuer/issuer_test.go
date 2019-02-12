@@ -26,6 +26,10 @@ func TestIssuer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	err = FundIssuer(1, "cool", platformSeed)
+	if err == nil {
+		t.Fatalf("not able to catch invalid seed error, quitting!")
+	}
 	_, err = FreezeIssuer(1, "blah")
 	if err != nil {
 		t.Fatal(err)
