@@ -102,7 +102,7 @@ func MunibondReceive(recpIndex int, projIndex int, detbAssetId string,
 		return err
 	}
 
-	log.Printf("Recipient Trusts Debt asset %s with txhash", DebtAsset.Code, recpPbTrustHash)
+	log.Printf("Recipient Trusts Debt asset %s with txhash %s", DebtAsset.Code, recpPbTrustHash)
 	_, recpAssetHash, err := assets.SendAssetFromIssuer(PaybackAsset.Code, recipient.U.PublicKey, pbAmtTrust, issuerSeed, issuerPubkey) // same amount as debt
 	if err != nil {
 		log.Println(err)
@@ -116,7 +116,7 @@ func MunibondReceive(recpIndex int, projIndex int, detbAssetId string,
 		return err
 	}
 
-	log.Println("Recipient Trusts Payback asset %s with txhash %s", PaybackAsset.Code, recpDebtTrustHash)
+	log.Printf("Recipient Trusts Payback asset %s with txhash %s", PaybackAsset.Code, recpDebtTrustHash)
 	_, recpDebtAssetHash, err := assets.SendAssetFromIssuer(DebtAsset.Code, recipient.U.PublicKey, utils.FtoS(totalValue), issuerSeed, issuerPubkey) // same amount as debt
 	if err != nil {
 		log.Println(err)
@@ -228,7 +228,7 @@ func MunibondPayback(recpIndex int, amount string, recipientSeed string, projInd
 		return err
 	}
 
-	log.Println("Paid %s back to platform in DebtAsset, txhash %s ", amount, debtPaybackHash,)
+	log.Printf("Paid %s back to platform in DebtAsset, txhash %s ", amount, debtPaybackHash,)
 	newBalance, err := xlm.GetAssetBalance(recipient.U.PublicKey, assetName)
 	if err != nil {
 		return err
