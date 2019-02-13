@@ -5,6 +5,7 @@ package database
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 
 	utils "github.com/YaleOpenLab/openx/utils"
 	"github.com/boltdb/bolt"
@@ -54,6 +55,7 @@ func (a *Recipient) AddEmail(email string) error {
 	a.U.Notification = true
 	err := a.U.Save()
 	if err != nil {
+		log.Println("Error while saving recipient", err)
 		return err
 	}
 	return a.Save()
@@ -63,6 +65,7 @@ func (a *Recipient) AddEmail(email string) error {
 func (a *Recipient) Save() error {
 	db, err := OpenDB()
 	if err != nil {
+		log.Println("Error while opening database", err)
 		return err
 	}
 	defer db.Close()
@@ -70,6 +73,7 @@ func (a *Recipient) Save() error {
 		b := tx.Bucket(RecipientBucket)
 		encoded, err := json.Marshal(a)
 		if err != nil {
+			log.Println("Error while marshaling json", err)
 			return err
 		}
 		return b.Put([]byte(utils.ItoB(a.U.Index)), encoded)
@@ -82,11 +86,13 @@ func RetrieveAllRecipients() ([]Recipient, error) {
 	var arr []Recipient
 	temp, err := RetrieveAllUsers()
 	if err != nil {
+		log.Println("Error while retreiving all users from database", err)
 		return arr, err
 	}
 	limit := len(temp) + 1
 	db, err := OpenDB()
 	if err != nil {
+		log.Println("Error while opening database", err)
 		return arr, err
 	}
 	defer db.Close()
@@ -105,6 +111,7 @@ func RetrieveAllRecipients() ([]Recipient, error) {
 			}
 			err := json.Unmarshal(x, &rRecipient)
 			if err != nil {
+				log.Println("Error while unmarshalling json", err)
 				return err
 			}
 			arr = append(arr, rRecipient)
@@ -119,6 +126,7 @@ func RetrieveRecipient(key int) (Recipient, error) {
 	var inv Recipient
 	db, err := OpenDB()
 	if err != nil {
+		log.Println("Error while opening database", err)
 		return inv, err
 	}
 	defer db.Close()
@@ -138,6 +146,7 @@ func ValidateRecipient(name string, pwhash string) (Recipient, error) {
 	var rec Recipient
 	user, err := ValidateUser(name, pwhash)
 	if err != nil {
+		log.Println("Error while validating user", err)
 		return rec, err
 	}
 	return RetrieveRecipient(user.Index)
@@ -146,6 +155,7 @@ func ValidateRecipient(name string, pwhash string) (Recipient, error) {
 func ChangeRecpReputation(recpIndex int, reputation float64) error {
 	a, err := RetrieveRecipient(recpIndex)
 	if err != nil {
+		log.Println("Error while retrieving recipient", err)
 		return err
 	}
 	if reputation > 0 {
@@ -154,6 +164,7 @@ func ChangeRecpReputation(recpIndex int, reputation float64) error {
 		err = a.U.DecreaseReputation(reputation)
 	}
 	if err != nil {
+		log.Println("Error while changing reputation of recipient", err)
 		return err
 	}
 	return a.Save()

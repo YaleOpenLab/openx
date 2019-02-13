@@ -2,7 +2,7 @@ package rpc
 
 import (
 	"encoding/json"
-	//"log"
+	"log"
 	"net/http"
 	//utils "github.com/YaleOpenLab/openx/utils"
 	"io"
@@ -105,12 +105,14 @@ type ParticleUser struct {
 func GetAndSendJson(w http.ResponseWriter, r *http.Request, body string, x interface{}) {
 	data, err := GetRequest(body)
 	if err != nil {
+		log.Println("did not get response", err)
 		responseHandler(w, r, StatusBadRequest)
 		return
 	}
 	// now data is in byte, we need the other strucutre now
 	err = json.Unmarshal(data, &x)
 	if err != nil {
+		log.Println("did not unmarshal json", err)
 		responseHandler(w, r, StatusInternalServerError)
 		return
 	}
@@ -123,6 +125,7 @@ func GetAndSendJson(w http.ResponseWriter, r *http.Request, body string, x inter
 func GetAndSendByte(w http.ResponseWriter, r *http.Request, body string) {
 	data, err := GetRequest(body)
 	if err != nil {
+		log.Println("did not get response", err)
 		responseHandler(w, r, StatusBadRequest)
 		return
 	}
@@ -134,12 +137,14 @@ func GetAndSendByte(w http.ResponseWriter, r *http.Request, body string) {
 func PutAndSend(w http.ResponseWriter, r *http.Request, body string, payload io.Reader) {
 	data, err := PutRequest(body, payload)
 	if err != nil {
+		log.Println("did not receive success response", err)
 		responseHandler(w, r, StatusBadRequest)
 		return
 	}
 	var x ParticlePingResponse
 	err = json.Unmarshal(data, &x)
 	if err != nil {
+		log.Println("did not unmarshal json", err)
 		responseHandler(w, r, StatusInternalServerError)
 		return
 	}

@@ -3,6 +3,7 @@ package database
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 
 	assets "github.com/YaleOpenLab/openx/assets"
 	oracle "github.com/YaleOpenLab/openx/oracle"
@@ -51,6 +52,7 @@ func NewInvestor(uname string, pwd string, seedpwd string, Name string) (Investo
 	var err error
 	a.U, err = NewUser(uname, pwd, seedpwd, Name)
 	if err != nil {
+		log.Println("Error while creating a new user", err)
 		return a, err
 	}
 	a.AmountInvested = float64(0)
@@ -65,6 +67,7 @@ func (a *Investor) AddEmail(email string) error {
 	a.U.Notification = true
 	err := a.U.Save()
 	if err != nil {
+		log.Println("Error while saving investor", err)
 		return err
 	}
 	return a.Save()
@@ -81,6 +84,7 @@ func (a *Investor) Save() error {
 		b := tx.Bucket(InvestorBucket)
 		encoded, err := json.Marshal(a)
 		if err != nil {
+			log.Println("Error while marshaling json struct", err)
 			return err
 		}
 		return b.Put([]byte(utils.ItoB(a.U.Index)), encoded)
@@ -101,6 +105,7 @@ func RetrieveInvestor(key int) (Investor, error) {
 		x := b.Get(utils.ItoB(key))
 		if x == nil {
 			// no investor with the specific details
+			log.Println("No investor found with required credentials")
 			return fmt.Errorf("No investor found with required credentials")
 		}
 		return json.Unmarshal(x, &inv)
@@ -179,7 +184,6 @@ func (a *Investor) TrustAsset(asset build.Asset, limit string, seed string) (str
 
 // CanInvest checks whether an investor has the required balance to invest in a project
 func (a *Investor) CanInvest(targetBalance string) bool {
-	fmt.Println("CALLED IN CANINVEST")
 	usdBalance, err := xlm.GetAssetBalance(a.U.PublicKey, "STABLEUSD")
 	if err != nil {
 		usdBalance = "0"
@@ -192,7 +196,6 @@ func (a *Investor) CanInvest(targetBalance string) bool {
 
 	// need to fetch the oracle price here for the order
 	oraclePrice := oracle.ExchangeXLMforUSD(xlmBalance)
-	fmt.Println("ORACLE PRICE: ", oraclePrice, "")
 	if (utils.StoF(usdBalance) > utils.StoF(targetBalance)) || oraclePrice > utils.StoF(targetBalance) {
 		// return true since the user has enough USD balance to pay for the order
 		return true
@@ -215,6 +218,7 @@ func ChangeInvReputation(invIndex int, reputation float64) error {
 		err = a.U.DecreaseReputation(reputation)
 	}
 	if err != nil {
+		log.Println("Error while changing reputation", err)
 		return err
 	}
 	return a.Save()

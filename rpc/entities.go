@@ -2,7 +2,7 @@ package rpc
 
 import (
 	"fmt"
-	//"log"
+	"log"
 	"net/http"
 
 	platform "github.com/YaleOpenLab/openx/platforms/opensolar"
@@ -30,6 +30,7 @@ func EntityValidateHelper(w http.ResponseWriter, r *http.Request) (platform.Enti
 
 	prepEntity, err := platform.ValidateEntity(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
 	if err != nil {
+		log.Println("Error while validating entity", err)
 		return prepEntity, err
 	}
 
@@ -42,6 +43,7 @@ func validateEntity() {
 		checkGet(w, r)
 		prepEntity, err := EntityValidateHelper(w, r)
 		if err != nil {
+			log.Println("Error while validating entity", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -55,12 +57,14 @@ func getPreOriginatedContracts() {
 		checkGet(w, r)
 		prepEntity, err := EntityValidateHelper(w, r)
 		if err != nil {
+			log.Println("Error while validating entity", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		x, err := platform.RetrieveOriginatorProjects(platform.PreOriginProject, prepEntity.U.Index)
 		if err != nil {
+			log.Println("Error while retrieving originator project", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -74,12 +78,14 @@ func getOriginatedContracts() {
 		checkGet(w, r)
 		prepEntity, err := EntityValidateHelper(w, r)
 		if err != nil {
+			log.Println("Error while validating entity", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		x, err := platform.RetrieveOriginatorProjects(platform.OriginProject, prepEntity.U.Index)
 		if err != nil {
+			log.Println("Error while retrieving originator projects", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -93,12 +99,14 @@ func getProposedContracts() {
 		checkGet(w, r)
 		prepEntity, err := EntityValidateHelper(w, r)
 		if err != nil {
+			log.Println("Error while validating entity", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		x, err := platform.RetrieveContractorProjects(platform.ProposedProject, prepEntity.U.Index)
 		if err != nil {
+			log.Println("Error while retrieving contractor projects", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -114,12 +122,14 @@ func addCollateral() {
 		checkGet(w, r)
 		prepEntity, err := EntityValidateHelper(w, r)
 		if err != nil || r.URL.Query()["amount"] == nil || r.URL.Query()["collateral"] == nil {
+			log.Println("Error while validating entity", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		collateralAmount, err := utils.StoFWithCheck(r.URL.Query()["amount"][0])
 		if err != nil {
+			log.Println("Error while converting string to float", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -127,6 +137,7 @@ func addCollateral() {
 		collateralData := r.URL.Query()["collateral"][0]
 		err = prepEntity.AddCollateral(collateralAmount, collateralData)
 		if err != nil {
+			log.Println("Error while adding collateral", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}

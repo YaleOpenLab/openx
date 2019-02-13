@@ -30,7 +30,7 @@ func AddStringToIpfs(a string) (string, error) {
 	sh := RetrieveShell()
 	hash, err := sh.Add(strings.NewReader(a)) // input must be an io.Reader
 	if err != nil {
-		log.Println(err)
+		log.Println("Error while adding string to ipfs", err)
 		return "", err
 	}
 	fmt.Println("Added text: ", a, " to ipfs, hash: ", hash)
@@ -46,7 +46,6 @@ func GetFileFromIpfs(hash string, extension string) error {
 	sh := RetrieveShell()
 	// generate a random fileName and then return the file to the user
 	fileName := utils.GetRandomString(consts.IpfsFileLength) + "." + extension
-	log.Println("DECRYPTED FILE NAME is: ", fileName)
 	return sh.Get(hash, fileName)
 }
 
@@ -60,6 +59,7 @@ func GetStringFromIpfs(hash string) (string, error) {
 	sh.Get(hash, tmpFileDir)
 	data, err := ioutil.ReadFile(tmpFileDir)
 	if err != nil {
+		log.Println("Error while reading file", err)
 		return "", err
 	}
 	os.Remove(tmpFileDir)
@@ -76,6 +76,7 @@ func IpfsHashFile(filepath string) (string, error) {
 	var dummy string
 	dataStream, err := ReadfromFile(filepath)
 	if err != nil {
+		log.Println("Error while reading from file", err)
 		return dummy, err
 	}
 	// need to get the ifps hash of this data stream and return hash
@@ -83,6 +84,7 @@ func IpfsHashFile(filepath string) (string, error) {
 	sh := RetrieveShell()
 	hash, err := sh.Add(reader)
 	if err != nil {
+		log.Println("Error while adding string to ipfs", err)
 		return dummy, err
 	}
 	return hash, nil
@@ -94,6 +96,7 @@ func IpfsHashData(data []byte) (string, error) {
 	sh := RetrieveShell()
 	hash, err := sh.Add(reader)
 	if err != nil {
+		log.Println("Error while adding string to ipfs", err)
 		return dummy, err
 	}
 	return hash, nil

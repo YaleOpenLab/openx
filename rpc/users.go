@@ -3,7 +3,7 @@ package rpc
 import (
 	"fmt"
 	"io/ioutil"
-	// "log"
+	"log"
 	"net/http"
 
 	assets "github.com/YaleOpenLab/openx/assets"
@@ -74,6 +74,7 @@ func UserValidateHelper(w http.ResponseWriter, r *http.Request) (database.User, 
 
 	prepUser, err = database.ValidateUser(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
 	if err != nil {
+		log.Println("did not validate user", err)
 		return prepUser, err
 	}
 
@@ -88,6 +89,7 @@ func ValidateUser() {
 		// need to pass the pwhash param here
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil {
+			log.Println("did not validate user", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -99,12 +101,15 @@ func ValidateUser() {
 		entity := false
 		prepInvestor, err = database.RetrieveInvestor(prepUser.Index)
 		if err != nil {
+			log.Println("did not retrieve investor", err)
 			// means the user is a recipient, retrieve recipient credentials
 			prepRecipient, err = database.ValidateRecipient(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
 			if err != nil {
+				log.Println("did not validate recipient", err)
 				// it is not a recipient either
 				prepEntity, err = platform.ValidateEntity(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
 				if err != nil {
+					log.Println("did not validate entity", err)
 					// not an investor, recipient or entity, error
 					responseHandler(w, r, StatusBadRequest)
 					return
@@ -140,6 +145,7 @@ func getBalances() {
 		checkOrigin(w, r)
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil {
+			log.Println("did not validate user", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -147,6 +153,7 @@ func getBalances() {
 		pubkey := prepUser.PublicKey
 		balances, err := xlm.GetAllBalances(pubkey)
 		if err != nil {
+			log.Println("did not get all balances", err)
 			responseHandler(w, r, StatusNotFound)
 			return
 		}
@@ -161,6 +168,7 @@ func getXLMBalance() {
 
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil {
+			log.Println("did not validate user", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -168,6 +176,7 @@ func getXLMBalance() {
 		pubkey := prepUser.PublicKey
 		balance, err := xlm.GetNativeBalance(pubkey)
 		if err != nil {
+			log.Println("did not get native balance", err)
 			responseHandler(w, r, StatusNotFound)
 			return
 		}
@@ -190,6 +199,7 @@ func getAssetBalance() {
 		asset := r.URL.Query()["asset"][0]
 		balance, err := xlm.GetAssetBalance(pubkey, asset)
 		if err != nil {
+			log.Println("did not get assset balance", err)
 			responseHandler(w, r, StatusNotFound)
 			return
 		}
@@ -210,6 +220,7 @@ func getIpfsHash() {
 		hashString := r.URL.Query()["string"][0]
 		hash, err := ipfs.AddStringToIpfs(hashString)
 		if err != nil {
+			log.Println("did not add string to ipfs", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -238,6 +249,7 @@ func authKyc() {
 		uInput := utils.StoI(r.URL.Query()["userIndex"][0])
 		err = prepUser.Authorize(uInput)
 		if err != nil {
+			log.Println("did not authorize user", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -261,6 +273,7 @@ func sendXLM() {
 		seedpwd := r.URL.Query()["seedpwd"][0]
 		seed, err := wallet.DecryptSeed(prepUser.EncryptedSeed, seedpwd)
 		if err != nil {
+			log.Println("did not decrypt seed", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -272,6 +285,7 @@ func sendXLM() {
 
 		_, txhash, err := xlm.SendXLM(destination, amount, seed, memo)
 		if err != nil {
+			log.Println("did not send xlm", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -284,6 +298,7 @@ func notKycView() {
 	http.HandleFunc("/user/notkycview", func(w http.ResponseWriter, r *http.Request) {
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil {
+			log.Println("did not validate user", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -295,6 +310,7 @@ func notKycView() {
 
 		users, err := database.RetrieveAllUsersWithoutKyc()
 		if err != nil {
+			log.Println("did not retrieve all users wihtout kyc", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -308,6 +324,7 @@ func kycView() {
 	http.HandleFunc("/user/kycview", func(w http.ResponseWriter, r *http.Request) {
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil {
+			log.Println("did not validate user", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -319,6 +336,7 @@ func kycView() {
 
 		users, err := database.RetrieveAllUsersWithKyc()
 		if err != nil {
+			log.Println("did not retrieve users", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -332,12 +350,14 @@ func askForCoins() {
 	http.HandleFunc("/user/askxlm", func(w http.ResponseWriter, r *http.Request) {
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil {
+			log.Println("did not validate user", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		err = xlm.GetXLM(prepUser.PublicKey)
 		if err != nil {
+			log.Println("did not get xlm from friendbot", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -352,6 +372,7 @@ func trustAsset() {
 		// since this is testnet, give caller coins from the testnet faucet
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil {
+			log.Println("did not validate user", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -363,6 +384,7 @@ func trustAsset() {
 		seedpwd := r.URL.Query()["seedpwd"][0]
 		seed, err := wallet.DecryptSeed(prepUser.EncryptedSeed, seedpwd)
 		if err != nil {
+			log.Println("did not decrypt seed", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -370,6 +392,7 @@ func trustAsset() {
 		// func TrustAsset(assetCode string, assetIssuer string, limit string, PublicKey string, Seed string) (string, error) {
 		txhash, err := assets.TrustAsset(assetCode, assetIssuer, limit, prepUser.PublicKey, seed)
 		if err != nil {
+			log.Println("did not trust asset", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -388,12 +411,14 @@ func uploadFile() {
 
 		_, err := UserValidateHelper(w, r)
 		if err != nil {
+			log.Println("did not validate user", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		file, fileHeader, err := r.FormFile("file")
 		if err != nil {
+			log.Println("did not parse form", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -421,12 +446,14 @@ func uploadFile() {
 		// file type is supported, store in ipfs
 		data, err := ioutil.ReadAll(file)
 		if err != nil {
+			log.Println("did not  read", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
 		hashString, err := ipfs.IpfsHashData(data)
 		if err != nil {
+			log.Println("did not hash data to ipfs", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}

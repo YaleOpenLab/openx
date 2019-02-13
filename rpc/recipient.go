@@ -2,7 +2,7 @@ package rpc
 
 import (
 	"fmt"
-	// "log"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -54,6 +54,7 @@ func getAllRecipients() {
 		checkGet(w, r)
 		recipients, err := database.RetrieveAllRecipients()
 		if err != nil {
+			log.Println("did not retrieve all recipients", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -69,12 +70,14 @@ func insertRecipient() {
 		checkPost(w, r)
 		prepRecipient, err := parseRecipient(r)
 		if err != nil {
+			log.Println("did not parse recipients", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		err = prepRecipient.Save()
 		if err != nil {
+			log.Println("did not save recipient", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -96,6 +99,7 @@ func validateRecipient() {
 
 		prepRecipient, err := database.ValidateRecipient(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
 		if err != nil {
+			log.Println("did not validate recipient", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -125,12 +129,14 @@ func payback() {
 
 		recipientSeed, err := wallet.DecryptSeed(prepRecipient.U.EncryptedSeed, seedpwd)
 		if err != nil {
+			log.Println("did not decrypt seed", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		err = platform.Payback(recpIndex, projIndex, assetName, amount, recipientSeed)
 		if err != nil {
+			log.Println("did not payback", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -151,6 +157,7 @@ func RecpValidateHelper(w http.ResponseWriter, r *http.Request) (database.Recipi
 
 	prepRecipient, err := database.ValidateRecipient(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
 	if err != nil {
+		log.Println("did not validate recipient", err)
 		return prepRecipient, err
 	}
 
@@ -171,6 +178,7 @@ func storeDeviceId() {
 		prepRecipient.DeviceId = r.URL.Query()["deviceid"][0]
 		err = prepRecipient.Save()
 		if err != nil {
+			log.Println("did not save recipient", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -192,6 +200,7 @@ func storeStartTime() {
 		prepRecipient.DeviceStarts = append(prepRecipient.DeviceStarts, r.URL.Query()["start"][0])
 		err = prepRecipient.Save()
 		if err != nil {
+			log.Println("did not save recipient", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -212,6 +221,7 @@ func storeDeviceLocation() {
 		prepRecipient.DeviceLocation = r.URL.Query()["location"][0]
 		err = prepRecipient.Save()
 		if err != nil {
+			log.Println("did not save recipient", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -229,11 +239,13 @@ func changeReputationRecp() {
 		}
 		reputation, err := strconv.ParseFloat(r.URL.Query()["reputation"][0], 32) // same as StoI but we need to catch the error here
 		if err != nil {
+			log.Println("did not parse float", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 		err = database.ChangeRecpReputation(recipient.U.Index, reputation)
 		if err != nil {
+			log.Println("did not cahnge reputation", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -247,24 +259,28 @@ func chooseBlindAuction() {
 	http.HandleFunc("/recipient/auction/choose/blind", func(w http.ResponseWriter, r *http.Request) {
 		recipient, err := RecpValidateHelper(w, r)
 		if err != nil {
+			log.Println("did not validate recipient", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		allContracts, err := platform.RetrieveRecipientProjects(platform.ProposedProject, recipient.U.Index)
 		if err != nil {
+			log.Println("did not validate recipient projects", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
 		bestContract, err := platform.SelectContractBlind(allContracts)
 		if err != nil {
+			log.Println("did not select contract", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
 		err = bestContract.SetFinalizedProject()
 		if err != nil {
+			log.Println("did not set final project", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -279,12 +295,14 @@ func chooseVickreyAuction() {
 	http.HandleFunc("/recipient/auction/choose/vickrey", func(w http.ResponseWriter, r *http.Request) {
 		recipient, err := RecpValidateHelper(w, r)
 		if err != nil {
+			log.Println("did not validate recipient", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		allContracts, err := platform.RetrieveRecipientProjects(platform.ProposedProject, recipient.U.Index)
 		if err != nil {
+			log.Println("did not retrieve recipient projects", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -293,12 +311,14 @@ func chooseVickreyAuction() {
 		// some way to avoid repetition like this
 		bestContract, err := platform.SelectContractVickrey(allContracts)
 		if err != nil {
+			log.Println("did not select contract", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
 		err = bestContract.SetFinalizedProject()
 		if err != nil {
+			log.Println("did not set final project", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -312,12 +332,14 @@ func chooseTimeAuction() {
 	http.HandleFunc("/recipient/auction/choose/time", func(w http.ResponseWriter, r *http.Request) {
 		recipient, err := RecpValidateHelper(w, r)
 		if err != nil {
+			log.Println("did not validate recipient", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		allContracts, err := platform.RetrieveRecipientProjects(platform.ProposedProject, recipient.U.Index)
 		if err != nil {
+			log.Println("did not retrieve recipient projects", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -326,12 +348,14 @@ func chooseTimeAuction() {
 		// some way to avoid repetition like this
 		bestContract, err := platform.SelectContractTime(allContracts)
 		if err != nil {
+			log.Println("did not select contract", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
 		err = bestContract.SetFinalizedProject()
 		if err != nil {
+			log.Println("did not set final project", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -353,12 +377,14 @@ func unlock() {
 		seedpwd := r.URL.Query()["seedpwd"][0]
 		projIndex, err := utils.StoICheck(r.URL.Query()["projIndex"][0])
 		if err != nil {
+			log.Println("did not parse to integer", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		err = platform.UnlockProject(recipient.U.Username, recipient.U.Pwhash, projIndex, seedpwd)
 		if err != nil {
+			log.Println("did not unlock project", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -379,6 +405,7 @@ func addEmail() {
 		email := r.URL.Query()["email"][0]
 		err = recipient.AddEmail(email)
 		if err != nil {
+			log.Println("did not add email", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -400,12 +427,14 @@ func finalizeProject() {
 		projIndex := utils.StoI(r.URL.Query()["projIndex"][0])
 		project, err := platform.RetrieveProject(projIndex)
 		if err != nil {
+			log.Println("did not retrieve project", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		err = project.SetFinalizedProject()
 		if err != nil {
+			log.Println("did not set final project", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -426,6 +455,7 @@ func originateProject() {
 		projIndex := utils.StoI(r.URL.Query()["projIndex"][0])
 		err = platform.RecipientAuthorize(projIndex, recipient.U.Index)
 		if err != nil {
+			log.Println("did not authorize project", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -446,6 +476,7 @@ func calculateTrustLimit() {
 		assetName := r.URL.Query()["assetName"][0]
 		trustLimit, err := xlm.GetAssetTrustLimit(recipient.U.PublicKey, assetName)
 		if err != nil {
+			log.Println("did not get trust limit", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}

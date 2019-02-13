@@ -1,7 +1,7 @@
 package rpc
 
 import (
-	// "log"
+	"log"
 	"net/http"
 
 	database "github.com/YaleOpenLab/openx/database"
@@ -33,11 +33,13 @@ func getStableCoin() {
 		amount := r.URL.Query()["amount"][0] // in string
 		receiverPubkey, err := wallet.ReturnPubkey(receiverSeed)
 		if err != nil {
+			log.Println("did not return pubkey", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 		err = stablecoin.Exchange(receiverPubkey, receiverSeed, amount)
 		if err != nil {
+			log.Println("did not exchange for xlm", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}

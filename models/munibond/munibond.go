@@ -222,7 +222,7 @@ func MunibondPayback(recpIndex int, amount string, recipientSeed string, projInd
 		log.Println("Error while sending debt asset back", err)
 		return err
 	}
-	log.Printf("Paid %s back to platform in DebtAsset, txhash %s ", amount, debtPaybackHash,)
+	log.Printf("Paid %s back to platform in DebtAsset, txhash %s ", amount, debtPaybackHash)
 
 	newBalanceS, err := xlm.GetAssetBalance(recipient.U.PublicKey, assetName)
 	if err != nil {

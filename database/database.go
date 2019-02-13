@@ -54,34 +54,42 @@ func OpenDB() (*bolt.DB, error) {
 	err = db.Update(func(tx *bolt.Tx) error {
 		_, err := tx.CreateBucketIfNotExists(ProjectsBucket) // the projects bucket contains all our projects
 		if err != nil {
+			log.Println("Error while creating projects bucket", err)
 			return err
 		}
 		_, err = tx.CreateBucketIfNotExists(InvestorBucket) // the projects bucket contains all our projects
 		if err != nil {
+			log.Println("Error while creating investors bucket", err)
 			return err
 		}
 		_, err = tx.CreateBucketIfNotExists(RecipientBucket) // the projects bucket contains all our projects
 		if err != nil {
+			log.Println("Error while creating recipient bucket", err)
 			return err
 		}
 		_, err = tx.CreateBucketIfNotExists(ContractorBucket) // the projects bucket contains all our projects
 		if err != nil {
+			log.Println("Error while creating contractor bucket", err)
 			return err
 		}
 		_, err = tx.CreateBucketIfNotExists(UserBucket) // the projects bucket contains all our projects
 		if err != nil {
+			log.Println("Error while creating user bucket", err)
 			return err
 		}
 		_, err = tx.CreateBucketIfNotExists(BondBucket) // the projects bucket contains all our projects
 		if err != nil {
+			log.Println("Error while creating bond bucket", err)
 			return err
 		}
 		_, err = tx.CreateBucketIfNotExists(CoopBucket) // the projects bucket contains all our projects
 		if err != nil {
+			log.Println("Error while creating coop bucket", err)
 			return err
 		}
 		_, err = tx.CreateBucketIfNotExists(InspectorBucket) // the projects bucket contains all our projects
 		if err != nil {
+			log.Println("Error while creating inspector bucket", err)
 			return err
 		}
 		return nil

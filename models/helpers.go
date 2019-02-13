@@ -34,7 +34,7 @@ func SendUSDToPlatform(invSeed string, invAmount string, memo string) (string, e
 
 	_, txhash, err := assets.SendAsset(consts.Code, consts.StablecoinPublicKey, consts.PlatformPublicKey, invAmount, invSeed, invPubkey, memo)
 	if err != nil {
-		log.Println("Sending stableusd to platform failed", consts.PlatformPublicKey, invAmount, invSeed, invPubkey ,err)
+		log.Println("Sending stableusd to platform failed", consts.PlatformPublicKey, invAmount, invSeed, invPubkey, err)
 		return txhash, err
 	}
 
