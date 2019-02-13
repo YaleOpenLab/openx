@@ -58,6 +58,7 @@ func VerifyBeforeAuthorizing(projIndex int) bool {
 func RecipientAuthorize(projIndex int, recpIndex int) error {
 	project, err := RetrieveProject(projIndex)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 	if project.Stage != 0 {
@@ -68,6 +69,7 @@ func RecipientAuthorize(projIndex int, recpIndex int) error {
 	}
 	recipient, err := database.RetrieveRecipient(recpIndex)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 	if project.RecipientIndex != recipient.U.Index {
@@ -76,11 +78,13 @@ func RecipientAuthorize(projIndex int, recpIndex int) error {
 
 	err = project.SetOriginProject() // set the project as originated
 	if err != nil {
+		log.Println("Error while setting origin project", err)
 		return err
 	}
 
 	err = RepOriginatedProject(project.Originator.U.Index, project.Index)
 	if err != nil {
+		log.Println("Error while increasing reputation of originator", err)
 		return err
 	}
 
@@ -98,6 +102,7 @@ func RecipientAuthorize(projIndex int, recpIndex int) error {
 func VoteTowardsProposedProject(invIndex int, votes int, projectIndex int) error {
 	inv, err := database.RetrieveInvestor(invIndex)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 	if votes > inv.VotingBalance {
@@ -106,6 +111,7 @@ func VoteTowardsProposedProject(invIndex int, votes int, projectIndex int) error
 
 	project, err := RetrieveProject(projectIndex)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 	if project.Stage != 2 {
@@ -115,11 +121,13 @@ func VoteTowardsProposedProject(invIndex int, votes int, projectIndex int) error
 	project.Votes += votes
 	err = project.Save()
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 
 	err = inv.DeductVotingBalance(votes)
 	if err != nil {
+		log.Println("Error while deducitng voting balance of investor", err)
 		return err
 	}
 
@@ -135,11 +143,13 @@ func preInvestmentCheck(projIndex int, invIndex int, invAmount string) (Project,
 
 	project, err = RetrieveProject(projIndex)
 	if err != nil {
+		log.Println(err)
 		return project, err
 	}
 
 	investor, err = database.RetrieveInvestor(invIndex)
 	if err != nil {
+		log.Println(err)
 		return project, err
 	}
 
@@ -152,7 +162,7 @@ func preInvestmentCheck(projIndex int, invIndex int, invAmount string) (Project,
 
 	// check if investment amount is greater than or equal to the project requirements
 	if utils.StoF(invAmount) > project.TotalValue-project.MoneyRaised {
-		return project, err
+		return project, fmt.Errorf("Investment amount greater than what is required!")
 	}
 
 	if project.SeedAssetCode == "" && project.InvestorAssetCode == "" {
@@ -161,14 +171,17 @@ func preInvestmentCheck(projIndex int, invIndex int, invAmount string) (Project,
 		project.InvestorAssetCode = assets.AssetID(consts.InvestorAssetPrefix + project.Metadata) // you can retrieve asetCodes anywhere since metadata is assumed to be unique
 		err = project.Save()
 		if err != nil {
+			log.Println(err)
 			return project, err
 		}
 		err = issuer.InitIssuer(projIndex, consts.IssuerSeedPwd)
 		if err != nil {
+			log.Println("Error while initializing issuer", err)
 			return project, err
 		}
 		err = issuer.FundIssuer(projIndex, consts.IssuerSeedPwd, consts.PlatformSeed)
 		if err != nil {
+			log.Println("Error while funding issuer", err)
 			return project, err
 		}
 	}
@@ -182,17 +195,20 @@ func SeedInvest(projIndex int, invIndex int, recpIndex int, invAmount string,
 
 	project, err := preInvestmentCheck(projIndex, invIndex, invAmount)
 	if err != nil {
+		log.Println("Error while performing pre investment check", err)
 		return err
 	}
 
 	err = model.MunibondInvest(invIndex, invSeed, invAmount, projIndex,
 		project.SeedAssetCode, project.TotalValue)
 	if err != nil {
+		log.Println("Error while investing", err)
 		return err
 	}
 
 	err = project.updateProjectAfterInvestment(invAmount, invIndex)
 	if err != nil {
+		log.Println("Couldn't update project after investment", err)
 		return err
 	}
 
@@ -206,6 +222,7 @@ func Invest(projIndex int, invIndex int, invAmount string, invSeed string) error
 	// run preinvestment checks to make sure everything is okay
 	project, err := preInvestmentCheck(projIndex, invIndex, invAmount)
 	if err != nil {
+		log.Println("Pre investment check failed", err)
 		return err
 	}
 
@@ -213,12 +230,14 @@ func Invest(projIndex int, invIndex int, invAmount string, invSeed string) error
 	err = model.MunibondInvest(invIndex, invSeed, invAmount, projIndex,
 		project.InvestorAssetCode, project.TotalValue)
 	if err != nil {
+		log.Println("Error while seed investing", err)
 		return err
 	}
 
 	// once the investment is complete, update the project and store in the database
 	err = project.updateProjectAfterInvestment(invAmount, invIndex)
 	if err != nil {
+		log.Println("Failed to update project after investment", err)
 		return err
 	}
 
@@ -233,6 +252,7 @@ func (project *Project) updateProjectAfterInvestment(invAmount string, invIndex 
 	project.InvestorIndices = append(project.InvestorIndices, invIndex)
 	err = project.Save()
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 
@@ -240,11 +260,13 @@ func (project *Project) updateProjectAfterInvestment(invAmount string, invIndex 
 		project.Lock = true
 		err = project.Save()
 		if err != nil {
+			log.Println(err)
 			return err
 		}
 
 		err = project.sendRecipientNotification()
 		if err != nil {
+			log.Println("Error while sending notifications to recipient", err)
 			return err
 		}
 
@@ -259,6 +281,7 @@ func (project *Project) updateProjectAfterInvestment(invAmount string, invIndex 
 func (project *Project) sendRecipientNotification() error {
 	recipient, err := database.RetrieveRecipient(project.RecipientIndex)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 	notif.SendUnlockNotifToRecipient(project.Index, recipient.U.Email)
@@ -270,11 +293,13 @@ func UnlockProject(username string, pwhash string, projIndex int, seedpwd string
 	fmt.Println("UNLOCKING PROJECT")
 	project, err := RetrieveProject(projIndex)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 
 	recipient, err := database.ValidateRecipient(username, pwhash)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 
@@ -284,13 +309,13 @@ func UnlockProject(username string, pwhash string, projIndex int, seedpwd string
 
 	recpSeed, err := wallet.DecryptSeed(recipient.U.EncryptedSeed, seedpwd)
 	if err != nil {
-		log.Println(err)
+		log.Println("Error while decrpyting seed", err)
 		return err
 	}
 
 	checkPubkey, err := wallet.ReturnPubkey(recpSeed)
 	if err != nil {
-		log.Println(err)
+		log.Println("Couldn't get pubkey from seed", err)
 		return err
 	}
 
@@ -307,6 +332,7 @@ func UnlockProject(username string, pwhash string, projIndex int, seedpwd string
 	project.Lock = false
 	err = project.Save()
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 	return nil
@@ -318,6 +344,7 @@ func sendRecipientAssets(projIndex int) error {
 	startTime := utils.Unix()
 	project, err := RetrieveProject(projIndex)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 
@@ -325,6 +352,7 @@ func sendRecipientAssets(projIndex int) error {
 		log.Printf("WAITING FOR PROJECT %d TO BE UNLOCKED", projIndex)
 		project, err = RetrieveProject(projIndex)
 		if err != nil {
+			log.Println(err)
 			return err
 		}
 		if !project.Lock {
@@ -349,7 +377,7 @@ func sendRecipientAssets(projIndex int) error {
 
 	recpSeed, err := wallet.DecryptSeed(recipient.U.EncryptedSeed, project.LockPwd)
 	if err != nil {
-		log.Println(err)
+		log.Println("Couldn't decrypt seed", err)
 		return err
 	}
 
@@ -362,11 +390,13 @@ func sendRecipientAssets(projIndex int) error {
 	err = model.MunibondReceive(project.RecipientIndex, projIndex, project.DebtAssetCode,
 		project.PaybackAssetCode, project.Years, recpSeed, project.TotalValue, project.PaybackPeriod)
 	if err != nil {
+		log.Println("Error while receiving assets from issuer on recipient's end", err)
 		return err
 	}
 
 	err = project.updateProjectAfterAcceptance()
 	if err != nil {
+		log.Println("Failed to update project after acceptance of asset", err)
 		return err
 	}
 
@@ -399,11 +429,13 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 
 	project, err := RetrieveProject(projIndex)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 
 	err = model.MunibondPayback(recpIndex, amount, recipientSeed, projIndex, assetName, project.InvestorIndices)
 	if err != nil {
+		log.Println("Error while paying back the issuer", err)
 		return err
 	}
 
@@ -419,6 +451,7 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 
 	err = project.Save()
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 

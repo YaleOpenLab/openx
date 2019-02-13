@@ -26,36 +26,39 @@ func MunibondInvest(invIndex int, invSeed string, invAmount string,
 
 	investor, err := database.RetrieveInvestor(invIndex)
 	if err != nil {
+		log.Println("Unable to retrieve investor from database", err)
 		return err
 	}
 
 	err = stablecoin.OfferExchange(investor.U.PublicKey, invSeed, invAmount)
 	if err != nil {
-		log.Println(err)
+		log.Println("Unable to offer xlm to STABLEUSD excahnge for investor", err)
 		return err
 	}
 
 	stableTxHash, err := SendUSDToPlatform(invSeed, invAmount, "Opensolar investment: "+utils.ItoS(projIndex))
 	if err != nil {
-		log.Println(err)
+		log.Println("Unable to send STABELUSD to platform", err)
 		return err
 	}
 
 	issuerPubkey, issuerSeed, err := wallet.RetrieveSeed(issuer.CreatePath(projIndex), consts.IssuerSeedPwd)
 	if err != nil {
-		log.Println(err)
+		log.Println("Unable to retrieve seed", err)
 		return err
 	}
 
 	InvestorAsset := assets.CreateAsset(invAssetCode, issuerPubkey)
 	invTrustTxHash, err := assets.TrustAsset(InvestorAsset.Code, issuerPubkey, utils.FtoS(totalValue), investor.U.PublicKey, invSeed)
 	if err != nil {
+		log.Println("Error while trusting investor asset", err)
 		return err
 	}
 
 	log.Printf("Investor trusts InvAsset %s with txhash %s", InvestorAsset.Code, invTrustTxHash)
 	_, invAssetTxHash, err := assets.SendAssetFromIssuer(InvestorAsset.Code, investor.U.PublicKey, invAmount, issuerSeed, issuerPubkey)
 	if err != nil {
+		log.Println("Error while sending out investor asset", err)
 		return err
 	}
 
@@ -81,12 +84,13 @@ func MunibondReceive(recpIndex int, projIndex int, detbAssetId string,
 
 	recipient, err := database.RetrieveRecipient(recpIndex)
 	if err != nil {
-		log.Println(err)
+		log.Println("Unable to retrieve recipient from database", err)
 		return err
 	}
 
 	issuerPubkey, issuerSeed, err := wallet.RetrieveSeed(issuer.CreatePath(projIndex), consts.IssuerSeedPwd)
 	if err != nil {
+		log.Println("Unable to retrieve issuer seed", err)
 		log.Println(err)
 		return err
 	}
@@ -96,34 +100,34 @@ func MunibondReceive(recpIndex int, projIndex int, detbAssetId string,
 
 	pbAmtTrust := utils.ItoS(years * 12 * 2) // two way exchange possible, to account for errors
 
-	recpPbTrustHash, err := assets.TrustAsset(PaybackAsset.Code, issuerPubkey, pbAmtTrust, recipient.U.PublicKey, recpSeed)
+	paybackTrustHash, err := assets.TrustAsset(PaybackAsset.Code, issuerPubkey, pbAmtTrust, recipient.U.PublicKey, recpSeed)
 	if err != nil {
-		log.Println(err)
+		log.Println("Error while trusting Payback Asset", err)
+		return err
+	}
+	log.Printf("Recipient Trusts Payback asset %s with txhash %s", PaybackAsset.Code, paybackTrustHash)
+
+	_, paybackAssetHash, err := assets.SendAssetFromIssuer(PaybackAsset.Code, recipient.U.PublicKey, pbAmtTrust, issuerSeed, issuerPubkey) // same amount as debt
+	if err != nil {
+		log.Println("Error while sending payback asset from issue", err)
 		return err
 	}
 
-	log.Printf("Recipient Trusts Debt asset %s with txhash %s", DebtAsset.Code, recpPbTrustHash)
-	_, recpAssetHash, err := assets.SendAssetFromIssuer(PaybackAsset.Code, recipient.U.PublicKey, pbAmtTrust, issuerSeed, issuerPubkey) // same amount as debt
+	log.Printf("Sent PaybackAsset to recipient %s with txhash %s", recipient.U.PublicKey, paybackAssetHash)
+	debtTrustHash, err := assets.TrustAsset(DebtAsset.Code, issuerPubkey, utils.FtoS(totalValue*2), recipient.U.PublicKey, recpSeed)
 	if err != nil {
-		log.Println(err)
+		log.Println("Error while trusting debt asset", err)
 		return err
 	}
+	log.Printf("Recipient Trusts Debt asset %s with txhash %s", DebtAsset.Code, debtTrustHash)
 
-	log.Printf("Sent DebtAsset to recipient %s with txhash %s", recipient.U.PublicKey, recpAssetHash)
-	recpDebtTrustHash, err := assets.TrustAsset(DebtAsset.Code, issuerPubkey, utils.FtoS(totalValue*2), recipient.U.PublicKey, recpSeed)
-	if err != nil {
-		log.Println(err)
-		return err
-	}
-
-	log.Printf("Recipient Trusts Payback asset %s with txhash %s", PaybackAsset.Code, recpDebtTrustHash)
 	_, recpDebtAssetHash, err := assets.SendAssetFromIssuer(DebtAsset.Code, recipient.U.PublicKey, utils.FtoS(totalValue), issuerSeed, issuerPubkey) // same amount as debt
 	if err != nil {
-		log.Println(err)
+		log.Println("Error while sending debt asset", err)
 		return err
 	}
 
-	log.Printf("Sent PaybackAsset to recipient %s with txhash %s\n", recipient.U.PublicKey, recpDebtAssetHash)
+	log.Printf("Sent DebtAsset to recipient %s with txhash %s\n", recipient.U.PublicKey, recpDebtAssetHash)
 	recipient.ReceivedSolarProjects = append(recipient.ReceivedSolarProjects, DebtAsset.Code)
 	err = recipient.Save()
 	if err != nil {
@@ -133,7 +137,7 @@ func MunibondReceive(recpIndex int, projIndex int, detbAssetId string,
 
 	txhash, err := issuer.FreezeIssuer(projIndex, "blah")
 	if err != nil {
-		log.Println(err)
+		log.Println("Error while freezing issuer", err)
 		return err
 	}
 
@@ -141,7 +145,7 @@ func MunibondReceive(recpIndex int, projIndex int, detbAssetId string,
 	fmt.Printf("PROJECT %d's INVESTMENT CONFIRMED!", projIndex)
 
 	if recipient.U.Notification {
-		notif.SendInvestmentNotifToRecipient(projIndex, recipient.U.Email, recpPbTrustHash, recpAssetHash, recpDebtTrustHash, recpDebtAssetHash)
+		notif.SendInvestmentNotifToRecipient(projIndex, recipient.U.Email, paybackTrustHash, paybackAssetHash, debtTrustHash, recpDebtAssetHash)
 	}
 
 	go sendPaymentNotif(recipient.U.Index, projIndex, paybackPeriod, recipient.U.Email)
@@ -158,7 +162,7 @@ func sendPaymentNotif(recpIndex int, projIndex int, paybackPeriod int, email str
 
 		_, err := database.RetrieveRecipient(recpIndex) // need to retireve to make sure nothing goes awry
 		if err != nil {
-			log.Println(err)
+			log.Println("Error while retrieving recipient from database", err)
 			message := "Error while retrieving your account details, please contact help as soon as you receive this message " + err.Error()
 			notif.SendAlertEmail(message, email) // don't catch the error here
 			time.Sleep(time.Duration(paybackPeriod * consts.OneWeekInSecond))
@@ -184,61 +188,66 @@ func MunibondPayback(recpIndex int, amount string, recipientSeed string, projInd
 
 	recipient, err := database.RetrieveRecipient(recpIndex)
 	if err != nil {
+		log.Println("Error while retrieving recipient from database", err)
 		return err
 	}
 
 	issuerPubkey, _, err := wallet.RetrieveSeed(issuer.CreatePath(projIndex), consts.IssuerSeedPwd)
 	if err != nil {
+		log.Println("Unable to retrieve issuer seed", err)
 		return err
 	}
 
 	err = stablecoin.OfferExchange(recipient.U.PublicKey, recipientSeed, amount)
 	if err != nil {
+		log.Println("Unable to offer xlm to STABLEUSD excahnge for investor", err)
 		return err
 	}
 
 	StableBalance, err := xlm.GetAssetBalance(recipient.U.PublicKey, "STABLEUSD")
 	if err != nil || (utils.StoF(StableBalance) < utils.StoF(amount)) {
-		log.Println("You do not have the required stablecoin balance, please refill")
+		log.Println("You do not have the required stablecoin balance, please refill", err)
 		return err
 	}
 
 	_, stableUSDHash, err := assets.SendAsset(consts.Code, consts.StableCoinAddress, consts.PlatformPublicKey, amount, recipientSeed, recipient.U.PublicKey, "Opensolar payback: "+utils.ItoS(projIndex))
 	if err != nil {
+		log.Println("Error while sending STABLEUSD back", err)
 		return err
 	}
 	log.Printf("Paid %s back to platform in stableUSD, txhash %s ", amount, stableUSDHash)
 
-	DEBAssetBalance, err := xlm.GetAssetBalance(recipient.U.PublicKey, assetName)
+	_, debtPaybackHash, err := assets.SendAssetToIssuer(assetName, issuerPubkey, amount, recipientSeed, recipient.U.PublicKey)
 	if err != nil {
-		fmt.Println("Don't have the debt asset in possession", err)
+		log.Println("Error while sending debt asset back", err)
 		return err
 	}
+	log.Printf("Paid %s back to platform in DebtAsset, txhash %s ", amount, debtPaybackHash)
+
+	newBalanceS, err := xlm.GetAssetBalance(recipient.U.PublicKey, assetName)
+	if err != nil {
+		log.Println("API error while fetching balance", err)
+		return err
+	}
+	newBalance := utils.StoF(newBalanceS)
+
+	DEBAssetBalance, err := xlm.GetAssetBalance(recipient.U.PublicKey, assetName)
+	if err != nil {
+		log.Println("Recipient does not have the debt asset?", err)
+		return err
+	}
+	debtBalance := utils.StoF(DEBAssetBalance)
 
 	monthlyBill := oracle.MonthlyBill()
 	if err != nil {
-		log.Println("Unable to fetch oracle price, exiting")
+		log.Println("Unable to fetch oracle price, exiting", err)
 		return err
 	}
 
 	log.Println("Retrieved average price from oracle: ", monthlyBill)
-	_, debtPaybackHash, err := assets.SendAssetToIssuer(assetName, issuerPubkey, amount, recipientSeed, recipient.U.PublicKey)
-	if err != nil {
-		log.Println(err)
-		return err
-	}
-
-	log.Printf("Paid %s back to platform in DebtAsset, txhash %s ", amount, debtPaybackHash,)
-	newBalance, err := xlm.GetAssetBalance(recipient.U.PublicKey, assetName)
-	if err != nil {
-		return err
-	}
-
-	newBalanceFloat := utils.StoF(newBalance)
-	DEBAssetBalanceFloat := utils.StoF(DEBAssetBalance)
 	mBillFloat := utils.StoF(monthlyBill)
 
-	paidAmount := DEBAssetBalanceFloat - newBalanceFloat
+	paidAmount := debtBalance - newBalance
 	//log.Println("Old Balance: ", DEBAssetBalanceFloat, " New Balance: ", newBalanceFloat, " Paid: ", paidAmount, " Bill Amount: ", mBillFloat)
 	// right now, we accept whatever amount the recipient chooses to payback. If we choose to enforce
 	// strict payback, we should check this first and then exchange STABLEUSD and DebtAssets
@@ -257,7 +266,7 @@ func MunibondPayback(recpIndex int, amount string, recipientSeed string, projInd
 	for _, i := range projectInvestors {
 		investor, err := database.RetrieveInvestor(i)
 		if err != nil {
-			log.Println(err)
+			log.Println("Error while retrieving investor from list of investors", err)
 			continue
 		}
 		if investor.U.Notification {

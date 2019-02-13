@@ -37,6 +37,8 @@
 package assets
 
 import (
+	"log"
+
 	utils "github.com/YaleOpenLab/openx/utils"
 	xlm "github.com/YaleOpenLab/openx/xlm"
 	"github.com/stellar/go/build"
@@ -72,6 +74,7 @@ func TrustAsset(assetCode string, assetIssuer string, limit string, PublicKey st
 	)
 
 	if err != nil {
+		log.Println("Error while constructing trust asset transaction", err)
 		return "", err
 	}
 
@@ -98,6 +101,7 @@ func SendAssetFromIssuer(assetName string, destination string, amount string,
 	)
 
 	if err != nil {
+		log.Println("Error while constructing send asset from issuer transaction", err)
 		return -1, "", err
 	}
 	return xlm.SendTx(issuerSeed, paymentTx)
@@ -118,6 +122,7 @@ func SendAssetToIssuer(assetName string, destination string, amount string,
 	)
 
 	if err != nil {
+		log.Println("Error while constructing send asset to issuer transaction", err)
 		return -1, "", err
 	}
 	return xlm.SendTx(seed, paymentTx)
@@ -138,6 +143,7 @@ func SendAsset(assetName string, issuerPubkey string, destination string, amount
 	)
 
 	if err != nil {
+		log.Println("Error while constructing send asset transaction", err)
 		return -1, "", err
 	}
 	return xlm.SendTx(seed, paymentTx)

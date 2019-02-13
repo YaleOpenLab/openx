@@ -2,6 +2,7 @@ package opensolar
 
 import (
 	"fmt"
+	"log"
 
 	database "github.com/YaleOpenLab/openx/database"
 	utils "github.com/YaleOpenLab/openx/utils"
@@ -59,10 +60,12 @@ func (contractor *Entity) Originate(panelSize string, totalValue float64, locati
 func RepOriginatedProject(origIndex int, projIndex int) error {
 	originator, err := RetrieveEntity(origIndex)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 	project, err := RetrieveProject(projIndex)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 	return originator.U.IncreaseReputation(project.TotalValue * OriginatorWeight)

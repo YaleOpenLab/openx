@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	platform "github.com/YaleOpenLab/openx/platforms/opensolar"
@@ -34,12 +35,14 @@ func parseProject(r *http.Request) (platform.Project, error) {
 	var prepProject platform.Project
 	err := r.ParseForm()
 	if err != nil {
+		log.Println("did not parse form", err)
 		return prepProject, err
 	}
 	// if we're inserting this in, we need to get the next index number
 	// so that we can set this without causing some weird bugs
 	allProjects, err := platform.RetrieveAllProjects()
 	if err != nil {
+		log.Println("did not retrieve all projects", err)
 		return prepProject, fmt.Errorf("Error in assigning index")
 	}
 	prepProject.Index = len(allProjects) + 1
@@ -69,11 +72,13 @@ func insertProject() {
 		var prepProject platform.Project
 		prepProject, err := parseProject(r)
 		if err != nil {
+			log.Println("did not parse project", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 		err = prepProject.Save()
 		if err != nil {
+			log.Println("did not save project", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -91,6 +96,7 @@ func getAllProjects() {
 		// db, without asking for one
 		allProjects, err := platform.RetrieveAllProjects()
 		if err != nil {
+			log.Println("did not retrieve all projects", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -110,6 +116,7 @@ func getProject() {
 		uKey := utils.StoI(r.URL.Query()["index"][0])
 		contract, err := platform.RetrieveProject(uKey)
 		if err != nil {
+			log.Println("did not retrieve project", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -122,10 +129,10 @@ func projectHandler(w http.ResponseWriter, r *http.Request, stage float64) {
 	checkGet(w, r)
 	allProjects, err := platform.RetrieveProjectsAtStage(stage)
 	if err != nil {
+		log.Println("did not retrieve project at specific stage", err)
 		responseHandler(w, r, StatusInternalServerError)
 		return
 	}
-	fmt.Println("PROJECTS AT STAGE: ", stage, allProjects)
 	MarshalSend(w, r, allProjects)
 }
 

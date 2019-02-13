@@ -2,6 +2,7 @@ package aes
 
 // the aes package implements AES-256 GCM encryption and decrpytion functions
 import (
+	"log"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
@@ -19,6 +20,7 @@ func Encrypt(data []byte, passphrase string) ([]byte, error) {
 	block, _ := aes.NewCipher(key)
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
+		log.Println("Error while opening new GCM block", err)
 		return data, err
 	}
 	nonce := make([]byte, gcm.NonceSize())
@@ -38,16 +40,19 @@ func Decrypt(data []byte, passphrase string) ([]byte, error) {
 	key := []byte(tempParam[96:128]) // last 32 characters in hash
 	block, err := aes.NewCipher(key)
 	if err != nil {
+		log.Println("Error while initalizing new cipher", err)
 		return data, err
 	}
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
+		log.Println("", err)
 		return data, err
 	}
 	nonceSize := gcm.NonceSize()
 	nonce, ciphertext := data[:nonceSize], data[nonceSize:]
 	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
+		log.Println("Error while opening gcm mode", err)
 		return plaintext, err
 	}
 	return plaintext, nil
@@ -57,11 +62,13 @@ func Decrypt(data []byte, passphrase string) ([]byte, error) {
 func EncryptFile(filename string, data []byte, passphrase string) error {
 	f, err := os.Create(filename)
 	if err != nil {
+		log.Println("Error whiel creating file", err)
 		return err
 	}
 	defer f.Close()
 	data, err = Encrypt(data, passphrase)
 	if err != nil {
+		log.Println("Error while encrypting file", err)
 		return err
 	}
 	f.Write(data)

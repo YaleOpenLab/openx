@@ -2,7 +2,7 @@ package rpc
 
 import (
 	"encoding/json"
-	// "log"
+	"log"
 	"net/http"
 	"strings"
 
@@ -31,6 +31,7 @@ func GetAllCoops() {
 		checkGet(w, r)
 		allBonds, err := bonds.RetrieveAllBonds()
 		if err != nil {
+			log.Println("did not retireve all bonds", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -50,11 +51,13 @@ func getCoopDetails() {
 		uKey := utils.StoI(r.URL.Query()["index"][0])
 		bond, err := bonds.RetrieveCoop(uKey)
 		if err != nil {
+			log.Println("did not retireve coop", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 		bondJson, err := json.Marshal(bond)
 		if err != nil {
+			log.Println("did not marhsal json", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -81,8 +84,10 @@ func InvestInCoop() {
 		issuerPk := "GAEY5TVFYWBIIHF7PQCQVNIFTNIF7QSG4IH27HRW3DH476RI4NA2BPV3"
 		_, err = xlm.GetNativeBalance(issuerPk)
 		if err != nil {
+			log.Println("did not get native balance", err)
 			err = xlm.GetXLM(issuerPk)
 			if err != nil {
+				log.Println("did not get xlm from friendbot", err)
 				responseHandler(w, r, StatusInternalServerError)
 				return
 			}
@@ -95,36 +100,43 @@ func InvestInCoop() {
 
 		iCoop, err = bonds.RetrieveCoop(CoopIndex)
 		if err != nil {
+			log.Println("did not retrieve coop", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 		// pass the investor index, pk and seed
 		iInv, err := database.RetrieveInvestor(invIndex)
 		if err != nil {
+			log.Println("did not retrieve investor", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
 		_, err = xlm.GetNativeBalance(iInv.U.PublicKey) // get testnet funds if their account is new
 		if err != nil {
+			log.Println("did not get native balance", err)
 			err = xlm.GetXLM(iInv.U.PublicKey)
 			if err != nil {
+				log.Println("did not get xlm from friendbot", err)
 				responseHandler(w, r, StatusInternalServerError)
 				return
 			}
 		}
 		invSeed, err := iInv.U.GetSeed(invSeedPwd)
 		if err != nil {
+			log.Println("did not get the investor seed from password", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 		err = iCoop.Invest(issuerPk, issuerSeed, &iInv, invAmount, invSeed)
 		if err != nil {
+			log.Println("did not invest in the coop", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 		bondJson, err := json.Marshal(iCoop)
 		if err != nil {
+			log.Println("did not marshal json", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -141,10 +153,12 @@ func CreateBond() {
 	bond1, err = bonds.NewBond("Dec 21 2049", "Maturation Rights Link", "Security Type", 5.4, "AAA", "Bond Issuer", "underwriter.com",
 		100000, "Instrument Type", 100, "No Fed tax for 10 years", 1, "title", "location", "string")
 	if err != nil {
+		log.Println("did not create new bond", err)
 		return
 	}
 	_, err = bonds.RetrieveBond(bond1.Params.Index)
 	if err != nil {
+		log.Println("did not retrieve bond", err)
 		return
 	}
 }
@@ -167,8 +181,10 @@ func InvestInBond() {
 		issuerPk := "GAEY5TVFYWBIIHF7PQCQVNIFTNIF7QSG4IH27HRW3DH476RI4NA2BPV3"
 		_, err = xlm.GetNativeBalance(issuerPk)
 		if err != nil {
+			log.Println("did not get native xlm balance", err)
 			err = xlm.GetXLM(issuerPk)
 			if err != nil {
+				log.Println("did not get xlm from friendbot", err)
 				responseHandler(w, r, StatusInternalServerError)
 				return
 			}
@@ -182,33 +198,40 @@ func InvestInBond() {
 
 		iBond, err = bonds.RetrieveBond(bondIndex)
 		if err != nil {
+			log.Println("did not retrieve bond", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 		iRec, err := database.RetrieveRecipient(iBond.RecipientIndex)
 		if err != nil {
+			log.Println("did not retrieve recipient", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 		// pass the investor index, pk and seed
 		iInv, err := database.RetrieveInvestor(invIndex)
 		if err != nil {
+			log.Println("did not retrieve investor", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
 		_, err = xlm.GetNativeBalance(iInv.U.PublicKey) // get testnet funds if their account is new
 		if err != nil {
+			log.Println("did not retrieve native xlm balance", err)
 			err = xlm.GetXLM(iInv.U.PublicKey)
 			if err != nil {
+				log.Println("did not get xlm from friendbot", err)
 				responseHandler(w, r, StatusInternalServerError)
 				return
 			}
 		}
 		_, err = xlm.GetNativeBalance(iRec.U.PublicKey) // get testnet funds if their account is new
 		if err != nil {
+			log.Println("did not retrieve native xlm balance", err)
 			err = xlm.GetXLM(iRec.U.PublicKey)
 			if err != nil {
+				log.Println("did not get xlm from friendbot", err)
 				responseHandler(w, r, StatusInternalServerError)
 				return
 			}
@@ -216,17 +239,20 @@ func InvestInBond() {
 
 		invSeed, err := iInv.U.GetSeed(invSeedPwd)
 		if err != nil {
+			log.Println("did not get investor seed from password", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 		recSeed, err := iRec.U.GetSeed(recSeedPwd)
 		if err != nil {
+			log.Println("did not get recipient seed from password", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		err = iBond.Invest(issuerPk, issuerSeed, &iInv, &iRec, invAmount, invSeed, recSeed)
 		if err != nil {
+			log.Println("did not invest in bond", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -246,6 +272,7 @@ func getBondDetails() {
 		uKey := utils.StoI(r.URL.Query()["index"][0])
 		bond, err := bonds.RetrieveBond(uKey)
 		if err != nil {
+			log.Println("did not retrieve bond", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -259,6 +286,7 @@ func GetAllBonds() {
 		checkGet(w, r)
 		allBonds, err := bonds.RetrieveAllBonds()
 		if err != nil {
+			log.Println("did not retrieve all bonds", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -279,6 +307,7 @@ func Search() {
 		if strings.Contains(searchString, "bond") {
 			allBonds, err := bonds.RetrieveAllBonds()
 			if err != nil {
+				log.Println("did not retrieve all bonds", err)
 				responseHandler(w, r, StatusInternalServerError)
 				return
 			}
@@ -288,6 +317,7 @@ func Search() {
 			// do coop stuff
 			allCoops, err := bonds.RetrieveAllCoops()
 			if err != nil {
+				log.Println("did not retrieve bond", err)
 				responseHandler(w, r, StatusInternalServerError)
 				return
 			}

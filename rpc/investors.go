@@ -2,7 +2,7 @@ package rpc
 
 import (
 	"fmt"
-	//"log"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -50,11 +50,13 @@ func insertInvestor() {
 		checkPost(w, r)
 		prepInvestor, err := parseInvestor(r)
 		if err != nil {
+			log.Println("parseInvestor error", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 		err = prepInvestor.Save()
 		if err != nil {
+			log.Println("did not save investor", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -74,6 +76,7 @@ func validateInvestor() {
 		}
 		prepInvestor, err := database.ValidateInvestor(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
 		if err != nil {
+			log.Println("did not validate investor", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -88,6 +91,7 @@ func getAllInvestors() {
 		checkGet(w, r)
 		investors, err := database.RetrieveAllInvestors()
 		if err != nil {
+			log.Println("did not retrieve all investors", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -116,6 +120,7 @@ func invest() {
 		seedpwd := r.URL.Query()["seedpwd"][0]
 		investorSeed, err := wallet.DecryptSeed(investor.U.EncryptedSeed, seedpwd)
 		if err != nil {
+			log.Println("did not decrypt seed", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -124,6 +129,7 @@ func invest() {
 		amount := r.URL.Query()["amount"][0]
 		investorPubkey, err := wallet.ReturnPubkey(investorSeed)
 		if err != nil {
+			log.Println("did not return pubkey", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -140,6 +146,7 @@ func invest() {
 		// so incentive would be there to unlock the seed.
 		err = platform.Invest(projIndex, investor.U.Index, amount, investorSeed)
 		if err != nil {
+			log.Println("did not invest in order", err)
 			responseHandler(w, r, StatusNotFound)
 			return
 		}
@@ -160,6 +167,7 @@ func InvValidateHelper(w http.ResponseWriter, r *http.Request) (database.Investo
 
 	prepInvestor, err := database.ValidateInvestor(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
 	if err != nil {
+		log.Println("did not validate investor", err)
 		return prepInvestor, err
 	}
 
@@ -177,11 +185,13 @@ func changeReputationInv() {
 		}
 		reputation, err := strconv.ParseFloat(r.URL.Query()["reputation"][0], 32) // same as StoI but we need to catch the error here
 		if err != nil {
+			log.Println("could not parse float", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 		err = database.ChangeInvReputation(investor.U.Index, reputation)
 		if err != nil {
+			log.Println("did not change investor reputation", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -202,6 +212,7 @@ func voteTowardsProject() {
 		projIndex := utils.StoI(r.URL.Query()["projIndex"][0])
 		err = platform.VoteTowardsProposedProject(investor.U.Index, votes, projIndex)
 		if err != nil {
+			log.Println("did not vote towards proposed project", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -225,6 +236,7 @@ func addLocalAssetInv() {
 		prepInvestor.U.LocalAssets = append(prepInvestor.U.LocalAssets, assetName)
 		err = prepInvestor.Save()
 		if err != nil {
+			log.Println("did not save investor", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -248,6 +260,7 @@ func invAssetInv() {
 		seedpwd := r.URL.Query()["seedpwd"][0]
 		seed, err := wallet.DecryptSeed(prepInvestor.U.EncryptedSeed, seedpwd)
 		if err != nil {
+			log.Println("did not decrypt seed", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -269,6 +282,7 @@ func invAssetInv() {
 
 		_, txhash, err := assets.SendAssetFromIssuer(assetName, destination, amount, seed, prepInvestor.U.PublicKey)
 		if err != nil {
+			log.Println("did not send asset from issuer", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -289,6 +303,7 @@ func sendEmail() {
 		to := r.URL.Query()["to"][0]
 		err = notif.SendEmail(message, to, prepInvestor.U.Name)
 		if err != nil {
+			log.Println("did not send email", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}

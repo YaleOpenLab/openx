@@ -41,6 +41,7 @@ func WriteToHandler(w http.ResponseWriter, jsonString []byte) {
 func MarshalSend(w http.ResponseWriter, r *http.Request, x interface{}) {
 	xJson, err := json.Marshal(x)
 	if err != nil {
+		log.Println("did not marshal json", err)
 		responseHandler(w, r, StatusInternalServerError)
 		return
 	}
@@ -78,11 +79,13 @@ func GetRequest(url string) ([]byte, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
+		log.Println("did not create new GET request", err)
 		return dummy, err
 	}
 	req.Header.Set("Origin", "localhost")
 	res, err := client.Do(req)
 	if err != nil {
+		log.Println("did not make request", err)
 		return dummy, err
 	}
 	defer res.Body.Close()
@@ -96,6 +99,7 @@ func PutRequest(body string, payload io.Reader) ([]byte, error) {
 	var dummy []byte
 	req, err := http.NewRequest("PUT", body, payload)
 	if err != nil {
+		log.Println("did not create new PUT request", err)
 		return dummy, err
 	}
 	// need to add this header or we'll get a negative response
@@ -103,12 +107,14 @@ func PutRequest(body string, payload io.Reader) ([]byte, error) {
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
+		log.Println("did not make request", err)
 		return dummy, err
 	}
 
 	defer res.Body.Close()
 	x, err := ioutil.ReadAll(res.Body)
 	if err != nil {
+		log.Println("did not read from ioutil", err)
 		return dummy, err
 	}
 

@@ -1,6 +1,7 @@
 package rpc
 
 import (
+	"log"
 	"net/http"
 
 	database "github.com/YaleOpenLab/openx/database"
@@ -112,6 +113,7 @@ func getAllInvestorsPublic() {
 		checkGet(w, r)
 		investors, err := database.RetrieveAllInvestors()
 		if err != nil {
+			log.Println("did not retrieve all investors", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -127,6 +129,7 @@ func getAllRecipientsPublic() {
 		checkGet(w, r)
 		recipients, err := database.RetrieveAllRecipients()
 		if err != nil {
+			log.Println("did not retrieve all recipients", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -142,6 +145,7 @@ func getTopReputationPublic() {
 		checkGet(w, r)
 		allUsers, err := database.TopReputationUsers()
 		if err != nil {
+			log.Println("did not retrive all top reputation users", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -156,6 +160,7 @@ func getRecpTopReputationPublic() {
 		checkGet(w, r)
 		allRecps, err := database.TopReputationRecipient()
 		if err != nil {
+			log.Println("did not retrieve all top reputaiton recipients", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -170,6 +175,7 @@ func getInvTopReputationPublic() {
 		checkGet(w, r)
 		allInvs, err := database.TopReputationInvestors()
 		if err != nil {
+			log.Println("did not retrieve all top reputation investors", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}

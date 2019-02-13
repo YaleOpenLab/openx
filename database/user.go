@@ -3,6 +3,7 @@ package database
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 
 	aes "github.com/YaleOpenLab/openx/aes"
 	utils "github.com/YaleOpenLab/openx/utils"
@@ -65,6 +66,7 @@ func NewUser(uname string, pwd string, seedpwd string, Name string) (User, error
 
 	allUsers, err := RetrieveAllUsers()
 	if err != nil {
+		log.Println("Error while retrieving all users from database", err)
 		return a, err
 	}
 
@@ -78,6 +80,7 @@ func NewUser(uname string, pwd string, seedpwd string, Name string) (User, error
 	a.Name = Name
 	err = a.GenKeys(seedpwd)
 	if err != nil {
+		log.Println(" Error while generating public and private keys", err)
 		return a, err
 	}
 	a.Username = uname
@@ -94,6 +97,7 @@ func NewUser(uname string, pwd string, seedpwd string, Name string) (User, error
 func (a *User) Save() error {
 	db, err := OpenDB()
 	if err != nil {
+		log.Println("Error while opening database", err)
 		return err
 	}
 	defer db.Close()
@@ -101,6 +105,7 @@ func (a *User) Save() error {
 		b := tx.Bucket(UserBucket)
 		encoded, err := json.Marshal(a)
 		if err != nil {
+			log.Println("Error while marshaling json", err)
 			return err
 		}
 		return b.Put([]byte(utils.ItoB(a.Index)), encoded)
@@ -112,6 +117,7 @@ func RetrieveAllUsersWithoutKyc() ([]User, error) {
 	var arr []User
 	db, err := OpenDB()
 	if err != nil {
+		log.Println("Error while opening database", err)
 		return arr, err
 	}
 	defer db.Close()
@@ -126,6 +132,7 @@ func RetrieveAllUsersWithoutKyc() ([]User, error) {
 			}
 			err := json.Unmarshal(x, &rUser)
 			if err != nil {
+				log.Println("Error while unmarshalling json", err)
 				return err
 			}
 			if !rUser.Kyc {
@@ -141,6 +148,7 @@ func RetrieveAllUsersWithKyc() ([]User, error) {
 	var arr []User
 	db, err := OpenDB()
 	if err != nil {
+		log.Println("Error while opening database", err)
 		return arr, err
 	}
 	defer db.Close()
@@ -155,6 +163,7 @@ func RetrieveAllUsersWithKyc() ([]User, error) {
 			}
 			err := json.Unmarshal(x, &rUser)
 			if err != nil {
+				log.Println("Error while unmarshalling json", err)
 				return err
 			}
 			if rUser.Kyc {
@@ -171,6 +180,7 @@ func RetrieveAllUsers() ([]User, error) {
 	var arr []User
 	db, err := OpenDB()
 	if err != nil {
+		log.Println("Error while opening database", err)
 		return arr, err
 	}
 	defer db.Close()
@@ -185,6 +195,7 @@ func RetrieveAllUsers() ([]User, error) {
 			}
 			err := json.Unmarshal(x, &rUser)
 			if err != nil {
+				log.Println("Error while unmarshalling json", err)
 				return err
 			}
 			arr = append(arr, rUser)
@@ -199,6 +210,7 @@ func RetrieveUser(key int) (User, error) {
 	var inv User
 	db, err := OpenDB()
 	if err != nil {
+		log.Println("Error while opening database", err)
 		return inv, err
 	}
 	defer db.Close()
@@ -217,6 +229,7 @@ func ValidateUser(name string, pwhash string) (User, error) {
 	var inv User
 	temp, err := RetrieveAllUsers()
 	if err != nil {
+		log.Println("Error while retrieving all users from database", err)
 		return inv, err
 	}
 	limit := len(temp) + 1
@@ -250,6 +263,7 @@ func (a *User) GenKeys(seedpwd string) error {
 	var seed string
 	seed, a.PublicKey, err = xlm.GetKeyPair()
 	if err != nil {
+		log.Println("Error while generating publick and private key pair", err)
 		return err
 	}
 	// don't store the seed in the database
@@ -267,11 +281,13 @@ func (a *User) GetSeed(seedpwd string) (string, error) {
 func CheckUsernameCollision(uname string) error {
 	temp, err := RetrieveAllUsers()
 	if err != nil {
+		log.Println("Error while retrieving all users from database", err)
 		return err
 	}
 	limit := len(temp) + 1
 	db, err := OpenDB()
 	if err != nil {
+		log.Println("Error while opening database", err)
 		return err
 	}
 	defer db.Close()
@@ -282,6 +298,7 @@ func CheckUsernameCollision(uname string) error {
 			x := b.Get(utils.ItoB(i))
 			err := json.Unmarshal(x, &rUser)
 			if err != nil {
+				log.Println("Error while unmarshalling json", err)
 				return err
 			}
 			// check names
@@ -315,6 +332,7 @@ func (a *User) Authorize(userIndex int) error {
 	user, err := RetrieveUser(userIndex)
 	// we want to retrieve only users who have not gone through KYC before
 	if err != nil {
+		log.Println("Error while retrieving user from database", err)
 		return err
 	}
 	if user.Kyc {
@@ -328,6 +346,7 @@ func AddInspector(userIndex int) error {
 	// this should only be called by the platform itself and not open to others
 	user, err := RetrieveUser(userIndex)
 	if err != nil {
+		log.Println("Error while retrieving user from database", err)
 		return err
 	}
 	user.Inspector = true
@@ -350,6 +369,7 @@ func TopReputationUsers() ([]User, error) {
 	// RPC to display to other users what other users' reputation is.
 	allUsers, err := RetrieveAllUsers()
 	if err != nil {
+		log.Println("Error while retrieving all users from database", err)
 		return allUsers, err
 	}
 	for i, _ := range allUsers {

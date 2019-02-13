@@ -4,5 +4,5 @@ package template
 // and example of the different entities involved in the opensolar project are:
 // 1. Originator
 // 2. Contractor
-// 3.  Guarantor
+// 3. Guarantor
 // 4. Developer
