@@ -2,6 +2,7 @@ package opensolar
 
 import (
 	"fmt"
+	"log"
 
 	database "github.com/YaleOpenLab/openx/database"
 	utils "github.com/YaleOpenLab/openx/utils"
@@ -71,16 +72,19 @@ func (contractor *Entity) Slash(contractValue float64) error {
 func RepInstalledProject(contrIndex int, projIndex int) error {
 	contractor, err := RetrieveEntity(contrIndex)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 
 	project, err := RetrieveProject(projIndex)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 
 	err = project.SetInstalledProjectStage()
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 

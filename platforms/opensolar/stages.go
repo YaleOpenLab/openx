@@ -51,6 +51,7 @@ func (a *Project) SetFinalizedProject() error {
 	a.Reputation = a.TotalValue // upgrade reputation since totalValue might have changed from the originated contract
 	err := a.Save()
 	if err != nil {
+		log.Println("Error while saving project", err)
 		return err
 	}
 	return RepOriginatedProject(a.Originator.U.Index, a.Index) // modify originator reputation now that the final price is fixed
@@ -70,17 +71,19 @@ func (a *Project) SetInstalledProjectStage() error {
 
 	err = a.Contractor.U.IncreaseReputation(a.TotalValue * ContractorWeight) // modify contractor Reputation now that a project has been installed
 	if err != nil {
+		log.Println("Couldn't increase contractor reputation", err)
 		return err
 	}
 
 	for _, i := range a.InvestorIndices {
 		elem, err := database.RetrieveInvestor(i)
 		if err != nil {
-			log.Println(err)
+			log.Println("Error while retrieving investor", err)
 			return err
 		}
 		err = database.ChangeInvReputation(elem.U.Index, a.TotalValue*InvestorWeight)
 		if err != nil {
+			log.Println("Couldn't change investor reputation", err)
 			return err
 		}
 	}
@@ -92,6 +95,7 @@ func (a *Project) SetPowerGenerationStage() error {
 	a.Stage = 6
 	err := a.Save()
 	if err != nil {
+		log.Println("Error while saving project", err)
 		return err
 	}
 

@@ -21,6 +21,7 @@ func SendUSDToPlatform(invSeed string, invAmount string, memo string) (string, e
 
 	invPubkey, err := wallet.ReturnPubkey(invSeed)
 	if err != nil {
+		log.Println("Error while returning pubkey", err)
 		return "", err
 	}
 
@@ -33,7 +34,7 @@ func SendUSDToPlatform(invSeed string, invAmount string, memo string) (string, e
 
 	_, txhash, err := assets.SendAsset(consts.Code, consts.StablecoinPublicKey, consts.PlatformPublicKey, invAmount, invSeed, invPubkey, memo)
 	if err != nil {
-		log.Println("Sending stableusd to platform failed", consts.PlatformPublicKey, invAmount, invSeed, invPubkey)
+		log.Println("Sending stableusd to platform failed", consts.PlatformPublicKey, invAmount, invSeed, invPubkey ,err)
 		return txhash, err
 	}
 
@@ -42,6 +43,7 @@ func SendUSDToPlatform(invSeed string, invAmount string, memo string) (string, e
 
 	newPlatformBalance, err := xlm.GetAssetBalance(consts.PlatformPublicKey, consts.Code)
 	if err != nil {
+		log.Println("Error while getting asset balance", err)
 		return txhash, err
 	}
 
