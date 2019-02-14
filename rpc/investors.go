@@ -10,6 +10,7 @@ import (
 	database "github.com/YaleOpenLab/openx/database"
 	notif "github.com/YaleOpenLab/openx/notif"
 	platform "github.com/YaleOpenLab/openx/platforms/opensolar"
+	opzones "github.com/YaleOpenLab/openx/platforms/ozones"
 	utils "github.com/YaleOpenLab/openx/utils"
 	wallet "github.com/YaleOpenLab/openx/wallet"
 	xlm "github.com/YaleOpenLab/openx/xlm"
@@ -26,6 +27,7 @@ func setupInvestorRPCs() {
 	addLocalAssetInv()
 	invAssetInv()
 	sendEmail()
+	investInConstructionBond()
 }
 
 // parseInvestor is a helper that can be used to validate POST data and assigns the passed form
@@ -304,6 +306,42 @@ func sendEmail() {
 		err = notif.SendEmail(message, to, prepInvestor.U.Name)
 		if err != nil {
 			log.Println("did not send email", err)
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+		responseHandler(w, r, StatusOK)
+	})
+}
+
+// curl request attached for convenience
+// curl -X POST -H "Content-Type: application/x-www-form-urlencoded" -H "Origin: localhost" -H "Cache-Control: no-cache" -d 'InvestmentAmount=1000&BondIndex=1&InvIndex=2&InvSeedPwd=x&recpSeedPwd=x' "http://localhost:8080/bond/invest"
+// investInConstructionBond invests a specific amount in a bond of the user's choice
+func investInConstructionBond() {
+	http.HandleFunc("/constructionbond/invest", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		var err error
+
+		prepInvestor, err := InvValidateHelper(w, r)
+		if err != nil || r.URL.Query()["amount"] == nil || r.URL.Query()["projIndex"] == nil ||  r.URL.Query()["seedpwd"] == nil {
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+
+		invAmount := r.URL.Query()["amount"][0]
+		projIndex := utils.StoI(r.URL.Query()["projIndex"][0])
+		invSeedPwd := r.URL.Query()["seedpwd"][0]
+
+		invSeed, err := wallet.DecryptSeed(prepInvestor.U.EncryptedSeed, invSeedPwd)
+		if err != nil {
+			log.Println("did not get investor seed from password", err)
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+
+		recpSeed := "SA5LO2G3XR37YY7566K2NHWQCK6PFXMF7UE64WGFBCOAPFHEKNSWT6PE" // hardcode for now, use unlocking mechanism later
+		err = opzones.InvestInConstructionBond(projIndex, prepInvestor.U.Index, invAmount, invSeed, recpSeed)
+		if err != nil {
+			log.Println("did not invest in bond", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}

@@ -19,7 +19,6 @@ func setupCoopRPCs() {
 }
 
 func setupBondRPCs() {
-	InvestInBond()
 	getBondDetails()
 	Search()
 	GetAllBonds()
@@ -161,90 +160,6 @@ func CreateBond() {
 		log.Println("did not retrieve bond", err)
 		return
 	}
-}
-
-// curl request attached for convenience
-// curl -X POST -H "Content-Type: application/x-www-form-urlencoded" -H "Origin: localhost" -H "Cache-Control: no-cache" -d 'InvestmentAmount=1000&BondIndex=1&InvIndex=2&InvSeedPwd=x&RecSeedPwd=x' "http://localhost:8080/bond/invest"
-// InvestInBond invests a specific amount in a bond of the user's choice
-func InvestInBond() {
-	http.HandleFunc("/bond/invest", func(w http.ResponseWriter, r *http.Request) {
-		checkPost(w, r)
-		var err error
-		var iBond opzones.ConstructionBond
-		// need to receive a whole lot of parameters here
-		// need the bond index passed so that we can retrieve the bond easily
-		if r.FormValue("InvestmentAmount") == "" || r.FormValue("BondIndex") == "" || r.FormValue("InvIndex") == "" || r.FormValue("InvSeedPwd") == "" || r.FormValue("RecSeedPwd") == "" {
-			responseHandler(w, r, StatusBadRequest)
-		}
-
-		invAmount := r.FormValue("InvestmentAmount")
-		projIndex := utils.StoI(r.FormValue("BondIndex"))
-		invIndex := utils.StoI(r.FormValue("InvIndex"))
-		invSeedPwd := r.FormValue("InvSeedPwd")
-		recSeedPwd := r.FormValue("RecSeedPwd")
-
-		iBond, err = opzones.RetrieveConstructionBond(projIndex)
-		if err != nil {
-			log.Println("did not retrieve bond", err)
-			responseHandler(w, r, StatusInternalServerError)
-			return
-		}
-		iRec, err := database.RetrieveRecipient(iBond.RecipientIndex)
-		if err != nil {
-			log.Println("did not retrieve recipient", err)
-			responseHandler(w, r, StatusInternalServerError)
-			return
-		}
-		// pass the investor index, pk and seed
-		iInv, err := database.RetrieveInvestor(invIndex)
-		if err != nil {
-			log.Println("did not retrieve investor", err)
-			responseHandler(w, r, StatusInternalServerError)
-			return
-		}
-
-		_, err = xlm.GetNativeBalance(iInv.U.PublicKey) // get testnet funds if their account is new
-		if err != nil {
-			log.Println("did not retrieve native xlm balance", err)
-			err = xlm.GetXLM(iInv.U.PublicKey)
-			if err != nil {
-				log.Println("did not get xlm from friendbot", err)
-				responseHandler(w, r, StatusInternalServerError)
-				return
-			}
-		}
-		_, err = xlm.GetNativeBalance(iRec.U.PublicKey) // get testnet funds if their account is new
-		if err != nil {
-			log.Println("did not retrieve native xlm balance", err)
-			err = xlm.GetXLM(iRec.U.PublicKey)
-			if err != nil {
-				log.Println("did not get xlm from friendbot", err)
-				responseHandler(w, r, StatusInternalServerError)
-				return
-			}
-		}
-
-		invSeed, err := iInv.U.GetSeed(invSeedPwd)
-		if err != nil {
-			log.Println("did not get investor seed from password", err)
-			responseHandler(w, r, StatusBadRequest)
-			return
-		}
-		recSeed, err := iRec.U.GetSeed(recSeedPwd)
-		if err != nil {
-			log.Println("did not get recipient seed from password", err)
-			responseHandler(w, r, StatusBadRequest)
-			return
-		}
-
-		err = opzones.InvestInConstructionBond(projIndex, invIndex, iBond.RecipientIndex, invAmount, invSeed, recSeed)
-		if err != nil {
-			log.Println("did not invest in bond", err)
-			responseHandler(w, r, StatusBadRequest)
-			return
-		}
-		MarshalSend(w, r, iBond)
-	})
 }
 
 // getBondDetails gets the details of a particular bond

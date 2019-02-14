@@ -28,6 +28,7 @@ func Exchange(recipientPK string, recipientSeed string, convAmount string) error
 		return fmt.Errorf("insufficient balance")
 	}
 
+	// TODO: add check for trust limit here
 	hash, err := assets.TrustAsset(consts.Code, consts.StableCoinAddress, consts.StablecoinTrustLimit, recipientPK, recipientSeed)
 	if err != nil {
 		return err

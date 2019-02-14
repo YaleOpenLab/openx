@@ -65,7 +65,7 @@ func (a *LivingUnitCoop) Invest(issuerPubkey string, issuerSeed string, investor
 	return err
 }
 
-func preInvestmentCheck(invIndex int, projIndex int, invAmount string) (ConstructionBond, error) {
+func preInvestmentCheck(projIndex int, invIndex int, invAmount string) (ConstructionBond, error) {
 
 	project, err := RetrieveConstructionBond(projIndex)
 	if err != nil {
@@ -108,7 +108,7 @@ func preInvestmentCheck(invIndex int, projIndex int, invAmount string) (Construc
 }
 
 // Invest in a particular construction bonm
-func InvestInConstructionBond(projIndex int, invIndex int, recpIndex int, invAmount string,
+func InvestInConstructionBond(projIndex int, invIndex int, invAmount string,
 	invSeed string, recpSeed string) error {
 	// we want to invest in this specific bond
 	var err error
@@ -128,7 +128,7 @@ func InvestInConstructionBond(projIndex int, invIndex int, recpIndex int, invAmo
 		return err
 	}
 
-	err = project.updateConstructionBondAfterInvestment(invAmount, invIndex, recpIndex)
+	err = project.updateConstructionBondAfterInvestment(invAmount, invIndex)
 	if err != nil {
 		log.Println("Failed to update project after investment", err)
 		return err
@@ -139,19 +139,18 @@ func InvestInConstructionBond(projIndex int, invIndex int, recpIndex int, invAmo
 
 	if totalValue == project.AmountRaised {
 		// send the recipient relevant debt asset
-		err = model.Receive(consts.OpzonesIsuserDir, recpIndex, projIndex, project.DebtAssetCode, recpSeed, totalValue)
+		err = model.Receive(consts.OpzonesIsuserDir, project.RecipientIndex, projIndex, project.DebtAssetCode, recpSeed, totalValue)
 		if err != nil {
 			log.Println("Failed to send assets to recipient project after investment", err)
 			return err
 		}
 	}
-	return err
+	return nil
 }
 
-func (project *ConstructionBond) updateConstructionBondAfterInvestment(invAmount string, invIndex int, recpIndex int) error {
+func (project *ConstructionBond) updateConstructionBondAfterInvestment(invAmount string, invIndex int) error {
 	project.InvestorIndices = append(project.InvestorIndices, invIndex)
 	// TODO: have the amount in escrow or something
 	project.AmountRaised += utils.StoF(invAmount)
-	project.RecipientIndex = recpIndex
 	return project.Save()
 }

@@ -10,7 +10,7 @@ import (
 // DonateBalance is the minimum amount of lumens (XLM) an investor account should have to open itself and invest on a project. We charge this amount when they do their first investment.
 // For more info about Stellar costs see: https://www.stellar.org/developers/guides/concepts/accounts.html
 var DonateBalance = "10"                                                             // we send this amount free to invesotrs who signup on our platform to enable them to have trustlines. Maybe we should have a payment provider and take money from them?
-var StablecoinTrustLimit = "100000"                                                  // the maximum limit that the investor trusts the stablecoin issuer for
+var StablecoinTrustLimit = "10000000"                                                // the maximum limit that the investor trusts the stablecoin issuer for
 var InvestorAssetPrefix = "InvestorAssets_"                                          // the prefix that will be hashed to give an investor AssetID
 var BondAssetPrefix = "BondAssets_"                                                  // the prefix that will be hashed to give a bond asset
 var CoopAssetPrefix = "CoopAsset_"                                                   // the prefix that will be hashed to give the cooperative asset
