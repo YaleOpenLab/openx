@@ -10,57 +10,58 @@ import (
 	"github.com/boltdb/bolt"
 )
 
-// newParams defiens a common function for all the sub parts of the open housing platform. Can be thoguht
-// of more like a common subset on which paramters for different models are defined on
-func newParams(mdate string, mrights string, stype string, intrate float64, rating string,
-	bIssuer string, uWriter string, title string, location string, description string) BondCoopParams {
-	var rParams BondCoopParams
-	rParams.MaturationDate = mdate
-	rParams.MemberRights = mrights
-	rParams.SecurityType = stype
-	rParams.InterestRate = intrate
-	rParams.Rating = rating
-	rParams.BondIssuer = bIssuer
-	rParams.Underwriter = uWriter
-	rParams.Title = title
-	rParams.Location = location
-	rParams.Description = description
-	rParams.DateInitiated = utils.Timestamp()
-	return rParams
-}
-
-// NewCoop returns a new living coop and automatically saves it
-func NewCoop(mdate string, mrights string, stype string, intrate float64, rating string,
+// NewLivingUnitCoop returns a new living coop and automatically saves it
+func NewLivingUnitCoop(mdate string, mrights string, stype string, intrate float64, rating string,
 	bIssuer string, uWriter string, totalAmount float64, typeOfUnit string, monthlyPayment float64,
-	title string, location string, description string) (Coop, error) {
-	var cCoop Coop
-	cCoop.Params = newParams(mdate, mrights, stype, intrate, rating, bIssuer, uWriter, title, location, description)
-	x, err := RetrieveAllCoops()
-	if err != nil {
-		return cCoop, err
-	}
+	title string, location string, description string) (LivingUnitCoop, error) {
+	var coop LivingUnitCoop
+	coop.MaturationDate = mdate
+	coop.MemberRights = mrights
+	coop.SecurityType = stype
+	coop.InterestRate = intrate
+	coop.Rating = rating
+	coop.BondIssuer = bIssuer
+	coop.Underwriter = uWriter
+	coop.Title = title
+	coop.Location = location
+	coop.Description = description
+	coop.DateInitiated = utils.Timestamp()
 
-	cCoop.Params.Index = len(x) + 1
-	cCoop.UnitsSold = 0
-	cCoop.TotalAmount = totalAmount
-	cCoop.TypeOfUnit = typeOfUnit
-	cCoop.MonthlyPayment = monthlyPayment
-	err = cCoop.Save()
-	return cCoop, err
+	x, err := RetrieveAllLivingUnitCoops()
+	if err != nil {
+		return coop, err
+	}
+	coop.Index = len(x) + 1
+	coop.UnitsSold = 0
+	coop.Amount = totalAmount
+	coop.TypeOfUnit = typeOfUnit
+	coop.MonthlyPayment = monthlyPayment
+	err = coop.Save()
+	return coop, err
 }
 
-// NewBond returns a New Construction Bond and automatically stores it in the db
-func NewBond(mdate string, mrights string, stype string, intrate float64, rating string,
+// NewConstructionBond returns a New Construction Bond and automatically stores it in the db
+func NewConstructionBond(mdate string, stype string, intrate float64, rating string,
 	bIssuer string, uWriter string, unitCost float64, itype string, nUnits int, tax string, recIndex int,
 	title string, location string, description string) (ConstructionBond, error) {
 	var cBond ConstructionBond
-	cBond.Params = newParams(mdate, mrights, stype, intrate, rating, bIssuer, uWriter, title, location, description)
-	x, err := RetrieveAllBonds()
+	cBond.MaturationDate = mdate
+	cBond.SecurityType = stype
+	cBond.InterestRate = intrate
+	cBond.Rating = rating
+	cBond.BondIssuer = bIssuer
+	cBond.Underwriter = uWriter
+	cBond.Title = title
+	cBond.Location = location
+	cBond.Description = description
+	cBond.DateInitiated = utils.Timestamp()
+
+	x, err := RetrieveAllConstructionBonds()
 	if err != nil {
 		return cBond, err
 	}
 
-	cBond.Params.Index = len(x) + 1
+	cBond.Index = len(x) + 1
 	cBond.CostOfUnit = unitCost
 	cBond.InstrumentType = itype
 	cBond.NoOfUnits = nUnits
@@ -70,7 +71,7 @@ func NewBond(mdate string, mrights string, stype string, intrate float64, rating
 	return cBond, err
 }
 
-func (a *Coop) Save() error {
+func (a *LivingUnitCoop) Save() error {
 	db, err := database.OpenDB()
 	if err != nil {
 		return err
@@ -83,7 +84,7 @@ func (a *Coop) Save() error {
 			log.Println("Failed to encode this data into json")
 			return err
 		}
-		return b.Put([]byte(utils.ItoB(a.Params.Index)), encoded)
+		return b.Put([]byte(utils.ItoB(a.Index)), encoded)
 	})
 	return err
 }
@@ -101,14 +102,14 @@ func (a *ConstructionBond) Save() error {
 			log.Println("Failed to encode this data into json")
 			return err
 		}
-		return b.Put([]byte(utils.ItoB(a.Params.Index)), encoded)
+		return b.Put([]byte(utils.ItoB(a.Index)), encoded)
 	})
 	return err
 }
 
-// RetrieveAllCoops gets a list of all User in the database
-func RetrieveAllCoops() ([]Coop, error) {
-	var arr []Coop
+// RetrieveAllLivingUnitCoops gets a list of all User in the database
+func RetrieveAllLivingUnitCoops() ([]LivingUnitCoop, error) {
+	var arr []LivingUnitCoop
 	db, err := database.OpenDB()
 	if err != nil {
 		return arr, err
@@ -118,7 +119,7 @@ func RetrieveAllCoops() ([]Coop, error) {
 	err = db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket(database.CoopBucket)
 		for i := 1; ; i++ {
-			var rCoop Coop
+			var rCoop LivingUnitCoop
 			x := b.Get(utils.ItoB(i))
 			if x == nil {
 				return nil
@@ -134,8 +135,8 @@ func RetrieveAllCoops() ([]Coop, error) {
 	return arr, err
 }
 
-// RetrieveAllBonds gets a list of all User in the database
-func RetrieveAllBonds() ([]ConstructionBond, error) {
+// RetrieveAllConstructionBonds gets a list of all User in the database
+func RetrieveAllConstructionBonds() ([]ConstructionBond, error) {
 	var arr []ConstructionBond
 	db, err := database.OpenDB()
 	if err != nil {
@@ -163,8 +164,8 @@ func RetrieveAllBonds() ([]ConstructionBond, error) {
 }
 
 // RetrieveCoop retrieves a specifi coop from the database
-func RetrieveCoop(key int) (Coop, error) {
-	var bond Coop
+func RetrieveLivingUnitCoop(key int) (LivingUnitCoop, error) {
+	var bond LivingUnitCoop
 	db, err := database.OpenDB()
 	if err != nil {
 		return bond, err
@@ -175,14 +176,14 @@ func RetrieveCoop(key int) (Coop, error) {
 		b := tx.Bucket(database.CoopBucket)
 		x := b.Get(utils.ItoB(key))
 		if x == nil {
-			return fmt.Errorf("Retrieved Coop nil")
+			return fmt.Errorf("Retrieved LivingUnitCoop nil")
 		}
 		return json.Unmarshal(x, &bond)
 	})
 	return bond, err
 }
 
-func RetrieveBond(key int) (ConstructionBond, error) {
+func RetrieveConstructionBond(key int) (ConstructionBond, error) {
 	var bond ConstructionBond
 	db, err := database.OpenDB()
 	if err != nil {

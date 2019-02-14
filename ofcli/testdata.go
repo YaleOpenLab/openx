@@ -75,43 +75,43 @@ func InsertDummyData() error {
 		}
 	}
 
-	_, err = bonds.NewBond("Dec 21 2021", "Member Rights Link", "Security Type 1", 5.4, "AAA", "Moody's Investments", "Wells Fargo",
+	_, err = bonds.NewConstructionBond("Dec 21 2021", "Security Type 1", 5.4, "AAA", "Moody's Investments", "Wells Fargo",
 		200000, "Opportunity Zone Construction", 200, "5% tax for 10 years", 1, "India Basin Project", "San Francisco", "India Basin is an upcoming creative project based in San Francisco that seeks to host innovators from all around the world")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	_, err = bonds.NewBond("Apr 2 2025", "Member Rights Link", "Security Type 2", 3.6, "AA", "Ant Financial", "People's Bank of China",
+	_, err = bonds.NewConstructionBond("Apr 2 2025", "Security Type 2", 3.6, "AA", "Ant Financial", "People's Bank of China",
 		50000, "Opportunity Zone Construction", 400, "No tax for 20 years", 1, "Shenzhen SEZ Development", "Shenzhen", "Shenzhen SEZ Development seeks to develop a SEZ in Shenzhen to foster creation of manufacturing jobs.")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	_, err = bonds.NewBond("Jul 9 2029", "Member Rights Link", "Security Type 3", 4.2, "BAA", "Softbank Corp.", "Bank of Japan",
+	_, err = bonds.NewConstructionBond("Jul 9 2029", "Security Type 3", 4.2, "BAA", "Softbank Corp.", "Bank of Japan",
 		150000, "Opportunity Zone Construction", 100, "3% Tax for 5 Years", 1, "Osaka Development Project", "Osaka", "This Project seeks to develop cutting edge technologies in Osaka")
 	if err != nil {
 		log.Fatal(err)
 	}
 	// newParams(mdate string, mrights string, stype string, intrate float64, rating string, bIssuer string, uWriter string
 	// unitCost float64, itype string, nUnits int, tax string
-	coop, err := bonds.NewCoop("Dec 21 2021", "Member Rights Link", "Security Type 1", 5.4, "AAA", "Moody's Investments", "Wells Fargo",
+	coop, err := bonds.NewLivingUnitCoop("Dec 21 2021", "Member Rights Link", "Security Type 1", 5.4, "AAA", "Moody's Investments", "Wells Fargo",
 		200000, "Coop Model", 4000, "India Basin Project", "San Francisco", "India Basin is an upcoming creative project based in San Francisco that seeks to host innovators from all around the world")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	_, err = bonds.NewCoop("Apr 2 2025", "Member Rights Link", "Security Type 2", 3.6, "AA", "Ant Financial", "People's Bank of China",
+	_, err = bonds.NewLivingUnitCoop("Apr 2 2025", "Member Rights Link", "Security Type 2", 3.6, "AA", "Ant Financial", "People's Bank of China",
 		50000, "Coop Model", 1000, "Shenzhen SEZ Development", "Shenzhen", "Shenzhen SEZ Development seeks to develop a SEZ in Shenzhen to foster creation of manufacturing jobs.")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	_, err = bonds.NewCoop("Jul 9 2029", "Member Rights Link", "Security Type 3", 4.2, "BAA", "Softbank Corp.", "Bank of Japan",
+	_, err = bonds.NewLivingUnitCoop("Jul 9 2029", "Member Rights Link", "Security Type 3", 4.2, "BAA", "Softbank Corp.", "Bank of Japan",
 		150000, "Coop Model", 2000, "Osaka Development Project", "Osaka", "ODP seeks to develop cutting edge technologies in Osaka and invites investors all around the world to be a part of this new age")
 	if err != nil {
 		log.Fatal(err)
 	}
-	_, err = bonds.RetrieveCoop(coop.Params.Index)
+	_, err = bonds.RetrieveLivingUnitCoop(coop.Index)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -141,6 +141,7 @@ func InsertDummyData() error {
 	project1.Contractor = c1
 	project1.Originator = newOriginator
 	project1.Stage = 3
+	project1.PaybackPeriod = 2
 	project1.AuctionType = "blind"
 	err = project1.Save()
 	if err != nil {
@@ -162,6 +163,7 @@ func InsertDummyData() error {
 	project2.Contractor = c1
 	project2.Originator = newOriginator
 	project2.Stage = 3
+	project2.PaybackPeriod = 2
 	project2.AuctionType = "blind"
 	err = project2.Save()
 	if err != nil {
@@ -183,6 +185,7 @@ func InsertDummyData() error {
 	project3.Contractor = c1
 	project3.Originator = newOriginator
 	project3.Stage = 3
+	project3.PaybackPeriod = 2
 	project3.AuctionType = "blind"
 	err = project3.Save()
 	if err != nil {
@@ -267,6 +270,7 @@ func InsertDummyData() error {
 	demoProject.Location = "S.U. Pasto School, Puerto Rico"
 	demoProject.MoneyRaised = 10000
 	demoProject.Years = 5
+	demoProject.PaybackPeriod = 2
 	demoProject.InterestRate = 0.029
 	demoProject.Metadata = "This is a pilot initiative of the MIT-Yale effort to integrate solar platforms with IoT data and blockchain based payment systems to help develop community shelters in Puerto Rico"
 	demoProject.Inverter = "Schneider Conext SW 230V 2024"
@@ -291,7 +295,7 @@ func InsertDummyData() error {
 	demoProject.Stage = 6
 	demoProject.AuctionType = "private"
 	demoProject.SpecSheetHash = "ipfshash" // TODO: replace this with the real ipfs hash for the demo
-	demoProject.Reputation = 10000         // fix this equal to totalValue
+	demoProject.Reputation = 10000         // fix this equal to total value
 	demoProject.InvestorIndices = append(demoProject.InvestorIndices, demoInv.U.Index)
 	demoProject.InvestmentType = "Municipal Bond"
 

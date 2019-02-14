@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	database "github.com/YaleOpenLab/openx/database"
-	bonds "github.com/YaleOpenLab/openx/platforms/ozones"
+	opzones "github.com/YaleOpenLab/openx/platforms/ozones"
 	utils "github.com/YaleOpenLab/openx/utils"
 	xlm "github.com/YaleOpenLab/openx/xlm"
 )
@@ -29,7 +29,7 @@ func setupBondRPCs() {
 func GetAllCoops() {
 	http.HandleFunc("/coop/all", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
-		allBonds, err := bonds.RetrieveAllBonds()
+		allBonds, err := opzones.RetrieveAllConstructionBonds()
 		if err != nil {
 			log.Println("did not retireve all bonds", err)
 			responseHandler(w, r, StatusInternalServerError)
@@ -49,7 +49,7 @@ func getCoopDetails() {
 			return
 		}
 		uKey := utils.StoI(r.URL.Query()["index"][0])
-		bond, err := bonds.RetrieveCoop(uKey)
+		bond, err := opzones.RetrieveLivingUnitCoop(uKey)
 		if err != nil {
 			log.Println("did not retireve coop", err)
 			responseHandler(w, r, StatusBadRequest)
@@ -72,7 +72,7 @@ func InvestInCoop() {
 	http.HandleFunc("/coop/invest", func(w http.ResponseWriter, r *http.Request) {
 		checkPost(w, r)
 		var err error
-		var iCoop bonds.Coop
+		var iCoop opzones.LivingUnitCoop
 		// need to receive a whole lot of parameters here
 		// need the bond index passed so that we can retrieve the bond easily
 		if r.FormValue("MonthlyPayment") == "" || r.FormValue("CoopIndex") == "" || r.FormValue("InvIndex") == "" || r.FormValue("InvSeedPwd") == "" {
@@ -98,7 +98,7 @@ func InvestInCoop() {
 		invIndex := utils.StoI(r.FormValue("InvIndex"))
 		invSeedPwd := r.FormValue("InvSeedPwd")
 
-		iCoop, err = bonds.RetrieveCoop(CoopIndex)
+		iCoop, err = opzones.RetrieveLivingUnitCoop(CoopIndex)
 		if err != nil {
 			log.Println("did not retrieve coop", err)
 			responseHandler(w, r, StatusInternalServerError)
@@ -148,15 +148,15 @@ func InvestInCoop() {
 func CreateBond() {
 	// newParams(mdate string, mrights string, stype string, intrate float64, rating string, bIssuer string, uWriter string
 	// unitCost float64, itype string, nUnits int, tax string
-	var bond1 bonds.ConstructionBond
+	var bond opzones.ConstructionBond
 	var err error
-	bond1, err = bonds.NewBond("Dec 21 2049", "Maturation Rights Link", "Security Type", 5.4, "AAA", "Bond Issuer", "underwriter.com",
+	bond, err = opzones.NewConstructionBond("Dec 21 2049", "Security Type", 5.4, "AAA", "Bond Issuer", "underwriter.com",
 		100000, "Instrument Type", 100, "No Fed tax for 10 years", 1, "title", "location", "string")
 	if err != nil {
 		log.Println("did not create new bond", err)
 		return
 	}
-	_, err = bonds.RetrieveBond(bond1.Params.Index)
+	_, err = opzones.RetrieveConstructionBond(bond.Index)
 	if err != nil {
 		log.Println("did not retrieve bond", err)
 		return
@@ -170,33 +170,20 @@ func InvestInBond() {
 	http.HandleFunc("/bond/invest", func(w http.ResponseWriter, r *http.Request) {
 		checkPost(w, r)
 		var err error
-		var iBond bonds.ConstructionBond
+		var iBond opzones.ConstructionBond
 		// need to receive a whole lot of parameters here
 		// need the bond index passed so that we can retrieve the bond easily
 		if r.FormValue("InvestmentAmount") == "" || r.FormValue("BondIndex") == "" || r.FormValue("InvIndex") == "" || r.FormValue("InvSeedPwd") == "" || r.FormValue("RecSeedPwd") == "" {
 			responseHandler(w, r, StatusBadRequest)
 		}
 
-		issuerSeed := "SBBYVEI4YNKZANRQEFH35U5GPEJ27MBLL7XHEKX5VC75QLJZWAXGX36Y"
-		issuerPk := "GAEY5TVFYWBIIHF7PQCQVNIFTNIF7QSG4IH27HRW3DH476RI4NA2BPV3"
-		_, err = xlm.GetNativeBalance(issuerPk)
-		if err != nil {
-			log.Println("did not get native xlm balance", err)
-			err = xlm.GetXLM(issuerPk)
-			if err != nil {
-				log.Println("did not get xlm from friendbot", err)
-				responseHandler(w, r, StatusInternalServerError)
-				return
-			}
-		}
-
 		invAmount := r.FormValue("InvestmentAmount")
-		bondIndex := utils.StoI(r.FormValue("BondIndex"))
+		projIndex := utils.StoI(r.FormValue("BondIndex"))
 		invIndex := utils.StoI(r.FormValue("InvIndex"))
 		invSeedPwd := r.FormValue("InvSeedPwd")
 		recSeedPwd := r.FormValue("RecSeedPwd")
 
-		iBond, err = bonds.RetrieveBond(bondIndex)
+		iBond, err = opzones.RetrieveConstructionBond(projIndex)
 		if err != nil {
 			log.Println("did not retrieve bond", err)
 			responseHandler(w, r, StatusInternalServerError)
@@ -250,7 +237,7 @@ func InvestInBond() {
 			return
 		}
 
-		err = iBond.Invest(issuerPk, issuerSeed, &iInv, &iRec, invAmount, invSeed, recSeed)
+		err = opzones.InvestInConstructionBond(projIndex, invIndex, iBond.RecipientIndex, invAmount, invSeed, recSeed)
 		if err != nil {
 			log.Println("did not invest in bond", err)
 			responseHandler(w, r, StatusBadRequest)
@@ -270,7 +257,7 @@ func getBondDetails() {
 			return
 		}
 		uKey := utils.StoI(r.URL.Query()["index"][0])
-		bond, err := bonds.RetrieveBond(uKey)
+		bond, err := opzones.RetrieveConstructionBond(uKey)
 		if err != nil {
 			log.Println("did not retrieve bond", err)
 			responseHandler(w, r, StatusInternalServerError)
@@ -284,7 +271,7 @@ func getBondDetails() {
 func GetAllBonds() {
 	http.HandleFunc("/bond/all", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
-		allBonds, err := bonds.RetrieveAllBonds()
+		allBonds, err := opzones.RetrieveAllConstructionBonds()
 		if err != nil {
 			log.Println("did not retrieve all bonds", err)
 			responseHandler(w, r, StatusInternalServerError)
@@ -305,7 +292,7 @@ func Search() {
 		}
 		searchString := r.URL.Query()["q"][0]
 		if strings.Contains(searchString, "bond") {
-			allBonds, err := bonds.RetrieveAllBonds()
+			allBonds, err := opzones.RetrieveAllConstructionBonds()
 			if err != nil {
 				log.Println("did not retrieve all bonds", err)
 				responseHandler(w, r, StatusInternalServerError)
@@ -315,7 +302,7 @@ func Search() {
 			// do bond stuff
 		} else if strings.Contains(searchString, "coop") {
 			// do coop stuff
-			allCoops, err := bonds.RetrieveAllCoops()
+			allCoops, err := opzones.RetrieveAllLivingUnitCoops()
 			if err != nil {
 				log.Println("did not retrieve bond", err)
 				responseHandler(w, r, StatusInternalServerError)

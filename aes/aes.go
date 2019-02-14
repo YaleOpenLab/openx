@@ -2,13 +2,13 @@ package aes
 
 // the aes package implements AES-256 GCM encryption and decrpytion functions
 import (
-	"log"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 
 	utils "github.com/YaleOpenLab/openx/utils"

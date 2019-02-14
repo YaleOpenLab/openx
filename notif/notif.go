@@ -62,6 +62,17 @@ func SendInvestmentNotifToRecipient(projIndex int, to string, recpPbTrustHash st
 	return sendMail(body, to)
 }
 
+func SendInvestmentNotifToRecipientOZ(projIndex int, to string, recpDebtTrustHash string, recpDebtAssetHash string) error {
+	// this is sent to the recipient on investment from an investor
+	body := "Greetings from the opensolar platform! \n\n" +
+		"We're writing to let you know that project number: " + utils.ItoS(projIndex) + " has been invested in.\n\n" +
+		"Your proofs of payment are attached below and may be used as future reference in case of discrepancies:  \n\n" +
+		"Your debt trusted asset hash is: https://testnet.steexp.com/tx/" + recpDebtTrustHash + "\n" +
+		"Your debt asset hash is: https://testnet.steexp.com/tx/" + recpDebtAssetHash + "\n\n\n" +
+		footerString
+	return sendMail(body, to)
+}
+
 // SendInvestmentNotifToInvestor sends a notification to the investor when he invests
 // in a particular project
 func SendInvestmentNotifToInvestor(projIndex int, to string, stableHash string, trustHash string, assetHash string) error {

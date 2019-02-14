@@ -18,7 +18,7 @@ import (
 	xlm "github.com/YaleOpenLab/openx/xlm"
 )
 
-func MunibondInvest(invIndex int, invSeed string, invAmount string,
+func MunibondInvest(issuerPath string, invIndex int, invSeed string, invAmount string,
 	projIndex int, invAssetCode string, totalValue float64) error {
 	// offer user to exchange xlm for stableusd and invest directly if the user does not have stableusd
 	// this should be a menu on the Frontend but here we do this automatically
@@ -42,7 +42,7 @@ func MunibondInvest(invIndex int, invSeed string, invAmount string,
 		return err
 	}
 
-	issuerPubkey, issuerSeed, err := wallet.RetrieveSeed(issuer.CreatePath(projIndex), consts.IssuerSeedPwd)
+	issuerPubkey, issuerSeed, err := wallet.RetrieveSeed(issuer.CreatePath(issuerPath, projIndex), consts.IssuerSeedPwd)
 	if err != nil {
 		log.Println("Unable to retrieve seed", err)
 		return err
@@ -79,7 +79,7 @@ func MunibondInvest(invIndex int, invSeed string, invAmount string,
 	return nil
 }
 
-func MunibondReceive(recpIndex int, projIndex int, detbAssetId string,
+func MunibondReceive(issuerPath string, recpIndex int, projIndex int, debtAssetId string,
 	paybackAssetId string, years int, recpSeed string, totalValue float64, paybackPeriod int) error {
 
 	recipient, err := database.RetrieveRecipient(recpIndex)
@@ -88,14 +88,14 @@ func MunibondReceive(recpIndex int, projIndex int, detbAssetId string,
 		return err
 	}
 
-	issuerPubkey, issuerSeed, err := wallet.RetrieveSeed(issuer.CreatePath(projIndex), consts.IssuerSeedPwd)
+	issuerPubkey, issuerSeed, err := wallet.RetrieveSeed(issuer.CreatePath(issuerPath, projIndex), consts.IssuerSeedPwd)
 	if err != nil {
 		log.Println("Unable to retrieve issuer seed", err)
 		log.Println(err)
 		return err
 	}
 
-	DebtAsset := assets.CreateAsset(detbAssetId, issuerPubkey)
+	DebtAsset := assets.CreateAsset(debtAssetId, issuerPubkey)
 	PaybackAsset := assets.CreateAsset(paybackAssetId, issuerPubkey)
 
 	pbAmtTrust := utils.ItoS(years * 12 * 2) // two way exchange possible, to account for errors
@@ -135,7 +135,7 @@ func MunibondReceive(recpIndex int, projIndex int, detbAssetId string,
 		return err
 	}
 
-	txhash, err := issuer.FreezeIssuer(projIndex, "blah")
+	txhash, err := issuer.FreezeIssuer(issuerPath, projIndex, "blah")
 	if err != nil {
 		log.Println("Error while freezing issuer", err)
 		return err
@@ -183,7 +183,7 @@ func sendPaymentNotif(recpIndex int, projIndex int, paybackPeriod int, email str
 	}
 }
 
-func MunibondPayback(recpIndex int, amount string, recipientSeed string, projIndex int,
+func MunibondPayback(issuerPath string, recpIndex int, amount string, recipientSeed string, projIndex int,
 	assetName string, projectInvestors []int) error {
 
 	recipient, err := database.RetrieveRecipient(recpIndex)
@@ -192,7 +192,7 @@ func MunibondPayback(recpIndex int, amount string, recipientSeed string, projInd
 		return err
 	}
 
-	issuerPubkey, _, err := wallet.RetrieveSeed(issuer.CreatePath(projIndex), consts.IssuerSeedPwd)
+	issuerPubkey, _, err := wallet.RetrieveSeed(issuer.CreatePath(issuerPath, projIndex), consts.IssuerSeedPwd)
 	if err != nil {
 		log.Println("Unable to retrieve issuer seed", err)
 		return err

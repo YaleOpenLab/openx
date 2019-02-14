@@ -43,6 +43,12 @@ Equity crowdfunding is when a person who wants to raise funds offers a percentag
 
 As the name may suggest, a debt crowdfunding model is when an investor gives a specific amount of capital for a fixed period in exchange for fixed interest over a number of years.
 
+
+## Opportunity Zones
+
+1. http://www.lisc.org/our-initiatives/opportunity-zones/faq/
+2. https://www.sterlingpointcapital.com/2018/10/31/opportunity-zones-an-investors-guide/
+
 ## Regulation
 
 While introducing the above tools for raising funds, it is also good to know the regulations pertaining to the various models and that can be found over at the SEC's website
