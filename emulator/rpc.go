@@ -504,3 +504,18 @@ func GetTrustLimit(username string, pwhash string, assetName string) (string, er
 	}
 	return x, nil
 }
+
+func InvestInOpzone(projIndex string, amount string, username string, pwhash string, seedpwd string) (rpc.StatusResponse, error) {
+	var x rpc.StatusResponse
+	data, err := rpc.GetRequest(ApiUrl + "/constructionbond/invest?" + "username=" + username + "&pwhash=" + pwhash +
+		"&seedpwd=" + seedpwd + "&projIndex=" + projIndex + "&amount=" + amount)
+	if err != nil {
+		return x, err
+	}
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return x, err
+	}
+	// RETUNS FALSE, SEE WHY
+	return x, nil
+}

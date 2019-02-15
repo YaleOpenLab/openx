@@ -30,7 +30,7 @@ func TestOracle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if exchangeFloat != 99990 {
+	if exchangeFloat != 999900000 {
 		log.Println("EXCHHFLO: ", exchangeFloat)
 		t.Fatalf("Exchange value does not match")
 	}

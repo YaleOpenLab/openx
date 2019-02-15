@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	xlm "github.com/YaleOpenLab/openx/xlm"
+	consts "github.com/YaleOpenLab/openx/consts"
 )
 
 func TestIssuer(t *testing.T) {
@@ -18,23 +19,23 @@ func TestIssuer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = InitIssuer(1, "blah")
+	err = InitIssuer(consts.OpenSolarIssuerDir, 1, "blah")
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = FundIssuer(1, "blah", platformSeed)
+	err = FundIssuer(consts.OpenSolarIssuerDir, 1, "blah", platformSeed)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = FundIssuer(1, "cool", platformSeed)
+	err = FundIssuer(consts.OpenSolarIssuerDir, 1, "cool", platformSeed)
 	if err == nil {
 		t.Fatalf("not able to catch invalid seed error, quitting!")
 	}
-	_, err = FreezeIssuer(1, "blah")
+	_, err = FreezeIssuer(consts.OpenSolarIssuerDir, 1, "blah")
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = DeleteIssuer(1)
+	err = DeleteIssuer(consts.OpenSolarIssuerDir, 1)
 	if err != nil {
 		t.Fatal(err)
 	}

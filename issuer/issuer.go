@@ -4,7 +4,6 @@ import (
 	"log"
 	"os"
 
-	consts "github.com/YaleOpenLab/openx/consts"
 	utils "github.com/YaleOpenLab/openx/utils"
 	wallet "github.com/YaleOpenLab/openx/wallet"
 	xlm "github.com/YaleOpenLab/openx/xlm"
@@ -20,20 +19,20 @@ import (
 // issuance so that anybody who hacks us can not print more tokens
 
 // CreatePath returns the path of a specific project
-func CreatePath(projIndex int) string {
-	return consts.OpenSolarIssuerDir + utils.ItoS(projIndex) + ".key"
+func CreatePath(path string, projIndex int) string {
+	return path + utils.ItoS(projIndex) + ".key"
 }
 
 // CreateFile creates a new empty keyfile
-func CreateFile(projIndex int) string {
-	path := CreatePath(projIndex)
+func CreateFile(issuerPath string, projIndex int) string {
+	path := CreatePath(issuerPath, projIndex)
 	// we need to create this file
 	os.Create(path)
 	return path
 }
 
 // InitIssuer creates a new keypair and stores it in a file
-func InitIssuer(projIndex int, seedpwd string) error {
+func InitIssuer(issuerPath string, projIndex int, seedpwd string) error {
 	// init a new pk and seed pair
 	seed, _, err := xlm.GetKeyPair()
 	if err != nil {
@@ -42,7 +41,7 @@ func InitIssuer(projIndex int, seedpwd string) error {
 	}
 	// store this seed in home/projects/projIndex.hex
 	// we need a password for encrypting the seed
-	path := CreateFile(projIndex)
+	path := CreateFile(issuerPath, projIndex)
 	err = wallet.StoreSeed(seed, seedpwd, path)
 	if err != nil {
 		log.Println("Error while storing seed", err)
@@ -54,17 +53,17 @@ func InitIssuer(projIndex int, seedpwd string) error {
 // DeleteIssuer deletes the keyfile
 // But this is not needed since once the account is frozen, an attacker who does
 // have access to the seed can not aim to achieve anything since the account is locked
-func DeleteIssuer(projIndex int) error {
-	path := CreatePath(projIndex)
+func DeleteIssuer(issuerPath string, projIndex int) error {
+	path := CreatePath(issuerPath, projIndex)
 	return os.Remove(path)
 }
 
 // FundIssuer funds the issuer using the platform's seed. This is the only way we
 // can know if a specific account is an issuer or not. Also helps accountability
 // of how many issuers are in existence and how many projects have been invested in.
-func FundIssuer(projIndex int, seedpwd string, platformSeed string) error {
+func FundIssuer(issuerPath string, projIndex int, seedpwd string, platformSeed string) error {
 	// need to read the seed from the file using the seedpwd
-	path := CreatePath(projIndex)
+	path := CreatePath(issuerPath, projIndex)
 	pubkey, seed, err := wallet.RetrieveSeed(path, seedpwd)
 	if err != nil {
 		log.Println("Error while retrieving seed", err)
@@ -89,8 +88,8 @@ func FundIssuer(projIndex int, seedpwd string, platformSeed string) error {
 
 // FreezeIssuer freezes the issuer account and makes it not possible for someone
 // to sign new transactions or send funds from the given account
-func FreezeIssuer(projIndex int, seedpwd string) (string, error) {
-	path := CreatePath(projIndex)
+func FreezeIssuer(issuerPath string, projIndex int, seedpwd string) (string, error) {
+	path := CreatePath(issuerPath, projIndex)
 	_, seed, err := wallet.RetrieveSeed(path, seedpwd)
 	if err != nil {
 		log.Println("Error while retrieving seed", err)

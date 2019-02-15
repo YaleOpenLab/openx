@@ -301,9 +301,8 @@ func ParseInputInv(input []string) error {
 		}
 		// end of kyc
 	case "invest":
-		log.Println("Invest Params: invest <proj_number> <amount>")
-		if len(input) != 3 {
-			log.Println("Extra / less params passed, please check!")
+		if len(input) != 4 {
+			log.Println("Invest Params: invest <proj_number> <amount> <project>")
 			break
 		}
 		_, err = utils.StoICheck(input[1])
@@ -316,16 +315,32 @@ func ParseInputInv(input []string) error {
 			log.Println(err)
 			break
 		}
-		// now we need to invest in this project, call RPC
-		status, err := InvestInProject(input[1], input[2], LocalInvestor.U.Username, LocalInvestor.U.Pwhash, LocalSeedPwd)
-		if err != nil {
-			log.Println(err)
-			break
-		}
-		if status.Code == 200 {
-			ColorOutput("INVESTMENT SUCCESSFUL, CHECK EMAIL", GreenColor)
-		} else {
-			ColorOutput("INVESTMENT NOT SUCCESSFUL", RedColor)
+		platform := input[3]
+		switch(platform) {
+		case "opensolar":
+			// now we need to invest in this project, call RPC
+			status, err := InvestInProject(input[1], input[2], LocalInvestor.U.Username, LocalInvestor.U.Pwhash, LocalSeedPwd)
+			if err != nil {
+				log.Println(err)
+				break
+			}
+			if status.Code == 200 {
+				ColorOutput("INVESTMENT SUCCESSFUL, CHECK EMAIL", GreenColor)
+			} else {
+				ColorOutput("INVESTMENT NOT SUCCESSFUL", RedColor)
+			}
+		case "opzones":
+			// now we need to invest in this project, call RPC
+			status, err := InvestInOpzone(input[1], input[2], LocalInvestor.U.Username, LocalInvestor.U.Pwhash, LocalSeedPwd)
+			if err != nil {
+				log.Println(err)
+				break
+			}
+			if status.Code == 200 {
+				ColorOutput("INVESTMENT SUCCESSFUL, CHECK EMAIL", GreenColor)
+			} else {
+				ColorOutput("INVESTMENT NOT SUCCESSFUL", RedColor)
+			}
 		}
 		break // end of invest
 	case "create":

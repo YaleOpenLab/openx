@@ -174,12 +174,12 @@ func preInvestmentCheck(projIndex int, invIndex int, invAmount string) (Project,
 			log.Println(err)
 			return project, err
 		}
-		err = issuer.InitIssuer(projIndex, consts.IssuerSeedPwd)
+		err = issuer.InitIssuer(consts.OpenSolarIssuerDir, projIndex, consts.IssuerSeedPwd)
 		if err != nil {
 			log.Println("Error while initializing issuer", err)
 			return project, err
 		}
-		err = issuer.FundIssuer(projIndex, consts.IssuerSeedPwd, consts.PlatformSeed)
+		err = issuer.FundIssuer(consts.OpenSolarIssuerDir, projIndex, consts.IssuerSeedPwd, consts.PlatformSeed)
 		if err != nil {
 			log.Println("Error while funding issuer", err)
 			return project, err
@@ -199,7 +199,7 @@ func SeedInvest(projIndex int, invIndex int, recpIndex int, invAmount string,
 		return err
 	}
 
-	err = model.MunibondInvest(invIndex, invSeed, invAmount, projIndex,
+	err = model.MunibondInvest(consts.OpenSolarIssuerDir, invIndex, invSeed, invAmount, projIndex,
 		project.SeedAssetCode, project.TotalValue)
 	if err != nil {
 		log.Println("Error while investing", err)
@@ -227,7 +227,7 @@ func Invest(projIndex int, invIndex int, invAmount string, invSeed string) error
 	}
 
 	// call the model and invest in the particular project
-	err = model.MunibondInvest(invIndex, invSeed, invAmount, projIndex,
+	err = model.MunibondInvest(consts.OpenSolarIssuerDir, invIndex, invSeed, invAmount, projIndex,
 		project.InvestorAssetCode, project.TotalValue)
 	if err != nil {
 		log.Println("Error while seed investing", err)
@@ -387,7 +387,7 @@ func sendRecipientAssets(projIndex int) error {
 	project.DebtAssetCode = assets.AssetID(consts.DebtAssetPrefix + metadata)
 	project.PaybackAssetCode = assets.AssetID(consts.PaybackAssetPrefix + metadata)
 
-	err = model.MunibondReceive(project.RecipientIndex, projIndex, project.DebtAssetCode,
+	err = model.MunibondReceive(consts.OpenSolarIssuerDir, project.RecipientIndex, projIndex, project.DebtAssetCode,
 		project.PaybackAssetCode, project.Years, recpSeed, project.TotalValue, project.PaybackPeriod)
 	if err != nil {
 		log.Println("Error while receiving assets from issuer on recipient's end", err)
@@ -433,7 +433,7 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 		return err
 	}
 
-	err = model.MunibondPayback(recpIndex, amount, recipientSeed, projIndex, assetName, project.InvestorIndices)
+	err = model.MunibondPayback(consts.OpenSolarIssuerDir, recpIndex, amount, recipientSeed, projIndex, assetName, project.InvestorIndices)
 	if err != nil {
 		log.Println("Error while paying back the issuer", err)
 		return err

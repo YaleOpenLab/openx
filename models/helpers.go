@@ -48,6 +48,7 @@ func SendUSDToPlatform(invSeed string, invAmount string, memo string) (string, e
 	}
 
 	if utils.StoF(newPlatformBalance)-utils.StoF(oldPlatformBalance) < utils.StoF(invAmount)-1 {
+		log.Println(newPlatformBalance, oldPlatformBalance)
 		return txhash, fmt.Errorf("Sent amount doesn't match with investment amount")
 	}
 	return txhash, nil

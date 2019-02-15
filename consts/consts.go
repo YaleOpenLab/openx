@@ -10,7 +10,7 @@ import (
 // DonateBalance is the minimum amount of lumens (XLM) an investor account should have to open itself and invest on a project. We charge this amount when they do their first investment.
 // For more info about Stellar costs see: https://www.stellar.org/developers/guides/concepts/accounts.html
 var DonateBalance = "10"                                                             // we send this amount free to invesotrs who signup on our platform to enable them to have trustlines. Maybe we should have a payment provider and take money from them?
-var StablecoinTrustLimit = "100000"                                                  // the maximum limit that the investor trusts the stablecoin issuer for
+var StablecoinTrustLimit = "1000000000"                                              // the maximum limit that the investor trusts the stablecoin issuer for
 var InvestorAssetPrefix = "InvestorAssets_"                                          // the prefix that will be hashed to give an investor AssetID
 var BondAssetPrefix = "BondAssets_"                                                  // the prefix that will be hashed to give a bond asset
 var CoopAssetPrefix = "CoopAsset_"                                                   // the prefix that will be hashed to give the cooperative asset
@@ -25,7 +25,8 @@ var StablecoinSeed = ""                                                         
 const StableCoinAddress = "GCX4BSWDWHDDGLLTA6C73NENJCQBST7C4B4W5HZE7ZCSOVWML7VLLLT3" // the address of the stablecoin must be a constant for the payment listener to work properly
 var Code = "STABLEUSD"                                                               // the code of the stablecoin we issue on the platform
 var DbDir = os.Getenv("HOME") + "/.openx/database"                                   // the directory where the main assets of our platform are stored
-var OpenSolarIssuerDir = HomeDir + "/projects/"                                      // the diriectory where we store the seeds related to the opensolar project
+var OpenSolarIssuerDir = HomeDir + "/projects/"                                      // the directory where we store issuer seeds related to the opensolar platforms
+var OpzonesIssuerDir = HomeDir + "/opzones/"                                         // the directory where we store issuer seeds related to the opzones platforms
 var IpfsFileLength = 10                                                              // the length of the hash that we want our ipfs hashes to have
 var TellerHomeDir = os.Getenv("HOME") + "/.openx/teller"                             // the home directory of the teller executable
 var Tlsport = "443"                                                                  // default port for ssl
