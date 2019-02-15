@@ -7,7 +7,8 @@ import (
 	"strconv"
 
 	database "github.com/YaleOpenLab/openx/database"
-	platform "github.com/YaleOpenLab/openx/platforms/opensolar"
+	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
+	opzones "github.com/YaleOpenLab/openx/platforms/ozones"
 	utils "github.com/YaleOpenLab/openx/utils"
 	wallet "github.com/YaleOpenLab/openx/wallet"
 	xlm "github.com/YaleOpenLab/openx/xlm"
@@ -32,6 +33,7 @@ func setupRecipientRPCs() {
 	finalizeProject()
 	originateProject()
 	calculateTrustLimit()
+	unlockCBond()
 }
 
 // parseRecipient parses a recipient from the passed form data and returns a recipient strucutre if
@@ -134,7 +136,7 @@ func payback() {
 			return
 		}
 
-		err = platform.Payback(recpIndex, projIndex, assetName, amount, recipientSeed)
+		err = opensolar.Payback(recpIndex, projIndex, assetName, amount, recipientSeed)
 		if err != nil {
 			log.Println("did not payback", err)
 			responseHandler(w, r, StatusInternalServerError)
@@ -264,14 +266,14 @@ func chooseBlindAuction() {
 			return
 		}
 
-		allContracts, err := platform.RetrieveRecipientProjects(platform.ProposedProject, recipient.U.Index)
+		allContracts, err := opensolar.RetrieveRecipientProjects(opensolar.ProposedProject, recipient.U.Index)
 		if err != nil {
 			log.Println("did not validate recipient projects", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
-		bestContract, err := platform.SelectContractBlind(allContracts)
+		bestContract, err := opensolar.SelectContractBlind(allContracts)
 		if err != nil {
 			log.Println("did not select contract", err)
 			responseHandler(w, r, StatusInternalServerError)
@@ -300,7 +302,7 @@ func chooseVickreyAuction() {
 			return
 		}
 
-		allContracts, err := platform.RetrieveRecipientProjects(platform.ProposedProject, recipient.U.Index)
+		allContracts, err := opensolar.RetrieveRecipientProjects(opensolar.ProposedProject, recipient.U.Index)
 		if err != nil {
 			log.Println("did not retrieve recipient projects", err)
 			responseHandler(w, r, StatusInternalServerError)
@@ -309,7 +311,7 @@ func chooseVickreyAuction() {
 
 		// the only differing part in the three auction routes. Would be nice if there were
 		// some way to avoid repetition like this
-		bestContract, err := platform.SelectContractVickrey(allContracts)
+		bestContract, err := opensolar.SelectContractVickrey(allContracts)
 		if err != nil {
 			log.Println("did not select contract", err)
 			responseHandler(w, r, StatusInternalServerError)
@@ -337,7 +339,7 @@ func chooseTimeAuction() {
 			return
 		}
 
-		allContracts, err := platform.RetrieveRecipientProjects(platform.ProposedProject, recipient.U.Index)
+		allContracts, err := opensolar.RetrieveRecipientProjects(opensolar.ProposedProject, recipient.U.Index)
 		if err != nil {
 			log.Println("did not retrieve recipient projects", err)
 			responseHandler(w, r, StatusInternalServerError)
@@ -346,7 +348,7 @@ func chooseTimeAuction() {
 
 		// the only differing part in the three auction routes. Would be nice if there were
 		// some way to avoid repetition like this
-		bestContract, err := platform.SelectContractTime(allContracts)
+		bestContract, err := opensolar.SelectContractTime(allContracts)
 		if err != nil {
 			log.Println("did not select contract", err)
 			responseHandler(w, r, StatusInternalServerError)
@@ -382,7 +384,7 @@ func unlock() {
 			return
 		}
 
-		err = platform.UnlockProject(recipient.U.Username, recipient.U.Pwhash, projIndex, seedpwd)
+		err = opensolar.UnlockProject(recipient.U.Username, recipient.U.Pwhash, projIndex, seedpwd)
 		if err != nil {
 			log.Println("did not unlock project", err)
 			responseHandler(w, r, StatusInternalServerError)
@@ -425,7 +427,7 @@ func finalizeProject() {
 		}
 
 		projIndex := utils.StoI(r.URL.Query()["projIndex"][0])
-		project, err := platform.RetrieveProject(projIndex)
+		project, err := opensolar.RetrieveProject(projIndex)
 		if err != nil {
 			log.Println("did not retrieve project", err)
 			responseHandler(w, r, StatusBadRequest)
@@ -453,7 +455,7 @@ func originateProject() {
 		}
 
 		projIndex := utils.StoI(r.URL.Query()["projIndex"][0])
-		err = platform.RecipientAuthorize(projIndex, recipient.U.Index)
+		err = opensolar.RecipientAuthorize(projIndex, recipient.U.Index)
 		if err != nil {
 			log.Println("did not authorize project", err)
 			responseHandler(w, r, StatusInternalServerError)
@@ -482,5 +484,34 @@ func calculateTrustLimit() {
 		}
 
 		MarshalSend(w, r, trustLimit)
+	})
+}
+
+// unlock unlocks a speciifc projectwhich has been invested in, signalling that the recipient
+// has accepted the investment.
+func unlockCBond() {
+	http.HandleFunc("/recipient/unlock/opzones/cbond", func(w http.ResponseWriter, r *http.Request) {
+		recipient, err := RecpValidateHelper(w, r)
+		if err != nil || r.URL.Query()["seedpwd"] == nil {
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+
+		seedpwd := r.URL.Query()["seedpwd"][0]
+		projIndex, err := utils.StoICheck(r.URL.Query()["projIndex"][0])
+		if err != nil {
+			log.Println("did not parse to integer", err)
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+
+		err = opzones.UnlockProject(recipient.U.Username, recipient.U.Pwhash, projIndex, seedpwd, "constructionbond")
+		if err != nil {
+			log.Println("did not unlock project", err)
+			responseHandler(w, r, StatusInternalServerError)
+			return
+		}
+
+		responseHandler(w, r, StatusOK)
 	})
 }

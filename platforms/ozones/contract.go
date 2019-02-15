@@ -3,69 +3,20 @@ package ozones
 import (
 	"fmt"
 	"log"
+	"time"
+	"math"
 
 	assets "github.com/YaleOpenLab/openx/assets"
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
 	issuer "github.com/YaleOpenLab/openx/issuer"
 	model "github.com/YaleOpenLab/openx/models/debtcrowdfunding"
+	notif "github.com/YaleOpenLab/openx/notif"
 	utils "github.com/YaleOpenLab/openx/utils"
+	wallet "github.com/YaleOpenLab/openx/wallet"
 )
 
-// TODO: add the recipient's role here, whether to give him an asset or do nothing
-
-// Invest in a particular living coop
-func (a *LivingUnitCoop) Invest(issuerPubkey string, issuerSeed string, investor *database.Investor,
-	invAmountS string, invSeed string) error {
-	// we want to invest in this specific bond
-	var err error
-	invAmount := utils.StoI(invAmountS)
-	// check if investment amount is greater than the cost of a unit
-	if float64(invAmount) > a.MonthlyPayment || float64(invAmount) < a.MonthlyPayment {
-		fmt.Println("You are trying to invest more or less than a month's payment")
-		return fmt.Errorf("You are trying to invest more or less than a month's payment")
-	}
-	assetName := assets.AssetID(a.MaturationDate + a.SecurityType + a.Rating + a.BondIssuer) // get a unique assetID
-
-	if a.InvestorAssetCode == "" {
-		// this person is the first investor, set the investor token name
-		InvestorAssetCode := assets.AssetID(consts.CoopAssetPrefix + assetName)
-		a.InvestorAssetCode = InvestorAssetCode                 // set the investeor code
-		_ = assets.CreateAsset(InvestorAssetCode, issuerPubkey) // create the asset itself, since it would not have bene created earlier
-	}
-
-	if !investor.CanInvest(invAmountS) {
-		log.Println("Investor has less balance than what is required to ivnest in this asset")
-		return err
-	}
-
-	// investor can invest in this project, send stablecoin to the platform
-	txHash, err := assets.TrustAsset(a.InvestorAssetCode, issuerPubkey, utils.FtoS(a.Amount), investor.U.PublicKey, invSeed)
-	if err != nil {
-		return err
-	}
-
-	log.Println("Investor trusted asset: ", a.InvestorAssetCode, " tx hash: ", txHash)
-	log.Println("Sending INVAsset: ", a.InvestorAssetCode, "for: ", invAmount)
-	_, txHash, err = assets.SendAssetFromIssuer(a.InvestorAssetCode, investor.U.PublicKey, invAmountS, issuerSeed, issuerPubkey)
-	if err != nil {
-		return err
-	}
-	log.Printf("Sent INVAsset %s to investor %s with txhash %s", a.InvestorAssetCode, investor.U.PublicKey, txHash)
-	// investor asset sent, update a.Params's BalLeft
-	a.UnitsSold += 1
-	investor.AmountInvested += float64(invAmount)
-	investor.InvestedCoops = append(investor.InvestedCoops, a.InvestorAssetCode)
-	err = investor.Save() // save investor creds now that we're done
-	if err != nil {
-		return err
-	}
-	a.Residents = append(a.Residents, *investor)
-	err = a.Save()
-	return err
-}
-
-func preInvestmentCheck(projIndex int, invIndex int, invAmount string) (ConstructionBond, error) {
+func preInvestmentConstructionBonds(projIndex int, invIndex int, invAmount string) (ConstructionBond, error) {
 
 	project, err := RetrieveConstructionBond(projIndex)
 	if err != nil {
@@ -77,7 +28,8 @@ func preInvestmentCheck(projIndex int, invIndex int, invAmount string) (Construc
 		return project, err
 	}
 	// check if investment amount is greater than the cost of a unit
-	if float64(utils.StoF(invAmount)) != project.CostOfUnit {
+	rem := float64(utils.StoF(invAmount)) / project.CostOfUnit
+	if math.Floor(rem) == 0 {
 		return project, fmt.Errorf("You are trying to invest more than a unit's cost, do you want to invest in two units?")
 	}
 
@@ -85,12 +37,12 @@ func preInvestmentCheck(projIndex int, invIndex int, invAmount string) (Construc
 
 	if len(project.InvestorIndices) == 0 {
 		// initialize issuer
-		err = issuer.InitIssuer(consts.OpzonesIsuserDir, project.Index, consts.IssuerSeedPwd)
+		err = issuer.InitIssuer(consts.OpzonesIssuerDir, project.Index, consts.IssuerSeedPwd)
 		if err != nil {
 			log.Println("Error while initializing issuer", err)
 			return project, err
 		}
-		err = issuer.FundIssuer(consts.OpzonesIsuserDir, project.Index, consts.IssuerSeedPwd, consts.PlatformSeed)
+		err = issuer.FundIssuer(consts.OpzonesIssuerDir, project.Index, consts.IssuerSeedPwd, consts.PlatformSeed)
 		if err != nil {
 			log.Println("Error while funding issuer", err)
 			return project, err
@@ -107,13 +59,82 @@ func preInvestmentCheck(projIndex int, invIndex int, invAmount string) (Construc
 	return project, nil
 }
 
-// Invest in a particular construction bonm
-func InvestInConstructionBond(projIndex int, invIndex int, invAmount string,
-	invSeed string, recpSeed string) error {
+func preInvestmentLivingCoop(projIndex int, invIndex int, invAmount string) (LivingUnitCoop, error) {
+
+	project, err := RetrieveLivingUnitCoop(projIndex)
+	if err != nil {
+		return project, err
+	}
+
+	investor, err := database.RetrieveInvestor(invIndex)
+	if err != nil {
+		return project, err
+	}
+	// check if investment amount is greater than the cost of a unit
+	if float64(utils.StoF(invAmount)) != project.MonthlyPayment {
+		return project, fmt.Errorf("You are trying to invest more than a unit's cost, do you want to invest in two units?")
+	}
+
+	assetName := assets.AssetID(project.Description)
+
+	if len(project.ResidentIndices) == 0 {
+		// initialize issuer
+		err = issuer.InitIssuer(consts.OpzonesIssuerDir, project.Index, consts.IssuerSeedPwd)
+		if err != nil {
+			log.Println("Error while initializing issuer", err)
+			return project, err
+		}
+		err = issuer.FundIssuer(consts.OpzonesIssuerDir, project.Index, consts.IssuerSeedPwd, consts.PlatformSeed)
+		if err != nil {
+			log.Println("Error while funding issuer", err)
+			return project, err
+		}
+
+		project.InvestorAssetCode = assets.AssetID(consts.BondAssetPrefix + assetName) // set the investor code
+	}
+
+	if !investor.CanInvest(invAmount) {
+		log.Println("Investor has less balance than what is required to ivnest in this asset")
+		return project, err
+	}
+
+	return project, nil
+}
+
+// Invest in a particular living coop
+func InvestInLivingUnitCoop(projIndex int, invIndex int, invAmount string, invSeed string,
+	recpSeed string) error {
 	// we want to invest in this specific bond
 	var err error
 
-	project, err := preInvestmentCheck(projIndex, invIndex, invAmount)
+	project, err := preInvestmentLivingCoop(projIndex, invIndex, invAmount)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	err = model.Invest(projIndex, invIndex, project.InvestorAssetCode, invSeed,
+		invAmount, utils.FtoS(project.Amount), project.ResidentIndices, "livingunitcoop")
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	err = project.updateLivingUnitCoopAfterInvestment(invAmount, invIndex)
+	if err != nil {
+		log.Println("Failed to update project after investment", err)
+		return err
+	}
+
+	return nil
+}
+
+// Invest in a particular construction bonm
+func InvestInConstructionBond(projIndex int, invIndex int, invAmount string, invSeed string) error {
+	// we want to invest in this specific bond
+	var err error
+
+	project, err := preInvestmentConstructionBonds(projIndex, invIndex, invAmount)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -122,7 +143,7 @@ func InvestInConstructionBond(projIndex int, invIndex int, invAmount string,
 	trustLimit := utils.FtoS(project.CostOfUnit * float64(project.NoOfUnits))
 
 	err = model.Invest(projIndex, invIndex, project.InvestorAssetCode, invSeed,
-		invAmount, trustLimit, project.InvestorIndices)
+		invAmount, trustLimit, project.InvestorIndices, "constructionbond")
 	if err != nil {
 		log.Println(err)
 		return err
@@ -138,13 +159,157 @@ func InvestInConstructionBond(projIndex int, invIndex int, invAmount string,
 	project.DebtAssetCode = assets.AssetID(consts.DebtAssetPrefix + project.Description)
 
 	if totalValue == project.AmountRaised {
-		// send the recipient relevant debt asset
-		err = model.Receive(consts.OpzonesIsuserDir, project.RecipientIndex, projIndex, project.DebtAssetCode, recpSeed, totalValue)
+		// send the recipient a notification to unlock the specific project and accept the investment
+		err = project.sendRecipientNotification()
 		if err != nil {
-			log.Println("Failed to send assets to recipient project after investment", err)
+			log.Println("Error while sending notifications to recipient", err)
+			return err
+		}
+		go sendRecipientAssets(projIndex, totalValue)
+	}
+	return nil
+}
+
+func sendRecipientAssets(projIndex int, totalValue float64) error {
+	// send the recipient relevant debt asset
+	startTime := utils.Unix()
+	project, err := RetrieveConstructionBond(projIndex)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	for utils.Unix()-startTime < consts.LockInterval {
+		log.Printf("WAITING FOR PROJECT %d TO BE UNLOCKED", projIndex)
+		project, err = RetrieveConstructionBond(projIndex)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		if !project.Lock {
+			log.Println("Project UNLOCKED IN LOOP")
+			break
+		}
+		time.Sleep(10 * time.Second)
+	}
+
+	project, err = RetrieveConstructionBond(projIndex)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	recipient, err := database.RetrieveRecipient(project.RecipientIndex)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	recpSeed, err := wallet.DecryptSeed(recipient.U.EncryptedSeed, project.LockPwd)
+	if err != nil {
+		log.Println("Couldn't decrypt seed", err)
+		return err
+	}
+
+	err = model.ReceiveBond(consts.OpzonesIssuerDir, project.RecipientIndex, projIndex, project.DebtAssetCode, recpSeed, totalValue)
+	if err != nil {
+		log.Println("Failed to send assets to recipient project after investment", err)
+		return err
+	}
+
+	project.LockPwd = ""
+	return project.Save()
+}
+
+// sendRecipientNotification sends the notification to the recipient requesting them
+// to logon to the platform and unlock the project that has just been invested in
+func (project *ConstructionBond) sendRecipientNotification() error {
+	recipient, err := database.RetrieveRecipient(project.RecipientIndex)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	notif.SendUnlockNotifToRecipient(project.Index, recipient.U.Email)
+	project.Lock = true
+	return project.Save()
+}
+
+// sendRecipientNotification sends the notification to the recipient requesting them
+// to logon to the platform and unlock the project that has just been invested in
+func (project *LivingUnitCoop) sendDeveloperNotification() error {
+	recipient, err := database.RetrieveRecipient(project.RecipientIndex)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	notif.SendUnlockNotifToRecipient(project.Index, recipient.U.Email)
+	return nil
+}
+
+// UnlockProject unlocks a specific project that has just been invested in
+func UnlockProject(username string, pwhash string, projIndex int, seedpwd string, application string) error {
+	fmt.Println("UNLOCKING PROJECT")
+	recipient, err := database.ValidateRecipient(username, pwhash)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	recpSeed, err := wallet.DecryptSeed(recipient.U.EncryptedSeed, seedpwd)
+	if err != nil {
+		log.Println("Error while decrpyting seed", err)
+		return err
+	}
+
+	checkPubkey, err := wallet.ReturnPubkey(recpSeed)
+	if err != nil {
+		log.Println("Couldn't get pubkey from seed", err)
+		return err
+	}
+
+	if checkPubkey != recipient.U.PublicKey {
+		log.Println("Invalid seed")
+		return fmt.Errorf("Failed to unlock project")
+	}
+
+	if application == "constructionbond" {
+		project, err := RetrieveConstructionBond(projIndex)
+		if err != nil || !project.Lock {
+			log.Println(err)
+			return err
+		}
+
+		if recipient.U.Index != project.RecipientIndex {
+			return fmt.Errorf("Recipient Indices don't match, quitting!")
+		}
+
+		project.LockPwd = seedpwd
+		project.Lock = false
+		err = project.Save()
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+	} else if application == "livingunitcoop" {
+		project, err := RetrieveLivingUnitCoop(projIndex)
+		if err != nil || !project.Lock {
+			log.Println(err)
+			return err
+		}
+
+		if recipient.U.Index != project.RecipientIndex {
+			return fmt.Errorf("Recipient Indices don't match, quitting!")
+		}
+
+		project.LockPwd = seedpwd
+		project.Lock = false
+		err = project.Save()
+		if err != nil {
+			log.Println(err)
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -152,5 +317,11 @@ func (project *ConstructionBond) updateConstructionBondAfterInvestment(invAmount
 	project.InvestorIndices = append(project.InvestorIndices, invIndex)
 	// TODO: have the amount in escrow or something
 	project.AmountRaised += utils.StoF(invAmount)
+	return project.Save()
+}
+
+func (project *LivingUnitCoop) updateLivingUnitCoopAfterInvestment(invAmount string, invIndex int) error {
+	project.ResidentIndices = append(project.ResidentIndices, invIndex)
+	project.UnitsSold += 1
 	return project.Save()
 }

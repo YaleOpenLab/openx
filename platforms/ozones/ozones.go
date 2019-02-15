@@ -1,7 +1,6 @@
 package ozones
 
 import (
-	database "github.com/YaleOpenLab/openx/database"
 	platform "github.com/YaleOpenLab/openx/platforms"
 )
 
@@ -38,7 +37,8 @@ type ConstructionBond struct {
 	DebtAssetCode     string
 	InvestorIndices   []int // the array of investors who have invested in this particular construction bond
 	RecipientIndex    int   // the index of the recipient who ideally would be the person constructing this particular space
-
+	LockPwd string
+	Lock bool
 	// TODO: add more parameters based on discussions and feedback from Martin and John
 }
 
@@ -54,7 +54,7 @@ type LivingUnitCoop struct {
 	Amount         float64 // amount that is required to be invested in this living unit coop
 	SecurityType   string  // The class of security that this security falls under
 	MaturationDate string  // date at which the bond expires
-	MonthlyPayment float64
+	MonthlyPayment float64 // monthly payment that must be m  ade towards this investment
 	MemberRights   string  // the rights that the member of this coop is entitled to
 	InterestRate   float64 // teh interest rateoffered for this particular bond
 	Rating         string  // the moody's / finch rating for this particular bond
@@ -63,8 +63,11 @@ type LivingUnitCoop struct {
 
 	DateInitiated     string // date the project was created
 	InvestorAssetCode string // the main receipt that the investor receives on investing in this living coop unit
-	Residents         []database.Investor
+	ResidentIndices   []int  // the indices of all residents (i nthis case investors as well) in this living unit coop
 
+	RecipientIndex int
+	LockPwd string
+	Lock bool
 	// TODO: add more parameters based on discussions and feedback from Martin and John
 }
 

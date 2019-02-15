@@ -17,9 +17,9 @@ import (
 // Debt Crowdfunding is a model where the investor loans out some initial capital and receives interest on that investment
 
 func Invest(projIndex int, invIndex int, invAssetCode string, invSeed string,
-	invAmount string, trustLimit string, investorIndices []int) error {
+	invAmount string, trustLimit string, investorIndices []int, application string) error {
 
-	issuerPath := consts.OpzonesIsuserDir
+	issuerPath := consts.OpzonesIssuerDir
 	issuerPubkey, issuerSeed, err := wallet.RetrieveSeed(issuer.CreatePath(issuerPath, projIndex), consts.IssuerSeedPwd)
 	if err != nil {
 		log.Println("Unable to retrieve issuer seed", err)
@@ -59,7 +59,11 @@ func Invest(projIndex int, invIndex int, invAssetCode string, invSeed string,
 	log.Printf("Sent InvestorAsset %s to investor %s with txhash %s", invAssetCode, investor.U.PublicKey, investorAssetHash)
 	// investor asset sent, update a.Params's BalLeft
 	investor.AmountInvested += utils.StoF(invAmount)
-	investor.InvestedBonds = append(investor.InvestedBonds, invAssetCode)
+	if application == "constructionBond" {
+		investor.InvestedBonds = append(investor.InvestedBonds, invAssetCode)
+	} else if application == "livingunitcoop" {
+		investor.InvestedCoops = append(investor.InvestedCoops, invAssetCode)
+	}
 	err = investor.Save() // save investor creds now that we're done
 	if err != nil {
 		return err
@@ -72,7 +76,7 @@ func Invest(projIndex int, invIndex int, invAssetCode string, invSeed string,
 	return nil
 }
 
-func Receive(issuerPath string, recpIndex int, projIndex int, debtAssetCode string,
+func ReceiveBond(issuerPath string, recpIndex int, projIndex int, debtAssetCode string,
 	recpSeed string, totalValue float64) error {
 
 	recipient, err := database.RetrieveRecipient(recpIndex)

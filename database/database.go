@@ -40,8 +40,8 @@ func CreateHomeDir() {
 	if _, err := os.Stat(consts.OpenSolarIssuerDir); os.IsNotExist(err) {
 		os.MkdirAll(consts.OpenSolarIssuerDir, os.ModePerm)
 	}
-	if _, err := os.Stat(consts.OpzonesIsuserDir); os.IsNotExist(err) {
-		os.MkdirAll(consts.OpzonesIsuserDir, os.ModePerm)
+	if _, err := os.Stat(consts.OpzonesIssuerDir); os.IsNotExist(err) {
+		os.MkdirAll(consts.OpzonesIssuerDir, os.ModePerm)
 	}
 }
 

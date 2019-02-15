@@ -142,6 +142,17 @@ func SendUnlockNotifToRecipient(projIndex int, to string) error {
 	return sendMail(body, to)
 }
 
+func SendUnlockNotifToRecipientOZ(projIndex int, to string) error {
+	// this is sent to the investor on payback from an investor
+	body := "Greetings from the opzones platform! \n\n" +
+		"We're writing to let you know that project number: " + utils.ItoS(projIndex) + " has been invested in\n\n" +
+		"You are required to logon to the platform within a period of 3(THREE) days in order to accept the investment\n\n" +
+		"If you choose to not accept the given investment in your project, please be warned that your reputation score " +
+		"will be adjusted accordingly and this may affect any future proposal that you seek funding for on the platform\n\n" +
+		footerString
+	return sendMail(body, to)
+}
+
 func SendEmail(message string, to string, name string) error {
 	// we can't send emails directly sicne we would need their gmail usernames and password for that
 	startString := "Greetings from the opensolar platform! \n\n" +
