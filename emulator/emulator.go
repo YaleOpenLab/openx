@@ -8,6 +8,11 @@ import (
 	solar "github.com/YaleOpenLab/openx/platforms/opensolar"
 	scan "github.com/YaleOpenLab/openx/scan"
 	"github.com/spf13/viper"
+	consts "github.com/YaleOpenLab/openx/consts"
+	"github.com/chzyer/readline"
+
+	"github.com/fatih/color"
+
 )
 
 // package emulator is used to emulate the environment of the platform and make changes
@@ -24,15 +29,12 @@ var (
 	LocalInvestor   database.Investor
 	LocalContractor solar.Entity
 	LocalOriginator solar.Entity
-	// store local seed for easy retrieval
 	LocalSeed string
-	// store localseedpwd after asking user for it the first time around
 	LocalSeedPwd string
-	// store the platform public key
 	PlatformPublicKey string
 )
 
-//var ApiUrl = "35.192.122.229:11626"
+// this ApiUrl should point to the platform instance
 var ApiUrl = "http://localhost:8080"
 
 func SetupConfig() (string, error) {
@@ -77,17 +79,31 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	promptColor := color.New(color.FgHiYellow).SprintFunc()
+	whiteColor := color.New(color.FgHiWhite).SprintFunc()
+	rl, err := readline.NewEx(&readline.Config{
+		Prompt:      promptColor("emulator") + whiteColor("# "),
+		HistoryFile: consts.TellerHomeDir + "/history.txt",
+		// AutoComplete: lc.NewAutoCompleter(),
+	})
+	ColorOutput("YOUR SEED IS: "+LocalSeed, RedColor)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rl.Close()
+
 	switch role {
 	// start loops for each role, would be nice if we could come up with an alternative to
 	// duplication here
 	case "Investor":
-		log.Fatal(LoopInv())
+		log.Fatal(LoopInv(rl))
 	case "Recipient":
-		log.Fatal(LoopRecp())
+		log.Fatal(LoopRecp(rl))
 	case "Originator":
-		log.Fatal(LoopOrig())
+		log.Fatal(LoopOrig(rl))
 	case "Contractor":
-		log.Fatal(LoopCont())
+		log.Fatal(LoopCont(rl))
 	default:
 		log.Println("It should never come here")
 	}

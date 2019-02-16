@@ -82,6 +82,7 @@ func SetupRoutes() {
 	DataHandler()
 }
 
+// curl https://localhost/ping --insecur {"Code":200,"Status":""}
 func StartServer() {
 	SetupRoutes()
 	err := http.ListenAndServeTLS(":"+consts.Tlsport, "ssl/server.crt", "ssl/server.key", nil)

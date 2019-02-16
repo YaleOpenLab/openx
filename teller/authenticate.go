@@ -7,7 +7,6 @@ import (
 	consts "github.com/YaleOpenLab/openx/consts"
 	ipfs "github.com/YaleOpenLab/openx/ipfs"
 	oracle "github.com/YaleOpenLab/openx/oracle"
-	utils "github.com/YaleOpenLab/openx/utils"
 	xlm "github.com/YaleOpenLab/openx/xlm"
 )
 
@@ -57,20 +56,19 @@ func CheckPayback() {
 	for {
 		log.Println("PAYBACK TIME")
 
-		recpIndex := utils.ItoS(LocalRecipient.U.Index)
+		if len(LocalRecipient.ReceivedSolarProjects) == 0 {
+			// if the recipient has no received solar projects, quit. This is done in order to test the teller
+			return
+		}
 		// we only know the debt asset, so retrieve all projects and search for our debt asset
 		assetName := LocalRecipient.ReceivedSolarProjects[0] // hardcode for now
 		// also might not really be a problem since we assume one recipient per installed solar project
-		recipientSeed := RecpSeed
 		amount := oracle.MonthlyBill() // TODO: consumption data must be accumulated from zigbee in the future
-		// the platform RecpPublicKey will be static, so can be hardcoded
-		// sleep for the interval we want to payback in
-		err := ProjectPayback(recpIndex, assetName, recipientSeed, amount)
+		err := ProjectPayback(assetName, amount)
 		if err != nil {
 			// payment failed for some reason, notify the developer of this platform
 			// and the platform as well
-			log.Println(err)
-			// <-cleanupDone // terminate and commit hash
+			log.Println("Error while paying amount back", err)
 		}
 		time.Sleep(consts.PaybackInterval * time.Second)
 	}

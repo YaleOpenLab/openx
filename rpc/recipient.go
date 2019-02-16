@@ -118,7 +118,7 @@ func payback() {
 		// this is a get request to make things easier for the teller
 		prepRecipient, err := RecpValidateHelper(w, r)
 		if err != nil || r.URL.Query()["assetName"] == nil || r.URL.Query()["amount"] == nil ||
-			r.URL.Query()["platformPublicKey"] == nil || r.URL.Query()["seedpwd"] == nil || r.URL.Query()["projIndex"] == nil {
+			r.URL.Query()["seedpwd"] == nil || r.URL.Query()["projIndex"] == nil {
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}

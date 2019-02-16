@@ -39,40 +39,10 @@ func PingRpc() error {
 	return nil
 }
 
-func GetInvestors() error {
-	data, err := rpc.GetRequest(ApiUrl + "/investor/all")
-	if err != nil {
-		return err
-	}
-	var x []database.Investor
-	err = json.Unmarshal(data, &x)
-	if err != nil {
-		return err
-	}
-	// the result would be the status of the platform
-	ColorOutput("REQUEST SUCCEEDED", GreenColor)
-	log.Println(x)
-	return nil
-}
-
-func GetRecipients() error {
-	data, err := rpc.GetRequest(ApiUrl + "/recipient/all")
-	if err != nil {
-		return err
-	}
-	var x []database.Recipient
-	err = json.Unmarshal(data, &x)
-	if err != nil {
-		return err
-	}
-	ColorOutput("REQUEST SUCCEEDED", GreenColor)
-	log.Println(x)
-	return nil
-}
-
 func GetProjectIndex(assetName string) (int, error) {
 	data, err := rpc.GetRequest(ApiUrl + "/project/funded")
 	if err != nil {
+		log.Println(err)
 		return -1, err
 	}
 	var x []solar.Project
@@ -89,7 +59,7 @@ func GetProjectIndex(assetName string) (int, error) {
 }
 
 func LoginToPlatForm(username string, pwhash string) error {
-	data, err := rpc.GetRequest(ApiUrl + "/recipient/validate?" + "Username=" + username + "&Pwhash=" + pwhash)
+	data, err := rpc.GetRequest(ApiUrl + "/recipient/validate?" + "username=" + username + "&pwhash=" + pwhash)
 	if err != nil {
 		return err
 	}
@@ -103,17 +73,16 @@ func LoginToPlatForm(username string, pwhash string) error {
 	return nil
 }
 
-func ProjectPayback(recpIndex string, assetName string,
-	recipientSeed string, amount string) error {
+func ProjectPayback(assetName string, amount string) error {
 	// retrieve project index
 	projIndexI, err := GetProjectIndex(assetName)
 	if err != nil {
 		return fmt.Errorf("Couldn't pay")
 	}
 	projIndex := utils.ItoS(projIndexI)
-	data, err := rpc.GetRequest(ApiUrl + "/recipient/payback?" + "recpIndex=" + recpIndex +
-		"&projIndex=" + projIndex + "&assetName=" + assetName + "&recipientSeed=" +
-		recipientSeed + "&amount=" + amount + "&platformPublicKey=" + PlatformPublicKey)
+	data, err := rpc.GetRequest(ApiUrl + "/recipient/payback?" + "username=" + LocalRecipient.U.Username +
+		"&pwhash=" + LocalRecipient.U.Pwhash + "&projIndex=" + projIndex + "&assetName=" + assetName + "&seedpwd=" +
+		LocalSeedPwd + "&amount=" + amount)
 	if err != nil {
 		return err
 	}
@@ -130,8 +99,8 @@ func ProjectPayback(recpIndex string, assetName string,
 }
 
 func SetDeviceId(username string, pwhash string, deviceId string) error {
-	data, err := rpc.GetRequest(ApiUrl + "/recipient/deviceId?" + "Username=" + username +
-		"&Pwhash=" + pwhash + "&deviceid=" + deviceId)
+	data, err := rpc.GetRequest(ApiUrl + "/recipient/deviceId?" + "username=" + username +
+		"&pwhash=" + pwhash + "&deviceid=" + deviceId)
 	if err != nil {
 		return err
 	}
@@ -148,8 +117,8 @@ func SetDeviceId(username string, pwhash string, deviceId string) error {
 }
 
 func StoreStartTime() error {
-	data, err := rpc.GetRequest(ApiUrl + "/recipient/startdevice?" + "Username=" + LocalRecipient.U.Username +
-		"&Pwhash=" + LocalRecipient.U.Pwhash + "&start=" + utils.I64toS(utils.Unix()))
+	data, err := rpc.GetRequest(ApiUrl + "/recipient/startdevice?" + "username=" + LocalRecipient.U.Username +
+		"&pwhash=" + LocalRecipient.U.Pwhash + "&start=" + utils.I64toS(utils.Unix()))
 	if err != nil {
 		return err
 	}
@@ -168,8 +137,8 @@ func StoreStartTime() error {
 
 func StoreLocation(mapskey string) error {
 	location := GetLocation(mapskey)
-	data, err := rpc.GetRequest(ApiUrl + "/recipient/storelocation?" + "Username=" + LocalRecipient.U.Username +
-		"&Pwhash=" + LocalRecipient.U.Pwhash + "&location=" + location)
+	data, err := rpc.GetRequest(ApiUrl + "/recipient/storelocation?" + "username=" + LocalRecipient.U.Username +
+		"&pwhash=" + LocalRecipient.U.Pwhash + "&location=" + location)
 	if err != nil {
 		return err
 	}

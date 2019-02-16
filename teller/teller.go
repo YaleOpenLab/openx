@@ -41,6 +41,7 @@ var (
 	DeviceInfo        string
 	StartHash         string
 	NowHash           string
+	LocalSeedPwd      string
 )
 
 var cleanupDone chan struct{}
@@ -53,7 +54,7 @@ func main() {
 	}
 	ColorOutput("TELLER PUBKEY: "+RecpPublicKey, GreenColor)
 	ColorOutput("DEVICE ID: "+DeviceId, GreenColor)
-	log.Fatal("Checks done") // REMOVE THIS BEFORE COMMIT
+	// log.Fatal("Checks done") // REMOVE THIS BEFORE COMMIT
 	go CheckPayback()
 	StartHash, err = BlockStamp()
 	if err != nil {
@@ -107,9 +108,6 @@ func main() {
 		cmdslice := strings.Fields(msg)
 		ColorOutput("entered command: "+msg, YellowColor)
 
-		err = ParseInput(cmdslice)
-		if err != nil {
-			fmt.Println(err)
-		}
+		ParseInput(cmdslice)
 	}
 }

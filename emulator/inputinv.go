@@ -5,10 +5,8 @@ import (
 	"log"
 	"strings"
 
-	consts "github.com/YaleOpenLab/openx/consts"
 	utils "github.com/YaleOpenLab/openx/utils"
 	"github.com/chzyer/readline"
-	"github.com/fatih/color"
 )
 
 // inputinv.go contains all the relevant emulator commands for the investor
@@ -17,7 +15,7 @@ import (
 // the input array contains the commands that we want to parse.
 // first check the length of the input array and then define accordingly
 
-func LoopInv() error {
+func LoopInv(rl *readline.Instance) error {
 	// this loop is for an investor
 	// we have authenticated the user and stored the details in an appropriate structure
 	// need to repeat this struct everywhere because having separate functions and importing
@@ -25,21 +23,6 @@ func LoopInv() error {
 	// the problem with having a conditional statement inside the loop is that it checks
 	// role each time and that's not nice performance wise
 	// TOOD: look at alternatives if possible
-	promptColor := color.New(color.FgHiYellow).SprintFunc()
-	whiteColor := color.New(color.FgHiWhite).SprintFunc()
-	rl, err := readline.NewEx(&readline.Config{
-		Prompt:      promptColor("emulator") + whiteColor("# "),
-		HistoryFile: consts.TellerHomeDir + "/history.txt",
-		// AutoComplete: lc.NewAutoCompleter(),
-	})
-
-	ColorOutput("YOUR SEED IS: "+LocalSeed, RedColor)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer rl.Close()
-
 	for {
 		// setup reader with max 4K input chars
 		msg, err := rl.Readline()
@@ -123,7 +106,7 @@ func ParseInputInv(input []string) error {
 		// end of vote
 	case "invest":
 		if len(input) < 4 {
-			log.Println("Invest Params: invest <proj_number> <amount> <project>")
+			log.Println("Invest Params: invest <proj_number> <amount> <platform>")
 			break
 		}
 		_, err = utils.StoICheck(input[1])
