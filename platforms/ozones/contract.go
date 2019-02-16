@@ -3,8 +3,8 @@ package ozones
 import (
 	"fmt"
 	"log"
-	"time"
 	"math"
+	"time"
 
 	assets "github.com/YaleOpenLab/openx/assets"
 	consts "github.com/YaleOpenLab/openx/consts"

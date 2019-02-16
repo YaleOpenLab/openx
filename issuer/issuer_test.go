@@ -5,8 +5,8 @@ package issuer
 import (
 	"testing"
 
-	xlm "github.com/YaleOpenLab/openx/xlm"
 	consts "github.com/YaleOpenLab/openx/consts"
+	xlm "github.com/YaleOpenLab/openx/xlm"
 )
 
 func TestIssuer(t *testing.T) {

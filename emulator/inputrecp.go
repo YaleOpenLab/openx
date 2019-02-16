@@ -67,162 +67,26 @@ func ParseInputRecp(input []string) error {
 	case "help":
 		fmt.Println("LIST OF SUPPORTED COMMANDS: ")
 		fmt.Println("ping, display, exchange, ipfs, create, send, receive, unlock, payback, finalize, originate")
-		break
 	case "ping":
-		err = PingRpc()
-		if err != nil {
-			log.Println(err)
-			return err
-		}
-	// have a list of all the supported commands here and then check for length, etc inside
+		pingHelper()
 	case "display":
-		// display is a  broad command and needs to have a subcommand
-		if len(input) == 1 {
-			// only display was given, so display help command
-			log.Println("<display><balance, profile, projects>")
-			break
-		}
-		subcommand := input[1]
-		switch subcommand {
-		case "balance":
-			if len(input) == 2 {
-				log.Println("Calling balances API")
-				balances, err := GetBalances(LocalRecipient.U.Username, LocalRecipient.U.Pwhash)
-				if err != nil {
-					log.Println(err)
-					break
-				}
-				PrintBalances(balances)
-				break
-			}
-			subcommand := input[2]
-			switch subcommand {
-			case "xlm":
-				// print xlm balance
-				balance, err := GetXLMBalance(LocalRecipient.U.Username, LocalRecipient.U.Pwhash)
-				if err != nil {
-					log.Println(err)
-					break
-				}
-				ColorOutput("BALANCE: "+balance, MagentaColor)
-				break
-			case "all":
-				balances, err := GetBalances(LocalRecipient.U.Username, LocalRecipient.U.Pwhash)
-				if err != nil {
-					log.Println(err)
-					break
-				}
-				PrintBalances(balances)
-				break
-			default:
-				balance, err := GetAssetBalance(LocalRecipient.U.Username, LocalRecipient.U.Pwhash, subcommand)
-				if err != nil {
-					log.Println(err)
-					break
-				}
-				ColorOutput("BALANCE: "+balance, MagentaColor)
-				break
-				// print asset balance
-			}
-		case "profile":
-			log.Println("Displaying Profile")
-			PrintRecipient(LocalRecipient)
-			break
-		case "projects":
-			if len(input) != 3 {
-				// only display was given, so display help command
-				log.Println("display projects <preorigin, origin, seed, proposed, open, funded, installed, power, fin>")
-				break
-			}
-			subsubcommand := input[2]
-			var stage float64
-			switch subsubcommand {
-			case "preorigin":
-				log.Println("Displaying all pre-originated (stage 0) projects")
-				stage = 0
-				break
-			case "origin":
-				log.Println("Displaying all originated (stage 1) projects")
-				stage = 1
-				break
-			case "seed":
-				log.Println("Displaying all seed (stage 1.5) projects")
-				stage = 1.5
-				break
-			case "proposed":
-				log.Println("Displaying all proposed (stage 2) projects")
-				stage = 2
-				break
-			case "open":
-				log.Println("Displaying open (stage 3) projects")
-				stage = 3
-				break
-			case "funded":
-				log.Println("Displaying funded (stage 4) projects")
-				stage = 4
-				break
-			case "installed":
-				log.Println("Displaying installed (stage 5) projects")
-				stage = 5
-				break
-			case "power":
-				log.Println("Displaying funded (stage 6) projects")
-				stage = 6
-				break
-			case "fin":
-				log.Println("Displaying funded (stage 7) projects")
-				stage = 7
-				break
-			}
-			arr, err := RetrieveProject(stage)
-			if err != nil {
-				log.Println(err)
-				break
-			}
-			PrintProjects(arr)
-			break
-		} // end of display
+		displayHelper(input, LocalRecipient.U.Username, LocalRecipient.U.Pwhash, "recipient")
 	case "exchange":
-		if len(input) != 2 {
-			// only display was given, so display help command
-			log.Println("exchange <amount>")
-			break
-		}
-		amount, err := utils.StoICheck(input[1])
-		if err != nil {
-			log.Println(err)
-			break
-		}
-		// convert this to int and check if int
-		fmt.Println("Exchanging", amount, "XLM for STABLEUSD")
-		response, err := GetStableCoin(LocalRecipient.U.Username, LocalRecipient.U.Pwhash, LocalSeed, input[1])
-		if err != nil {
-			log.Println(err)
-			break
-		}
-		if response.Code == 200 {
-			ColorOutput("SUCCESSFUL, CHECK BALANCES", GreenColor)
-		} else {
-			ColorOutput("RESPONSE STATUS: "+utils.ItoS(response.Code), GreenColor)
-		}
-		// end of exchange
+		exchangeHelper(input, LocalRecipient.U.Username, LocalRecipient.U.Pwhash, LocalSeed)
 	case "ipfs":
-		if len(input) != 2 {
-			log.Println("ipfs <string>")
-			break
-		}
-		inputString := input[1]
-		hashString, err := GetIpfsHash(LocalRecipient.U.Username, LocalRecipient.U.Pwhash, inputString)
-		if err != nil {
-			log.Println(err)
-			break
-		}
-		fmt.Println("IPFS HASH", hashString)
-		// end of ipfs
-		// start of recipient only functions
+		ipfsHelper(input, LocalRecipient.U.Username, LocalRecipient.U.Pwhash)
+	case "send":
+		sendHelper(input, LocalRecipient.U.Username, LocalRecipient.U.Pwhash)
+	case "receive":
+		receiveHelper(input, LocalRecipient.U.Username, LocalRecipient.U.Pwhash)
+	case "create":
+		createHelper(input, LocalRecipient.U.Username, LocalRecipient.U.Pwhash, LocalRecipient.U.PublicKey)
+	case "kyc":
+		kycHelper(input, LocalRecipient.U.Username, LocalRecipient.U.Pwhash, LocalRecipient.U.Inspector)
+	// Recipient ONly functions
 	case "unlock":
-		if len(input) != 2 {
-			log.Println("unlock <projIndex>")
+		if len(input) < 3 {
+			log.Println("unlock <projIndex> <platform>")
 			break
 		}
 		_, err = utils.StoICheck(input[1])
@@ -230,15 +94,41 @@ func ParseInputRecp(input []string) error {
 			log.Println(err)
 			break
 		}
-		status, err := UnlockProject(LocalRecipient.U.Username, LocalRecipient.U.Pwhash, LocalSeedPwd, input[1])
-		if err != nil {
-			log.Println(err)
+		platform := input[2]
+		switch platform {
+		case "opensolar":
+			status, err := UnlockOpenSolar(LocalRecipient.U.Username, LocalRecipient.U.Pwhash, LocalSeedPwd, input[1])
+			if err != nil {
+				log.Println(err)
+				break
+			}
+			if status.Code == 200 {
+				ColorOutput("PAYBACK SUCCESSFUL, CHECK EMAIL", GreenColor)
+			} else {
+				ColorOutput("PAYBACK NOT SUCCESSFUL", RedColor)
+			}
 			break
-		}
-		if status.Code == 200 {
-			ColorOutput("PAYBACK SUCCESSFUL, CHECK EMAIL", GreenColor)
-		} else {
-			ColorOutput("PAYBACK NOT SUCCESSFUL", RedColor)
+		case "opzones":
+			if len(input) < 4 {
+				log.Println("unlock <projIndex> opzones <cbond, lucoop>")
+				break
+			}
+			model := input[3]
+			switch model {
+			case "cbond":
+				log.Println("CGOND OKS")
+				status, err := UnlockCBond(LocalRecipient.U.Username, LocalRecipient.U.Pwhash, LocalSeedPwd, input[1])
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				if status.Code == 200 {
+					ColorOutput("PAYBACK SUCCESSFUL, CHECK EMAIL", GreenColor)
+				} else {
+					ColorOutput("PAYBACK NOT SUCCESSFUL", RedColor)
+				}
+				break
+			} // end of model switch
 		}
 		break
 	case "payback":
@@ -324,133 +214,6 @@ func ParseInputRecp(input []string) error {
 		}
 		break
 		// end of originate
-	case "create":
-		// create enables you to create tokens on stellar that you can excahnge with third parties.
-		if len(input) == 1 {
-			log.Println("create <asset>")
-			break
-		}
-		subcommand := input[1]
-		switch subcommand {
-		case "asset":
-			// create a new asset
-			if len(input) != 3 {
-				log.Println("create asset <name>")
-				break
-			}
-
-			assetName := input[2]
-
-			status, err := CreateAssetInv(LocalRecipient.U.Username, LocalRecipient.U.Pwhash,
-				assetName, LocalRecipient.U.PublicKey)
-			if err != nil {
-				log.Println(err)
-				break
-			}
-			if status.Code == 200 {
-				ColorOutput("INVESTMENT SUCCESSFUL, CHECK EMAIL", GreenColor)
-			} else {
-				ColorOutput("INVESTMENT NOT SUCCESSFUL", RedColor)
-			}
-		} // end of create
-	case "send":
-		if len(input) == 1 {
-			log.Println("send <asset>")
-			break
-		}
-		subcommand := input[1]
-		switch subcommand {
-		case "asset":
-			if len(input) != 5 {
-				log.Println("send asset <assetName> <destination> <amount>")
-				break
-			}
-
-			assetName := input[2]
-			destination := input[3]
-			amount := input[4]
-
-			txhash, err := SendLocalAsset(LocalRecipient.U.Username, LocalRecipient.U.Pwhash,
-				LocalSeedPwd, assetName, destination, amount)
-			if err != nil {
-				log.Println(err)
-			}
-			ColorOutput("TX HASH: "+txhash, MagentaColor)
-			break
-			// end of asset
-		case "xlm":
-			if len(input) < 4 {
-				log.Println("send xlm <destination> <amount> <<memo>>")
-				break
-			}
-			destination := input[2]
-			_, err = utils.StoFWithCheck(input[3])
-			if err != nil {
-				log.Println(err)
-				break
-			}
-			// send xlm overs
-			amount := input[3]
-			var memo string
-			if len(input) > 4 {
-				memo = input[4]
-			}
-			txhash, err := SendXLM(LocalRecipient.U.Username, LocalRecipient.U.Pwhash,
-				LocalSeedPwd, destination, amount, memo)
-			if err != nil {
-				log.Println(err)
-			}
-			ColorOutput("TX HASH: "+txhash, MagentaColor)
-		}
-		// end of send
-	case "receive":
-		// we can either receive from the faucet or trust issuers to receive assets
-		if len(input) == 1 {
-			log.Println("receive <xlm, asset>")
-			break
-		}
-		subcommand := input[1]
-		switch subcommand {
-		case "xlm":
-			status, err := AskXLM(LocalRecipient.U.Username, LocalRecipient.U.Pwhash)
-			if err != nil {
-				log.Println(err)
-				break
-			}
-			if status.Code == 200 {
-				ColorOutput("COIN REQUEST SUCCESSFUL, CHECK EMAIL", GreenColor)
-			} else {
-				ColorOutput("COIN REQUEST NOT SUCCESSFUL", RedColor)
-			}
-			// ask for coins from the faucet
-		case "asset":
-			if len(input) != 5 {
-				log.Println("receive asset <assetName> <issuerPubkey> <limit>")
-				break
-			}
-
-			assetName := input[2]
-			issuerPubkey := input[3]
-			_, err = utils.StoFWithCheck(input[4])
-			if err != nil {
-				log.Println(err)
-				break
-			}
-
-			limit := input[4]
-
-			status, err := TrustAsset(LocalRecipient.U.Username, LocalRecipient.U.Pwhash, assetName, issuerPubkey, limit, LocalSeedPwd)
-			if err != nil {
-				log.Println(err)
-				break
-			}
-			if status.Code == 200 {
-				ColorOutput("COIN REQUEST SUCCESSFUL, CHECK EMAIL", GreenColor)
-			} else {
-				ColorOutput("COIN REQUEST NOT SUCCESSFUL", RedColor)
-			}
-			break
-		} // end of receive
 	case "calculate":
 		if len(input) == 1 {
 			log.Println("calculate <payback>")

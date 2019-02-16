@@ -43,6 +43,6 @@ func ExchangeXLMforUSD(amount string) float64 {
 	amountF := utils.StoF(amount)
 	// exchangeRate := 0.1 // hardcode for now, can query cmc apis later
 	exchangeRate := 1000000000.0 // rig the exchange rate so that we can test some stuff
-	premium := 0.01 / 100    // 0.01% premium on ao tx
+	premium := 0.01 / 100        // 0.01% premium on ao tx
 	return amountF * (1 - premium) * exchangeRate
 }

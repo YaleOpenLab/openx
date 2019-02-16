@@ -28,7 +28,7 @@ func setupRecipientRPCs() {
 	storeDeviceLocation()
 	changeReputationRecp()
 	chooseBlindAuction()
-	unlock()
+	unlockOpenSolar()
 	addEmail()
 	finalizeProject()
 	originateProject()
@@ -368,8 +368,8 @@ func chooseTimeAuction() {
 
 // unlock unlocks a speciifc projectwhich has been invested in, signalling that the recipient
 // has accepted the investment.
-func unlock() {
-	http.HandleFunc("/recipient/unlock", func(w http.ResponseWriter, r *http.Request) {
+func unlockOpenSolar() {
+	http.HandleFunc("/recipient/unlock/opensolar", func(w http.ResponseWriter, r *http.Request) {
 		recipient, err := RecpValidateHelper(w, r)
 		if err != nil || r.URL.Query()["seedpwd"] == nil {
 			responseHandler(w, r, StatusBadRequest)

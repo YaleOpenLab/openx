@@ -295,9 +295,9 @@ func Payback(projIndex string, seedpwd string, username string, pwhash string, a
 	return x, nil
 }
 
-func UnlockProject(username string, pwhash string, seedpwd string, projIndex string) (rpc.StatusResponse, error) {
+func UnlockOpenSolar(username string, pwhash string, seedpwd string, projIndex string) (rpc.StatusResponse, error) {
 	var x rpc.StatusResponse
-	body := ApiUrl + "/recipient/unlock?" + "username=" + username + "&pwhash=" + pwhash +
+	body := ApiUrl + "/recipient/unlock/opensolar?" + "username=" + username + "&pwhash=" + pwhash +
 		"&projIndex=" + projIndex + "&seedpwd=" + seedpwd
 
 	data, err := rpc.GetRequest(body)
@@ -505,7 +505,7 @@ func GetTrustLimit(username string, pwhash string, assetName string) (string, er
 	return x, nil
 }
 
-func InvestInOpzone(projIndex string, amount string, username string, pwhash string, seedpwd string) (rpc.StatusResponse, error) {
+func InvestInOpzoneCBond(projIndex string, amount string, username string, pwhash string, seedpwd string) (rpc.StatusResponse, error) {
 	var x rpc.StatusResponse
 	data, err := rpc.GetRequest(ApiUrl + "/constructionbond/invest?" + "username=" + username + "&pwhash=" + pwhash +
 		"&seedpwd=" + seedpwd + "&projIndex=" + projIndex + "&amount=" + amount)
@@ -517,5 +517,36 @@ func InvestInOpzone(projIndex string, amount string, username string, pwhash str
 		return x, err
 	}
 	// RETUNS FALSE, SEE WHY
+	return x, nil
+}
+
+func InvestInLivingUnitCoop(projIndex string, amount string, username string, pwhash string, seedpwd string) (rpc.StatusResponse, error) {
+	var x rpc.StatusResponse
+	data, err := rpc.GetRequest(ApiUrl + "/livingunitcoop/invest?" + "username=" + username + "&pwhash=" + pwhash +
+		"&seedpwd=" + seedpwd + "&projIndex=" + projIndex + "&amount=" + amount)
+	if err != nil {
+		return x, err
+	}
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return x, err
+	}
+	// RETUNS FALSE, SEE WHY
+	return x, nil
+}
+
+func UnlockCBond(username string, pwhash string, seedpwd string, projIndex string) (rpc.StatusResponse, error) {
+	var x rpc.StatusResponse
+	body := ApiUrl + "/recipient/unlock/opzones/cbond?" + "username=" + username + "&pwhash=" + pwhash +
+		"&projIndex=" + projIndex + "&seedpwd=" + seedpwd
+
+	data, err := rpc.GetRequest(body)
+	if err != nil {
+		return x, err
+	}
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return x, err
+	}
 	return x, nil
 }
