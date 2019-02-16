@@ -36,6 +36,7 @@ var TestPaybackInterval = time.Duration(5)                                      
 var DefaultRpcPort = 8080                                                            // the default port on which the rpc server of the platform starts
 var LoginRefreshInterval = time.Duration(5 * 60)                                     // every 5 minutes we refresh the teller to import the changes on the platform
 var PlatformPublicKey = ""                                                           // set this to empty and store during runtime
+var PlatformEmail = ""                                                               // define a platform email so that we can send notifications to the platform when needed
 var PlatformSeed = ""                                                                // set this to empty and store during runtime
 const LockInterval = int64(1 * 60 * 60 * 24 * 3)                                     // time a recipient is given to unlock the project and redeem investment
 const OneWeekInSecond = 604800                                                       // one week in seconds

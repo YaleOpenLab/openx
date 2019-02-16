@@ -12,7 +12,7 @@ import (
 
 func RefreshLogin(username string, pwhash string) error {
 	// refresh login runs once every 5 minutes in order to fetch the latest recipient details
-	// for eg, if the recipient loads hsi balance on the platform, we need it to be reflected on
+	// for eg, if the recipient loads his balance on the platform, we need it to be reflected on
 	// the teller
 	var err error
 	for {
@@ -40,24 +40,26 @@ func SetupConfig() error {
 	}
 
 	PlatformPublicKey = viper.Get("platformPublicKey").(string)
-	seedpwd := viper.Get("seedpwd").(string)                   // seed password used to unlock the seed of the recipient on the platform
+	LocalSeedPwd = viper.Get("seedpwd").(string)               // seed password used to unlock the seed of the recipient on the platform
 	username := viper.Get("username").(string)                 // username of the recipient on the platform
 	password := utils.SHA3hash(viper.Get("password").(string)) // password of the recipient on the platform
 	ApiUrl = viper.Get("apiurl").(string)                      // ApiUrl of the remote / local openx node
 	mapskey := viper.Get("mapskey").(string)                   // google maps API key. Need to activate it
-
 	err = LoginToPlatForm(username, password)
 	if err != nil {
+		log.Println("Error while logging on to the platform", err)
 		return err
 	}
 
-	RecpSeed, err = wallet.DecryptSeed(LocalRecipient.U.EncryptedSeed, seedpwd)
+	RecpSeed, err = wallet.DecryptSeed(LocalRecipient.U.EncryptedSeed, LocalSeedPwd)
 	if err != nil {
+		log.Println("Error while decrypting seed", err)
 		return err
 	}
 
 	RecpPublicKey, err = wallet.ReturnPubkey(RecpSeed)
 	if err != nil {
+		log.Println("Error while returning publickey", err)
 		return err
 	}
 
@@ -78,6 +80,11 @@ func SetupConfig() error {
 	}
 
 	err = StoreLocation(mapskey) // stores DeviceLocation
+	if err != nil {
+		return err
+	}
+
+	err = GetPlatformEmail()
 	if err != nil {
 		return err
 	}

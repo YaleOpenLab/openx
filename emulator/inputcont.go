@@ -5,30 +5,13 @@ import (
 	"log"
 	"strings"
 
-	consts "github.com/YaleOpenLab/openx/consts"
 	utils "github.com/YaleOpenLab/openx/utils"
 	"github.com/chzyer/readline"
-	"github.com/fatih/color"
 )
 
 // inputcont.go contains all the relevant emulator commands for the contractor
-func LoopCont() error {
+func LoopCont(rl *readline.Instance) error {
 	// This loop is exclusive to a contractor
-	promptColor := color.New(color.FgHiYellow).SprintFunc()
-	whiteColor := color.New(color.FgHiWhite).SprintFunc()
-	rl, err := readline.NewEx(&readline.Config{
-		Prompt:      promptColor("emulator") + whiteColor("# "),
-		HistoryFile: consts.TellerHomeDir + "/history.txt",
-		// AutoComplete: lc.NewAutoCompleter(),
-	})
-
-	ColorOutput("YOUR SEED IS: "+LocalSeed, RedColor)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer rl.Close()
-
 	for {
 		// setup reader with max 4K input chars
 		msg, err := rl.Readline()
