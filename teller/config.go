@@ -40,12 +40,11 @@ func SetupConfig() error {
 	}
 
 	PlatformPublicKey = viper.Get("platformPublicKey").(string)
-	LocalSeedPwd = viper.Get("seedpwd").(string)                   // seed password used to unlock the seed of the recipient on the platform
+	LocalSeedPwd = viper.Get("seedpwd").(string)               // seed password used to unlock the seed of the recipient on the platform
 	username := viper.Get("username").(string)                 // username of the recipient on the platform
 	password := utils.SHA3hash(viper.Get("password").(string)) // password of the recipient on the platform
 	ApiUrl = viper.Get("apiurl").(string)                      // ApiUrl of the remote / local openx node
 	mapskey := viper.Get("mapskey").(string)                   // google maps API key. Need to activate it
-
 	err = LoginToPlatForm(username, password)
 	if err != nil {
 		log.Println("Error while logging on to the platform", err)
@@ -81,6 +80,11 @@ func SetupConfig() error {
 	}
 
 	err = StoreLocation(mapskey) // stores DeviceLocation
+	if err != nil {
+		return err
+	}
+
+	err = GetPlatformEmail()
 	if err != nil {
 		return err
 	}

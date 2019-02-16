@@ -7,8 +7,10 @@ import (
 	"net/http"
 
 	assets "github.com/YaleOpenLab/openx/assets"
+	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
 	ipfs "github.com/YaleOpenLab/openx/ipfs"
+	notif "github.com/YaleOpenLab/openx/notif"
 	platform "github.com/YaleOpenLab/openx/platforms/opensolar"
 	utils "github.com/YaleOpenLab/openx/utils"
 	wallet "github.com/YaleOpenLab/openx/wallet"
@@ -28,6 +30,8 @@ func setupUserRpcs() {
 	askForCoins()
 	trustAsset()
 	uploadFile()
+	platformEmail()
+	sendTellerShutdownEmail()
 }
 
 // we want to pass to the caller whether the user is a recipient or an investor.
@@ -458,5 +462,48 @@ func uploadFile() {
 			return
 		}
 		MarshalSend(w, r, hashString)
+	})
+}
+
+type PlatformEmailResponse struct {
+	Email string
+}
+
+func platformEmail() {
+	http.HandleFunc("/platformemail", func(w http.ResponseWriter, r *http.Request) {
+
+		checkGet(w, r)
+		checkOrigin(w, r)
+
+		_, err := UserValidateHelper(w, r)
+		if err != nil {
+			log.Println("did not validate user", err)
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+
+		var x PlatformEmailResponse
+		x.Email = consts.PlatformEmail
+		MarshalSend(w, r, x)
+	})
+}
+
+func sendTellerShutdownEmail() {
+	http.HandleFunc("/tellershutdown", func(w http.ResponseWriter, r *http.Request) {
+
+		checkGet(w, r)
+		checkOrigin(w, r)
+
+		prepUser, err := UserValidateHelper(w, r)
+		if err != nil || r.URL.Query()["projIndex"] == nil || r.URL.Query()["deviceId"] == nil {
+			log.Println("did not validate user", err)
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+
+		projIndex := r.URL.Query()["projIndex"][0]
+		deviceId := r.URL.Query()["deviceId"][0]
+		notif.SendTellerShutdownEmail(prepUser.Email, projIndex, deviceId)
+		responseHandler(w, r, StatusOK)
 	})
 }

@@ -5,6 +5,7 @@ import (
 	"net/smtp"
 
 	utils "github.com/YaleOpenLab/openx/utils"
+	consts "github.com/YaleOpenLab/openx/consts"
 	"github.com/spf13/viper"
 )
 
@@ -260,4 +261,12 @@ func SendContractNotification(Hash1 string, Hash2 string, Hash3 string, Hash4 st
 		"Your fifth hash is: https://testnet.steexp.com/tx/" + Hash5 + "\n\n\n" +
 		footerString
 	return sendMail(body, to)
+}
+
+func SendTellerShutdownEmail(from string, projIndex string, deviceId string) error {
+	body := "Greetings from the remote teller " + deviceId + " installed for: " + from + " on behalf of project: " + projIndex + "\n\n" +
+	"We're writing to let you know that the teller has shut down and requires your immediate action. Please tend to" +
+	"this situation at the earliest." + "\n\n\n" +
+	footerString
+	return sendMail(body, consts.PlatformEmail)
 }

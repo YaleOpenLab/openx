@@ -17,6 +17,7 @@ import (
 	// wallet "github.com/YaleOpenLab/openx/wallet"
 	// xlm "github.com/YaleOpenLab/openx/xlm"
 	flags "github.com/jessevdk/go-flags"
+	"github.com/spf13/viper"
 )
 
 // the server powering the openx platform of platforms. There are two clients that can be used
@@ -64,7 +65,21 @@ func StartPlatform() error {
 	}
 
 	err = opensolar.InitializePlatform()
-	return err
+	if err != nil {
+		return err
+	}
+
+	viper.SetConfigType("yaml")
+	viper.SetConfigName("config")
+	viper.AddConfigPath(".")
+	err = viper.ReadInConfig()
+	if err != nil {
+		log.Println("Error while reading platform email from config file")
+		return err
+	}
+	consts.PlatformEmail = viper.Get("platformemail").(string)
+	log.Println("PLATFOMR EMAIL: ", consts.PlatformEmail)
+	return nil
 }
 
 func main() {

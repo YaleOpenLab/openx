@@ -154,3 +154,51 @@ func StoreLocation(mapskey string) error {
 	}
 	return fmt.Errorf("Errored out, didn't receive 200")
 }
+
+func GetPlatformEmail() error {
+	data, err := rpc.GetRequest(ApiUrl + "/platformemail?" + "username=" + LocalRecipient.U.Username +
+		"&pwhash=" + LocalRecipient.U.Pwhash)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	var x rpc.PlatformEmailResponse
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	PlatformEmail = x.Email
+	ColorOutput("PLATFORMEMAIL: " + PlatformEmail, GreenColor)
+	return nil
+}
+
+func SendDeviceShutdownEmail() error {
+
+	assetName := LocalRecipient.ReceivedSolarProjects[0] // TODO: change this
+	projIndexI, err := GetProjectIndex(assetName)
+	if err != nil {
+		return fmt.Errorf("Couldn't retrieve project index")
+	}
+
+	log.Println("PRJ INDEX: ", projIndexI)
+	projIndexI = 1
+	data, err := rpc.GetRequest(ApiUrl + "/tellershutdown?" + "username=" + LocalRecipient.U.Username +
+		"&pwhash=" + LocalRecipient.U.Pwhash + "&projIndex=" + utils.ItoS(projIndexI) + "&deviceId=" + DeviceId)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	var x rpc.StatusResponse
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return err
+	}
+	if x.Code == 200 {
+		ColorOutput("SENT STOP EMAIL SUCCESSFULLY", GreenColor)
+		return nil
+	}
+	return fmt.Errorf("Errored out, didn't receive 200")
+}

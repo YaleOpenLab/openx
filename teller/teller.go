@@ -42,6 +42,7 @@ var (
 	StartHash         string
 	NowHash           string
 	LocalSeedPwd      string
+	PlatformEmail     string
 )
 
 var cleanupDone chan struct{}

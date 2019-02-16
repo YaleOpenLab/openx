@@ -16,9 +16,10 @@ func BlockStamp() (string, error) {
 	return hash, err
 }
 
-// EndHandler runs when the teller shuts down
+// EndHandler runs when the teller shuts down. Records the start time and location of the
+// device in ipfs and commits it as two transactions to the blockchain
 func EndHandler() error {
-	log.Println("Gracefully shutting down, please do not press any buttons in the process")
+	log.Println("Gracefully shutting down, please do not press any button in the process")
 	var err error
 	NowHash, err = BlockStamp()
 	if err != nil {
@@ -45,6 +46,10 @@ func EndHandler() error {
 		return err
 	}
 	log.Printf("tx1 hash: %s, tx2 hash: %s", tx1, tx2)
+	err = SendDeviceShutdownEmail()
+	if err != nil {
+		log.Println(err)
+	}
 	return nil
 }
 
@@ -70,6 +75,6 @@ func CheckPayback() {
 			// and the platform as well
 			log.Println("Error while paying amount back", err)
 		}
-		time.Sleep(consts.PaybackInterval * time.Second)
+		time.Sleep(consts.PaybackInterval * time.Minute) // TODO" this is based on the agreed upon payback, change
 	}
 }
