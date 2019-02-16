@@ -357,7 +357,7 @@ func investInLivingUnitCoop() {
 
 		prepInvestor, err := InvValidateHelper(w, r)
 		if err != nil || r.URL.Query()["amount"] == nil || r.URL.Query()["projIndex"] == nil || r.URL.Query()["seedpwd"] == nil {
-			log.Println("couldn't calidate investor", err)
+			log.Println("couldn't validate investor", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}

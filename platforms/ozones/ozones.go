@@ -37,8 +37,8 @@ type ConstructionBond struct {
 	DebtAssetCode     string
 	InvestorIndices   []int // the array of investors who have invested in this particular construction bond
 	RecipientIndex    int   // the index of the recipient who ideally would be the person constructing this particular space
-	LockPwd string
-	Lock bool
+	LockPwd           string
+	Lock              bool
 	// TODO: add more parameters based on discussions and feedback from Martin and John
 }
 
@@ -66,8 +66,8 @@ type LivingUnitCoop struct {
 	ResidentIndices   []int  // the indices of all residents (i nthis case investors as well) in this living unit coop
 
 	RecipientIndex int
-	LockPwd string
-	Lock bool
+	LockPwd        string
+	Lock           bool
 	// TODO: add more parameters based on discussions and feedback from Martin and John
 }
 
