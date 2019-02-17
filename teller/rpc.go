@@ -17,7 +17,7 @@ func GetLocation(mapskey string) string {
 	// to improve location accuracy
 	client := geo.NewGoogleGeo(mapskey)
 	res, _ := client.Geolocate()
-	location := fmt.Sprintf("Lat%fLng%f", res.Lat, res.Lng) // some ranodm format, can be improved upon if necessary
+	location := fmt.Sprintf("Lat%fLng%f", res.Lat, res.Lng) // some random format, can be improved upon if necessary
 	DeviceLocation = location
 	return location
 }
@@ -58,7 +58,7 @@ func GetProjectIndex(assetName string) (int, error) {
 	return -1, fmt.Errorf("Not found")
 }
 
-func LoginToPlatForm(username string, pwhash string) error {
+func LoginToPlatform(username string, pwhash string) error {
 	data, err := rpc.GetRequest(ApiUrl + "/recipient/validate?" + "username=" + username + "&pwhash=" + pwhash)
 	if err != nil {
 		return err
@@ -165,7 +165,7 @@ func GetPlatformEmail() error {
 		return err
 	}
 	PlatformEmail = x.Email
-	ColorOutput("PLATFORMEMAIL: " + PlatformEmail, GreenColor)
+	ColorOutput("PLATFORMEMAIL: "+PlatformEmail, GreenColor)
 	return nil
 }
 

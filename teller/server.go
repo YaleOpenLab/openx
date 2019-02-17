@@ -25,13 +25,6 @@ func checkGet(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func checkPost(w http.ResponseWriter, r *http.Request) {
-	log.Println("Checking POST")
-	if r.Method != "POST" {
-		http.Error(w, "404 page not found", http.StatusNotFound)
-	}
-}
-
 func responseHandler(w http.ResponseWriter, r *http.Request, status int) {
 	var response rpc.StatusResponse
 	response.Code = status
@@ -44,7 +37,7 @@ func responseHandler(w http.ResponseWriter, r *http.Request, status int) {
 		response.Status = "404 Error Not Found!"
 	case rpc.StatusInternalServerError:
 		response.Status = "Internal Server Error"
-	rpc.MarshalSend(w, r, response)
+		rpc.MarshalSend(w, r, response)
 	}
 }
 

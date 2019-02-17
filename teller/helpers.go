@@ -7,23 +7,23 @@ import (
 	consts "github.com/YaleOpenLab/openx/consts"
 	ipfs "github.com/YaleOpenLab/openx/ipfs"
 	oracle "github.com/YaleOpenLab/openx/oracle"
-	xlm "github.com/YaleOpenLab/openx/xlm"
 	utils "github.com/YaleOpenLab/openx/utils"
+	xlm "github.com/YaleOpenLab/openx/xlm"
 )
 
+// BlockStamp gets the latest block hash
 func BlockStamp() (string, error) {
-	// get the latest  block here
 	hash, err := xlm.GetLatestBlockHash()
 	return hash, err
 }
 
+// RefreshLogin runs once every 5 minutes in order to fetch the latest recipient details
+// for eg, if the recipient loads his balance on the platform, we need it to be reflected on
+// the teller
 func RefreshLogin(username string, pwhash string) error {
-	// refresh login runs once every 5 minutes in order to fetch the latest recipient details
-	// for eg, if the recipient loads his balance on the platform, we need it to be reflected on
-	// the teller
 	var err error
 	for {
-		err = LoginToPlatForm(username, pwhash)
+		err = LoginToPlatform(username, pwhash)
 		if err != nil {
 			log.Println(err)
 		}
@@ -70,9 +70,8 @@ func EndHandler() error {
 }
 
 // so the teller will be run on the hub and has some data that the platform might need
-// the teller must serve some data to other entities as well. So we need a server for that
-// and this must be over tls for preventing mitm attacks and a good tls certificate from an authorized
-// provider
+// The teller must serve some data to other entities as well. So we need to run a server for that
+// and it must be over tls for preventing mitm attacks
 func CheckPayback() {
 	for {
 		log.Println("PAYBACK TIME")
@@ -84,10 +83,12 @@ func CheckPayback() {
 			log.Println("Error while paying amount back", err)
 			SendDevicePaybackFailedEmail()
 		}
-		time.Sleep(time.Duration(LocalProject.PaybackPeriod * consts.OneWeekInSecond) * time.Second)
+		time.Sleep(time.Duration(LocalProject.PaybackPeriod*consts.OneWeekInSecond) * time.Second)
 	}
 }
 
+// UpdateState hashes the current state of the teller into ipfs and commits the ipfs hash
+// to the blockchain
 func UpdateState() {
 	for {
 		subcommand := "Energyproductiondataforthiscycleequals" + "100" + "W"
@@ -95,14 +96,13 @@ func UpdateState() {
 		// TODO: replace this with real data rather than fake data that we have here
 		// use rest api for ipfs since this may be too heavy to load on a pi. If not, we can shift
 		// this to the pi as well to achieve a s tate of good decentralization of information.
-		ipfsHash, err := GetIpfsHash(DeviceId + "STATEUPDATE"+ subcommand)
+		ipfsHash, err := GetIpfsHash(DeviceId + "STATEUPDATE" + subcommand)
 		if err != nil {
 			log.Println("Error while fetching ipfs hash", err)
 			time.Sleep(consts.TellerPollInterval * time.Second)
 		}
 
 		ipfsHash = "STATUPD: " + ipfsHash
-		log.Println("IPFS HASH: ", ipfsHash, ipfsHash[:28], ipfsHash[29:])
 		// send _timestamp_ stroops to ourselves, we just pay the network fee of 100 stroops
 		// this gives us 10**5 updates per xlm, which is pretty nice, considering that we
 		// do about 288 updates a day, this amounts to 347 days' worth updates with 1 XLM
@@ -110,9 +110,9 @@ func UpdateState() {
 		// we could ideally send the smallest amount of 1 stroop but stellar allows you to
 		// send yourself as much money as you want, so we can have any number here
 		// we could also time this amount to be the state update number itself.
-		//  TODO: is this an ideal solution?
+		// TODO: is this an ideal solution?
 
-		// don't use platform libraries for directly interacting with the blockchain
+		// don't use platform RPCs for interacting with the blockchain
 		// But we do need to track this somehow, so maybe hash the device id and "STATUPS: "
 		// so we can track if but others viewing the blockchain can't (since the deviceId is assumed
 		// to be unique)

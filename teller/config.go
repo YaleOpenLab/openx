@@ -43,7 +43,7 @@ func StartTeller() error {
 
 	// don't allow login before this since that becomes an attack vector where a person can guess
 	// multiple passwords
-	err = LoginToPlatForm(username, password)
+	err = LoginToPlatform(username, password)
 	if err != nil {
 		log.Println("Error while logging on to the platform", err)
 		return err

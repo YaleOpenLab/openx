@@ -24,10 +24,8 @@ func GenerateRandomString(n int) (string, error) {
 	return hex.EncodeToString(b), nil
 }
 
+// GenerateDeviceID generates a random 16 character device ID
 func GenerateDeviceID() (string, error) {
-	// this function is supposed to set the device id of this particular instance.
-	// This should run only once on startup and save the device ID to some local
-	// file so that we can reference it later
 	rs, err := GenerateRandomString(16)
 	if err != nil {
 		return "", err
@@ -36,6 +34,7 @@ func GenerateDeviceID() (string, error) {
 	return upperCase, nil
 }
 
+// CreateHomeDir creates the teller home directory
 func CreateHomeDir() {
 	if _, err := os.Stat(consts.TellerHomeDir); os.IsNotExist(err) {
 		// directory does not exist, create one
@@ -44,6 +43,7 @@ func CreateHomeDir() {
 	}
 }
 
+// CheckDeviceID checks the device's ID against a locally saved copy
 func CheckDeviceID() error {
 	// checks whether there is a device id set on this device beforehand
 	if _, err := os.Stat(consts.TellerHomeDir); os.IsNotExist(err) {
@@ -59,7 +59,7 @@ func CheckDeviceID() error {
 		if err != nil {
 			return err
 		}
-		ColorOutput("GENERATED UNIQUE DEVICE ID: " + deviceId, GreenColor)
+		ColorOutput("GENERATED UNIQUE DEVICE ID: "+deviceId, GreenColor)
 		_, err = file.Write([]byte(deviceId))
 		if err != nil {
 			return err
@@ -73,6 +73,7 @@ func CheckDeviceID() error {
 	return nil
 }
 
+// GetDeviceID retrieves the deviceId from storage
 func GetDeviceID() (string, error) {
 	path := consts.TellerHomeDir + "/deviceid.hex"
 	file, err := os.Open(path)

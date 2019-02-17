@@ -4,15 +4,14 @@ import (
 	"fmt"
 	"log"
 
+	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
 	solar "github.com/YaleOpenLab/openx/platforms/opensolar"
 	scan "github.com/YaleOpenLab/openx/scan"
-	"github.com/spf13/viper"
-	consts "github.com/YaleOpenLab/openx/consts"
 	"github.com/chzyer/readline"
+	"github.com/spf13/viper"
 
 	"github.com/fatih/color"
-
 )
 
 // package emulator is used to emulate the environment of the platform and make changes
@@ -24,13 +23,13 @@ import (
 // using the same backend that we have right now
 var (
 	// have a global variable for each entity
-	LocalRecipient  database.Recipient
-	LocalUser       database.User
-	LocalInvestor   database.Investor
-	LocalContractor solar.Entity
-	LocalOriginator solar.Entity
-	LocalSeed string
-	LocalSeedPwd string
+	LocalRecipient    database.Recipient
+	LocalUser         database.User
+	LocalInvestor     database.Investor
+	LocalContractor   solar.Entity
+	LocalOriginator   solar.Entity
+	LocalSeed         string
+	LocalSeedPwd      string
 	PlatformPublicKey string
 )
 

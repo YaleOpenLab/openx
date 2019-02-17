@@ -63,8 +63,8 @@ func main() {
 	}
 	ColorOutput("TELLER PUBKEY: "+RecpPublicKey, GreenColor)
 	ColorOutput("DEVICE ID: "+DeviceId, GreenColor)
-	// log.Fatal("Checks done") // REMOVE THIS BEFORE COMMIT
-	// channels for preventing immediate sigint
+	// channels for preventing immediate sigint. Need this so that the action of any party which attempts
+	// to close the teller would still be reported to the platform and emailed to the recipient
 	signalChan := make(chan os.Signal, 1)
 	cleanupDone := make(chan struct{})
 	signal.Notify(signalChan, os.Interrupt)
@@ -80,6 +80,7 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// run goroutines in the background to routinely check for payback and update state
 	go CheckPayback()
 	go StartServer()
 	go UpdateState()
