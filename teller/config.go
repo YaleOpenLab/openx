@@ -1,33 +1,16 @@
 package main
 
 import (
+	"fmt"
 	"log"
-	"time"
 
-	consts "github.com/YaleOpenLab/openx/consts"
 	utils "github.com/YaleOpenLab/openx/utils"
 	wallet "github.com/YaleOpenLab/openx/wallet"
 	"github.com/spf13/viper"
 )
 
-func RefreshLogin(username string, pwhash string) error {
-	// refresh login runs once every 5 minutes in order to fetch the latest recipient details
-	// for eg, if the recipient loads his balance on the platform, we need it to be reflected on
-	// the teller
-	var err error
-	for {
-		err = LoginToPlatForm(username, pwhash)
-		if err != nil {
-			log.Println(err)
-		} else {
-			log.Println("UPDATED RECIPIENT")
-		}
-		time.Sleep(consts.LoginRefreshInterval * time.Minute)
-	}
-}
-
-// SetupConfig reads required values from the config file
-func SetupConfig() error {
+// StartTeller starts the teller
+func StartTeller() error {
 	var err error
 	viper.SetConfigType("yaml")
 	viper.SetConfigName("tellerconfig")
@@ -45,7 +28,22 @@ func SetupConfig() error {
 	password := utils.SHA3hash(viper.Get("password").(string)) // password of the recipient on the platform
 	ApiUrl = viper.Get("apiurl").(string)                      // ApiUrl of the remote / local openx node
 	mapskey := viper.Get("mapskey").(string)                   // google maps API key. Need to activate it
-	err = LoginToPlatForm(username, password)
+	LocalProjIndex = utils.ItoS(viper.Get("projIndex").(int))  // get the project index which should be in the config file
+	assetName := viper.Get("assetName").(string)               // used to double check before starting the teller
+
+	projIndex, err := GetProjectIndex(assetName)
+	if err != nil {
+		return err
+	}
+
+	if utils.ItoS(projIndex) != LocalProjIndex {
+		log.Println("Project indices don't match, quitting!")
+		return fmt.Errorf("Project indices don't match, quitting!")
+	}
+
+	// don't allow login before this since that becomes an attack vector where a person can guess
+	// multiple passwords
+	err = LoginToPlatform(username, password)
 	if err != nil {
 		log.Println("Error while logging on to the platform", err)
 		return err
@@ -61,6 +59,21 @@ func SetupConfig() error {
 	if err != nil {
 		log.Println("Error while returning publickey", err)
 		return err
+	}
+
+	if RecpPublicKey != LocalRecipient.U.PublicKey {
+		log.Println("PUBLIC KEYS DON'T MATCH, QUITTING!")
+		return fmt.Errorf("PUBLIC KEYS DON'T MATCH, QUITTING!")
+	}
+
+	LocalProject, err = GetLocalProjectDetails(LocalProjIndex)
+	if err != nil {
+		return err
+	}
+
+	if LocalProject.Stage < 4 {
+		log.Println("TRYING TO INSTALL A PROJECT THAT HASN'T BEEN FUNDED YET, QUITTING!")
+		return fmt.Errorf("TRYING TO INSTALL A PROJECT THAT HASN'T BEEN FUNDED YET, QUITTING!")
 	}
 
 	// check for device id and set it if none is set
@@ -89,5 +102,6 @@ func SetupConfig() error {
 		return err
 	}
 
+	DeviceInfo = "Raspberry Pi3 Model B+"
 	return nil
 }

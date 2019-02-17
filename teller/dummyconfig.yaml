@@ -1,6 +1,14 @@
 # rename this file to tellerconfig.yaml and fill with appropriate values before starting
+# the public key of the platform which must be public (audits, verification, etc)
 platformPublicKey: "GDULAIM6N6SIW7MWS3NDJPY3UIFOHSM4766WQ6O6EKFDBC7PF53VKYLY"
+# the seed pwd of the recipient
 seedpwd: x
 username: martin
+# store the raw password here, need this for authentication. will be hashed when passed
 password: p
+# the url of the platform (not of horizon)
 apiurl: "http://localhost:8080"
+# the project index part of which this teller has been installed
+projIndex: 1
+# This received asset must be the debt asset code of the particular order
+assetName: ""

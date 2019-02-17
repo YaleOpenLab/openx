@@ -95,6 +95,7 @@ func PrintRecipient(recipient database.Recipient) {
 	}
 	fmt.Println("          Your Device ID is: ", recipient.DeviceId)
 	fmt.Println("          Your Device Start Times are: ", recipient.DeviceStarts)
+	fmt.Println("          Your Device Location is: ", recipient.DeviceLocation)
 }
 
 func PrintEntity(a solar.Entity) {
