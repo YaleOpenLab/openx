@@ -507,3 +507,23 @@ func sendTellerShutdownEmail() {
 		responseHandler(w, r, StatusOK)
 	})
 }
+
+func sendTellerFailedPaybackEmail() {
+	http.HandleFunc("/tellerpayback", func(w http.ResponseWriter, r *http.Request) {
+
+		checkGet(w, r)
+		checkOrigin(w, r)
+
+		prepUser, err := UserValidateHelper(w, r)
+		if err != nil || r.URL.Query()["projIndex"] == nil || r.URL.Query()["deviceId"] == nil {
+			log.Println("did not validate user", err)
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+
+		projIndex := r.URL.Query()["projIndex"][0]
+		deviceId := r.URL.Query()["deviceId"][0]
+		notif.SendTellerPaymentFailedEmail(prepUser.Email, projIndex, deviceId)
+		responseHandler(w, r, StatusOK)
+	})
+}

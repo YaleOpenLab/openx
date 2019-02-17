@@ -59,7 +59,7 @@ func CheckDeviceID() error {
 		if err != nil {
 			return err
 		}
-		log.Println("GENERATED UNIQUE DEVICE ID: ", deviceId)
+		ColorOutput("GENERATED UNIQUE DEVICE ID: " + deviceId, GreenColor)
 		_, err = file.Write([]byte(deviceId))
 		if err != nil {
 			return err

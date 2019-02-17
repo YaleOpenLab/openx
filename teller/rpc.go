@@ -75,13 +75,8 @@ func LoginToPlatForm(username string, pwhash string) error {
 
 func ProjectPayback(assetName string, amount string) error {
 	// retrieve project index
-	projIndexI, err := GetProjectIndex(assetName)
-	if err != nil {
-		return fmt.Errorf("Couldn't pay")
-	}
-	projIndex := utils.ItoS(projIndexI)
 	data, err := rpc.GetRequest(ApiUrl + "/recipient/payback?" + "username=" + LocalRecipient.U.Username +
-		"&pwhash=" + LocalRecipient.U.Pwhash + "&projIndex=" + projIndex + "&assetName=" + assetName + "&seedpwd=" +
+		"&pwhash=" + LocalRecipient.U.Pwhash + "&projIndex=" + LocalProjIndex + "&assetName=" + LocalProject.DebtAssetCode + "&seedpwd=" +
 		LocalSeedPwd + "&amount=" + amount)
 	if err != nil {
 		return err
@@ -176,16 +171,8 @@ func GetPlatformEmail() error {
 
 func SendDeviceShutdownEmail() error {
 
-	assetName := LocalRecipient.ReceivedSolarProjects[0] // TODO: change this
-	projIndexI, err := GetProjectIndex(assetName)
-	if err != nil {
-		return fmt.Errorf("Couldn't retrieve project index")
-	}
-
-	log.Println("PRJ INDEX: ", projIndexI)
-	projIndexI = 1
 	data, err := rpc.GetRequest(ApiUrl + "/tellershutdown?" + "username=" + LocalRecipient.U.Username +
-		"&pwhash=" + LocalRecipient.U.Pwhash + "&projIndex=" + utils.ItoS(projIndexI) + "&deviceId=" + DeviceId)
+		"&pwhash=" + LocalRecipient.U.Pwhash + "&projIndex=" + LocalProjIndex + "&deviceId=" + DeviceId)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -198,6 +185,66 @@ func SendDeviceShutdownEmail() error {
 	}
 	if x.Code == 200 {
 		ColorOutput("SENT STOP EMAIL SUCCESSFULLY", GreenColor)
+		return nil
+	}
+	return fmt.Errorf("Errored out, didn't receive 200")
+}
+
+func GetIpfsHash(inputString string) (string, error) {
+	body := ApiUrl + "/ipfs/hash?" + "username=" + LocalRecipient.U.Username +
+		"&pwhash=" + LocalRecipient.U.Pwhash + "&string=" + inputString
+
+	data, err := rpc.GetRequest(body)
+	if err != nil {
+		log.Println(err)
+		return "", err
+	}
+
+	var x string
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		log.Println(err)
+		return "", err
+	}
+
+	return x, nil
+}
+
+func GetLocalProjectDetails(projIndex string) (solar.Project, error) {
+
+	var x solar.Project
+	body := ApiUrl + "/project/get?index=" + projIndex
+	data, err := rpc.GetRequest(body)
+	if err != nil {
+		log.Println(err)
+		return x, err
+	}
+
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		log.Println(err)
+		return x, err
+	}
+
+	return x, nil
+}
+
+func SendDevicePaybackFailedEmail() error {
+
+	data, err := rpc.GetRequest(ApiUrl + "/tellerpayback?" + "username=" + LocalRecipient.U.Username +
+		"&pwhash=" + LocalRecipient.U.Pwhash + "&projIndex=" + LocalProjIndex + "&deviceId=" + DeviceId)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	var x rpc.StatusResponse
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return err
+	}
+	if x.Code == 200 {
+		ColorOutput("SENT FAILED PAYBACK EMAIL", RedColor)
 		return nil
 	}
 	return fmt.Errorf("Errored out, didn't receive 200")

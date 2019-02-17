@@ -270,3 +270,11 @@ func SendTellerShutdownEmail(from string, projIndex string, deviceId string) err
 	footerString
 	return sendMail(body, consts.PlatformEmail)
 }
+
+func SendTellerPaymentFailedEmail(from string, projIndex string, deviceId string) error {
+	body := "Greetings from the remote teller " + deviceId + " installed for: " + from + " on behalf of project: " + projIndex + "\n\n" +
+	"We're writing to let you know that the teller encountered an error, didn't result in automatic payback and requires your immediate action. " +
+	"Please tend to this situation at the earliest." + "\n\n\n" +
+	footerString
+	return sendMail(body, consts.PlatformEmail)
+}
