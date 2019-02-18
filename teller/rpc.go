@@ -197,7 +197,6 @@ func GetIpfsHash(inputString string) (string, error) {
 		"&pwhash=" + LocalRecipient.U.Pwhash + "&string=" + inputString
 
 	body = strings.Replace(body, " ", "%20", -1)
-	log.Println("BODY OF REQ: ", body)
 	data, err := rpc.GetRequest(body)
 	if err != nil {
 		log.Println(err)

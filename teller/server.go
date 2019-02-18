@@ -6,9 +6,8 @@ import (
 	"log"
 	"net/http"
 
-	consts "github.com/YaleOpenLab/openx/consts"
 	rpc "github.com/YaleOpenLab/openx/rpc"
-	//utils "github.com/YaleOpenLab/openx/utils"
+	utils "github.com/YaleOpenLab/openx/utils"
 )
 
 // server starts a local server which would inform us about the uptime of the teller and provide a data endpoint
@@ -93,9 +92,9 @@ func setupRoutes() {
 
 // curl https://localhost/ping --insecure {"Code":200,"Status":""}
 // TODO: have an alternative for using insecure SSL here.
-func startServer() {
+func startServer(port int) {
 	setupRoutes()
-	err := http.ListenAndServeTLS(":"+consts.Tlsport, "ssl/server.crt", "ssl/server.key", nil)
+	err := http.ListenAndServeTLS(":"+utils.ItoS(port), "ssl/server.crt", "ssl/server.key", nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}

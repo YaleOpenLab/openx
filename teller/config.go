@@ -49,6 +49,8 @@ func StartTeller() error {
 		return err
 	}
 
+	go RefreshLogin(username, password) // update local copy of the recipient every 5 minutes
+
 	RecpSeed, err = wallet.DecryptSeed(LocalRecipient.U.EncryptedSeed, LocalSeedPwd)
 	if err != nil {
 		log.Println("Error while decrypting seed", err)

@@ -35,7 +35,7 @@ func RefreshLogin(username string, pwhash string) error {
 			log.Println(err)
 		}
 
-		time.Sleep(consts.TellerPollInterval)
+		time.Sleep(consts.TellerPollInterval * time.Second)
 	}
 }
 
@@ -51,8 +51,8 @@ func endHandler() error {
 	}
 
 	hashString := "Device Shutting down. Info: " + DeviceInfo + " Device Location: " + DeviceLocation +
-	" Device Unique ID: " + DeviceId + " " + "Start hash: " + StartHash + " Now hash: " + NowHash +
-	"Ipfs HashChainHeader: " + HashChainHeader
+		" Device Unique ID: " + DeviceId + " " + "Start hash: " + StartHash + " Now hash: " + NowHash +
+		"Ipfs HashChainHeader: " + HashChainHeader
 	// note that we don't commit the latest hash chain header's hash here becuase this gives us a tighter timeline
 	// to audit what really happened
 	ipfsHash, err := ipfs.AddStringToIpfs(hashString)
@@ -94,6 +94,7 @@ func splitAndSend2Tx(memo string) (string, string, error) {
 	log.Printf("tx hash: %s, tx2 hash: %s", tx1, tx2)
 	return tx1, tx2, nil
 }
+
 // so the teller will be run on the hub and has some data that the platform might need
 // The teller must serve some data to other entities as well. So we need to run a server for that
 // and it must be over tls for preventing mitm attacks

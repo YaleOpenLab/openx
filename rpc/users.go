@@ -506,7 +506,7 @@ func sendTellerShutdownEmail() {
 		deviceId := r.URL.Query()["deviceId"][0]
 		tx1 := r.URL.Query()["tx1"][0]
 		tx2 := r.URL.Query()["tx2"][0]
-		notif.SendTellerShutdownEmail(prepUser.Email, projIndex, deviceId, tx1 ,tx2)
+		notif.SendTellerShutdownEmail(prepUser.Email, projIndex, deviceId, tx1, tx2)
 		responseHandler(w, r, StatusOK)
 	})
 }
