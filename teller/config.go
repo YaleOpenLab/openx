@@ -13,7 +13,7 @@ import (
 func StartTeller() error {
 	var err error
 	viper.SetConfigType("yaml")
-	viper.SetConfigName("tellerconfig")
+	viper.SetConfigName("config")
 	viper.AddConfigPath(".")
 
 	err = viper.ReadInConfig()
@@ -27,7 +27,7 @@ func StartTeller() error {
 	username := viper.Get("username").(string)                 // username of the recipient on the platform
 	password := utils.SHA3hash(viper.Get("password").(string)) // password of the recipient on the platform
 	ApiUrl = viper.Get("apiurl").(string)                      // ApiUrl of the remote / local openx node
-	mapskey := viper.Get("mapskey").(string)                   // google maps API key. Need to activate it
+	mapskey := viper.Get("mapskey").(string)                   // google maps API key
 	LocalProjIndex = utils.ItoS(viper.Get("projIndex").(int))  // get the project index which should be in the config file
 	assetName := viper.Get("assetName").(string)               // used to double check before starting the teller
 

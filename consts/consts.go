@@ -44,3 +44,4 @@ const TwoWeeksInSecond = time.Duration(1209600)                                 
 const SixWeeksInSecond = time.Duration(3628800)                                      // six months in seconds, send notification
 const CutDownPeriod = time.Duration(4838400)                                         // period when we direct power to the grid
 const TellerPollInterval = time.Duration(300)                                        // this is in seconds, MWTODO: get feedback on polling interval
+const TellerMaxLocalStorageSize = 2000                                               // in bvy bytes, tweak this later to something like 10M after testing

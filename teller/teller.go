@@ -58,19 +58,14 @@ var (
 var cleanupDone chan struct{}
 
 func main() {
-	// Authenticate with the platform
 	var err error
-	go StartServer()
-	storeDataLocal()
-	log.Fatal("cool")
-	ColorOutput("TELLER PUBKEY: "+RecpPublicKey, GreenColor)
-	ColorOutput("DEVICE ID: "+DeviceId, GreenColor)
-	err = commitDataToIpfs()
+	err = StartTeller() // login to the platform, set device id, etc
 	if err != nil {
-		log.Println("Failed to commit data to ipfs", err)
+		log.Println("Failed to start teller", err)
 		log.Fatal(err)
 	}
-	log.Fatal("Cool")
+	ColorOutput("TELLER PUBKEY: "+RecpPublicKey, GreenColor)
+	ColorOutput("DEVICE ID: "+DeviceId, GreenColor)
 	// channels for preventing immediate sigint. Need this so that the action of any party which attempts
 	// to close the teller would still be reported to the platform and emailed to the recipient
 	signalChan := make(chan os.Signal, 1)
@@ -79,7 +74,7 @@ func main() {
 
 	go func() {
 		<-signalChan
-		fmt.Println("\nSigint received in quit function. not quitting!")
+		fmt.Println("\nSigint received in end handler. not quitting!")
 		close(cleanupDone)
 	}()
 
@@ -89,8 +84,10 @@ func main() {
 	}
 
 	// run goroutines in the background to routinely check for payback and update state
-	go CheckPayback()
-	go UpdateState()
+	go checkPayback()
+	go updateState()
+	go startServer()
+	go storeDataLocal()
 
 	promptColor := color.New(color.FgHiYellow).SprintFunc()
 	whiteColor := color.New(color.FgHiWhite).SprintFunc()
@@ -105,11 +102,11 @@ func main() {
 		msg, err := rl.Readline()
 		if err != nil {
 			var err error
-			err = EndHandler() // error, user wants to quit
+			err = endHandler() // error, user wants to quit
 			for err != nil {
 				log.Println(err)
-				err = EndHandler()
-				<-cleanupDone // to prevent user from quitting when sigint arrives
+				err = endHandler()
+				<-cleanupDone // to prevent user from quitting when endhandler is running
 			}
 			break
 		}

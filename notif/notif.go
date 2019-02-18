@@ -263,10 +263,13 @@ func SendContractNotification(Hash1 string, Hash2 string, Hash3 string, Hash4 st
 	return sendMail(body, to)
 }
 
-func SendTellerShutdownEmail(from string, projIndex string, deviceId string) error {
+func SendTellerShutdownEmail(from string, projIndex string, deviceId string, tx1 string, tx2 string) error {
 	body := "Greetings from the remote teller " + deviceId + " installed for: " + from + " on behalf of project: " + projIndex + "\n\n" +
-		"We're writing to let you know that the teller has shut down and requires your immediate action. Please tend to" +
-		"this situation at the earliest." + "\n\n\n" +
+		"We're writing to let you know that the teller has shut down and requires your immediate action. The proof of shutdown transactions " +
+		"are atached below:" + "\n\n" +
+		"Tx1: https://testnet.steexp.com/tx/" + tx1 + "\n\n" +
+		"Tx2: https://testnet.steexp.com/tx/" + tx2 + "\n\n" +
+		"Please tend to this situation at the earliest." + "\n\n\n" +
 		footerString
 	return sendMail(body, consts.PlatformEmail)
 }

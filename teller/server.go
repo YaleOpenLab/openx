@@ -8,7 +8,7 @@ import (
 
 	consts "github.com/YaleOpenLab/openx/consts"
 	rpc "github.com/YaleOpenLab/openx/rpc"
-	utils "github.com/YaleOpenLab/openx/utils"
+	//utils "github.com/YaleOpenLab/openx/utils"
 )
 
 // server starts a local server which would inform us about the uptime of the teller and provide a data endpoint
@@ -31,8 +31,6 @@ func responseHandler(w http.ResponseWriter, r *http.Request, status int) {
 	switch status {
 	case rpc.StatusOK:
 		response.Status = "OK"
-	case rpc.StatusBadRequest:
-		response.Status = "Bad Request error!"
 	case rpc.StatusNotFound:
 		response.Status = "404 Error Not Found!"
 	case rpc.StatusInternalServerError:
@@ -49,6 +47,8 @@ func setupDefaultHandler() {
 	})
 }
 
+// pingHandler can be used on the frontend to try checking whether the teller is still up.
+// maybe have a button or something and pressing that would call this endpoint
 func pingHandler() {
 	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
@@ -63,42 +63,14 @@ func pingHandler() {
 	})
 }
 
-// TODO: read the data from the zigbee devices here
-// so that we can verify the untrusted certificate.
-// also clients who want this information can use this API directly without
-// requiring a streaming service to inform them about changes. The client
-// can call the teller and ask for data instantly and the API will respond.
-
-// one problem here is to serve as less data as possible simply because
-// we will be retruning mroe data thatn we receive and this becomes a trivial data
-// amplification attack. IN this case, it is better to serve an ipfs hash instead
-// of serving the whole blob of data
-func dataHandler() {
-	http.HandleFunc("/data", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
-		var topsecret Data
-		topsecret.Timestamp = utils.Timestamp()
-		topsecret.Info = "this data is top secret and is for eyes only"
-		hash, err := GetIpfsHash(topsecret.Info)
-		if err != nil {
-			log.Println(err)
-		}
-		log.Println("IPFS HASH IS: ", hash)
-		// this is the data we need to pull in from the zigbee devices
-		topsecretJson, err := json.Marshal(topsecret)
-		if err != nil {
-			responseHandler(w, r, rpc.StatusInternalServerError)
-			return
-		}
-		WriteToHandler(w, topsecretJson)
-	})
-}
-
 type HCHeaderResponse struct {
 	Hash string
 }
 
 // hashChainHeaderHandler returns the header of the ipfs hash chain
+// clients who want historicasl record of all activities can record the latest hash
+// and then derive all the other files from it. This avoids a need for a direct endpoint
+// that will serve data directly while leveraging ipfs.
 func hashChainHeaderHandler() {
 	http.HandleFunc("/hash", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
@@ -113,16 +85,16 @@ func hashChainHeaderHandler() {
 	})
 }
 
-func SetupRoutes() {
+func setupRoutes() {
 	setupDefaultHandler()
 	pingHandler()
-	dataHandler()
 	hashChainHeaderHandler()
 }
 
 // curl https://localhost/ping --insecure {"Code":200,"Status":""}
-func StartServer() {
-	SetupRoutes()
+// TODO: have an alternative for using insecure SSL here.
+func startServer() {
+	setupRoutes()
 	err := http.ListenAndServeTLS(":"+consts.Tlsport, "ssl/server.crt", "ssl/server.key", nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)

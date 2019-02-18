@@ -1,4 +1,4 @@
-# rename this file to tellerconfig.yaml and fill with appropriate values before starting
+# rename this file to config.yaml and fill with appropriate values before starting the teller
 # the public key of the platform which must be public (audits, verification, etc)
 platformPublicKey: "GDULAIM6N6SIW7MWS3NDJPY3UIFOHSM4766WQ6O6EKFDBC7PF53VKYLY"
 # the seed pwd of the recipient

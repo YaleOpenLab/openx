@@ -495,7 +495,8 @@ func sendTellerShutdownEmail() {
 		checkOrigin(w, r)
 
 		prepUser, err := UserValidateHelper(w, r)
-		if err != nil || r.URL.Query()["projIndex"] == nil || r.URL.Query()["deviceId"] == nil {
+		if err != nil || r.URL.Query()["projIndex"] == nil || r.URL.Query()["deviceId"] == nil ||
+			r.URL.Query()["tx1"] == nil || r.URL.Query()["tx2"] == nil {
 			log.Println("did not validate user", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
@@ -503,7 +504,9 @@ func sendTellerShutdownEmail() {
 
 		projIndex := r.URL.Query()["projIndex"][0]
 		deviceId := r.URL.Query()["deviceId"][0]
-		notif.SendTellerShutdownEmail(prepUser.Email, projIndex, deviceId)
+		tx1 := r.URL.Query()["tx1"][0]
+		tx2 := r.URL.Query()["tx2"][0]
+		notif.SendTellerShutdownEmail(prepUser.Email, projIndex, deviceId, tx1 ,tx2)
 		responseHandler(w, r, StatusOK)
 	})
 }

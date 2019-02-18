@@ -30,7 +30,7 @@ func ParseInput(input []string) {
 	case "qq":
 		// handler to quit and test the teller without hashing the state and committing two transactions
 		// each time we start the teller
-		log.Fatal("cool")
+		log.Fatal("qq emergency exit")
 	case "help":
 		fmt.Println("List of commands: ping, receive, display, update")
 		break
@@ -107,6 +107,6 @@ func ParseInput(input []string) {
 			fmt.Println("USAGE: update <state>")
 			return
 		}
-		UpdateState()
+		updateState()
 	}
 }
