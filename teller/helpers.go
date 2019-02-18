@@ -176,23 +176,27 @@ func storeDataLocal() {
 	reader := bufio.NewReader(resp.Body)
 	x := make([]byte, 200)
 	// open and write to file
-	_, err = os.Create(path)
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		_, err = os.Create(path)
+		if err != nil {
+			log.Println("error while opening file", err)
+			return
+		}
+	}
+
+	file, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY|os.O_CREATE, os.ModeAppend)
 	if err != nil {
 		log.Println("error while opening file", err)
 		return
 	}
-	file, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY, os.ModeAppend)
-	if err != nil {
-		log.Println("error while opening file", err)
-		return
-	}
+	log.Println("streaming data from particle board: ")
 	for {
 		_, err = reader.Read(x)
 		if err != nil {
 			log.Println(err)
 			continue
 		}
-		log.Println("streaming data from particle board: ", string(x))
+		//log.Println("streaming data from particle board: ", string(x))
 		_, err = file.Write(x)
 		if err != nil {
 			log.Println("error while writing to file", err)
@@ -204,14 +208,36 @@ func storeDataLocal() {
 			continue
 		}
 		log.Println("File size is: ", size.Size())
-		if size.Size() == 100000000 { // 100 MB, can be even 1GB but we need to have this file in mem, so cap at 100M.
-			// we need to store this in ipfs, delete this file and then commit the ipfs hash as the first line in a new file
-			log.Println("SIZE limit reached, taking action")
+		if size.Size() >= 2000 {
+			// close the file, store in ipfs, get hash, delete file and create same file again
+			// with the previous file's hash (so people can verify)
+			// we need to store this in ipfs, delete this file and then commit the ipfs hash as
+			// the first line in a new file. This whole construction is like a blockchain so we could say
+			// we have a blockchain within a blockchain
+			log.Println("size limit reached, taking action")
+			file.Close()
+			fileHash, err := ipfs.IpfsHashFile(path)
+			if err != nil {
+				log.Println("Couldn't hash file: ", err)
+			}
+			HashChainHeader = fileHash
+			fileHash = "IPFSHASHCHAIN: " + fileHash + "\n" // the header of the ipfs hashchain that we form
+			log.Println("HashChainHeader: ", HashChainHeader)
+			os.Remove(path)
+			_, err = os.Create(path)
+			if err != nil {
+				log.Println("error while opening file", err)
+				return
+			}
+
+			file, err = os.OpenFile(path, os.O_APPEND|os.O_WRONLY, os.ModeAppend)
+			if err != nil {
+				log.Println("error while opening file", err)
+				return
+			}
+			file.Write([]byte(fileHash))
 		}
 	}
-	// here we want to delete this file every day so that we can save space on the pi
-	// commit the ipfs header of the previous block as the first line in the new doc for continuity
-	// sort of like a blockchain, so pretty cool that way
 }
 
 func commitDataToIpfs() error {

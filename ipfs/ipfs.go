@@ -71,7 +71,7 @@ func ReadfromFile(filepath string) ([]byte, error) {
 	return ioutil.ReadFile(filepath)
 }
 
-// IpfsHashPdf returns the ipfs hash of a pdf file
+// IpfsHashPdf returns the ipfs hash of a file
 func IpfsHashFile(filepath string) (string, error) {
 	var dummy string
 	dataStream, err := ReadfromFile(filepath)

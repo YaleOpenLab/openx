@@ -94,10 +94,30 @@ func dataHandler() {
 	})
 }
 
+type HCHeaderResponse struct {
+	Hash string
+}
+
+// hashChainHeaderHandler returns the header of the ipfs hash chain
+func hashChainHeaderHandler() {
+	http.HandleFunc("/hash", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		var x HCHeaderResponse
+		x.Hash = HashChainHeader
+		xJson, err := json.Marshal(x)
+		if err != nil {
+			responseHandler(w, r, rpc.StatusInternalServerError)
+			return
+		}
+		WriteToHandler(w, xJson)
+	})
+}
+
 func SetupRoutes() {
 	setupDefaultHandler()
 	pingHandler()
 	dataHandler()
+	hashChainHeaderHandler()
 }
 
 // curl https://localhost/ping --insecure {"Code":200,"Status":""}

@@ -51,6 +51,8 @@ var (
 
 	StartHash string
 	NowHash   string
+
+	HashChainHeader string
 )
 
 var cleanupDone chan struct{}
@@ -58,6 +60,7 @@ var cleanupDone chan struct{}
 func main() {
 	// Authenticate with the platform
 	var err error
+	go StartServer()
 	storeDataLocal()
 	log.Fatal("cool")
 	ColorOutput("TELLER PUBKEY: "+RecpPublicKey, GreenColor)
@@ -87,7 +90,6 @@ func main() {
 
 	// run goroutines in the background to routinely check for payback and update state
 	go CheckPayback()
-	go StartServer()
 	go UpdateState()
 
 	promptColor := color.New(color.FgHiYellow).SprintFunc()
