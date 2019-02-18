@@ -35,6 +35,9 @@ type Recipient struct {
 	// the location of the device. Teller gets location using google's geolocation
 	// API. Accuracy is of the order ~1km radius. Not great, but enough to detect
 	// theft or something
+	StateHashes []string
+	// StateHashes provides the list of state updates that the teller associated with this
+	// particular recipient has had.
 }
 
 // NewRecipient returns a new recipient provided with the function parameters

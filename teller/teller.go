@@ -51,18 +51,26 @@ var (
 
 	StartHash string
 	NowHash   string
+
+	HashChainHeader string
 )
 
 var cleanupDone chan struct{}
 
 func main() {
 	// Authenticate with the platform
-	err := StartTeller()
-	if err != nil {
-		log.Fatal(err)
-	}
+	var err error
+	go StartServer()
+	storeDataLocal()
+	log.Fatal("cool")
 	ColorOutput("TELLER PUBKEY: "+RecpPublicKey, GreenColor)
 	ColorOutput("DEVICE ID: "+DeviceId, GreenColor)
+	err = commitDataToIpfs()
+	if err != nil {
+		log.Println("Failed to commit data to ipfs", err)
+		log.Fatal(err)
+	}
+	log.Fatal("Cool")
 	// channels for preventing immediate sigint. Need this so that the action of any party which attempts
 	// to close the teller would still be reported to the platform and emailed to the recipient
 	signalChan := make(chan os.Signal, 1)
@@ -82,7 +90,6 @@ func main() {
 
 	// run goroutines in the background to routinely check for payback and update state
 	go CheckPayback()
-	go StartServer()
 	go UpdateState()
 
 	promptColor := color.New(color.FgHiYellow).SprintFunc()

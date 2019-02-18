@@ -101,6 +101,13 @@ type ParticleUser struct {
 	Cellular_device_count int      `json:"cellular_device_count"`
 }
 
+type ParticleEventStream struct {
+	Data         string `json:"data"`
+	Ttl          string `json:"ttl"`
+	Published_at string `json:"published_at"`
+	Coreid       string `json:"coreid"`
+}
+
 // GetAndSendJson is a handler that makes a get request and returns json data
 func GetAndSendJson(w http.ResponseWriter, r *http.Request, body string, x interface{}) {
 	data, err := GetRequest(body)

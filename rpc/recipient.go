@@ -34,6 +34,7 @@ func setupRecipientRPCs() {
 	originateProject()
 	calculateTrustLimit()
 	unlockCBond()
+	storeStateHash()
 }
 
 // parseRecipient parses a recipient from the passed form data and returns a recipient strucutre if
@@ -512,6 +513,28 @@ func unlockCBond() {
 			return
 		}
 
+		responseHandler(w, r, StatusOK)
+	})
+}
+
+// storeStateHash stores the start time of the remote device installed as part of an invested project.
+// Called by the teller
+func storeStateHash() {
+	http.HandleFunc("/recipient/ssh", func(w http.ResponseWriter, r *http.Request) {
+		// first validate the recipient or anyone would be able to set device ids
+		prepRecipient, err := RecpValidateHelper(w, r)
+		if err != nil || r.URL.Query()["hash"] == nil {
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+
+		prepRecipient.StateHashes = append(prepRecipient.StateHashes, r.URL.Query()["hash"][0])
+		err = prepRecipient.Save()
+		if err != nil {
+			log.Println("did not save recipient", err)
+			responseHandler(w, r, StatusInternalServerError)
+			return
+		}
 		responseHandler(w, r, StatusOK)
 	})
 }
