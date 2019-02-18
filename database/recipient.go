@@ -36,8 +36,8 @@ type Recipient struct {
 	// API. Accuracy is of the order ~1km radius. Not great, but enough to detect
 	// theft or something
 	StateHashes []string
-	// StateHashes provides the list of state updates that the teller associated with this
-	// particular recipient has had.
+	// StateHashes provides the list of state updates (ipfs hashes) that the teller associated with this
+	// particular recipient has communicated.
 }
 
 // NewRecipient returns a new recipient provided with the function parameters

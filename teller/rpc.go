@@ -170,10 +170,11 @@ func GetPlatformEmail() error {
 	return nil
 }
 
-func SendDeviceShutdownEmail() error {
+func SendDeviceShutdownEmail(tx1 string, tx2 string) error {
 
 	data, err := rpc.GetRequest(ApiUrl + "/tellershutdown?" + "username=" + LocalRecipient.U.Username +
-		"&pwhash=" + LocalRecipient.U.Pwhash + "&projIndex=" + LocalProjIndex + "&deviceId=" + DeviceId)
+		"&pwhash=" + LocalRecipient.U.Pwhash + "&projIndex=" + LocalProjIndex + "&deviceId=" + DeviceId +
+		"&tx1=" + tx1 + "&tx2=" + tx2)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -196,7 +197,6 @@ func GetIpfsHash(inputString string) (string, error) {
 		"&pwhash=" + LocalRecipient.U.Pwhash + "&string=" + inputString
 
 	body = strings.Replace(body, " ", "%20", -1)
-	log.Println("BODY OF REQ: ", body)
 	data, err := rpc.GetRequest(body)
 	if err != nil {
 		log.Println(err)

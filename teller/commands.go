@@ -19,6 +19,8 @@ func WriteToHandler(w http.ResponseWriter, jsonString []byte) {
 	w.Write(jsonString)
 }
 
+// the teller has a basic CLi interface that might help in remote debugging when using an SSH service
+// like dataplicity
 func ParseInput(input []string) {
 	if len(input) == 0 {
 		fmt.Println("List of commands: ping, receive, display, update")
@@ -30,9 +32,9 @@ func ParseInput(input []string) {
 	case "qq":
 		// handler to quit and test the teller without hashing the state and committing two transactions
 		// each time we start the teller
-		log.Fatal("cool")
+		log.Fatal("qq emergency exit")
 	case "help":
-		fmt.Println("List of commands: ping, receive, display, update")
+		fmt.Println("List of commands: ping, receive, display, info, update")
 		break
 	case "ping":
 		err := PingRpc()
@@ -107,6 +109,6 @@ func ParseInput(input []string) {
 			fmt.Println("USAGE: update <state>")
 			return
 		}
-		UpdateState()
+		updateState()
 	}
 }

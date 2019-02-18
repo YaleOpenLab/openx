@@ -34,15 +34,6 @@ func GenerateDeviceID() (string, error) {
 	return upperCase, nil
 }
 
-// CreateHomeDir creates the teller home directory
-func CreateHomeDir() {
-	if _, err := os.Stat(consts.TellerHomeDir); os.IsNotExist(err) {
-		// directory does not exist, create one
-		log.Println("Creating home directory for teller")
-		os.MkdirAll(consts.TellerHomeDir, os.ModePerm)
-	}
-}
-
 // CheckDeviceID checks the device's ID against a locally saved copy
 func CheckDeviceID() error {
 	// checks whether there is a device id set on this device beforehand
@@ -87,7 +78,6 @@ func GetDeviceID() (string, error) {
 		return "", err
 	}
 	if numInt != 32 {
-		log.Println("NUMINT: ", numInt)
 		return "", fmt.Errorf("Length of strings doesn't match, quitting!")
 	}
 	return string(data), nil

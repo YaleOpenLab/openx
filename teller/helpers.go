@@ -35,51 +35,70 @@ func RefreshLogin(username string, pwhash string) error {
 			log.Println(err)
 		}
 
-		time.Sleep(consts.TellerPollInterval)
+		time.Sleep(consts.TellerPollInterval * time.Second)
 	}
 }
 
 // EndHandler runs when the teller shuts down. Records the start time and location of the
 // device in ipfs and commits it as two transactions to the blockchain
-func EndHandler() error {
+func endHandler() error {
 	log.Println("Gracefully shutting down, please do not press any button in the process")
 	var err error
+
 	NowHash, err = BlockStamp()
 	if err != nil {
-		return err
+		log.Println(err)
 	}
-	log.Printf("StartHash: %s, NowHash: %s", StartHash, NowHash)
-	hashString := "Device Shutting down. Info: " + DeviceInfo + " Device Location: " + DeviceLocation + " Device Unique ID: " + DeviceId + " " + StartHash + NowHash
-	// need to hash this with ipfs
+
+	hashString := "Device Shutting down. Info: " + DeviceInfo + " Device Location: " + DeviceLocation +
+		" Device Unique ID: " + DeviceId + " " + "Start hash: " + StartHash + " Now hash: " + NowHash +
+		"Ipfs HashChainHeader: " + HashChainHeader
+	// note that we don't commit the latest hash chain header's hash here becuase this gives us a tighter timeline
+	// to audit what really happened
 	ipfsHash, err := ipfs.AddStringToIpfs(hashString)
 	if err != nil {
-		return err
+		log.Println(err)
 	}
-	log.Println("ipfs hash: ", ipfsHash)
-	memoText := "IPFSHASH: " + ipfsHash
-	// 10 + 46 (ipfs hash length) characters
-	firstHalf := memoText[:28]
-	secondHalf := memoText[28:]
-	_, tx, err := xlm.SendXLM(RecpPublicKey, "1", RecpSeed, firstHalf)
+	memo := "IPFSHASH: " + ipfsHash
+
+	tx1, tx2, err := splitAndSend2Tx(memo)
 	if err != nil {
-		return err
+		log.Println(err)
+	}
+
+	err = SendDeviceShutdownEmail(tx1, tx2)
+	if err != nil {
+		log.Println(err)
+	}
+
+	commitDataShutdown()
+	// save last known state of the system in the recipient's list of known hashes
+	// Call this last since there would still be data that we want ot measure when the above commands
+	// are still running
+	return nil
+	// have a return because we don't want to sigint while we send emails and stuff
+}
+
+func splitAndSend2Tx(memo string) (string, string, error) {
+	// 10 + 46 (ipfs hash length) characters
+	firstHalf := memo[:28]
+	secondHalf := memo[28:]
+	_, tx1, err := xlm.SendXLM(RecpPublicKey, "1", RecpSeed, firstHalf)
+	if err != nil {
+		return "", "", err
 	}
 	_, tx2, err := xlm.SendXLM(RecpPublicKey, "1", RecpSeed, secondHalf)
 	if err != nil {
-		return err
+		return "", "", err
 	}
-	log.Printf("tx hash: %s, tx2 hash: %s", tx, tx2)
-	err = SendDeviceShutdownEmail()
-	if err != nil {
-		log.Fatal(err)
-	}
-	return nil
+	log.Printf("tx hash: %s, tx2 hash: %s", tx1, tx2)
+	return tx1, tx2, nil
 }
 
 // so the teller will be run on the hub and has some data that the platform might need
 // The teller must serve some data to other entities as well. So we need to run a server for that
 // and it must be over tls for preventing mitm attacks
-func CheckPayback() {
+func checkPayback() {
 	for {
 		log.Println("PAYBACK TIME")
 		assetName := LocalProject.DebtAssetCode
@@ -96,7 +115,7 @@ func CheckPayback() {
 
 // UpdateState hashes the current state of the teller into ipfs and commits the ipfs hash
 // to the blockchain
-func UpdateState() {
+func updateState() {
 	for {
 		subcommand := "Energy production data for this cycle: " + "100" + "W"
 		// no spaces since this won't allow us to send in a requerst which has strings in it
@@ -148,14 +167,12 @@ func UpdateState() {
 // in the form of energy data on our end. now we might not want all of this data to be public but
 // the energy production data is required to be public since one should verify that only a given
 // amount of REC tokens were generated based on the energy production data.
-// One proposed way wouldd be to store the data for periods in ips based on some standard format:
-// ipfs(START, DATE: 20/2/19, TIME: <unixtimestamp>, END, DATE: 21/2/19,  TIME: <unixtimestamp> data)
 
 // stream data from the pilot particle instance and write to a file
+// run verify.sh to get a list of all the ipfs hashes in the hashchain
+
+// storeDataLocal stores the data we observe in real time to a file and st ores the hashchain header
 func storeDataLocal() {
-	// store the data that we observe in real time to a file and commit it during the various commit intervals
-	// curl "https://api.particle.io/v1/events/PRWhite?access_token=3f7d69aa99956fd77c5466f3f52eb6132f500210"
-	// listen to thisparticle endpoint and see if we can stroe this data stream in a file
 	path := consts.TellerHomeDir + "/data.txt"
 
 	transport := &http.Transport{
@@ -182,14 +199,22 @@ func storeDataLocal() {
 			log.Println("error while opening file", err)
 			return
 		}
+	} else {
+		data, err := ioutil.ReadFile(path)
+		if err != nil {
+			// don't start the teller if we can't read the last known hash since this would break continuity
+			log.Fatal(err)
+		}
+		HashChainHeader = string(data)
 	}
 
-	file, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY|os.O_CREATE, os.ModeAppend)
+	file, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY, os.ModeAppend)
 	if err != nil {
 		log.Println("error while opening file", err)
 		return
 	}
-	log.Println("streaming data from particle board: ")
+
+	log.Println("starting to stream data from particle board: ")
 	for {
 		_, err = reader.Read(x)
 		if err != nil {
@@ -207,14 +232,15 @@ func storeDataLocal() {
 			log.Println(err)
 			continue
 		}
-		log.Println("File size is: ", size.Size())
-		if size.Size() >= 2000 {
+		// comment since this would fill console out and we can't read anything
+		// log.Println("File size is: ", size.Size())
+		if size.Size() >= consts.TellerMaxLocalStorageSize {
 			// close the file, store in ipfs, get hash, delete file and create same file again
 			// with the previous file's hash (so people can verify)
 			// we need to store this in ipfs, delete this file and then commit the ipfs hash as
 			// the first line in a new file. This whole construction is like a blockchain so we could say
 			// we have a blockchain within a blockchain
-			log.Println("size limit reached, taking action")
+			// log.Println("size limit reached, taking action")
 			file.Close()
 			fileHash, err := ipfs.IpfsHashFile(path)
 			if err != nil {
@@ -222,7 +248,7 @@ func storeDataLocal() {
 			}
 			HashChainHeader = fileHash
 			fileHash = "IPFSHASHCHAIN: " + fileHash + "\n" // the header of the ipfs hashchain that we form
-			log.Println("HashChainHeader: ", HashChainHeader)
+			// log.Println("HashChainHeader: ", HashChainHeader)
 			os.Remove(path)
 			_, err = os.Create(path)
 			if err != nil {
@@ -240,27 +266,33 @@ func storeDataLocal() {
 	}
 }
 
-func commitDataToIpfs() error {
+// commitDataShutdown is called when the teller errors out and goes down
+func commitDataShutdown() {
 	// retrieve the data from local storage
 	path := consts.TellerHomeDir + "/data.txt"
-	//time := utils.Timestamp() // don't need to know the start data since we cna get that from the last period's commit
-	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		return err
-	}
-	dataString := string(data) // have the data as a string
 
-	hash, err := ipfs.AddStringToIpfs(dataString)
+	fileHash, err := ipfs.IpfsHashFile(path)
 	if err != nil {
-		return err
-	}
-	log.Println("IPFS HASH: ", hash)
-	// now we need to store this ipfs hash in the list of state updates that this teller
-	// has had
-	err = StoreStateHistory(hash)
-	if err != nil {
-		return err
+		log.Println("Couldn't hash file: ", err)
 	}
 
-	return nil
+	os.Remove(path)
+	_, err = os.Create(path)
+	if err != nil {
+		log.Println("error while opening file", err)
+		return
+	}
+
+	file, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY, os.ModeAppend)
+	if err != nil {
+		log.Println("error while opening file", err)
+		return
+	}
+	file.Write([]byte(fileHash))
+	file.Close()
+
+	err = StoreStateHistory(fileHash)
+	if err != nil {
+		return
+	}
 }
