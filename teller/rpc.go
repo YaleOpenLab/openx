@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 
 	database "github.com/YaleOpenLab/openx/database"
 	solar "github.com/YaleOpenLab/openx/platforms/opensolar"
@@ -194,6 +195,8 @@ func GetIpfsHash(inputString string) (string, error) {
 	body := ApiUrl + "/ipfs/hash?" + "username=" + LocalRecipient.U.Username +
 		"&pwhash=" + LocalRecipient.U.Pwhash + "&string=" + inputString
 
+	body = strings.Replace(body, " ", "%20", -1)
+	log.Println("BODY OF REQ: ", body)
 	data, err := rpc.GetRequest(body)
 	if err != nil {
 		log.Println(err)
@@ -233,6 +236,26 @@ func SendDevicePaybackFailedEmail() error {
 
 	data, err := rpc.GetRequest(ApiUrl + "/tellerpayback?" + "username=" + LocalRecipient.U.Username +
 		"&pwhash=" + LocalRecipient.U.Pwhash + "&projIndex=" + LocalProjIndex + "&deviceId=" + DeviceId)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	var x rpc.StatusResponse
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return err
+	}
+	if x.Code == 200 {
+		ColorOutput("SENT FAILED PAYBACK EMAIL", RedColor)
+		return nil
+	}
+	return fmt.Errorf("Errored out, didn't receive 200")
+}
+
+func StoreStateHistory(hash string) error {
+	data, err := rpc.GetRequest(ApiUrl + "/recipient/ssh?" + "username=" + LocalRecipient.U.Username +
+		"&pwhash=" + LocalRecipient.U.Pwhash + "&hash=" + hash)
 	if err != nil {
 		log.Println(err)
 		return err

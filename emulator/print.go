@@ -96,6 +96,7 @@ func PrintRecipient(recipient database.Recipient) {
 	fmt.Println("          Your Device ID is: ", recipient.DeviceId)
 	fmt.Println("          Your Device Start Times are: ", recipient.DeviceStarts)
 	fmt.Println("          Your Device Location is: ", recipient.DeviceLocation)
+	fmt.Println("          Your list of state hashes are: ", recipient.StateHashes)
 }
 
 func PrintEntity(a solar.Entity) {

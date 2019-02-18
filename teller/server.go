@@ -37,11 +37,19 @@ func responseHandler(w http.ResponseWriter, r *http.Request, status int) {
 		response.Status = "404 Error Not Found!"
 	case rpc.StatusInternalServerError:
 		response.Status = "Internal Server Error"
-		rpc.MarshalSend(w, r, response)
 	}
+	rpc.MarshalSend(w, r, response)
 }
 
-func PingHandler() {
+// setupDefaultHandler sets up the default handler (ie returns 404 for invalid routes)
+func setupDefaultHandler() {
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		responseHandler(w, r, rpc.StatusNotFound)
+		return
+	})
+}
+
+func pingHandler() {
 	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
 		var pr rpc.StatusResponse
@@ -60,15 +68,22 @@ func PingHandler() {
 // also clients who want this information can use this API directly without
 // requiring a streaming service to inform them about changes. The client
 // can call the teller and ask for data instantly and the API will respond.
-// Takes less energy on the teller (which will be running on a low powered device)
-// and also saves a ton of complexity on our side. Also, the cert gives us
-// ssl, so no mitm, which should alleviate problems arising from streaming.
-func DataHandler() {
+
+// one problem here is to serve as less data as possible simply because
+// we will be retruning mroe data thatn we receive and this becomes a trivial data
+// amplification attack. IN this case, it is better to serve an ipfs hash instead
+// of serving the whole blob of data
+func dataHandler() {
 	http.HandleFunc("/data", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
 		var topsecret Data
 		topsecret.Timestamp = utils.Timestamp()
 		topsecret.Info = "this data is top secret and is for eyes only"
+		hash, err := GetIpfsHash(topsecret.Info)
+		if err != nil {
+			log.Println(err)
+		}
+		log.Println("IPFS HASH IS: ", hash)
 		// this is the data we need to pull in from the zigbee devices
 		topsecretJson, err := json.Marshal(topsecret)
 		if err != nil {
@@ -80,8 +95,9 @@ func DataHandler() {
 }
 
 func SetupRoutes() {
-	PingHandler()
-	DataHandler()
+	setupDefaultHandler()
+	pingHandler()
+	dataHandler()
 }
 
 // curl https://localhost/ping --insecure {"Code":200,"Status":""}
