@@ -94,6 +94,8 @@ func StartTeller() error {
 		return err
 	}
 
+	// sotre location at the start because if a person changes location, it is likely that the
+	// teller goes offline and we get notified
 	err = StoreLocation(mapskey) // stores DeviceLocation
 	if err != nil {
 		return err

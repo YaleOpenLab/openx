@@ -73,8 +73,9 @@ func checkPost(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetRequest is a handler that makes it easy to send out GET requests
+// we don't set timeouts here because block times can be variable and a single request
+// can sometimes take a long while to complete
 func GetRequest(url string) ([]byte, error) {
-	// make a curl request out to lcoalhost and get the ping response
 	var dummy []byte
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)

@@ -53,6 +53,7 @@ func pingHandler() {
 		checkGet(w, r)
 		var pr rpc.StatusResponse
 		pr.Code = 200
+		pr.Status = "HEALTH OK"
 		prJson, err := json.Marshal(pr)
 		if err != nil {
 			responseHandler(w, r, rpc.StatusInternalServerError)

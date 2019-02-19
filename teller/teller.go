@@ -69,6 +69,17 @@ var (
 
 var cleanupDone chan struct{}
 
+func AutoComplete() readline.AutoCompleter {
+	return readline.NewPrefixCompleter(
+		readline.PcItem("update",
+			readline.PcItem("ping"),
+			readline.PcItem("receive"),
+			readline.PcItem("display"),
+			readline.PcItem("update"),
+		),
+	)
+}
+
 func main() {
 	var err error
 	_, err = flags.ParseArgs(&opts, os.Args)
@@ -136,6 +147,7 @@ func main() {
 	rl, err := readline.NewEx(&readline.Config{
 		Prompt:      promptColor("teller") + whiteColor("# "),
 		HistoryFile: consts.TellerHomeDir + "/history.txt",
+		AutoComplete:  AutoComplete(),
 	})
 	defer rl.Close()
 
@@ -166,7 +178,7 @@ func main() {
 }
 
 // recoverPanic captures any unexpected panics that might occur and cause the teller to quit.
-// even in such a situation, we would like to be warned of this so we can take some action
+// even in such a situation, we would like to be warned so we can take some action
 func recoverPanic() {
 	if rec := recover(); rec != nil {
 		err := rec.(error)

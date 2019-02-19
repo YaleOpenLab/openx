@@ -94,6 +94,8 @@ func main() {
 		log.Fatal(err)
 	}
 
+	go opensolar.MonitorTeller(1)
+
 	fmt.Printf("PLATFORM SEED IS: %s\n PLATFORM PUBLIC KEY IS: %s\n", consts.PlatformSeed, consts.PlatformPublicKey)
 	fmt.Printf("STABLECOIN PUBLICKEY IS: %s\nSTABLECOIN SEED is: %s\n\n", consts.StablecoinPublicKey, consts.StablecoinSeed)
 	rpc.StartServer(port)

@@ -106,9 +106,16 @@ func ParseInput(input []string) {
 		} // end of display
 	case "update":
 		if len(input) != 1 {
-			fmt.Println("USAGE: update <state>")
+			fmt.Println("USAGE: update")
 			return
 		}
 		updateState()
+	case "hh":
+		// hh = hashchain header
+		if len(input) != 1 {
+			fmt.Println("USAGE: hhh")
+			return
+		}
+		log.Println("HASHCHAIN HEADER: ", HashChainHeader)
 	}
 }
