@@ -1,10 +1,12 @@
 package rpc
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"crypto/tls"
 
 	assets "github.com/YaleOpenLab/openx/assets"
 	consts "github.com/YaleOpenLab/openx/consts"
@@ -32,7 +34,12 @@ func setupUserRpcs() {
 	uploadFile()
 	platformEmail()
 	sendTellerShutdownEmail()
+	tellerPing()
 }
+
+const (
+	TellerUrl = "https://localhost"
+)
 
 // we want to pass to the caller whether the user is a recipient or an investor.
 // For this, we have an additional param called Role which we can use to classify
@@ -528,5 +535,56 @@ func sendTellerFailedPaybackEmail() {
 		deviceId := r.URL.Query()["deviceId"][0]
 		notif.SendTellerPaymentFailedEmail(prepUser.Email, projIndex, deviceId)
 		responseHandler(w, r, StatusOK)
+	})
+}
+
+func tellerPing() {
+	http.HandleFunc("/tellerping", func(w http.ResponseWriter, r *http.Request) {
+
+		checkGet(w, r)
+		checkOrigin(w, r)
+
+		_, err := UserValidateHelper(w, r)
+		if err != nil {
+			log.Println("did not validate user", err)
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+
+		tr := &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
+		client := &http.Client{Transport: tr}
+
+		req, err := http.NewRequest("GET", TellerUrl+"/ping", nil)
+		if err != nil {
+			log.Println("did not create new GET request", err)
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+
+		req.Header.Set("Origin", "localhost")
+		res, err := client.Do(req)
+		if err != nil {
+			log.Println("did not make request", err)
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+		defer res.Body.Close()
+		data, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+
+		var x StatusResponse
+
+		err = json.Unmarshal(data, &x)
+		if err != nil {
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+
+		MarshalSend(w, r, x)
 	})
 }

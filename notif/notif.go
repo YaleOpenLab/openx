@@ -281,3 +281,11 @@ func SendTellerPaymentFailedEmail(from string, projIndex string, deviceId string
 		footerString
 	return sendMail(body, consts.PlatformEmail)
 }
+
+func SendTellerDownEmail(projIndex int, recpIndex int) error {
+	body := "Greetings from the opensolar platform! \n\n We're writing to let you know that remote teller " + utils.ItoS(projIndex) +
+	" installed on behalf of recipient with index: " + utils.ItoS(recpIndex) + " has not been responding to pings for a while. Please take action at " +
+	"the earliest," + "\n\n\n" +
+	footerString
+	return sendMail(body, consts.PlatformEmail)
+}

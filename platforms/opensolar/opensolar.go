@@ -1,6 +1,15 @@
 package opensolar
 
 import (
+	"crypto/tls"
+	"encoding/json"
+	"io/ioutil"
+	"log"
+	"net/http"
+	"time"
+
+	notif "github.com/YaleOpenLab/openx/notif"
+	consts "github.com/YaleOpenLab/openx/consts"
 	platform "github.com/YaleOpenLab/openx/platforms"
 )
 
@@ -91,4 +100,69 @@ func InitializePlatform() error {
 // is less than 21 XLM, it proceeds to ask the friendbot for more test xlm
 func RefillPlatform(publicKey string) error {
 	return platform.RefillPlatform(publicKey)
+}
+
+const tellerUrl = "https://localhost"
+
+type statusResponse struct {
+	Code   int
+	Status string
+}
+
+// MonitorTeller monitors a teller and checks whether its live. If not, send an email to platform admins
+func MonitorTeller(projIndex int) {
+	// call this function only after a specific order has been accepted by the recipient
+	for {
+		project, err := RetrieveProject(projIndex)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+
+		tr := &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
+		client := &http.Client{Transport: tr}
+
+		req, err := http.NewRequest("GET", tellerUrl+"/ping", nil)
+		if err != nil {
+			log.Println("did not create new GET request", err)
+			notif.SendTellerDownEmail(project.Index, project.RecipientIndex)
+			time.Sleep(consts.TellerPollInterval * time.Second)
+			continue
+		}
+
+		req.Header.Set("Origin", "localhost")
+		res, err := client.Do(req)
+		if err != nil {
+			log.Println("did not make request", err)
+			notif.SendTellerDownEmail(project.Index, project.RecipientIndex)
+			time.Sleep(consts.TellerPollInterval * time.Second)
+			continue
+		}
+		defer res.Body.Close()
+		data, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			log.Println("error while reading response body", err)
+			notif.SendTellerDownEmail(project.Index, project.RecipientIndex)
+			time.Sleep(consts.TellerPollInterval * time.Second)
+			continue
+		}
+
+		var x statusResponse
+
+		err = json.Unmarshal(data, &x)
+		if err != nil {
+			log.Println("error while unmarshalling data", err)
+			notif.SendTellerDownEmail(project.Index, project.RecipientIndex)
+			time.Sleep(consts.TellerPollInterval * time.Second)
+			continue
+		}
+
+		if x.Code != 200 || x.Status != "HEALTH OK" {
+			notif.SendTellerDownEmail(project.Index, project.RecipientIndex)
+		}
+
+		time.Sleep(consts.TellerPollInterval * time.Second)
+	}
 }
