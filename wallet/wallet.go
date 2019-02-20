@@ -49,16 +49,16 @@ func RetrieveSeed(path string, password string) (string, string, error) {
 	return keyp.Address(), seed, errors.Wrap(err, "could not parse seed to get keypair")
 }
 
-// RetrievePubkey restores the publicKey when passed a seed and stores the
+// RetrieveAndStorePubkey restores the publicKey when passed a seed and stores the
 // seed in an encrypted format in the specified path
 func RetrieveAndStorePubkey(seed string, path string, password string) (string, error) {
 	var publicKey string
 	keyp, err := keypair.Parse(seed)
 	if err != nil {
 		return publicKey, errors.Wrap(err, "could not parse seed to get keypair")
-	} else {
-		publicKey = keyp.Address()
 	}
+
+	publicKey = keyp.Address()
 	StoreSeed(seed, password, path)
 	return publicKey, nil
 }
@@ -69,6 +69,7 @@ func DecryptSeed(encryptedSeed []byte, seedpwd string) (string, error) {
 	return string(data), err
 }
 
+// ReturnPubkey returns the pubkey when passed the seed
 func ReturnPubkey(seed string) (string, error) {
 	if len(seed) == 0 {
 		return seed, errors.New("Empty Seed passed!")

@@ -352,7 +352,7 @@ func (a *User) IncreaseReputation(reputation float64) error {
 	return a.Save()
 }
 
-// IncreaseReputation decreases reputation
+// DecreaseReputation decreases reputation
 func (a *User) DecreaseReputation(reputation float64) error {
 	a.Reputation -= reputation
 	return a.Save()

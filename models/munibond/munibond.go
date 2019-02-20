@@ -18,6 +18,7 @@ import (
 	xlm "github.com/YaleOpenLab/openx/xlm"
 )
 
+// MunibondInvest invests in a specific munibond
 func MunibondInvest(issuerPath string, invIndex int, invSeed string, invAmount string,
 	projIndex int, invAssetCode string, totalValue float64) error {
 	// offer user to exchange xlm for stableusd and invest directly if the user does not have stableusd
@@ -79,6 +80,7 @@ func MunibondInvest(issuerPath string, invIndex int, invSeed string, invAmount s
 	return nil
 }
 
+// MunibondReceive sends assets to the recipient
 func MunibondReceive(issuerPath string, recpIndex int, projIndex int, debtAssetId string,
 	paybackAssetId string, years int, recpSeed string, totalValue float64, paybackPeriod int) error {
 
@@ -183,6 +185,7 @@ func sendPaymentNotif(recpIndex int, projIndex int, paybackPeriod int, email str
 	}
 }
 
+// MunibondPayback is used by the recipient to pay the platform back
 func MunibondPayback(issuerPath string, recpIndex int, amount string, recipientSeed string, projIndex int,
 	assetName string, projectInvestors []int) error {
 
@@ -277,6 +280,7 @@ func MunibondPayback(issuerPath string, recpIndex int, amount string, recipientS
 	return nil
 }
 
+// SendUSDToPlatform is used to send usd back to the platform
 func SendUSDToPlatform(invSeed string, invAmount string, memo string) (string, error) {
 	return models.SendUSDToPlatform(invSeed, invAmount, memo)
 }

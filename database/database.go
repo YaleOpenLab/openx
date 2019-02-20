@@ -20,31 +20,16 @@ import (
 // to be common across platforms
 // define the name of the buckets that we interact with.
 
-// ProjectsBucket
 var ProjectsBucket = []byte("Projects")
-
-// InvestorBucket
 var InvestorBucket = []byte("Investors")
-
-// RecipientBucket
 var RecipientBucket = []byte("Recipients")
-
-// ContractorBucket
 var ContractorBucket = []byte("Contractors")
-
-// UserBucket
 var UserBucket = []byte("Users")
-
-// BondBucket
 var BondBucket = []byte("Bonds")
-
-// CoopBucket
 var CoopBucket = []byte("Coop")
-
-// InspectorBucket
 var InspectorBucket = []byte("Inspector")
 
-// CreateHomeDir creates the home dir
+// CreateHomeDir creates a home directory
 func CreateHomeDir() {
 	if _, err := os.Stat(consts.HomeDir); os.IsNotExist(err) {
 		// directory does not exist, create one

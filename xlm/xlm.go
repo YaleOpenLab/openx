@@ -17,16 +17,14 @@ import (
 	"github.com/stellar/go/network"
 )
 
+// GetKeyPair gets a keypair that can be used to interact with the stellar blockchain
 func GetKeyPair() (string, string, error) {
 	pair, err := keypair.Random()
 	return pair.Seed(), pair.Address(), err
 }
 
-// GetCoins makes an API call to the friendbot on stellar testnet, which gives
-// us 10000 XLM for use. We don't need 10000XLM (we need only ~3 XLM for setting up
-// various trustlines), but there's no option to receive less, so we're having to call
-// this. On mainnet, we'd be refilling the accoutns manually, so this function
-// wouldn't exist.
+// GetXLM makes an API call to the friendbot on stellar testnet, which gives
+// us 10000 testnet XLM
 func GetXLM(PublicKey string) error {
 	// get some coins from the stellar robot for testing
 	// gives only a constant amount of stellar, so no need to pass it a coin param
@@ -37,7 +35,7 @@ func GetXLM(PublicKey string) error {
 	return nil
 }
 
-// check whether an accoutn exists, not needed now since we do the check ourselves
+// AccountExists checks whether an accoutn exists, not needed now since we do the check ourselves
 // in multiple places
 func AccountExists(address string) bool {
 	_, err := TestNetClient.LoadAccount(address)
@@ -47,6 +45,7 @@ func AccountExists(address string) bool {
 	return true
 }
 
+// SendTx sends out a transaction via horizon to the blockchain
 func SendTx(Seed string, tx *build.TransactionBuilder) (int32, string, error) {
 	// Sign the transaction to prove you are actually the person sending it.
 	txe, err := tx.Sign(Seed)
@@ -103,6 +102,8 @@ func SendTx(Seed string, tx *build.TransactionBuilder) (int32, string, error) {
 // Generating a keypair on stellar doesn't mean that you can send funds to it
 // you need to call the CreateAccount method in project to be able to send funds
 // to it
+
+// SendXLMCreateAccount sends XLM to an account and creates the account if it doesn't exist already
 func SendXLMCreateAccount(destination string, amount string, Seed string) (int32, string, error) {
 	// destination will not exist yet, so don't check
 	passphrase := network.TestNetworkPassphrase
@@ -147,6 +148,7 @@ func SendXLM(destination string, amount string, Seed string, memo string) (int32
 	return SendTx(Seed, tx)
 }
 
+// RefillAccount refills an account
 func RefillAccount(publicKey string, platformSeed string) error {
 	var err error
 	if !AccountExists(publicKey) {

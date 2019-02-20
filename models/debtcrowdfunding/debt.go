@@ -16,6 +16,7 @@ import (
 
 // Debt Crowdfunding is a model where the investor loans out some initial capital and receives interest on that investment
 
+// Invest invests in a particular project
 func Invest(projIndex int, invIndex int, invAssetCode string, invSeed string,
 	invAmount string, trustLimit string, investorIndices []int, application string) error {
 
@@ -76,6 +77,7 @@ func Invest(projIndex int, invIndex int, invAssetCode string, invSeed string,
 	return nil
 }
 
+// ReceiveBond sends out assets to the recipient
 func ReceiveBond(issuerPath string, recpIndex int, projIndex int, debtAssetCode string,
 	recpSeed string, totalValue float64) error {
 
@@ -130,6 +132,7 @@ func ReceiveBond(issuerPath string, recpIndex int, projIndex int, debtAssetCode 
 	return nil
 }
 
+// SendUSDToPlatform can be used to send USD back to the platform
 func SendUSDToPlatform(invSeed string, invAmount string, memo string) (string, error) {
 	return models.SendUSDToPlatform(invSeed, invAmount, memo)
 }
