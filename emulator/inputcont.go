@@ -11,6 +11,8 @@ import (
 )
 
 // inputcont.go contains all the relevant emulator commands for the contractor
+
+// LoopCont defines a loop for the contractor
 func LoopCont(rl *readline.Instance) error {
 	// This loop is exclusive to a contractor
 	for {
@@ -35,6 +37,7 @@ func LoopCont(rl *readline.Instance) error {
 	}
 }
 
+// ParseInputCont parses input for the contractor
 func ParseInputCont(input []string) error {
 	var err error
 	// Various command supported for the recipient

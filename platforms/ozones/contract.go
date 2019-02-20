@@ -17,6 +17,7 @@ import (
 	wallet "github.com/YaleOpenLab/openx/wallet"
 )
 
+// preInvestmentConstructionBonds defines the pre investment conditions pertaining to construction bonds
 func preInvestmentConstructionBonds(projIndex int, invIndex int, invAmount string) (ConstructionBond, error) {
 
 	project, err := RetrieveConstructionBond(projIndex)
@@ -57,6 +58,7 @@ func preInvestmentConstructionBonds(projIndex int, invIndex int, invAmount strin
 	return project, nil
 }
 
+// preInvestmentConstructionBonds defines the pre investment conditions pertaining to living unit coops
 func preInvestmentLivingCoop(projIndex int, invIndex int, invAmount string) (LivingUnitCoop, error) {
 
 	project, err := RetrieveLivingUnitCoop(projIndex)
@@ -97,7 +99,7 @@ func preInvestmentLivingCoop(projIndex int, invIndex int, invAmount string) (Liv
 	return project, nil
 }
 
-// Invest in a particular living coop
+// InvestInLivingUnitCoop invests in a particular living coop
 func InvestInLivingUnitCoop(projIndex int, invIndex int, invAmount string, invSeed string,
 	recpSeed string) error {
 	// we want to invest in this specific bond
@@ -122,7 +124,7 @@ func InvestInLivingUnitCoop(projIndex int, invIndex int, invAmount string, invSe
 	return nil
 }
 
-// Invest in a particular construction bonm
+// InvestInConstructionBond invests in a particular construction bonm
 func InvestInConstructionBond(projIndex int, invIndex int, invAmount string, invSeed string) error {
 	// we want to invest in this specific bond
 	var err error
@@ -159,6 +161,7 @@ func InvestInConstructionBond(projIndex int, invIndex int, invAmount string, inv
 	return nil
 }
 
+// sendRecipientAssets sends the recipient assets pertaining to an order
 func sendRecipientAssets(projIndex int, totalValue float64) error {
 	// send the recipient relevant debt asset
 	startTime := utils.Unix()

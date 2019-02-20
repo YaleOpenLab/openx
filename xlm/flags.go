@@ -5,6 +5,7 @@ import (
 	"github.com/stellar/go/network"
 )
 
+// SetAuthImmutable sets the auth_immutable flag on an account
 func SetAuthImmutable(seed string) (int32, string, error) {
 	//  Create with Auth immutable since we don't want the asset to be revocable
 	passphrase := network.TestNetworkPassphrase
@@ -25,6 +26,7 @@ func SetAuthImmutable(seed string) (int32, string, error) {
 	return SendTx(seed, tx)
 }
 
+// FreezeAccount freezes the account
 func FreezeAccount(seed string) (int32, string, error) {
 	passphrase := network.TestNetworkPassphrase
 	tx, err := build.Transaction(

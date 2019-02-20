@@ -16,6 +16,7 @@ import (
 // the input array contains the commands that we want to parse.
 // first check the length of the input array and then define accordingly
 
+// LoopInv loops over investor input
 func LoopInv(rl *readline.Instance) error {
 	// this loop is for an investor
 	// we have authenticated the user and stored the details in an appropriate structure
@@ -46,6 +47,7 @@ func LoopInv(rl *readline.Instance) error {
 	}
 }
 
+// ParseInputInv parses investor input
 func ParseInputInv(input []string) error {
 	var err error
 	if len(input) == 0 {

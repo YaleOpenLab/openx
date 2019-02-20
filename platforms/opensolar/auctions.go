@@ -20,6 +20,8 @@ import (
 // and not.
 
 // For more trivia, see https://en.wikipedia.org/wiki/Auction
+
+// ContractAuction is an auction struct
 type ContractAuction struct {
 	// TODO: this struct isn't used yet as it needs handlers and stuff, but when
 	// we move off main.go for testing, this must be used in order to make stuff

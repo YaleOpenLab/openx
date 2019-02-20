@@ -16,6 +16,8 @@ import (
 // the contractor super struct comprises of various entities within it. Its a
 // super struct because combining them results in less duplication of code
 
+// Entity defines a common structure for contractors, developers and originators. Will be split
+// into their respective roles once they are defined in a better way.
 type Entity struct {
 	U database.User
 	// inherit the base user class
@@ -295,6 +297,7 @@ func ValidateEntity(name string, pwhash string) (Entity, error) {
 	return RetrieveEntity(user.Index)
 }
 
+// AgreeToContractConditions agrees to some specific contract conditions
 func AgreeToContractConditions(contractHash string, projIndex string,
 	debtAssetCode string, entityIndex int, seedpwd string) error {
 	// we need to display this on the frontend and once the user presses agree, commit

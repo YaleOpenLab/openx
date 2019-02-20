@@ -12,6 +12,7 @@ import (
 	xlm "github.com/YaleOpenLab/openx/xlm"
 )
 
+// StartPlatform starts the platform
 func StartPlatform() (string, string, error) {
 	var publicKey string
 	var seed string
@@ -33,6 +34,7 @@ func StartPlatform() (string, string, error) {
 	return publicKey, seed, err
 }
 
+// NewUserPrompt
 func NewUserPrompt() (string, string, string, string, error) {
 	realName, err := scan.ScanForString()
 	if err != nil {
@@ -62,6 +64,7 @@ func NewUserPrompt() (string, string, string, string, error) {
 	return realName, loginUserName, loginPassword, seedPassword, err
 }
 
+// NewInvestorPrompt
 func NewInvestorPrompt() error {
 	log.Println("You have chosen to create a new investor account, welcome")
 	loginUserName, loginPassword, realName, seedpwd, err := NewUserPrompt()
@@ -78,6 +81,7 @@ func NewInvestorPrompt() error {
 	return err
 }
 
+// NewRecipientPrompt
 func NewRecipientPrompt() error {
 	log.Println("You have chosen to create a new recipient account, welcome")
 	loginUserName, loginPassword, realName, seedpwd, err := NewUserPrompt()
@@ -93,6 +97,7 @@ func NewRecipientPrompt() error {
 	return err
 }
 
+// LoginPrompt
 func LoginPrompt() (database.Investor, database.Recipient, solar.Entity, bool, bool, error) {
 	rbool := false
 	cbool := false
@@ -158,6 +163,7 @@ func LoginPrompt() (database.Investor, database.Recipient, solar.Entity, bool, b
 	return investor, recipient, contractor, rbool, cbool, nil
 }
 
+// OriginContractPrompt
 func OriginContractPrompt(contractor *solar.Entity) error {
 	fmt.Println("YOU HAVE DECIDED TO PROPOSE A NEW CONTRACT")
 	fmt.Println("ENTER THE PANEL SIZE")
@@ -199,6 +205,7 @@ func OriginContractPrompt(contractor *solar.Entity) error {
 	return nil
 }
 
+// ProposeContractPrompt
 func ProposeContractPrompt(contractor *solar.Entity) error {
 	fmt.Println("YOU HAVE DECIDED TO PROPOSE A NEW CONTRACT")
 	fmt.Println("ENTER THE PROJECT INDEX")
@@ -248,6 +255,7 @@ func ProposeContractPrompt(contractor *solar.Entity) error {
 	return nil
 }
 
+// Stage3ProjectsDisplayPrompt
 func Stage3ProjectsDisplayPrompt() {
 	fmt.Println("------------LIST OF ALL AVAILABLE PROJECTS------------")
 	allProjects, err := solar.RetrieveProjectsAtStage(solar.FinalizedProject)
@@ -258,6 +266,7 @@ func Stage3ProjectsDisplayPrompt() {
 	}
 }
 
+// DisplayOriginProjects
 func DisplayOriginProjects() {
 	fmt.Println("PRINTING ALL ORIGINATED PROJECTS: ")
 	x, err := solar.RetrieveProjectsAtStage(solar.OriginProject)
@@ -268,6 +277,7 @@ func DisplayOriginProjects() {
 	}
 }
 
+// ExitPrompt
 func ExitPrompt() {
 	// check whether he wants to go back to the display all screen again
 	fmt.Println("DO YOU REALLY WANT TO EXIT? (PRESS Y TO CONFIRM)")
@@ -281,6 +291,7 @@ func ExitPrompt() {
 	}
 }
 
+// BalanceDisplayPrompt
 func BalanceDisplayPrompt(publicKey string) {
 	balances, err := xlm.GetAllBalances(publicKey)
 	if err != nil {

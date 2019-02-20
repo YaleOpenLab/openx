@@ -8,13 +8,14 @@ import (
 	"github.com/stellar/go/protocols/horizon"
 )
 
+// PrintProjects
 func PrintProjects(projects []solar.Project) {
 	for _, project := range projects {
 		PrintProject(project)
 	}
 }
 
-// this function pretty prints out some stuff that we need in main.go
+// PrintProject pretty prints out some stuff that we need in main.go
 func PrintProject(project solar.Project) {
 	fmt.Println("          PROJECT INDEX: ", project.Index)
 	fmt.Println("          Panel Size: ", project.PanelSize)
@@ -62,12 +63,14 @@ func PrintInvestor(investor database.Investor) {
 	fmt.Println("         Your Local Assets are: ", investor.U.LocalAssets)
 }
 
+// PrintUsers
 func PrintUsers(users []database.User) {
 	for _, elem := range users {
 		PrintUser(elem)
 	}
 }
 
+// PrintUser
 func PrintUser(user database.User) {
 	fmt.Println("    WELCOME BACK ", user.Name)
 	fmt.Println("          Your user index is: ", user.Index)
@@ -97,6 +100,7 @@ func PrintRecipient(recipient database.Recipient) {
 	fmt.Println("          Your Device Start Times are: ", recipient.DeviceStarts)
 }
 
+// PrintEntity
 func PrintEntity(a solar.Entity) {
 	fmt.Println("    WELCOME BACK ", a.U.Name)
 	fmt.Println("    			 Your Index is ", a.U.Index)
@@ -110,6 +114,7 @@ func PrintEntity(a solar.Entity) {
 	fmt.Println("          Your Collateral Data is: ", a.CollateralData)
 }
 
+// PrintBalances
 func PrintBalances(balances []horizon.Balance) {
 	fmt.Println("   LIST OF ALL YOUR BALANCES: ")
 	for _, balance := range balances {

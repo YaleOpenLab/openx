@@ -10,6 +10,7 @@ import (
 	utils "github.com/YaleOpenLab/openx/utils"
 )
 
+// InsertDummyData inserts sample data
 func InsertDummyData() error {
 	var err error
 	// populate database with dumym data

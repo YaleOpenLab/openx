@@ -12,6 +12,7 @@ import (
 // tweaked and limited to ensure that this serves only data related to the specific project
 // at hand
 
+// WriteToHandler writes a reply to the passed handler
 func WriteToHandler(w http.ResponseWriter, jsonString []byte) {
 	w.Header().Add("Access-Control-Allow-Origin", "localhost")
 	w.Header().Add("Access-Control-Allow-Methods", "GET")
@@ -21,6 +22,8 @@ func WriteToHandler(w http.ResponseWriter, jsonString []byte) {
 
 // the teller has a basic CLi interface that might help in remote debugging when using an SSH service
 // like dataplicity
+
+// ParseInput parses user input
 func ParseInput(input []string) {
 	if len(input) == 0 {
 		fmt.Println("List of commands: ping, receive, display, update")

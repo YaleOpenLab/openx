@@ -32,9 +32,10 @@ var (
 	PlatformPublicKey string
 )
 
-// this ApiUrl should point to the platform instance
+// ApiUrl points to the platform instance's public endpoint
 var ApiUrl = "http://localhost:8080"
 
+// SetupConfig reads from the teller's config file and authenticates with the platform
 func SetupConfig() (string, error) {
 	var err error
 	viper.SetConfigType("yaml")

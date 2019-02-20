@@ -11,6 +11,7 @@ import (
 	wallet "github.com/YaleOpenLab/openx/wallet"
 )
 
+// Login logs on to the platform
 func Login(username string, pwhash string) (string, error) {
 	var wString string
 	data, err := rpc.GetRequest(ApiUrl + "/user/validate?" + "username=" + username + "&pwhash=" + pwhash)

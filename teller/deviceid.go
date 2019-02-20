@@ -13,6 +13,7 @@ import (
 
 // deviceid sets the deviceid and stores it in a retrievable location
 
+// GenerateRandomString generates a random string of length _n_
 func GenerateRandomString(n int) (string, error) {
 	// generate a crypto secure random string
 	b := make([]byte, n)

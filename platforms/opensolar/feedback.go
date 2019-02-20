@@ -27,6 +27,8 @@ package opensolar
 // on the frontend design and implementation as well
 // TODO: complete this area once we have a rudimentary frontend so that we can test stuff
 // more easily and link it with the reputation system
+
+// Feedback
 type Feedback struct {
 	Content string
 	// the content of the feedback, good / bad

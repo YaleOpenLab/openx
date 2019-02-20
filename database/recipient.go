@@ -17,6 +17,8 @@ import (
 // Each project should have a unique recipient associated with it. While this is
 // not strictly necessary, it is better for management on both ends, so seems like
 // something that we want to encourage?
+
+// Recipient defines the recipient structure
 type Recipient struct {
 	U User
 	// user related functions are called as an instance directly
@@ -51,6 +53,7 @@ func NewRecipient(uname string, pwd string, seedpwd string, Name string) (Recipi
 	return a, err
 }
 
+// AddEmail adds email to the recipient's profile
 func (a *Recipient) AddEmail(email string) error {
 	// call this function when a user wants to get notifications. Ask on frontend whether
 	// it wants to
@@ -63,7 +66,7 @@ func (a *Recipient) AddEmail(email string) error {
 	return a.Save()
 }
 
-// Save() saves a given recipient's details
+// Save saves a given recipient's details
 func (a *Recipient) Save() error {
 	db, err := OpenDB()
 	if err != nil {
@@ -138,6 +141,7 @@ func RetrieveRecipient(key int) (Recipient, error) {
 	return inv, err
 }
 
+// ValidateRecipient validates a particular recipient
 func ValidateRecipient(name string, pwhash string) (Recipient, error) {
 	var rec Recipient
 	user, err := ValidateUser(name, pwhash)
@@ -147,6 +151,7 @@ func ValidateRecipient(name string, pwhash string) (Recipient, error) {
 	return RetrieveRecipient(user.Index)
 }
 
+// ChangeRecpReputation changes the reputation of the recipient
 func ChangeRecpReputation(recpIndex int, reputation float64) error {
 	a, err := RetrieveRecipient(recpIndex)
 	if err != nil {
@@ -163,6 +168,7 @@ func ChangeRecpReputation(recpIndex int, reputation float64) error {
 	return a.Save()
 }
 
+// TopReputationRecipient returns a list of recipients with the best reputation
 func TopReputationRecipient() ([]Recipient, error) {
 	allRecipients, err := RetrieveAllRecipients()
 	if err != nil {

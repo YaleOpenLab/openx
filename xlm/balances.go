@@ -35,6 +35,8 @@ type Account struct {
     Data                 map[string]string `json:"data"`
 }
 */
+
+// GetAccountData gets the account data
 func GetAccountData(a string) ([]byte, error) {
 	var err error
 	var data []byte
@@ -51,6 +53,7 @@ func GetAccountData(a string) ([]byte, error) {
 	return data, err
 }
 
+// GetNativeBalance gets the xlm balance of a specific account
 func GetNativeBalance(publicKey string) (string, error) {
 	var balance string
 	var err error
@@ -75,6 +78,7 @@ func GetNativeBalance(publicKey string) (string, error) {
 	return balance, errors.New("Native balance not found")
 }
 
+// GetAssetBalance gets the balance of the user in the specific asset
 func GetAssetBalance(publicKey string, assetName string) (string, error) {
 	var balance string
 	var err error
@@ -95,6 +99,7 @@ func GetAssetBalance(publicKey string, assetName string) (string, error) {
 	return balance, errors.New("Asset balance not found")
 }
 
+// GetAssetTrustLimit gets the trust limit that the user has with the issue for a specific asset
 func GetAssetTrustLimit(publicKey string, assetName string) (string, error) {
 	var balance string
 	var err error

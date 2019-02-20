@@ -14,7 +14,7 @@ import (
 // TODO: Consider other specific information needed for contractors, other than
 // the ones set for users and entities. It can go here, or set as a separate struct.
 
-// Contractors are created here inheriting properties from Users/Entities
+// NewContractor creates a new contractor and inherits properties from Users
 func NewContractor(uname string, pwd string, seedpwd string, Name string, Address string, Description string) (Entity, error) {
 	// Create a new entity with the boolean of 'contractor' set to 'true.' This is
 	// done just by passing the string "contractor"
