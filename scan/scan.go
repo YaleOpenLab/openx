@@ -7,6 +7,7 @@ package scan
 import (
 	"bufio"
 	"fmt"
+	"github.com/pkg/errors"
 	"os"
 	"strconv"
 	"syscall"
@@ -19,12 +20,12 @@ func ScanForInt() (int, error) {
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Scan()
 	if scanner.Err() != nil {
-		return -1, fmt.Errorf("Couldn't read user input")
+		return -1, errors.New("Couldn't read user input")
 	}
 	num := scanner.Text()
 	numI, err := strconv.Atoi(num)
 	if err != nil {
-		return -1, fmt.Errorf("Input not a number")
+		return -1, errors.New("Input not a number")
 	}
 	return numI, nil
 }
@@ -33,7 +34,7 @@ func ScanForFloat() (float64, error) {
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Scan()
 	if scanner.Err() != nil {
-		return -1, fmt.Errorf("Couldn't read user input")
+		return -1, errors.New("Couldn't read user input")
 	}
 	num := scanner.Text()
 	x, err := strconv.ParseFloat(num, 32)
@@ -45,7 +46,7 @@ func ScanForString() (string, error) {
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Scan()
 	if scanner.Err() != nil {
-		return "", fmt.Errorf("Couldn't read user input")
+		return "", errors.New("Couldn't read user input")
 	}
 	inputString := scanner.Text()
 	return inputString, nil
@@ -55,7 +56,7 @@ func ScanForStringWithCheckI() (string, error) {
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Scan()
 	if scanner.Err() != nil {
-		return "", fmt.Errorf("Couldn't read user input")
+		return "", errors.New("Couldn't read user input")
 	}
 	inputString := scanner.Text()
 	_, err := strconv.Atoi(inputString) // check whether input string is a number (for payback)
@@ -69,12 +70,12 @@ func ScanForStringWithCheckF() (string, error) {
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Scan()
 	if scanner.Err() != nil {
-		return "", fmt.Errorf("Couldn't read user input")
+		return "", errors.New("Couldn't read user input")
 	}
 	inputString := scanner.Text()
 	if utils.StoF(inputString) == 0 {
 		fmt.Println("Amount entered is not a float, quitting")
-		return "", fmt.Errorf("Amount entered is not a float, quitting")
+		return "", errors.New("Amount entered is not a float, quitting")
 	}
 	return inputString, nil
 }

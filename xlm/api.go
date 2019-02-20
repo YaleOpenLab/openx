@@ -2,7 +2,7 @@ package xlm
 
 import (
 	"encoding/json"
-	"fmt"
+	"github.com/pkg/errors"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -54,7 +54,7 @@ func GetLedgerData(blockNumber string) ([]byte, error) {
 	var data []byte
 	resp, err := http.Get(TestNetClient.URL + "/ledgers/" + blockNumber)
 	if err != nil || resp.Status != "200 OK" {
-		return data, fmt.Errorf("API Request did not succeed")
+		return data, errors.New("API Request did not succeed")
 	}
 	defer resp.Body.Close()
 	data, err = ioutil.ReadAll(resp.Body)
@@ -66,7 +66,7 @@ func GetBlockHash(blockNumber string) (string, error) {
 	var hash string
 	b, err := GetLedgerData(blockNumber)
 	if err != nil {
-		return hash, err
+		return hash, errors.Wrap(err, "could not get updated ledger data")
 	}
 	var x protocols.Ledger
 	err = json.Unmarshal(b, &x)
@@ -79,30 +79,30 @@ func GetLatestBlockHash() (string, error) {
 	url := TestNetClient.URL + "/ledgers?cursor=now&order=desc&limit=1"
 	resp, err := http.Get(url)
 	if err != nil || resp.Status != "200 OK" {
-		return "", fmt.Errorf("API Request did not succeed")
+		return "", errors.New("API Request did not succeed")
 	}
 	defer resp.Body.Close()
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(err, "could not read response body")
 	}
 	// hacks below follow because of stellar's incomplete go sdk support
 	var x map[string]*json.RawMessage
 	err = json.Unmarshal(data, &x)
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(err, "could not unmarshal json")
 	}
 
 	var y map[string]*json.RawMessage
 	err = json.Unmarshal(*x["_embedded"], &y)
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(err, "could not unmarshal json")
 	}
 
 	var z []protocols.Ledger
 	err = json.Unmarshal(*y["records"], &z)
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(err, "could not unmarshal json")
 	}
 
 	return z[0].Hash, nil

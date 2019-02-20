@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/pkg/errors"
 	"log"
 	"strings"
 
@@ -16,8 +17,7 @@ func LoopCont(rl *readline.Instance) error {
 		// setup reader with max 4K input chars
 		msg, err := rl.Readline()
 		if err != nil {
-			log.Println(err)
-			return err
+			return errors.Wrap(err, "could not read user input")
 		}
 		msg = strings.TrimSpace(msg)
 		if len(msg) == 0 {
@@ -30,8 +30,7 @@ func LoopCont(rl *readline.Instance) error {
 
 		err = ParseInputCont(cmdslice)
 		if err != nil {
-			log.Println(err)
-			return err
+			return errors.Wrap(err, "could not parse input")
 		}
 	}
 	return nil
@@ -42,7 +41,7 @@ func ParseInputCont(input []string) error {
 	// Various command supported for the recipient
 	if len(input) == 0 {
 		// shouldn't happen, still
-		return fmt.Errorf("Length of input array is zero, quitting!")
+		return errors.New("Length of input array is zero, quitting!")
 	}
 	// input is greater than length 1 which means we can parse according to the command given
 	command := input[0]

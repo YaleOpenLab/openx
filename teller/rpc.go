@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/pkg/errors"
 	"log"
 	"strings"
 
@@ -56,7 +57,7 @@ func GetProjectIndex(assetName string) (int, error) {
 			return elem.Index, nil
 		}
 	}
-	return -1, fmt.Errorf("Not found")
+	return -1, errors.New("Not found")
 }
 
 func LoginToPlatform(username string, pwhash string) error {
@@ -91,7 +92,7 @@ func ProjectPayback(assetName string, amount string) error {
 		ColorOutput("PAID!", GreenColor)
 		return nil
 	}
-	return fmt.Errorf("Errored out")
+	return errors.New("Errored out")
 }
 
 func SetDeviceId(username string, pwhash string, deviceId string) error {
@@ -109,7 +110,7 @@ func SetDeviceId(username string, pwhash string, deviceId string) error {
 		ColorOutput("PAID!", GreenColor)
 		return nil
 	}
-	return fmt.Errorf("Errored out, didn't receive 200")
+	return errors.New("Errored out, didn't receive 200")
 }
 
 func StoreStartTime() error {
@@ -128,7 +129,7 @@ func StoreStartTime() error {
 		ColorOutput("LOGGED START TIME SUCCESSFULLY!", GreenColor)
 		return nil
 	}
-	return fmt.Errorf("Errored out, didn't receive 200")
+	return errors.New("Errored out, didn't receive 200")
 }
 
 func StoreLocation(mapskey string) error {
@@ -148,7 +149,7 @@ func StoreLocation(mapskey string) error {
 		ColorOutput("LOGGED LOCATION SUCCESSFULLY!", GreenColor)
 		return nil
 	}
-	return fmt.Errorf("Errored out, didn't receive 200")
+	return errors.New("Errored out, didn't receive 200")
 }
 
 func GetPlatformEmail() error {
@@ -189,7 +190,7 @@ func SendDeviceShutdownEmail(tx1 string, tx2 string) error {
 		ColorOutput("SENT STOP EMAIL SUCCESSFULLY", GreenColor)
 		return nil
 	}
-	return fmt.Errorf("Errored out, didn't receive 200")
+	return errors.New("Errored out, didn't receive 200")
 }
 
 func GetIpfsHash(inputString string) (string, error) {
@@ -250,7 +251,7 @@ func SendDevicePaybackFailedEmail() error {
 		ColorOutput("SENT FAILED PAYBACK EMAIL", RedColor)
 		return nil
 	}
-	return fmt.Errorf("Errored out, didn't receive 200")
+	return errors.New("Errored out, didn't receive 200")
 }
 
 func StoreStateHistory(hash string) error {
@@ -270,5 +271,5 @@ func StoreStateHistory(hash string) error {
 		ColorOutput("SENT FAILED PAYBACK EMAIL", RedColor)
 		return nil
 	}
-	return fmt.Errorf("Errored out, didn't receive 200")
+	return errors.New("Errored out, didn't receive 200")
 }

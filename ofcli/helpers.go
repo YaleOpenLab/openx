@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"github.com/pkg/errors"
 
 	database "github.com/YaleOpenLab/openx/database"
 	platform "github.com/YaleOpenLab/openx/platforms"
@@ -48,7 +49,7 @@ func NewUserPrompt() (string, string, string, string, error) {
 	err = database.CheckUsernameCollision(loginUserName)
 	if err != nil {
 		fmt.Printf("%s", "username already taken, please choose a different one")
-		return "", "", "", "", fmt.Errorf("username already taken, please choose a different one")
+		return "", "", "", "", errors.New("username already taken, please choose a different one")
 	}
 	fmt.Printf("%s: ", "ENTER DESIRED PASSWORD, YOU WILL NOT BE ASKED TO CONFIRM THIS")
 	loginPassword, err := scan.ScanForPassword()
@@ -117,7 +118,7 @@ func LoginPrompt() (database.Investor, database.Recipient, solar.Entity, bool, b
 		fmt.Println("WELCOME BACK CONTRACTOR")
 	} else {
 		log.Println("INVALID INPUT, EXITING!")
-		return investor, recipient, contractor, rbool, cbool, fmt.Errorf("INVALID INPUT, EXITING!")
+		return investor, recipient, contractor, rbool, cbool, errors.New("INVALID INPUT, EXITING!")
 	}
 	// ask for username and password combo here
 	fmt.Printf("%s: ", "ENTER YOUR USERNAME")
@@ -214,7 +215,7 @@ func ProposeContractPrompt(contractor *solar.Entity) error {
 	PrintProject(rContract)
 	if rContract.Index == 0 || rContract.Stage != 1 {
 		// prevent people form porposing contracts for non originated contracts
-		return fmt.Errorf("Invalid contract index")
+		return errors.New("Invalid contract index")
 	}
 	panelSize := rContract.PanelSize
 	location := rContract.Location

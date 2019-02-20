@@ -1,8 +1,7 @@
 package opensolar
 
 import (
-	"fmt"
-	"log"
+	"github.com/pkg/errors"
 
 	database "github.com/YaleOpenLab/openx/database"
 	utils "github.com/YaleOpenLab/openx/utils"
@@ -30,7 +29,7 @@ func (contractor *Entity) Propose(panelSize string, totalValue float64, location
 
 	indexCheck, err := RetrieveAllProjects()
 	if err != nil {
-		return pc, fmt.Errorf("Projects could not be retrieved!")
+		return pc, errors.New("Projects could not be retrieved!")
 	}
 	pc.Index = len(indexCheck) + 1
 	pc.PanelSize = panelSize
@@ -41,7 +40,7 @@ func (contractor *Entity) Propose(panelSize string, totalValue float64, location
 	pc.DateInitiated = utils.Timestamp()
 	iRecipient, err := database.RetrieveRecipient(recIndex)
 	if err != nil {
-		return pc, err
+		return pc, errors.Wrap(err, "couldn't retrieve recipient from db")
 	}
 	pc.RecipientIndex = iRecipient.U.Index
 	pc.Stage = 2 // 2 since we need to filter this out while retrieving the propsoed contracts
@@ -72,20 +71,17 @@ func (contractor *Entity) Slash(contractValue float64) error {
 func RepInstalledProject(contrIndex int, projIndex int) error {
 	contractor, err := RetrieveEntity(contrIndex)
 	if err != nil {
-		log.Println(err)
-		return err
+		return errors.Wrap(err, "couldn't retrieve all entities from db")
 	}
 
 	project, err := RetrieveProject(projIndex)
 	if err != nil {
-		log.Println(err)
-		return err
+		return errors.Wrap(err, "couldn't retrieve project from db")
 	}
 
 	err = project.SetInstalledProjectStage()
 	if err != nil {
-		log.Println(err)
-		return err
+		return errors.Wrap(err, "couldn't set installed project's stage")
 	}
 
 	contractor.U.Reputation += project.TotalValue * ContractorWeight

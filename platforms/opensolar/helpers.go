@@ -1,7 +1,7 @@
 package opensolar
 
 import (
-	"fmt"
+	"github.com/pkg/errors"
 )
 
 // findInKey finds a project within an array of projects, given a key or index
@@ -12,5 +12,5 @@ func findInKey(key int, arr []Project) (Project, error) {
 			return elem, nil
 		}
 	}
-	return dummy, fmt.Errorf("Not found")
+	return dummy, errors.New("Not found")
 }

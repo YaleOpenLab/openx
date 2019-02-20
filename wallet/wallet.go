@@ -1,7 +1,7 @@
 package wallet
 
 import (
-	"fmt"
+	"github.com/pkg/errors"
 	"log"
 
 	aes "github.com/YaleOpenLab/openx/aes"
@@ -29,7 +29,7 @@ func StoreSeed(seed string, password string, path string) error {
 	// these can store the file ion any path passed to them
 	err := aes.EncryptFile(path, []byte(seed), password)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "could not encrypt file")
 	}
 	_, err = aes.DecryptFile(path, password)
 	return err
@@ -42,11 +42,11 @@ func RetrieveSeed(path string, password string) (string, string, error) {
 	var seed string
 	data, err := aes.DecryptFile(path, password)
 	if err != nil {
-		return publicKey, seed, err
+		return publicKey, seed, errors.Wrap(err, "could not decrypt file")
 	}
 	seed = string(data)
 	keyp, err := keypair.Parse(seed)
-	return keyp.Address(), seed, err
+	return keyp.Address(), seed, errors.Wrap(err, "could not parse seed to get keypair")
 }
 
 // RetrievePubkey restores the publicKey when passed a seed and stores the
@@ -55,7 +55,7 @@ func RetrieveAndStorePubkey(seed string, path string, password string) (string, 
 	var publicKey string
 	keyp, err := keypair.Parse(seed)
 	if err != nil {
-		return publicKey, err
+		return publicKey, errors.Wrap(err, "could not parse seed to get keypair")
 	} else {
 		publicKey = keyp.Address()
 	}
@@ -71,8 +71,8 @@ func DecryptSeed(encryptedSeed []byte, seedpwd string) (string, error) {
 
 func ReturnPubkey(seed string) (string, error) {
 	if len(seed) == 0 {
-		return seed, fmt.Errorf("Empty Seed passed!")
+		return seed, errors.New("Empty Seed passed!")
 	}
 	keyp, err := keypair.Parse(seed)
-	return keyp.Address(), err
+	return keyp.Address(), errors.Wrap(err, "could not parse seed to get keypair")
 }

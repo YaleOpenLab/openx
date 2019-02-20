@@ -2,8 +2,7 @@ package database
 
 import (
 	"encoding/json"
-	"fmt"
-	"log"
+	"github.com/pkg/errors"
 
 	assets "github.com/YaleOpenLab/openx/assets"
 	oracle "github.com/YaleOpenLab/openx/oracle"
@@ -52,8 +51,7 @@ func NewInvestor(uname string, pwd string, seedpwd string, Name string) (Investo
 	var err error
 	a.U, err = NewUser(uname, pwd, seedpwd, Name)
 	if err != nil {
-		log.Println("Error while creating a new user", err)
-		return a, err
+		return a, errors.Wrap(err, "error while creating a new user")
 	}
 	a.AmountInvested = float64(0)
 	err = a.Save()
@@ -67,8 +65,7 @@ func (a *Investor) AddEmail(email string) error {
 	a.U.Notification = true
 	err := a.U.Save()
 	if err != nil {
-		log.Println("Error while saving investor", err)
-		return err
+		return errors.Wrap(err, "error while saving investor")
 	}
 	return a.Save()
 }
@@ -84,8 +81,7 @@ func (a *Investor) Save() error {
 		b := tx.Bucket(InvestorBucket)
 		encoded, err := json.Marshal(a)
 		if err != nil {
-			log.Println("Error while marshaling json struct", err)
-			return err
+			return errors.Wrap(err, "error while marshaling json struct")
 		}
 		return b.Put([]byte(utils.ItoB(a.U.Index)), encoded)
 	})
@@ -97,7 +93,7 @@ func RetrieveInvestor(key int) (Investor, error) {
 	var inv Investor
 	db, err := OpenDB()
 	if err != nil {
-		return inv, err
+		return inv, errors.Wrap(err, "failed to open db")
 	}
 	defer db.Close()
 	err = db.View(func(tx *bolt.Tx) error {
@@ -105,8 +101,7 @@ func RetrieveInvestor(key int) (Investor, error) {
 		x := b.Get(utils.ItoB(key))
 		if x == nil {
 			// no investor with the specific details
-			log.Println("No investor found with required credentials")
-			return fmt.Errorf("No investor found with required credentials")
+			return errors.New("No investor found with required credentials")
 		}
 		return json.Unmarshal(x, &inv)
 	})
@@ -120,12 +115,12 @@ func RetrieveAllInvestors() ([]Investor, error) {
 	var arr []Investor
 	temp, err := RetrieveAllUsers()
 	if err != nil {
-		return arr, err
+		return arr, errors.Wrap(err, "failed to retrieve all users")
 	}
 	limit := len(temp) + 1
 	db, err := OpenDB()
 	if err != nil {
-		return arr, err
+		return arr, errors.Wrap(err, "failed to open db")
 	}
 	defer db.Close()
 
@@ -141,7 +136,7 @@ func RetrieveAllInvestors() ([]Investor, error) {
 			err := json.Unmarshal(x, &rInvestor)
 			if err != nil {
 				// error in unmarshalling this struct, error out
-				return err
+				return errors.Wrap(err, "failed to unmarshal json")
 			}
 			arr = append(arr, rInvestor)
 		}
@@ -156,7 +151,7 @@ func ValidateInvestor(name string, pwhash string) (Investor, error) {
 	var rec Investor
 	user, err := ValidateUser(name, pwhash)
 	if err != nil {
-		return rec, err
+		return rec, errors.Wrap(err, "failed to validate user")
 	}
 	return RetrieveInvestor(user.Index)
 }
@@ -210,7 +205,7 @@ func (a *Investor) CanInvest(targetBalance string) bool {
 func ChangeInvReputation(invIndex int, reputation float64) error {
 	a, err := RetrieveInvestor(invIndex)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to retrieve investor")
 	}
 	if reputation > 0 {
 		err = a.U.IncreaseReputation(reputation)
@@ -218,8 +213,7 @@ func ChangeInvReputation(invIndex int, reputation float64) error {
 		err = a.U.DecreaseReputation(reputation)
 	}
 	if err != nil {
-		log.Println("Error while changing reputation", err)
-		return err
+		return errors.Wrap(err, "Error while changing reputation")
 	}
 	return a.Save()
 }
@@ -227,7 +221,7 @@ func ChangeInvReputation(invIndex int, reputation float64) error {
 func TopReputationInvestors() ([]Investor, error) {
 	allInvestors, err := RetrieveAllInvestors()
 	if err != nil {
-		return allInvestors, err
+		return allInvestors, errors.Wrap(err, "failed to retrieve all investors")
 	}
 	for i, _ := range allInvestors {
 		for j, _ := range allInvestors {

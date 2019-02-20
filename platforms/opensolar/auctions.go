@@ -1,7 +1,7 @@
 package opensolar
 
 import (
-	"fmt"
+	"github.com/pkg/errors"
 )
 
 // Contract auctions are specific for public infrastructure and for projects with multiple stakeholders
@@ -34,7 +34,7 @@ type ContractAuction struct {
 func SelectContractBlind(arr []Project) (Project, error) {
 	var a Project
 	if len(arr) == 0 {
-		return a, fmt.Errorf("Empty array passed!")
+		return a, errors.New("Empty array passed!")
 	}
 	// array is not empty, min 1 elem
 	a = arr[0]
@@ -52,7 +52,7 @@ func SelectContractBlind(arr []Project) (Project, error) {
 func SelectContractVickrey(arr []Project) (Project, error) {
 	var winningContract Project
 	if len(arr) == 0 {
-		return winningContract, fmt.Errorf("Empty array passed!")
+		return winningContract, errors.New("Empty array passed!")
 	}
 	// array is not empty, min 1 elem
 	winningContract = arr[0]
@@ -88,7 +88,7 @@ func SelectContractVickrey(arr []Project) (Project, error) {
 func SelectContractTime(arr []Project) (Project, error) {
 	var a Project
 	if len(arr) == 0 {
-		return a, fmt.Errorf("Empty array passed!")
+		return a, errors.New("Empty array passed!")
 	}
 
 	a = arr[0]

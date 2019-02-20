@@ -2,7 +2,7 @@ package xlm
 
 import (
 	"encoding/json"
-	"fmt"
+	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
 
@@ -40,10 +40,10 @@ func GetAccountData(a string) ([]byte, error) {
 	var data []byte
 	resp, err := http.Get(TestNetClient.URL + "/accounts/" + a)
 	if err != nil {
-		return data, err
+		return data, errors.Wrap(err, "could not get /accounts/ endpoint from API")
 	}
 	if resp.Status != "200 OK" {
-		return data, fmt.Errorf("Request did not succeed")
+		return data, errors.New("Request did not succeed")
 	}
 
 	defer resp.Body.Close()
@@ -58,12 +58,12 @@ func GetNativeBalance(publicKey string) (string, error) {
 	if err != nil {
 		// error where account does not exist at all
 		// so don't return error and hope its caught later on
-		return balance, fmt.Errorf("Account does not exist yet, get funds!")
+		return balance, errors.New("Account does not exist yet, get funds!")
 	}
 	var x protocols.Account
 	err = json.Unmarshal(b, &x)
 	if err != nil {
-		return balance, err
+		return balance, errors.Wrap(err, "could not unmarshal data")
 	}
 	for _, balance := range x.Balances {
 		if balance.Asset.Type == "native" {
@@ -72,7 +72,7 @@ func GetNativeBalance(publicKey string) (string, error) {
 	}
 	// technically accounts on stellar can't exist without a balance, so it should
 	// never come here
-	return balance, fmt.Errorf("Native balance not found")
+	return balance, errors.New("Native balance not found")
 }
 
 func GetAssetBalance(publicKey string, assetName string) (string, error) {
@@ -80,19 +80,19 @@ func GetAssetBalance(publicKey string, assetName string) (string, error) {
 	var err error
 	b, err := GetAccountData(publicKey)
 	if err != nil {
-		return balance, err
+		return balance, errors.Wrap(err, "could not get account data")
 	}
 	var x protocols.Account
 	err = json.Unmarshal(b, &x)
 	if err != nil {
-		return balance, err
+		return balance, errors.Wrap(err, "could not unmarshal data")
 	}
 	for _, balance := range x.Balances {
 		if balance.Asset.Code == assetName {
 			return balance.Balance, nil
 		}
 	}
-	return balance, fmt.Errorf("Asset balance not found")
+	return balance, errors.New("Asset balance not found")
 }
 
 func GetAssetTrustLimit(publicKey string, assetName string) (string, error) {
@@ -100,19 +100,19 @@ func GetAssetTrustLimit(publicKey string, assetName string) (string, error) {
 	var err error
 	b, err := GetAccountData(publicKey)
 	if err != nil {
-		return balance, err
+		return balance, errors.Wrap(err, "could not get account data")
 	}
 	var x protocols.Account
 	err = json.Unmarshal(b, &x)
 	if err != nil {
-		return balance, err
+		return balance, errors.Wrap(err, "could not unmarshal data")
 	}
 	for _, balance := range x.Balances {
 		if balance.Asset.Code == assetName {
 			return balance.Limit, nil
 		}
 	}
-	return balance, fmt.Errorf("Asset limit not found")
+	return balance, errors.New("Asset limit not found")
 }
 
 // GetAllBalances calls the stellar testnet API to get all the balances associated
@@ -120,7 +120,7 @@ func GetAssetTrustLimit(publicKey string, assetName string) (string, error) {
 func GetAllBalances(publicKey string) ([]horizon.Balance, error) {
 	account, err := TestNetClient.LoadAccount(publicKey)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "could not load account")
 	}
 	return account.Balances, nil
 }

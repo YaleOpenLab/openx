@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
+	"github.com/pkg/errors"
 	"log"
 
 	database "github.com/YaleOpenLab/openx/database"
@@ -75,7 +75,7 @@ func GetProjectIndex(assetName string) (int, error) {
 			return elem.Index, nil
 		}
 	}
-	return -1, fmt.Errorf("Not found")
+	return -1, errors.New("Not found")
 }
 
 func ProjectPayback(recpIndex string, assetName string,
@@ -83,7 +83,7 @@ func ProjectPayback(recpIndex string, assetName string,
 	// retrieve project index
 	projIndexI, err := GetProjectIndex(assetName)
 	if err != nil {
-		return fmt.Errorf("Couldn't pay")
+		return errors.New("Couldn't pay")
 	}
 	projIndex := utils.ItoS(projIndexI)
 	data, err := rpc.GetRequest(ApiUrl + "/recipient/payback?" + "recpIndex=" + recpIndex +
@@ -101,7 +101,7 @@ func ProjectPayback(recpIndex string, assetName string,
 		ColorOutput("PAID!", GreenColor)
 		return nil
 	}
-	return fmt.Errorf("Errored out")
+	return errors.New("Errored out")
 }
 
 func RetrieveProject(stage float64) ([]solar.Project, error) {

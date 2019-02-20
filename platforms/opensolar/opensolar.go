@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"time"
 
-	notif "github.com/YaleOpenLab/openx/notif"
 	consts "github.com/YaleOpenLab/openx/consts"
+	notif "github.com/YaleOpenLab/openx/notif"
 	platform "github.com/YaleOpenLab/openx/platforms"
 )
 
