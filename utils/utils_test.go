@@ -97,7 +97,7 @@ func TestUtils(t *testing.T) {
 	}
 
 	usr, err := user.Current()
-	if usr.HomeDir != hd {
+	if usr.HomeDir != hd || err != nil {
 		t.Fatalf("Home directories don't match, quitting!")
 	}
 

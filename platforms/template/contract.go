@@ -10,4 +10,4 @@ package template
 // Ensure all errors are caught and comments are made everywhere on how the platform functions at each stage.
 // if you could draft a doc like the one in the opensolar README, it would help readers understand better
 // what the platform is trying to achieve and whawt the various layers involved are.
-// Also make sure you write tests so you can be sure that the paltform behaves like you want it to.
+// Also make sure you write tests so you can be sure that the platform behaves like you want it to.

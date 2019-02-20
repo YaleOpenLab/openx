@@ -80,7 +80,7 @@ func TestDb(t *testing.T) {
 	}
 	_, err = RetrieveAllEntities("guarantor")
 	if err == nil {
-		t.Fatalf("Can retreive contract entities from invalid db, quitting!")
+		t.Fatalf("Can retrieve contract entities from invalid db, quitting!")
 	}
 	_, err = RetrieveEntity(1)
 	if err == nil {
@@ -223,7 +223,7 @@ func TestDb(t *testing.T) {
 		t.Errorf("Retrieving project from the database failed")
 		// again, shouldn't really fat a here, but we're in main
 	}
-	klx1, err := RetrieveProject(1000)
+	klx1, _ := RetrieveProject(1000)
 	if klx1.Index != 0 {
 		t.Fatalf("REtrieved project which does not exist, quitting!")
 	}
@@ -259,7 +259,7 @@ func TestDb(t *testing.T) {
 		log.Println(err)
 		t.Errorf("Deleting an order from the db failed")
 	}
-	// err = DeleteProject(1000) this would work becuase the key will not be found and hence would not return an error
+	// err = DeleteProject(1000) this would work because the key will not be found and hence would not return an error
 	pp1, err := RetrieveProject(dummy.Index)
 	if err == nil && pp1.Index != 0 {
 		log.Println(err)
@@ -305,7 +305,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	acz1, err := RetrieveAllEntities("random")
+	acz1, _ := RetrieveAllEntities("random")
 	if len(acz1) != 0 {
 		log.Println(acz1)
 		t.Fatalf("Category which does not exist exists?")
@@ -361,7 +361,7 @@ func TestDb(t *testing.T) {
 	}
 
 	// now come the failure cases which should fail and we shall catch the case when they don't
-	allPCs, err = RetrieveContractorProjects(ProposedProject, 2)
+	allPCs, _ = RetrieveContractorProjects(ProposedProject, 2)
 	if len(allPCs) != 0 {
 		log.Println("LEBNGRG: ", len(allPCs))
 		t.Fatalf("Retrieving a missing contract succeeds, quitting!")
@@ -467,7 +467,7 @@ func TestDb(t *testing.T) {
 	}
 
 	testProject.Stage = 5
-	err = testProject.Save()
+	_ = testProject.Save()
 	if testProject.Stage != 5 {
 		t.Fatalf("Stage doesn't match, quitting!")
 	}
@@ -569,8 +569,7 @@ func TestDb(t *testing.T) {
 		sc1[3]: YEARS: 3, PRICE: 14000
 	*/
 	var arrx []Project // (6, 28000), (3, 14000)
-	arrx = append(arr, sc1[1])
-	arrx = append(arr, sc1[0])
+	arrx = append(arr, sc1[1], sc1[0])
 	_, err = SelectContractTime(arrx)
 	if err != nil {
 		t.Fatal(err)

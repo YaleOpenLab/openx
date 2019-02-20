@@ -29,7 +29,7 @@ type Recipient struct {
 	// but we need it on the IoT Hub side to check login stuff
 	DeviceStarts []string
 	// the start time of the devices recorded for reference. We could monitor unscheduled
-	// closes on the platfrom level as well and send email notifications or similar
+	// closes on the platform level as well and send email notifications or similar
 	DeviceLocation string
 	// the location of the device. Teller gets location using google's geolocation
 	// API. Accuracy is of the order ~1km radius. Not great, but enough to detect
@@ -168,8 +168,8 @@ func TopReputationRecipient() ([]Recipient, error) {
 	if err != nil {
 		return allRecipients, errors.Wrap(err, "failed to retrieve all recipients")
 	}
-	for i, _ := range allRecipients {
-		for j, _ := range allRecipients {
+	for i := range allRecipients {
+		for j := range allRecipients {
 			if allRecipients[i].U.Reputation > allRecipients[j].U.Reputation {
 				tmp := allRecipients[i]
 				allRecipients[i] = allRecipients[j]

@@ -35,7 +35,6 @@ import (
 func InitStableCoin() error {
 	var publicKey string
 	var seed string
-	var err error
 	// now we can be sure we have the directory, check for seed
 	if _, err := os.Stat(consts.StableCoinSeedFile); !os.IsNotExist(err) {
 		// the seed exists
@@ -46,6 +45,10 @@ func InitStableCoin() error {
 			return err
 		}
 		publicKey, seed, err = wallet.RetrieveSeed(consts.StableCoinSeedFile, password)
+		// catch error here due to scope sharing
+		if err != nil {
+			return err
+		}
 	} else {
 		fmt.Println("Enter a password to encrypt your stablecoin's master seed. Please store this in a very safe place. This prompt will not ask to confirm your password")
 		password, err := scan.ScanRawPassword()
@@ -53,16 +56,19 @@ func InitStableCoin() error {
 			return err
 		}
 		publicKey, seed, err = wallet.NewSeed(consts.StableCoinSeedFile, password)
+		if err != nil {
+			return err
+		}
 		err = xlm.GetXLM(publicKey)
+		if err != nil {
+			return err
+		}
 	}
 	// the user doesn't have seed, so create a new platform
-	if err != nil {
-		return err
-	}
 	consts.StablecoinPublicKey = publicKey
 	consts.StablecoinSeed = seed
 	go ListenForPayments()
-	return err
+	return nil
 }
 
 // ListenForPayments listens for payments to the stablecoin account and once it

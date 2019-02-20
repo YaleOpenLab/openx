@@ -126,7 +126,6 @@ func RetrieveContractorProjects(stage float64, index int) ([]Project, error) {
 				arr = append(arr, rProject)
 			}
 		}
-		return nil
 	})
 	return arr, err
 }
@@ -155,7 +154,6 @@ func RetrieveOriginatorProjects(stage float64, index int) ([]Project, error) {
 				arr = append(arr, rProject)
 			}
 		}
-		return nil
 	})
 	return arr, err
 }
@@ -184,7 +182,6 @@ func RetrieveRecipientProjects(stage float64, index int) ([]Project, error) {
 				arr = append(arr, rProject)
 			}
 		}
-		return nil
 	})
 	return arr, err
 }

@@ -132,7 +132,6 @@ func RetrieveAllUsersWithoutKyc() ([]User, error) {
 				arr = append(arr, rUser)
 			}
 		}
-		return nil
 	})
 	return arr, err
 }
@@ -161,7 +160,6 @@ func RetrieveAllUsersWithKyc() ([]User, error) {
 				arr = append(arr, rUser)
 			}
 		}
-		return nil
 	})
 	return arr, err
 }
@@ -189,7 +187,6 @@ func RetrieveAllUsers() ([]User, error) {
 			}
 			arr = append(arr, rUser)
 		}
-		return nil
 	})
 	return arr, err
 }
@@ -254,6 +251,9 @@ func (a *User) GenKeys(seedpwd string) error {
 	}
 	// don't store the seed in the database
 	a.EncryptedSeed, err = aes.Encrypt([]byte(seed), seedpwd)
+	if err != nil {
+		return errors.Wrap(err, "error while encrypting seed")
+	}
 	err = a.Save()
 	return err
 }
@@ -352,8 +352,8 @@ func TopReputationUsers() ([]User, error) {
 	if err != nil {
 		return allUsers, errors.Wrap(err, "error while retrieving all users from database")
 	}
-	for i, _ := range allUsers {
-		for j, _ := range allUsers {
+	for i := range allUsers {
+		for j := range allUsers {
 			if allUsers[i].Reputation > allUsers[j].Reputation {
 				tmp := allUsers[i]
 				allUsers[i] = allUsers[j]

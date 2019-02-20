@@ -19,7 +19,7 @@ import (
 // its own pubkey and seed pair
 // InitializePlatform returns the platform publickey and seed
 // We have a new model in which we have a new seed for every project that is
-// advertised on the platform. The way this would wokr is that it sets up the assets,
+// advertised on the platform. The way this would work is that it sets up the assets,
 // and then we freeze the account to freeze issuance. This would mean we would no longer
 // be able to transact with the account although people can still send funds to it
 // in this case, they would send us back DebtAssets provided they have sufficient

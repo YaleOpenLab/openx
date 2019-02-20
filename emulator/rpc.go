@@ -19,7 +19,7 @@ func PingRpc() error {
 		return err
 	}
 	var x rpc.StatusResponse
-	// now data is in byte, we need the other strucutre now
+	// now data is in byte, we need the other structure now
 	err = json.Unmarshal(data, &x)
 	if err != nil {
 		return err
@@ -516,7 +516,7 @@ func InvestInOpzoneCBond(projIndex string, amount string, username string, pwhas
 	if err != nil {
 		return x, err
 	}
-	// RETUNS FALSE, SEE WHY
+	// RETURNS FALSE, SEE WHY
 	return x, nil
 }
 
@@ -531,7 +531,7 @@ func InvestInLivingUnitCoop(projIndex string, amount string, username string, pw
 	if err != nil {
 		return x, err
 	}
-	// RETUNS FALSE, SEE WHY
+	// RETURNS FALSE, SEE WHY
 	return x, nil
 }
 

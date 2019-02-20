@@ -237,7 +237,7 @@ func InsertDummyData() error {
 		log.Fatal(err)
 	}
 
-	demoOrig, err := solar.NewOriginator("MIT Digital Curreny Initiative", "p", "x", "MIT DCI", "MIT Building E14-15", "The MIT Media Lab's Digital Currency Initiative")
+	demoOrig, err := solar.NewOriginator("MIT Digital Currency Initiative", "p", "x", "MIT DCI", "MIT Building E14-15", "The MIT Media Lab's Digital Currency Initiative")
 	if err != nil {
 		log.Fatal(err)
 	}

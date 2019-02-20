@@ -38,7 +38,7 @@ func Decrypt(data []byte, passphrase string) ([]byte, error) {
 	key := []byte(tempParam[96:128]) // last 32 characters in hash
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		return data, errors.Wrap(err, "Error while initalizing new cipher")
+		return data, errors.Wrap(err, "Error while initializing new cipher")
 	}
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {

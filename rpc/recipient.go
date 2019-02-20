@@ -37,7 +37,7 @@ func setupRecipientRPCs() {
 	storeStateHash()
 }
 
-// parseRecipient parses a recipient from the passed form data and returns a recipient strucutre if
+// parseRecipient parses a recipient from the passed form data and returns a recipient structure if
 // the form data passed was accurate
 func parseRecipient(r *http.Request) (database.Recipient, error) {
 	var prepRecipient database.Recipient

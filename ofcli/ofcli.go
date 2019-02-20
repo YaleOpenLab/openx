@@ -173,7 +173,7 @@ func main() {
 				break
 			case 2:
 				// validateRecipient RPC
-				// retrieve again to get changes that may have occured in between
+				// retrieve again to get changes that may have occurred in between
 				recipient, err = database.RetrieveRecipient(recipient.U.Index)
 				if err != nil {
 					log.Println(err)

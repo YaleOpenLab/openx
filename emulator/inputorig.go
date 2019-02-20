@@ -33,7 +33,6 @@ func LoopOrig(rl *readline.Instance) error {
 			return errors.Wrap(err, "could not parse user input")
 		}
 	}
-	return nil
 }
 
 func ParseInputOrig(input []string) error {

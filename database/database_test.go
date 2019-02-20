@@ -189,7 +189,7 @@ func TestDb(t *testing.T) {
 	}
 	x.Close()
 	InspectorBucket = []byte("Inspector")
-	// even though we set the names back to their originals above, ahve this snippet
+	// even though we set the names back to their originals above, have this snippet
 	// here so that its easier to audit the tests without having to worry about
 	// typos while setting the bucket names back to what they were
 	CoopBucket = []byte("Coop")
@@ -210,7 +210,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	xc, err := RetrieveAllInvestors()
+	xc, _ := RetrieveAllInvestors()
 	if len(xc) != 1 {
 		t.Fatalf("ERROR!")
 	}
@@ -260,7 +260,7 @@ func TestDb(t *testing.T) {
 		t.Fatalf("Usernames don't match. quitting!")
 	}
 
-	tmpuser, err := RetrieveUser(1000)
+	tmpuser, _ := RetrieveUser(1000)
 	if tmpuser.Index != 0 {
 		t.Fatalf("Investor shouldn't exist, but does, quitting!")
 	}

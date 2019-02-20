@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"github.com/pkg/errors"
+	"log"
 
 	database "github.com/YaleOpenLab/openx/database"
 	platform "github.com/YaleOpenLab/openx/platforms"

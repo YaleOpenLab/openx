@@ -222,7 +222,6 @@ func (project *LivingUnitCoop) sendDeveloperNotification() error {
 	recipient, err := database.RetrieveRecipient(project.RecipientIndex)
 	if err != nil {
 		return errors.Wrap(err, "couldn't retrieve recipient from db")
-		return err
 	}
 	notif.SendUnlockNotifToRecipient(project.Index, recipient.U.Email)
 	return nil

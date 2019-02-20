@@ -235,7 +235,7 @@ func newEntity(uname string, pwd string, seedpwd string, Name string, Address st
 func ChangeReputation(entityIndex int, reputation float64) error {
 	a, err := RetrieveEntity(entityIndex)
 	if err != nil {
-		return errors.Wrap(err, "couldn't retreive entity from db")
+		return errors.Wrap(err, "couldn't retrieve entity from db")
 	}
 	if reputation > 0 {
 		err = a.U.IncreaseReputation(reputation)
@@ -254,8 +254,8 @@ func TopReputationEntitiesWithoutRole() ([]Entity, error) {
 	if err != nil {
 		return allEntities, errors.Wrap(err, "couldn't retrieve all entities without role")
 	}
-	for i, _ := range allEntities {
-		for j, _ := range allEntities {
+	for i := range allEntities {
+		for j := range allEntities {
 			if allEntities[i].U.Reputation < allEntities[j].U.Reputation {
 				tmp := allEntities[i]
 				allEntities[i] = allEntities[j]
@@ -273,8 +273,8 @@ func TopReputationEntities(role string) ([]Entity, error) {
 	if err != nil {
 		return allEntities, errors.Wrap(err, "couldn't retrieve all entities")
 	}
-	for i, _ := range allEntities {
-		for j, _ := range allEntities {
+	for i := range allEntities {
+		for j := range allEntities {
 			if allEntities[i].U.Reputation < allEntities[j].U.Reputation {
 				tmp := allEntities[i]
 				allEntities[i] = allEntities[j]

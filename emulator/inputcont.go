@@ -33,7 +33,6 @@ func LoopCont(rl *readline.Instance) error {
 			return errors.Wrap(err, "could not parse input")
 		}
 	}
-	return nil
 }
 
 func ParseInputCont(input []string) error {

@@ -60,12 +60,10 @@ func RepOriginatedProject(origIndex int, projIndex int) error {
 	originator, err := RetrieveEntity(origIndex)
 	if err != nil {
 		return errors.Wrap(err, "couldn't retrieve entity from db")
-		return err
 	}
 	project, err := RetrieveProject(projIndex)
 	if err != nil {
 		return errors.Wrap(err, "couldn't retrieve project from db")
-		return err
 	}
 	return originator.U.IncreaseReputation(project.TotalValue * OriginatorWeight)
 }

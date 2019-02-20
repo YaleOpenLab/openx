@@ -58,7 +58,7 @@ func CheckDeviceID() error {
 		file.Close()
 		err = SetDeviceId(LocalRecipient.U.Username, LocalRecipient.U.Pwhash, deviceId)
 		if err != nil {
-			return errors.Wrap(err, "coudl not store device id in remote platform")
+			return errors.Wrap(err, "could not store device id in remote platform")
 		}
 	}
 	return nil

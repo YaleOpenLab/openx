@@ -23,7 +23,7 @@ const (
 	StatusServiceUnavailable  = http.StatusServiceUnavailable  //  503 RFC 7231, 6.6.4
 )
 
-// responseHandler is teh default response handler that sends out response codes on successful
+// responseHandler is the default response handler that sends out response codes on successful
 // completion of certain calls
 func responseHandler(w http.ResponseWriter, r *http.Request, status int) {
 	var response StatusResponse

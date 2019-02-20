@@ -29,17 +29,17 @@ func TestXLM(t *testing.T) {
 		t.Fatal(err)
 	}
 	_, _, err = SendXLMCreateAccount(destPubKey, "2", "wrong seed")
-	// create the destiantion account by sendignb some coins to bootstrap
+	// create the destinations account by sendignb some coins to bootstrap
 	if err == nil {
 		t.Fatalf("Wrong seed, shouldn't work!")
 	}
 	_, _, err = SendXLMCreateAccount("wrong pubkey", "2", seed)
-	// create the destiantion account by sendignb some coins to bootstrap
+	// create the destinations account by sendignb some coins to bootstrap
 	if err == nil {
 		t.Fatalf("Wrong pubkey, shouldn't work!")
 	}
 	_, _, err = SendXLMCreateAccount(destPubKey, "2", seed)
-	// create the destiantion account by sendignb some coins to bootstrap
+	// create the destinations account by sendignb some coins to bootstrap
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -73,7 +73,7 @@ func TestXLM(t *testing.T) {
 	if err == nil {
 		t.Fatal("Not catching wrong pubkey error, quitting!")
 	}
-	// don't test the reverse becuase apparently there's some problem in catching the next block
+	// don't test the reverse because apparently there's some problem in catching the next block
 	// or something
 	testseed, pk, err := GetKeyPair()
 	if err != nil {

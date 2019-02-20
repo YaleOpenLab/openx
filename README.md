@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.com/YaleOpenLab/openx.svg?branch=master)](https://travis-ci.com/YaleOpenLab/openx)
 [![Codecov](https://codecov.io/gh/YaleOpenLab/openx/branch/master/graph/badge.svg)](https://codecov.io/gh/YaleOpenLab/openx)
+[![Go Report Card](https://goreportcard.com/badge/github.com/YaleOpenLab/openx)](https://goreportcard.com/report/github.com/YaleOpenLab/openx)
 
 This repo contains a WIP implementation of the OpenX platform of platforms idea in stellar. Broadly, the openx model seeks to implement the paradigm of investing without hassles and enabling smart ownership with the help of semi trusted entities on the blockchain. The openx model can be thought more generally as a platform of platforms and houses multiple platforms within it (in `platforms/`).  The goal is to have a common interface (where you complete KYC, authentication, etc) and to be able to invest in multiple assets. We use the help of the blockchain to have trustless proof of ownership and debt along with a publicly auditable source of data along with proofs. Currently there are two platforms housed within openx:
 
@@ -38,7 +39,7 @@ Running tests is simple with `go test` but the tests have flags since some requi
 ```
 go get golang.org/x/tools/cmd/cover
 ```
-if you already don't have the package. Running `go test --tags="all" -coverprofile=test.txt ./...` should run all the tests and provide coverage data on each specific pacakge. Running with the tag `travis` will omit the tests in `ipfs/` which requires [a local `go-ipfs` node running](https://michalzalecki.com/set-up-ipfs-node-on-the-server/) as described above.
+if you already don't have the package. Running `go test --tags="all" -coverprofile=test.txt ./...` should run all the tests and provide coverage data on each specific package. Running with the tag `travis` will omit the tests in `ipfs/` which requires [a local `go-ipfs` node running](https://michalzalecki.com/set-up-ipfs-node-on-the-server/) as described above.
 
 ## Dependency graph
 

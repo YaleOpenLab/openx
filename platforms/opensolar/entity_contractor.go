@@ -58,7 +58,7 @@ func (contractor *Entity) AddCollateral(amount float64, data string) error {
 	return contractor.Save()
 }
 
-// Slash slashes the contractor's reputation in teh event of bad behaviour.
+// Slash slashes the contractor's reputation in the event of bad behaviour.
 func (contractor *Entity) Slash(contractValue float64) error {
 	// slash an entity's reputation score if it reneges on an agreed contract
 	contractor.U.Reputation -= contractValue * 0.1
