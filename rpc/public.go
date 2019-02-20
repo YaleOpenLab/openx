@@ -7,6 +7,7 @@ import (
 	database "github.com/YaleOpenLab/openx/database"
 )
 
+// SnInvestor defines a sanitized investor
 type SnInvestor struct {
 	Name                  string
 	InvestedSolarProjects []string
@@ -17,6 +18,7 @@ type SnInvestor struct {
 	Reputation            float64
 }
 
+// SnRecipient defines a sanitized recipient
 type SnRecipient struct {
 	Name                  string
 	PublicKey             string
@@ -24,6 +26,7 @@ type SnRecipient struct {
 	Reputation            float64
 }
 
+// SnUser defines a sanitized user
 type SnUser struct {
 	Name       string
 	PublicKey  string

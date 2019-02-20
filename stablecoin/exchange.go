@@ -11,6 +11,7 @@ import (
 	xlm "github.com/YaleOpenLab/openx/xlm"
 )
 
+// Exchange exchanges xlm for STABLEUSD
 func Exchange(recipientPK string, recipientSeed string, convAmount string) error {
 
 	if !xlm.AccountExists(recipientPK) {
@@ -42,7 +43,7 @@ func Exchange(recipientPK string, recipientSeed string, convAmount string) error
 	return nil
 }
 
-// offer to exchange user's xlm balance for stableusd if the user does not have enough
+// OfferExchange offers to exchange user's xlm balance for stableusd if the user does not have enough
 // stableUSD to complete the payment
 func OfferExchange(publicKey string, seed string, invAmount string) error {
 

@@ -122,7 +122,7 @@ func updateState() {
 		// TODO: replace this with real data rather than fake data that we have here
 		// use rest api for ipfs since this may be too heavy to load on a pi. If not, we can shift
 		// this to the pi as well to achieve a s tate of good decentralization of information.
-		ipfsHash, err := GetIpfsHash("Device ID: " + DeviceId + " UPDATESTATE" + subcommand)
+		ipfsHash, err := ipfs.AddStringToIpfs("Device ID: " + DeviceId + " UPDATESTATE" + subcommand)
 		if err != nil {
 			log.Println("Error while fetching ipfs hash", err)
 			time.Sleep(consts.TellerPollInterval * time.Second)

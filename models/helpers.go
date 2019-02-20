@@ -14,6 +14,8 @@ import (
 
 // the models package won't be imported directly in any place but would be imported
 // by all the investment models that exist
+
+// SendUSDToPlatform sends STABLEUSD back to the platform for investment
 func SendUSDToPlatform(invSeed string, invAmount string, memo string) (string, error) {
 	// send stableusd to the platform (not the issuer) since the issuer will be locked
 	// and we can't use the funds. We also need ot be able to redeem the stablecoin for fiat

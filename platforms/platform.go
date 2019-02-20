@@ -28,6 +28,8 @@ import (
 // so that we act as a trustless entity, which is cool. This has to be done on the frontend preferably
 // the main platform still has its pubkey and seed pair and sends funds out to issuers
 // but is not directly involved in the setting up of trustlines
+
+// InitializePlatform starts the platform
 func InitializePlatform() error {
 	var publicKey string
 	var seed string

@@ -21,31 +21,37 @@ var (
 	DebtPaidOffStage      = float64(7) // Stage 7: The stage at which the recipient pays back for his solar panels
 )
 
+// SetPreOriginProject sets project stage to 0
 func (a *Project) SetPreOriginProject() error {
 	a.Stage = 0
 	return a.Save()
 }
 
+// SetLegalContractStage sets project stage to 0.5
 func (a *Project) SetLegalContractStage() error {
 	a.Stage = 0.5
 	return a.Save()
 }
 
+// SetOriginProject sets project stage to 1
 func (a *Project) SetOriginProject() error {
 	a.Stage = 1
 	return a.Save()
 }
 
+// SetOpenForMoneyStage sets project stage to 1.5
 func (a *Project) SetOpenForMoneyStage() error {
 	a.Stage = 1.5
 	return a.Save()
 }
 
+// SetProposedProject sets project stage to 2
 func (a *Project) SetProposedProject() error {
 	a.Stage = 2
 	return a.Save()
 }
 
+// SetFinalizedProject sets project stage to 3
 func (a *Project) SetFinalizedProject() error {
 	a.Stage = 3
 	a.Reputation = a.TotalValue // upgrade reputation since totalValue might have changed from the originated contract
@@ -57,11 +63,13 @@ func (a *Project) SetFinalizedProject() error {
 	return RepOriginatedProject(a.Originator.U.Index, a.Index) // modify originator reputation now that the final price is fixed
 }
 
+// SetFundedProject sets project stage to 4
 func (a *Project) SetFundedProject() error {
 	a.Stage = 4
 	return a.Save()
 }
 
+// SetInstalledProjectStage sets project stage to 5
 func (a *Project) SetInstalledProjectStage() error {
 	a.Stage = 5
 	err := a.Save()
@@ -91,6 +99,7 @@ func (a *Project) SetInstalledProjectStage() error {
 	return nil
 }
 
+// SetPowerGenerationStage sets project stage to 6
 func (a *Project) SetPowerGenerationStage() error {
 	a.Stage = 6
 	err := a.Save()

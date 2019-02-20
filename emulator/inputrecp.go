@@ -11,6 +11,8 @@ import (
 )
 
 // inputrecp.go contains all the relevant emulator commands for the recipient
+
+// LoopRecp
 func LoopRecp(rl *readline.Instance) error {
 	// This loop is exclusive to a recipient
 	for {
@@ -33,9 +35,9 @@ func LoopRecp(rl *readline.Instance) error {
 			return errors.Wrap(err, "could not parse user input")
 		}
 	}
-	return nil
 }
 
+// ParseInputRecp
 func ParseInputRecp(input []string) error {
 	var err error
 	// Various command supported for the recipient

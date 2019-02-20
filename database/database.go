@@ -19,15 +19,32 @@ import (
 // Recipients and Users, but can be expanded to contain even stages, if that's deemed
 // to be common across platforms
 // define the name of the buckets that we interact with.
+
+// ProjectsBucket
 var ProjectsBucket = []byte("Projects")
+
+// InvestorBucket
 var InvestorBucket = []byte("Investors")
+
+// RecipientBucket
 var RecipientBucket = []byte("Recipients")
+
+// ContractorBucket
 var ContractorBucket = []byte("Contractors")
+
+// UserBucket
 var UserBucket = []byte("Users")
+
+// BondBucket
 var BondBucket = []byte("Bonds")
+
+// CoopBucket
 var CoopBucket = []byte("Coop")
+
+// InspectorBucket
 var InspectorBucket = []byte("Inspector")
 
+// CreateHomeDir creates the home dir
 func CreateHomeDir() {
 	if _, err := os.Stat(consts.HomeDir); os.IsNotExist(err) {
 		// directory does not exist, create one
@@ -47,6 +64,8 @@ func CreateHomeDir() {
 
 // don't lock since boltdb can only process one operation at a time. As the application
 // grows bigger, this would be a major reason to search for a new db system
+
+// OpenDB opens the db
 func OpenDB() (*bolt.DB, error) {
 	// we need to check and create this directory if it doesn't exist
 	db, err := bolt.Open(consts.DbDir+"/yol.db", 0600, nil) // store this in its ownd database
@@ -100,10 +119,6 @@ func OpenDB() (*bolt.DB, error) {
 	return db, err
 }
 
-// DeleteProject deltes a given value corresponding to the ky from the database
-// DeleteProject should be used only in cases where something is wrong from our side
-// while creating an project. For other cases, we should set Live to False and edit
-// the project
 // DeleteKeyFromBucket deletes a given key from the bucket bucketName but doesn
 // not shift indices of elements succeeding the deleted element's index
 func DeleteKeyFromBucket(key int, bucketName []byte) error {

@@ -28,84 +28,91 @@ func setupParticleHandlers() {
 	getAllSims()
 }
 
-// define structs to parse the returned particle.io data
+// ParticleDevice is a structure to parse the returned particle.io data
 type ParticleDevice struct {
-	Id                      string `json:"id"`
-	Name                    string `json:"name"`
-	Last_app                string `json:"last_app"`
-	Last_ip_address         string `json:"last_ip_address"`
-	Product_id              int    `json:"product_id"`
-	Connected               bool   `json:"connected"`
-	Platform_id             int    `json:"platform_id"`
-	Cellular                bool   `json:"cellular"`
-	Notes                   string `json:"notes"`
-	Status                  string `json:"status"`
-	Serial_number           string `json:"serial_number"`
-	Current_build_target    string `json:"current_build_target"`
-	System_firmware_version string `json:"system_firmware_version"`
-	Default_build_target    string `json:"default_build_target"`
+	Id                    string `json:"id"`
+	Name                  string `json:"name"`
+	LastApp               string `json:"last_app"`
+	LastIPAddress         string `json:"last_ip_address"`
+	ProductID             int    `json:"product_id"`
+	Connected             bool   `json:"connected"`
+	PlatformID            int    `json:"platform_id"`
+	Cellular              bool   `json:"cellular"`
+	Notes                 string `json:"notes"`
+	Status                string `json:"status"`
+	SerialNumber          string `json:"serial_number"`
+	CurrentBuildTarget    string `json:"current_build_target"`
+	SystemFirmwareVersion string `json:"system_firmware_version"`
+	DefaultBuildTarget    string `json:"default_build_target"`
 }
 
+// ParticleProductDevice is a structure to parse returned particle.io data
 type ParticleProductDevice struct {
-	Id                                string   `json:"id"`
-	Product_id                        int      `json:"product_id"`
-	Last_ip_address                   string   `json:"last_ip_address"`
-	Last_handshake_at                 string   `json:"last_handshake_at"`
-	User_id                           string   `json:"user_id"`
-	Online                            bool     `json:"online"`
-	Name                              string   `json:"name"`
-	Platform_id                       int      `json:"platform_id"`
-	Firmware_product_id               int      `json:"firmware_product_id"`
-	Quarantined                       bool     `json:"quarantined"`
-	Denied                            bool     `json:"denied"`
-	Development                       bool     `json:"development"`
-	Groups                            []string `json:"groups"`
-	Targeted_firmware_release_version string   `json:"targeted_firmware_release_version"`
-	System_firmware_version           string   `json:"system_firmware_version"`
-	Serial_number                     string   `json:"serial_number"`
-	Owner                             string   `json:"owner"`
+	Id                             string   `json:"id"`
+	ProductID                      int      `json:"product_id"`
+	LastIPAddress                  string   `json:"last_ip_address"`
+	LastHandshakeAt                string   `json:"last_handshake_at"`
+	UserID                         string   `json:"user_id"`
+	Online                         bool     `json:"online"`
+	Name                           string   `json:"name"`
+	PlatformID                     int      `json:"platform_id"`
+	FirmwareProductID              int      `json:"firmware_product_id"`
+	Quarantined                    bool     `json:"quarantined"`
+	Denied                         bool     `json:"denied"`
+	Development                    bool     `json:"development"`
+	Groups                         []string `json:"groups"`
+	TargetedFirmwareReleaseVersion string   `json:"targeted_firmware_release_version"`
+	SystemFirmwareVersion          string   `json:"system_firmware_version"`
+	SerialNumber                   string   `json:"serial_number"`
+	Owner                          string   `json:"owner"`
 }
 
+// ParticleProductInfo is a structure to parse returned particle.io data
 type ParticleProductInfo struct {
 	Devices []ParticleProductDevice
 }
 
+// ParticlePingResponse is a structure to parse returned particle.io data
 type ParticlePingResponse struct {
 	Online bool `json:"online"`
 	Ok     bool `json:"ok"`
 }
 
+// SignalResponse is a structure to parse returned particle.io data
 type SignalResponse struct {
 	Id        string `json:"id"`
 	Connected bool   `json:"connected"`
 	Signaling bool   `json:"signaling"`
 }
 
+// SerialNumberResponse is a structure to parse returned particle.io data
 type SerialNumberResponse struct {
-	Ok          bool   `json:"ok"`
-	Device_id   string `json:"device_id"`
-	Platform_id int    `json:"platform_id"`
+	Ok         bool   `json:"ok"`
+	DeviceID   string `json:"device_id"`
+	PlatformID int    `json:"platform_id"`
 }
 
+// ParticleUser is a structure to parse returned particle.io data
 type ParticleUser struct {
-	Username         string   `json:"username"`
-	Subscription_ids []string `json:"subscription_ids"`
-	AccountInfo      struct {
-		First_name       string `json:"first_name"`
-		Last_name        string `json:"last_name"`
-		Company_name     string `json:"company_name"`
-		Business_account bool   `json:"business_account"`
+	Username        string   `json:"username"`
+	SubscriptionIds []string `json:"subscription_ids"`
+	AccountInfo     struct {
+		FirstName       string `json:"first_name"`
+		LastName        string `json:"last_name"`
+		CompanyName     string `json:"company_name"`
+		BusinessAccount bool   `json:"business_account"`
 	} `json:"account_info"`
-	Team_invites          []string `json:"team_invites"`
-	Wifi_device_count     int      `json:"wifi_device_count"`
-	Cellular_device_count int      `json:"cellular_device_count"`
+	TeamInvites         []string `json:"team_invites"`
+	WifiDeviceCount     int      `json:"wifi_device_count"`
+	CellularDeviceCount int      `json:"cellular_device_count"`
 }
 
+// ParticleEventStream is a structure to parse returned particle.io data
 type ParticleEventStream struct {
-	Data         string `json:"data"`
-	Ttl          string `json:"ttl"`
-	Published_at string `json:"published_at"`
-	Coreid       string `json:"coreid"`
+	Data        string `json:"data"`
+	Ttl         string `json:"ttl"`
+	PublishedAt string `json:"published_at"`
+	Coreid      string `json:"coreid"`
 }
 
 // GetAndSendJson is a handler that makes a get request and returns json data

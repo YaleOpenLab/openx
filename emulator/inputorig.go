@@ -11,6 +11,8 @@ import (
 )
 
 // inputorig.go contains all the relevant emulator commands for the originator
+
+// LoopOrig loops over originator input
 func LoopOrig(rl *readline.Instance) error {
 	// This loop is exclusive to an originator
 	for {
@@ -35,6 +37,7 @@ func LoopOrig(rl *readline.Instance) error {
 	}
 }
 
+// ParseInputOrig parses orig input
 func ParseInputOrig(input []string) error {
 	var err error
 	// Various command supported for the recipient

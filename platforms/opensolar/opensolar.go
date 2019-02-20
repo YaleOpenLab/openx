@@ -17,6 +17,8 @@ import (
 // of the opensolar platform, this is a solar system.
 
 // TODO: add more parameters here that would help identify a given solar project
+
+// Project defines the project struct
 type Project struct {
 	Index int // an Index to keep quick track of how many projects exist
 
@@ -91,7 +93,7 @@ type Project struct {
 	/// provide users with a predefined list of payback periods periods
 }
 
-// import handlers from the main platform struct that are necessary for starting the platform
+// InitializePlatform imports handlers from the main platform struct that are necessary for starting the platform
 func InitializePlatform() error {
 	return platform.InitializePlatform()
 }

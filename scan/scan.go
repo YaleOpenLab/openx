@@ -16,6 +16,7 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
+// ScanForInt scans for an integer
 func ScanForInt() (int, error) {
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Scan()
@@ -30,6 +31,7 @@ func ScanForInt() (int, error) {
 	return numI, nil
 }
 
+// ScanForFloat scans for a float
 func ScanForFloat() (float64, error) {
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Scan()
@@ -42,6 +44,7 @@ func ScanForFloat() (float64, error) {
 	return x, err
 }
 
+// ScanForString scans for a string
 func ScanForString() (string, error) {
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Scan()
@@ -52,6 +55,7 @@ func ScanForString() (string, error) {
 	return inputString, nil
 }
 
+// ScanForStringWithCheckI scans for a string checking whether it is an integer
 func ScanForStringWithCheckI() (string, error) {
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Scan()
@@ -66,6 +70,7 @@ func ScanForStringWithCheckI() (string, error) {
 	return inputString, nil
 }
 
+// ScanForStringWithCheckF scans for a string checking whether its a float
 func ScanForStringWithCheckF() (string, error) {
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Scan()
@@ -80,6 +85,7 @@ func ScanForStringWithCheckF() (string, error) {
 	return inputString, nil
 }
 
+// ScanForPassword scans for a password
 func ScanForPassword() (string, error) {
 	bytePassword, err := terminal.ReadPassword(int(syscall.Stdin))
 	fmt.Println()
@@ -91,6 +97,7 @@ func ScanForPassword() (string, error) {
 	return hashedPassword, nil
 }
 
+// ScanRawPassword scans for a raw password
 func ScanRawPassword() (string, error) {
 	bytePassword, err := terminal.ReadPassword(int(syscall.Stdin))
 	fmt.Println()

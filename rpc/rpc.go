@@ -14,6 +14,8 @@ import (
 )
 
 // API documentation over at the apidocs repo
+
+// StatusResponse defines a generic status reponse structure
 type StatusResponse struct {
 	Code   int
 	Status string
@@ -29,6 +31,7 @@ func setupBasicHandlers() {
 	setupPingHandler()
 }
 
+// WriteToHandler constructs a reply to the passed writer
 func WriteToHandler(w http.ResponseWriter, jsonString []byte) {
 	w.Header().Add("Access-Control-Allow-Headers", "Accept, Authorization, Cache-Control, Content-Type")
 	w.Header().Add("Access-Control-Allow-Methods", "*")

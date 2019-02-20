@@ -62,6 +62,7 @@ func SendInvestmentNotifToRecipient(projIndex int, to string, recpPbTrustHash st
 	return sendMail(body, to)
 }
 
+// SendInvestmentNotifToRecipientOZ sends a notification to the recipient as part of the opzones platform
 func SendInvestmentNotifToRecipientOZ(projIndex int, to string, recpDebtTrustHash string, recpDebtAssetHash string) error {
 	// this is sent to the recipient on investment from an investor
 	body := "Greetings from the opensolar platform! \n\n" +
@@ -89,6 +90,7 @@ func SendInvestmentNotifToInvestor(projIndex int, to string, stableHash string, 
 	return sendMail(body, to)
 }
 
+// SendSeedInvestmentNotifToInvestor sends a notification to the user after seed investment
 func SendSeedInvestmentNotifToInvestor(projIndex int, to string, stableHash string, trustHash string, assetHash string) error {
 	// this is sent to the investor on investment
 	// this should ideally contain all the information he needs for a concise proof of
@@ -129,7 +131,7 @@ func SendPaybackNotifToInvestor(projIndex int, to string, stableUSDHash string, 
 	return sendMail(body, to)
 }
 
-// SendPaybackNotifToInvestor sends a notification email to the investor when the recipient
+// SendUnlockNotifToRecipient sends a notification email to the investor when the recipient
 // pays back towards a particular order
 func SendUnlockNotifToRecipient(projIndex int, to string) error {
 	// this is sent to the investor on payback from an investor
@@ -142,6 +144,7 @@ func SendUnlockNotifToRecipient(projIndex int, to string) error {
 	return sendMail(body, to)
 }
 
+// SendUnlockNotifToRecipientOZ sends an unlock notification as part of the opzones platform
 func SendUnlockNotifToRecipientOZ(projIndex int, to string) error {
 	// this is sent to the investor on payback from an investor
 	body := "Greetings from the opzones platform! \n\n" +
@@ -153,6 +156,7 @@ func SendUnlockNotifToRecipientOZ(projIndex int, to string) error {
 	return sendMail(body, to)
 }
 
+// SendEmail is a hlper for the rpc to send an email to an entity
 func SendEmail(message string, to string, name string) error {
 	// we can't send emails directly since we would need their gmail usernames and password for that
 	startString := "Greetings from the opensolar platform! \n\n" +
@@ -161,6 +165,7 @@ func SendEmail(message string, to string, name string) error {
 	return sendMail(body, to)
 }
 
+// SendAlertEmail sends an alert email
 func SendAlertEmail(message string, to string) error {
 	startString := "Greetings from the opensolar platform! \n\n" +
 		"We're writing to let you know that you have received a message from the platform: \n\n\n" + message
@@ -168,7 +173,8 @@ func SendAlertEmail(message string, to string) error {
 	return sendMail(body, to)
 }
 
-// we don't know if the user has paid
+// SendPaybackAlertEmail sends a payback alert email. We don't know if the user has paid and send
+// this even if the user has paid / received a donation towards this month
 func SendPaybackAlertEmail(projIndex int, to string) error {
 	startString := "Greetings from the opensolar platform! \n\n" +
 		"This is a kind reminder to let you know that your payment is due this period for project numbered: " + utils.ItoS(projIndex) +
@@ -177,7 +183,7 @@ func SendPaybackAlertEmail(projIndex int, to string) error {
 	return sendMail(body, to)
 }
 
-// we know that the user is due in their payment
+// SendNicePaybackAlertEmail sends an email when the amount for 2 payment cycles is due
 func SendNicePaybackAlertEmail(projIndex int, to string) error {
 	startString := "Greetings from the opensolar platform! \n\n" +
 		"This is a kind reminder to let you know that your payment is due this period for project numbered: " + utils.ItoS(projIndex) +
@@ -186,6 +192,7 @@ func SendNicePaybackAlertEmail(projIndex int, to string) error {
 	return sendMail(body, to)
 }
 
+// SendSternPaybackAlertEmail sends an email when the amount for 4 payment cycles is due.
 func SendSternPaybackAlertEmail(projIndex int, to string) error {
 	startString := "Greetings from the opensolar platform! \n\n" +
 		"We're writing to let you know that your payment is due this period for project numbered: " + utils.ItoS(projIndex) +
@@ -194,6 +201,7 @@ func SendSternPaybackAlertEmail(projIndex int, to string) error {
 	return sendMail(body, to)
 }
 
+// SendDisconnectionEmail sends an email when the amount for 6 payment cycles is due
 func SendDisconnectionEmail(projIndex int, to string) error {
 	startString := "Greetings from the opensolar platform! \n\n" +
 		"We're writing to let you know that electricity produced from your project numbered: " + utils.ItoS(projIndex) +
@@ -202,6 +210,7 @@ func SendDisconnectionEmail(projIndex int, to string) error {
 	return sendMail(body, to)
 }
 
+// SendDisconnectionEmailI sends an email to the investor when the amount for 6 payment cycles is due on the recipient's end
 func SendDisconnectionEmailI(projIndex int, to string) error {
 	startString := "Greetings from the opensolar platform! \n\n" +
 		"We're writing to let you know that electricity produced from your project numbered: " + utils.ItoS(projIndex) +
@@ -212,6 +221,7 @@ func SendDisconnectionEmailI(projIndex int, to string) error {
 	return sendMail(body, to)
 }
 
+// SendSternPaybackAlertEmailI sends a stern payback email notification to the investor
 func SendSternPaybackAlertEmailI(projIndex int, to string) error {
 	startString := "Greetings from the opensolar platform! \n\n" +
 		"We're writing to let you know that we are aware that payments towards the project: " + utils.ItoS(projIndex) +
@@ -224,6 +234,7 @@ func SendSternPaybackAlertEmailI(projIndex int, to string) error {
 	return sendMail(body, to)
 }
 
+// SendSternPaybackAlertEmailG sends a stern payback email notification to the guarantor
 func SendSternPaybackAlertEmailG(projIndex int, to string) error {
 	startString := "Greetings from the opensolar platform! \n\n" +
 		"We're writing to let you know that we are aware that payments towards the project: " + utils.ItoS(projIndex) +
@@ -236,6 +247,7 @@ func SendSternPaybackAlertEmailG(projIndex int, to string) error {
 	return sendMail(body, to)
 }
 
+// SendSternPaybackAlertEmailG sends a disconnection email notification to the guarantor
 func SendDisconnectionEmailG(projIndex int, to string) error {
 	startString := "Greetings from the opensolar platform! \n\n" +
 		"We're writing to let you know that electricity produced from your project numbered: " + utils.ItoS(projIndex) +
@@ -249,6 +261,7 @@ func SendDisconnectionEmailG(projIndex int, to string) error {
 	return sendMail(body, to)
 }
 
+// SendContractNotification sends a notification after an entity signs a contract
 func SendContractNotification(Hash1 string, Hash2 string, Hash3 string, Hash4 string, Hash5 string, to string) error {
 	body := "Greetings from the opensolar platform! \n\n" +
 		"We're writing to let you know that you have signed a contract\n\n" +
@@ -262,6 +275,7 @@ func SendContractNotification(Hash1 string, Hash2 string, Hash3 string, Hash4 st
 	return sendMail(body, to)
 }
 
+// SendTellerShutdownEmail sends the platform an email notifying that the teller has shut down
 func SendTellerShutdownEmail(from string, projIndex string, deviceId string, tx1 string, tx2 string) error {
 	body := "Greetings from the remote teller " + deviceId + " installed for: " + from + " on behalf of project: " + projIndex + "\n\n" +
 		"We're writing to let you know that the teller has shut down and requires your immediate action. The proof of shutdown transactions " +
@@ -273,6 +287,7 @@ func SendTellerShutdownEmail(from string, projIndex string, deviceId string, tx1
 	return sendMail(body, consts.PlatformEmail)
 }
 
+// SendTellerPaymentFailedEmail is a notification ot the platform that the teller's payback routine has been disturbed
 func SendTellerPaymentFailedEmail(from string, projIndex string, deviceId string) error {
 	body := "Greetings from the remote teller " + deviceId + " installed for: " + from + " on behalf of project: " + projIndex + "\n\n" +
 		"We're writing to let you know that the teller encountered an error, didn't result in automatic payback and requires your immediate action. " +
@@ -281,8 +296,9 @@ func SendTellerPaymentFailedEmail(from string, projIndex string, deviceId string
 	return sendMail(body, consts.PlatformEmail)
 }
 
+// SendTellerDownEmail is an email to the platform notifying that the teller for a particular project is down.
 func SendTellerDownEmail(projIndex int, recpIndex int) error {
-	body := "Greetings from the opensolar platform! \n\n We're writing to let you know that remote teller " + utils.ItoS(projIndex) +
+	body := "Greetings from the opensolar platform! \n\nWe're writing to let you know that remote teller " + utils.ItoS(projIndex) +
 		" installed on behalf of recipient with index: " + utils.ItoS(recpIndex) + " has not been responding to pings for a while. Please take action at " +
 		"the earliest," + "\n\n\n" +
 		footerString

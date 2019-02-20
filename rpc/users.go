@@ -38,12 +38,15 @@ func setupUserRpcs() {
 }
 
 const (
+	// TellerUrl defines the teller URL to check. In future, would be an array
 	TellerUrl = "https://localhost"
 )
 
 // we want to pass to the caller whether the user is a recipient or an investor.
 // For this, we have an additional param called Role which we can use to classify
 // this information and return to the caller
+
+// ValidateParams
 type ValidateParams struct {
 	Role   string
 	Entity interface{}
@@ -123,7 +126,6 @@ func ValidateUser() {
 					log.Println("did not validate entity", err)
 					// not an investor, recipient or entity, error
 					responseHandler(w, r, StatusBadRequest)
-					return
 				} else {
 					entity = true
 				}
@@ -472,6 +474,7 @@ func uploadFile() {
 	})
 }
 
+// PlatformEmailResponse
 type PlatformEmailResponse struct {
 	Email string
 }

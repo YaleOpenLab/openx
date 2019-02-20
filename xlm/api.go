@@ -14,6 +14,7 @@ import (
 // xlm is a set of functions that interface with stellar-core without needing the
 // horizon API that stellar provides, which is incomplete
 
+// TestNetClient defines the horizon client to connect to
 var TestNetClient = &clients.Client{
 	URL: "http://35.192.122.229:8080",
 	// default URL:  "https://horizon-testnet.stellar.org",
@@ -49,6 +50,8 @@ type Ledger struct {
 }
 
 */
+
+// GetLedgerData gets the latest data from the ledger
 func GetLedgerData(blockNumber string) ([]byte, error) {
 	var err error
 	var data []byte
@@ -61,6 +64,7 @@ func GetLedgerData(blockNumber string) ([]byte, error) {
 	return data, err
 }
 
+// GetBlockHash gets the block hash corresponding to the passed block number
 func GetBlockHash(blockNumber string) (string, error) {
 	var err error
 	var hash string
@@ -75,6 +79,7 @@ func GetBlockHash(blockNumber string) (string, error) {
 	return hash, err
 }
 
+// GetLatestBlockHash gets the lastest block hash
 func GetLatestBlockHash() (string, error) {
 	url := TestNetClient.URL + "/ledgers?cursor=now&order=desc&limit=1"
 	resp, err := http.Get(url)

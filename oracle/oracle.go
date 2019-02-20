@@ -7,7 +7,7 @@ import (
 	utils "github.com/YaleOpenLab/openx/utils"
 )
 
-// PriceOracle returns the power tariffs and any data that we need to certify
+// MonthlyBill returns the power tariffs and any data that we need to certify
 // that is in the real world. Right now, this is hardcoded since we need to come up
 // with a construct to get the price data in a reliable way - this could be a website
 // were poeple erport this or certified authorities can timestamp this on chain
@@ -27,7 +27,7 @@ func MonthlyBill() string {
 	return avgString
 }
 
-// PriceOracleInFloat does the same thing as PriceOracle, but returns the data
+// MonthlyBillInFloat does the same thing as PriceOracle, but returns the data
 // as a float for use in appropriate places
 func MonthlyBillInFloat() float64 {
 	priceOfElectricity := 0.2
@@ -35,7 +35,7 @@ func MonthlyBillInFloat() float64 {
 	return priceOfElectricity * averageConsumption
 }
 
-// Oracle retrieves the current price of XLM/USD and then returns the USD amount
+// ExchangeXLMforUSD retrieves the current price of XLM/USD and then returns the USD amount
 // that the XLM deposited is worth and takes a percentage premium that emulates
 // how real world exchanges would behave. This fee is 0.01% for now
 func ExchangeXLMforUSD(amount string) float64 {

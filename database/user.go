@@ -13,6 +13,9 @@ import (
 
 // the user structure houses all entities that are of type "User". This contains
 // commonly used functions so that we need not repeat the ssame thing for every instance.
+
+// User is a metastrucutre that contains commonly used keys within a single umbrella
+// so that we can import it wherever needed.
 type User struct {
 	Index int
 	// default index, gets us easy stats on how many people are there
@@ -56,8 +59,7 @@ type User struct {
 	// a collection of assets that the user can own and trade locally using the emulator
 }
 
-// User is a metastrucutre that contains commonly used keys within a single umbrella
-// so that we can import it wherever needed.
+// NewUser creates a new user
 func NewUser(uname string, pwd string, seedpwd string, Name string) (User, error) {
 	// call this after the user has failled in username and password.
 	// Store hashed password in the database
@@ -90,7 +92,7 @@ func NewUser(uname string, pwd string, seedpwd string, Name string) (User, error
 	return a, err // since user is a meta structure, insert it and then return the function
 }
 
-// InsertUser inserts a passed User object into the database
+// Save inserts a passed User object into the database
 func (a *User) Save() error {
 	db, err := OpenDB()
 	if err != nil {
@@ -108,6 +110,7 @@ func (a *User) Save() error {
 	return err
 }
 
+// RetrieveAllUsersWithoutKyc retrieves all users without kyc
 func RetrieveAllUsersWithoutKyc() ([]User, error) {
 	var arr []User
 	db, err := OpenDB()
@@ -136,6 +139,7 @@ func RetrieveAllUsersWithoutKyc() ([]User, error) {
 	return arr, err
 }
 
+// RetrieveAllUsersWithKyc retrieves all users with kyc
 func RetrieveAllUsersWithKyc() ([]User, error) {
 	var arr []User
 	db, err := OpenDB()
@@ -210,6 +214,7 @@ func RetrieveUser(key int) (User, error) {
 	return inv, err
 }
 
+// ValidateUser validates a particular user
 func ValidateUser(name string, pwhash string) (User, error) {
 	var inv User
 	temp, err := RetrieveAllUsers()
@@ -242,6 +247,7 @@ func ValidateUser(name string, pwhash string) (User, error) {
 	return inv, err
 }
 
+// GenKeys generates a keypair for the user
 func (a *User) GenKeys(seedpwd string) error {
 	var err error
 	var seed string
@@ -258,6 +264,7 @@ func (a *User) GenKeys(seedpwd string) error {
 	return err
 }
 
+// GetSeed gets the seed from the encrypted seed
 func (a *User) GetSeed(seedpwd string) (string, error) {
 	return wallet.DecryptSeed(a.EncryptedSeed, seedpwd)
 }
@@ -307,6 +314,8 @@ func CheckUsernameCollision(uname string) error {
 // kickoff the kyc process.
 // MWTODO: what do we do with these KYC powers? what features are open and what can be
 // viewed only by going through KYC?
+
+// Authorize authorizes a user
 func (a *User) Authorize(userIndex int) error {
 	// we don't really mind who this user is since all we need to verify is his identity
 	if !a.Inspector {
@@ -324,6 +333,7 @@ func (a *User) Authorize(userIndex int) error {
 	return user.Save()
 }
 
+// AddInspector adds a kyc inspector
 func AddInspector(userIndex int) error {
 	// this should only be called by the platform itself and not open to others
 	user, err := RetrieveUser(userIndex)
@@ -335,16 +345,20 @@ func AddInspector(userIndex int) error {
 }
 
 // these two functions can be used as internal hnadlers and hte RPC can save reputation directly
+
+// IncreaseReputation increases reputation
 func (a *User) IncreaseReputation(reputation float64) error {
 	a.Reputation += reputation
 	return a.Save()
 }
 
+// IncreaseReputation decreases reputation
 func (a *User) DecreaseReputation(reputation float64) error {
 	a.Reputation -= reputation
 	return a.Save()
 }
 
+// TopReputationUsers gets the users with top reputation
 func TopReputationUsers() ([]User, error) {
 	// these reputation functions should mostly be used by the frontend through the
 	// RPC to display to other users what other users' reputation is.

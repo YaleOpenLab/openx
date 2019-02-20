@@ -10,6 +10,7 @@ import (
 	protocols "github.com/stellar/go/protocols/horizon"
 )
 
+// GetTransactionData gets tx data
 func GetTransactionData(txhash string) ([]byte, error) {
 	var err error
 	var data []byte
@@ -25,6 +26,7 @@ func GetTransactionData(txhash string) ([]byte, error) {
 	return data, err
 }
 
+// GetTransactionHeight gets tx height
 func GetTransactionHeight(txhash string) (int, error) {
 	var err error
 	var txheight int

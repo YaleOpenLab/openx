@@ -28,6 +28,7 @@ var opts struct {
 	Port int `short:"p" description:"The port on which the server runs on"`
 }
 
+// ParseConfig parses CLI parameters passed
 func ParseConfig(args []string) (string, error) {
 	_, err := flags.ParseArgs(&opts, args)
 	if err != nil {
@@ -41,6 +42,7 @@ func ParseConfig(args []string) (string, error) {
 	return port, nil
 }
 
+// StartPlatform starts the platform
 func StartPlatform() error {
 
 	database.CreateHomeDir()

@@ -1,3 +1,13 @@
+package assets
+
+import (
+	"log"
+
+	utils "github.com/YaleOpenLab/openx/utils"
+	xlm "github.com/YaleOpenLab/openx/xlm"
+	"github.com/stellar/go/build"
+)
+
 // package assets contains asset related functions like calculating AssetID and
 // sets up DebtAssets, PaybackAssets and InvestorAssets for a specific project that it has been
 // passed
@@ -34,15 +44,6 @@
 // on chain and the investor has to trust the issuer with that. Also, in this case,
 // anonymous investors wouldn't be able to invest, which is something that would be
 // nice to have
-package assets
-
-import (
-	"log"
-
-	utils "github.com/YaleOpenLab/openx/utils"
-	xlm "github.com/YaleOpenLab/openx/xlm"
-	"github.com/stellar/go/build"
-)
 
 // AssetID assigns a unique assetID to each asset. We assume that there won't be more
 // than 68719476736 (16^9) assets that are created at any point, so we're good.
@@ -82,7 +83,7 @@ func TrustAsset(assetCode string, assetIssuer string, limit string, PublicKey st
 	return txHash, err
 }
 
-// SendAsset transfers _amount_ number of assets from the caller to the destination
+// SendAssetFromIssuer transfers _amount_ number of assets from the caller to the destination
 // and returns an error if the destination doesn't have a trustline with the issuer
 // This method is called by the issuer of the asset
 func SendAssetFromIssuer(assetName string, destination string, amount string,
@@ -107,6 +108,7 @@ func SendAssetFromIssuer(assetName string, destination string, amount string,
 	return xlm.SendTx(issuerSeed, paymentTx)
 }
 
+// SendAssetToIssuer sends a specific asset back to the issuer
 func SendAssetToIssuer(assetName string, destination string, amount string,
 	seed string, pubkey string) (int32, string, error) {
 	// this transaction is FROM recipient TO issuer
@@ -128,6 +130,7 @@ func SendAssetToIssuer(assetName string, destination string, amount string,
 	return xlm.SendTx(seed, paymentTx)
 }
 
+// SendAsset sends the asset to a destination which already has an established trustline with the issuer
 func SendAsset(assetName string, issuerPubkey string, destination string, amount string,
 	seed string, pubkey string, memo string) (int32, string, error) {
 	// this transaction is FROM pubkey TO destination

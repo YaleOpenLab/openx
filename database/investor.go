@@ -19,6 +19,8 @@ import (
 // All investors will be referenced by their public key, name is optional (maybe necessary?)
 // we need to still decide on identity and stuff and how much we want to track
 // people who invest in the schools
+
+// Investor defines the investor structure
 type Investor struct {
 	VotingBalance int // this will be equal to the amount of stablecoins that the
 	// investor possesses, should update this every once in a while to ensure voting
@@ -58,6 +60,7 @@ func NewInvestor(uname string, pwd string, seedpwd string, Name string) (Investo
 	return a, err
 }
 
+// AddEmail stores the passed email as the user's email.
 func (a *Investor) AddEmail(email string) error {
 	// call this function when a user wants to get notifications. Ask on frontend whether
 	// it wants to
@@ -70,7 +73,7 @@ func (a *Investor) AddEmail(email string) error {
 	return a.Save()
 }
 
-// InsertInvestor inserts a passed Investor object into the database
+// Save inserts a passed Investor object into the database
 func (a *Investor) Save() error {
 	db, err := OpenDB()
 	if err != nil {
@@ -145,7 +148,7 @@ func RetrieveAllInvestors() ([]Investor, error) {
 	return arr, err
 }
 
-// Function to validate the investors username and password to log them into the platform, and find the details related to the investor
+// ValidateInvestor is a function to validate the investors username and password to log them into the platform, and find the details related to the investor
 // This is separate from the publicKey/seed pair (which are stored encrypted in the database); since we can help users change their password, but we can't help them retrieve their seed.
 func ValidateInvestor(name string, pwhash string) (Investor, error) {
 	var rec Investor
@@ -156,6 +159,7 @@ func ValidateInvestor(name string, pwhash string) (Investor, error) {
 	return RetrieveInvestor(user.Index)
 }
 
+// DeductVotingBalance deducts voting balance
 func (a *Investor) DeductVotingBalance(votes int) error {
 	// maybe once the user can presses the vote button manually, we can fetch balance
 	// and show him available votes onthe frontend
@@ -163,6 +167,7 @@ func (a *Investor) DeductVotingBalance(votes int) error {
 	return a.Save()
 }
 
+// AddVotingBalance adds voting balance
 func (a *Investor) AddVotingBalance(votes int) error {
 	// this function is caled when we want to refund the user with the votes once
 	// an order has been finalized.
@@ -202,6 +207,8 @@ func (a *Investor) CanInvest(targetBalance string) bool {
 // but are necessary for th RPC which woukd call these functions in various scenarios
 // eg. when negative feedback is approved  by multiple parties and they decide to
 // reduce the reputation of the user
+
+// ChangeInvReputation changes the investor's reputation
 func ChangeInvReputation(invIndex int, reputation float64) error {
 	a, err := RetrieveInvestor(invIndex)
 	if err != nil {
@@ -218,6 +225,7 @@ func ChangeInvReputation(invIndex int, reputation float64) error {
 	return a.Save()
 }
 
+// TopReputationInvestors gets a list of all the investors with top reputation
 func TopReputationInvestors() ([]Investor, error) {
 	allInvestors, err := RetrieveAllInvestors()
 	if err != nil {

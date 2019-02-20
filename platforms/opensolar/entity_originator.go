@@ -17,6 +17,7 @@ import (
 
 // TODO: Consider any other information needed for originators that should be added
 
+// NewOriginator creates a new originator
 func NewOriginator(uname string, pwd string, seedpwd string, Name string,
 	Address string, Description string) (Entity, error) {
 	return newEntity(uname, pwd, seedpwd, Name, Address, Description, "originator")
