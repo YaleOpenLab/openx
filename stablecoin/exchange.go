@@ -43,7 +43,7 @@ func Exchange(recipientPK string, recipientSeed string, convAmount string) error
 }
 
 // offer to exchange user's xlm balance for stableusd if the user does not have enough
-// stableUSD to compelte the payment
+// stableUSD to complete the payment
 func OfferExchange(publicKey string, seed string, invAmount string) error {
 
 	log.Println("OFFERING EXCHANGE TO INVESTOR")
@@ -68,7 +68,7 @@ func OfferExchange(publicKey string, seed string, invAmount string) error {
 		totalUSD := oracle.ExchangeXLMforUSD(xlmBalance) // amount in stablecoin that the user would receive for diff
 
 		if totalUSD < diff {
-			return errors.New("User does not have enough funds to compelte this transaction")
+			return errors.New("User does not have enough funds to complete this transaction")
 		}
 
 		// now we need to exchange XLM equal to diff in stablecoin

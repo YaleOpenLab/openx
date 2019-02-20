@@ -2,7 +2,7 @@ package xlm
 
 // the xlm package is a package that interacts with the stellar testnet
 // API and fetches testnet coins for the user
-// right now, there are multiple fucntions which are not used through the program,
+// right now, there are multiple functions which are not used through the program,
 // would be nice to use them when we require so.
 import (
 	"fmt"
@@ -83,7 +83,7 @@ func SendTx(Seed string, tx *build.TransactionBuilder) (int32, string, error) {
 			issuing account's credit.
 			C. Revocable - can revoke credit held by other accounts
 	Based on the descriptions above, it is clear that we need A and B. But having 2
-	would mean that secondary speculation markets cant flourish (sicne they would
+	would mean that secondary speculation markets cant flourish (since they would
 	require our authorization) and hence we don't set the required flag
 
 	SetOptions(

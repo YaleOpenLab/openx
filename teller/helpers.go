@@ -53,7 +53,7 @@ func endHandler() error {
 	hashString := "Device Shutting down. Info: " + DeviceInfo + " Device Location: " + DeviceLocation +
 		" Device Unique ID: " + DeviceId + " " + "Start hash: " + StartHash + " Now hash: " + NowHash +
 		"Ipfs HashChainHeader: " + HashChainHeader
-	// note that we don't commit the latest hash chain header's hash here becuase this gives us a tighter timeline
+	// note that we don't commit the latest hash chain header's hash here because this gives us a tighter timeline
 	// to audit what really happened
 	ipfsHash, err := ipfs.AddStringToIpfs(hashString)
 	if err != nil {
@@ -161,15 +161,10 @@ func updateState() {
 }
 
 // TODO and MWTODO: think upon this problem and arrive at a solution. Might be useful to do
-// after we figure out how to store the data that flows into the Rpi on ipfs.
-// the problem here is to prove that energy was produced without revealing other details which
-// may be confidential. eg. say we produced 30 units of energy and we have all the suporting evidence
-// in the form of energy data on our end. now we might not want all of this data to be public but
-// the energy production data is required to be public since one should verify that only a given
-// amount of REC tokens were generated based on the energy production data.
-
-// stream data from the pilot particle instance and write to a file
-// run verify.sh to get a list of all the ipfs hashes in the hashchain
+// we don't want all data to be public - figure out which parts need to be private and which public
+// stream data from the pilot particle instance and write to a file name data.txt
+// one can run verify.sh to get a list of all the ipfs hashes in the hashchain (we can make this hashchain header
+// public or available to all t he entities involved in the workflow)
 
 // storeDataLocal stores the data we observe in real time to a file and st ores the hashchain header
 func storeDataLocal() {
@@ -215,6 +210,8 @@ func storeDataLocal() {
 	}
 
 	log.Println("starting to stream data from particle board: ")
+	// this loop waits for inputs (in this case from the particle API) and c ontinually
+	// writes it to a data stream
 	for {
 		_, err = reader.Read(x)
 		if err != nil {
@@ -268,7 +265,7 @@ func storeDataLocal() {
 
 // commitDataShutdown is called when the teller errors out and goes down
 func commitDataShutdown() {
-	// retrieve the data from local storage
+	// retrieve data from local storage
 	path := consts.TellerHomeDir + "/data.txt"
 
 	fileHash, err := ipfs.IpfsHashFile(path)

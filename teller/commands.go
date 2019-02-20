@@ -113,7 +113,7 @@ func ParseInput(input []string) {
 	case "hh":
 		// hh = hashchain header
 		if len(input) != 1 {
-			fmt.Println("USAGE: hhh")
+			fmt.Println("USAGE: hh")
 			return
 		}
 		log.Println("HASHCHAIN HEADER: ", HashChainHeader)

@@ -26,7 +26,7 @@ type ConstructionBond struct {
 	SecurityType   string  // The class of security that this security falls under
 	Tax            string
 	MaturationDate string  // date at which the bond expires
-	InterestRate   float64 // teh interest rateoffered for this particular bond
+	InterestRate   float64 // the interest rateoffered for this particular bond
 	Rating         string  // the moody's / finch's rating for this particular bond
 	BondIssuer     string  // the issuing bank of this particular bond
 	BondHolders    string
@@ -56,7 +56,7 @@ type LivingUnitCoop struct {
 	MaturationDate string  // date at which the bond expires
 	MonthlyPayment float64 // monthly payment that must be m  ade towards this investment
 	MemberRights   string  // the rights that the member of this coop is entitled to
-	InterestRate   float64 // teh interest rateoffered for this particular bond
+	InterestRate   float64 // the interest rateoffered for this particular bond
 	Rating         string  // the moody's / finch rating for this particular bond
 	BondIssuer     string  // the issuing bank of this particular bond
 	Underwriter    string  // the underwriter that will provide guarantee against defaults

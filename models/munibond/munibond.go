@@ -160,7 +160,7 @@ func sendPaymentNotif(recpIndex int, projIndex int, paybackPeriod int, email str
 	paybackTimes := 0
 	for {
 
-		_, err := database.RetrieveRecipient(recpIndex) // need to retireve to make sure nothing goes awry
+		_, err := database.RetrieveRecipient(recpIndex) // need to retrieve to make sure nothing goes awry
 		if err != nil {
 			log.Println("Error while retrieving recipient from database", err)
 			message := "Error while retrieving your account details, please contact help as soon as you receive this message " + err.Error()

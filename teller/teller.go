@@ -35,6 +35,8 @@ import (
 // env GOOS=linux GOARCH=arm GOARM=5 go build
 // advisable to build off the pi and transport the executable since I don't think we want to be running
 // go get on a raspberry pi with the stellar dependencies.
+// TODO: also run an ipfs node on the raspberry pi to ensure we can commit to ipfs without relying
+// on the platform
 // TODO: add docs on the ipfs hash chain
 
 var opts struct {
@@ -71,11 +73,21 @@ var cleanupDone chan struct{}
 
 func AutoComplete() readline.AutoCompleter {
 	return readline.NewPrefixCompleter(
-		readline.PcItem("update",
+		readline.PcItem("help",
+			readline.PcItem("update"),
 			readline.PcItem("ping"),
 			readline.PcItem("receive"),
 			readline.PcItem("display"),
 			readline.PcItem("update"),
+			readline.PcItem("qq"),
+			readline.PcItem("hh"),
+		),
+		readline.PcItem("display",
+			readline.PcItem("balance",
+				readline.PcItem("xlm"),
+				readline.PcItem("asset"),
+			),
+			readline.PcItem("info"),
 		),
 	)
 }
@@ -89,15 +101,11 @@ func main() {
 	if opts.Port == 0 {
 		opts.Port = consts.Tlsport
 	}
-	if opts.Daemon == true {
-		log.Println("Running teller in daemon mode")
-	}
 
 	fmt.Println("---------------WELCOME TO THE TELLER INTERFACE---------------")
-	defer recoverPanic()
-	err = StartTeller() // login to the platform, set device id, etc
+	defer recoverPanic() // catch any panics that may occur during the teller's runtime
+	err = StartTeller()  // login to the platform, set device id, etc
 	if err != nil {
-		log.Println("Failed to start teller", err)
 		log.Fatal(err)
 	}
 	ColorOutput("TELLER PUBKEY: "+RecpPublicKey, GreenColor)
@@ -118,6 +126,7 @@ func main() {
 	go storeDataLocal()
 
 	if opts.Daemon {
+		log.Println("Running teller in daemon mode")
 		go func() {
 			<-signalChan
 			fmt.Println("\nSigint received, calling endhandler!")
@@ -130,10 +139,11 @@ func main() {
 			os.Exit(1)
 		}()
 
-		startServer(opts.Port) // run a deamon and listen for connections
+		startServer(opts.Port) // run a daemon and listen for connections
 		return                 // shouldn't come here, even if it does, we should be good
 	}
 
+	// non daemon mode, CLI available.
 	go func() {
 		<-signalChan
 		fmt.Println("\nSigint received, not quitting wihtout closing endhandler!")
@@ -181,10 +191,10 @@ func main() {
 // even in such a situation, we would like to be warned so we can take some action
 func recoverPanic() {
 	if rec := recover(); rec != nil {
-		err := rec.(error)
+		err := rec.(error) // recover the panic as an error
 		log.Println("unexpected error, invoking EndHandler", err)
 		err = endHandler()
-		for err != nil {
+		for err != nil { // run this loop until all endhandler functions are called
 			log.Println(err)
 			err = endHandler()
 			<-cleanupDone // to prevent user from quitting when endhandler is running

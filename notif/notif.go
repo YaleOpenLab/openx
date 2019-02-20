@@ -154,7 +154,7 @@ func SendUnlockNotifToRecipientOZ(projIndex int, to string) error {
 }
 
 func SendEmail(message string, to string, name string) error {
-	// we can't send emails directly sicne we would need their gmail usernames and password for that
+	// we can't send emails directly since we would need their gmail usernames and password for that
 	startString := "Greetings from the opensolar platform! \n\n" +
 		"We're writing to let you know that " + name + " has sent you a message. The message contents follow: \n\n"
 	body := startString + message + "\n\n\n" + footerString
@@ -229,7 +229,7 @@ func SendSternPaybackAlertEmailG(projIndex int, to string) error {
 		"We're writing to let you know that we are aware that payments towards the project: " + utils.ItoS(projIndex) +
 		"\n\n haven't been made and have reached out to the project recipient on the same. If this situation continues for " +
 		"two more payment periods, we will be redirecting power towards the general grid and contact you for further" +
-		"information on how the gurantee towards the project would be realized to investors.\n\n" +
+		"information on how the guarantee towards the project would be realized to investors.\n\n" +
 		"We are constantly monitoring this situation and will be continuing to send you emails on the same.\n\n" +
 		"Please feel free to write to support with your queries in the meantime."
 	body := startString + "\n\n\n" + footerString

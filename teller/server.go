@@ -12,7 +12,7 @@ import (
 
 // server starts a local server which would inform us about the uptime of the teller and provide a data endpoint
 type Data struct {
-	// the data that is oging to be streamed
+	// the data that is going to be streamed
 	// TODO: define what goes in here
 	Timestamp string
 	Info      string

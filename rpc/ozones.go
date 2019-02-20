@@ -27,7 +27,7 @@ func GetAllCoops() {
 		checkGet(w, r)
 		allBonds, err := opzones.RetrieveAllLivingUnitCoops()
 		if err != nil {
-			log.Println("did not retireve all bonds", err)
+			log.Println("did not retrieve all bonds", err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
@@ -35,7 +35,7 @@ func GetAllCoops() {
 	})
 }
 
-// getCoopDetails gets teh details of a particular coop
+// getCoopDetails gets the details of a particular coop
 func getCoopDetails() {
 	http.HandleFunc("/coop/get", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
@@ -47,7 +47,7 @@ func getCoopDetails() {
 		uKey := utils.StoI(r.URL.Query()["index"][0])
 		bond, err := opzones.RetrieveLivingUnitCoop(uKey)
 		if err != nil {
-			log.Println("did not retireve coop", err)
+			log.Println("did not retrieve coop", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}

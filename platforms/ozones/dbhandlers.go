@@ -127,7 +127,6 @@ func RetrieveAllLivingUnitCoops() ([]LivingUnitCoop, error) {
 			}
 			arr = append(arr, rCoop)
 		}
-		return nil
 	})
 	return arr, err
 }
@@ -155,7 +154,6 @@ func RetrieveAllConstructionBonds() ([]ConstructionBond, error) {
 			}
 			arr = append(arr, rBond)
 		}
-		return nil
 	})
 	return arr, err
 }

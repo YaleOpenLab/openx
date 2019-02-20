@@ -116,7 +116,7 @@ func GetAndSendJson(w http.ResponseWriter, r *http.Request, body string, x inter
 		responseHandler(w, r, StatusBadRequest)
 		return
 	}
-	// now data is in byte, we need the other strucutre now
+	// now data is in byte, we need the other structure now
 	err = json.Unmarshal(data, &x)
 	if err != nil {
 		log.Println("did not unmarshal json", err)
@@ -305,7 +305,7 @@ func getDiagnosticsLast() {
 	})
 }
 
-// getAllDiagnostics gets all the past diagnostic reports of the assocaited device id. Requires
+// getAllDiagnostics gets all the past diagnostic reports of the associated device id. Requires
 // accessToken for authentication
 func getAllDiagnostics() {
 	http.HandleFunc("/particle/diag/all", func(w http.ResponseWriter, r *http.Request) {

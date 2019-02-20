@@ -223,8 +223,8 @@ func TopReputationInvestors() ([]Investor, error) {
 	if err != nil {
 		return allInvestors, errors.Wrap(err, "failed to retrieve all investors")
 	}
-	for i, _ := range allInvestors {
-		for j, _ := range allInvestors {
+	for i := range allInvestors {
+		for j := range allInvestors {
 			if allInvestors[i].U.Reputation > allInvestors[j].U.Reputation {
 				tmp := allInvestors[i]
 				allInvestors[i] = allInvestors[j]
