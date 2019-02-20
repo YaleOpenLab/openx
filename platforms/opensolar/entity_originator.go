@@ -1,8 +1,7 @@
 package opensolar
 
 import (
-	"fmt"
-	"log"
+	"github.com/pkg/errors"
 
 	database "github.com/YaleOpenLab/openx/database"
 	utils "github.com/YaleOpenLab/openx/utils"
@@ -32,7 +31,7 @@ func (contractor *Entity) Originate(panelSize string, totalValue float64, locati
 
 	indexCheck, err := RetrieveAllProjects()
 	if err != nil {
-		return pc, fmt.Errorf("Projects could not be retrieved!")
+		return pc, errors.New("Projects could not be retrieved!")
 	}
 	pc.Index = len(indexCheck) + 1
 	pc.PanelSize = panelSize
@@ -43,7 +42,7 @@ func (contractor *Entity) Originate(panelSize string, totalValue float64, locati
 	pc.DateInitiated = utils.Timestamp()
 	iRecipient, err := database.RetrieveRecipient(recIndex)
 	if err != nil { // recipient does not exist
-		return pc, err
+		return pc, errors.Wrap(err, "couldn't retrieve recipient from db")
 	}
 	pc.RecipientIndex = iRecipient.U.Index
 	pc.Stage = 0 // 0 since we need to filter this out while retrieving the propsoed contracts
@@ -60,12 +59,12 @@ func (contractor *Entity) Originate(panelSize string, totalValue float64, locati
 func RepOriginatedProject(origIndex int, projIndex int) error {
 	originator, err := RetrieveEntity(origIndex)
 	if err != nil {
-		log.Println(err)
+		return errors.Wrap(err, "couldn't retrieve entity from db")
 		return err
 	}
 	project, err := RetrieveProject(projIndex)
 	if err != nil {
-		log.Println(err)
+		return errors.Wrap(err, "couldn't retrieve project from db")
 		return err
 	}
 	return originator.U.IncreaseReputation(project.TotalValue * OriginatorWeight)

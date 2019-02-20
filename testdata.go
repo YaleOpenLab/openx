@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"errors"
 	"log"
 
 	database "github.com/YaleOpenLab/openx/database"
@@ -123,7 +123,7 @@ func InsertDummyData() error {
 
 	c1, err := solar.NewContractor("john", "p", "x", "John Doe", "14 ABC Street London", "This is a sample contractor")
 	if err != nil {
-		log.Println(err)
+		log.Fatal(err)
 	}
 
 	project1.Index = 1
@@ -145,7 +145,7 @@ func InsertDummyData() error {
 	project1.AuctionType = "blind"
 	err = project1.Save()
 	if err != nil {
-		return fmt.Errorf("Error inserting project into db")
+		return errors.New("Error inserting project into db")
 	}
 
 	project2.Index = 2
@@ -167,7 +167,7 @@ func InsertDummyData() error {
 	project2.AuctionType = "blind"
 	err = project2.Save()
 	if err != nil {
-		return fmt.Errorf("Error inserting project into db")
+		return errors.New("Error inserting project into db")
 	}
 
 	project3.Index = 3
@@ -189,7 +189,7 @@ func InsertDummyData() error {
 	project3.AuctionType = "blind"
 	err = project3.Save()
 	if err != nil {
-		return fmt.Errorf("Error inserting project into db")
+		return errors.New("Error inserting project into db")
 	}
 
 	pc, err := newOriginator.Originate("100 16x24 panels on a solar rooftop", 14000, "Puerto Rico", 5, "ABC School in XYZ peninsula", 1, "blind") // 1 is the idnex for martin

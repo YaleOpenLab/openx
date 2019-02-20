@@ -1,7 +1,7 @@
 package rpc
 
 import (
-	"fmt"
+	"errors"
 	"log"
 	"net/http"
 
@@ -43,11 +43,11 @@ func parseProject(r *http.Request) (platform.Project, error) {
 	allProjects, err := platform.RetrieveAllProjects()
 	if err != nil {
 		log.Println("did not retrieve all projects", err)
-		return prepProject, fmt.Errorf("Error in assigning index")
+		return prepProject, errors.New("Error in assigning index")
 	}
 	prepProject.Index = len(allProjects) + 1
 	if r.FormValue("PanelSize") == "" || r.FormValue("TotalValue") == "" || r.FormValue("Location") == "" || r.FormValue("Metadata") == "" || r.FormValue("Stage") == "" {
-		return prepProject, fmt.Errorf("One of given params is missing: PanelSize, TotalValue, Location, Metadata")
+		return prepProject, errors.New("One of given params is missing: PanelSize, TotalValue, Location, Metadata")
 	}
 
 	prepProject.PanelSize = r.FormValue("PanelSize")

@@ -2,8 +2,7 @@ package ozones
 
 import (
 	"encoding/json"
-	"fmt"
-	"log"
+	"github.com/pkg/errors"
 
 	database "github.com/YaleOpenLab/openx/database"
 	utils "github.com/YaleOpenLab/openx/utils"
@@ -29,7 +28,7 @@ func NewLivingUnitCoop(mdate string, mrights string, stype string, intrate float
 
 	x, err := RetrieveAllLivingUnitCoops()
 	if err != nil {
-		return coop, err
+		return coop, errors.Wrap(err, "could not retrieve all living unit coops")
 	}
 	coop.Index = len(x) + 1
 	coop.UnitsSold = 0
@@ -58,7 +57,7 @@ func NewConstructionBond(mdate string, stype string, intrate float64, rating str
 
 	x, err := RetrieveAllConstructionBonds()
 	if err != nil {
-		return cBond, err
+		return cBond, errors.Wrap(err, "could not retrieve all living unit coops")
 	}
 
 	cBond.Index = len(x) + 1
@@ -74,15 +73,14 @@ func NewConstructionBond(mdate string, stype string, intrate float64, rating str
 func (a *LivingUnitCoop) Save() error {
 	db, err := database.OpenDB()
 	if err != nil {
-		return err
+		return errors.Wrap(err, "coild not open db")
 	}
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(database.CoopBucket)
 		encoded, err := json.Marshal(a)
 		if err != nil {
-			log.Println("Failed to encode this data into json")
-			return err
+			return errors.Wrap(err, "Failed to marshal json")
 		}
 		return b.Put([]byte(utils.ItoB(a.Index)), encoded)
 	})
@@ -92,15 +90,14 @@ func (a *LivingUnitCoop) Save() error {
 func (a *ConstructionBond) Save() error {
 	db, err := database.OpenDB()
 	if err != nil {
-		return err
+		return errors.Wrap(err, "coild not open db")
 	}
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(database.BondBucket)
 		encoded, err := json.Marshal(a)
 		if err != nil {
-			log.Println("Failed to encode this data into json")
-			return err
+			return errors.Wrap(err, "failed to marshal json")
 		}
 		return b.Put([]byte(utils.ItoB(a.Index)), encoded)
 	})
@@ -112,7 +109,7 @@ func RetrieveAllLivingUnitCoops() ([]LivingUnitCoop, error) {
 	var arr []LivingUnitCoop
 	db, err := database.OpenDB()
 	if err != nil {
-		return arr, err
+		return arr, errors.Wrap(err, "coild not open db")
 	}
 	defer db.Close()
 
@@ -126,7 +123,7 @@ func RetrieveAllLivingUnitCoops() ([]LivingUnitCoop, error) {
 			}
 			err := json.Unmarshal(x, &rCoop)
 			if err != nil {
-				return err
+				return errors.Wrap(err, "failed to unmarshal json")
 			}
 			arr = append(arr, rCoop)
 		}
@@ -140,7 +137,7 @@ func RetrieveAllConstructionBonds() ([]ConstructionBond, error) {
 	var arr []ConstructionBond
 	db, err := database.OpenDB()
 	if err != nil {
-		return arr, err
+		return arr, errors.Wrap(err, "coild not open db")
 	}
 	defer db.Close()
 
@@ -154,7 +151,7 @@ func RetrieveAllConstructionBonds() ([]ConstructionBond, error) {
 			}
 			err := json.Unmarshal(x, &rBond)
 			if err != nil {
-				return err
+				return errors.Wrap(err, "failed to unmarshal json")
 			}
 			arr = append(arr, rBond)
 		}
@@ -168,7 +165,7 @@ func RetrieveLivingUnitCoop(key int) (LivingUnitCoop, error) {
 	var bond LivingUnitCoop
 	db, err := database.OpenDB()
 	if err != nil {
-		return bond, err
+		return bond, errors.Wrap(err, "coild not open db")
 	}
 	defer db.Close()
 
@@ -176,7 +173,7 @@ func RetrieveLivingUnitCoop(key int) (LivingUnitCoop, error) {
 		b := tx.Bucket(database.CoopBucket)
 		x := b.Get(utils.ItoB(key))
 		if x == nil {
-			return fmt.Errorf("Retrieved LivingUnitCoop nil")
+			return errors.New("Retrieved LivingUnitCoop nil")
 		}
 		return json.Unmarshal(x, &bond)
 	})
@@ -187,7 +184,7 @@ func RetrieveConstructionBond(key int) (ConstructionBond, error) {
 	var bond ConstructionBond
 	db, err := database.OpenDB()
 	if err != nil {
-		return bond, err
+		return bond, errors.Wrap(err, "coild not open db")
 	}
 	defer db.Close()
 
@@ -195,7 +192,7 @@ func RetrieveConstructionBond(key int) (ConstructionBond, error) {
 		b := tx.Bucket(database.BondBucket)
 		x := b.Get(utils.ItoB(key))
 		if x == nil {
-			return fmt.Errorf("Retreived Bond returns nil")
+			return errors.New("Retreived Bond returns nil")
 		}
 		return json.Unmarshal(x, &bond)
 	})

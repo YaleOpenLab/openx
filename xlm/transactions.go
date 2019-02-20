@@ -2,7 +2,7 @@ package xlm
 
 import (
 	"encoding/json"
-	"fmt"
+	"github.com/pkg/errors"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -17,7 +17,7 @@ func GetTransactionData(txhash string) ([]byte, error) {
 	if err != nil || resp.Status != "200 OK" {
 		// check here since if we don't, we need to check the body of the unmarshalled
 		// response to see if we have 0
-		return data, fmt.Errorf("API Request did not succeed")
+		return data, errors.New("API Request did not succeed")
 	}
 
 	defer resp.Body.Close()
@@ -31,7 +31,7 @@ func GetTransactionHeight(txhash string) (int, error) {
 
 	b, err := GetTransactionData(txhash)
 	if err != nil {
-		return txheight, err
+		return txheight, errors.Wrap(err, "could not get transaction data")
 	}
 	var x protocols.Transaction
 	err = json.Unmarshal(b, &x)

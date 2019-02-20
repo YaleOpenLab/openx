@@ -1,12 +1,12 @@
 package rpc
 
 import (
+	"crypto/tls"
 	"encoding/json"
-	"fmt"
+	"errors"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"crypto/tls"
 
 	assets "github.com/YaleOpenLab/openx/assets"
 	consts "github.com/YaleOpenLab/openx/consts"
@@ -80,7 +80,7 @@ func UserValidateHelper(w http.ResponseWriter, r *http.Request) (database.User, 
 	var err error
 	// need to pass the pwhash param here
 	if r.URL.Query() == nil || r.URL.Query()["username"] == nil || r.URL.Query()["pwhash"] == nil || len(r.URL.Query()["pwhash"][0]) != 128 {
-		return prepUser, fmt.Errorf("Invalid params passed!")
+		return prepUser, errors.New("Invalid params passed!")
 	}
 
 	prepUser, err = database.ValidateUser(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])

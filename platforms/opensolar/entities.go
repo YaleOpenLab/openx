@@ -2,8 +2,7 @@ package opensolar
 
 import (
 	"encoding/json"
-	"fmt"
-	"log"
+	"github.com/pkg/errors"
 	"strings"
 
 	database "github.com/YaleOpenLab/openx/database"
@@ -81,14 +80,14 @@ type Entity struct {
 func (a *Entity) Save() error {
 	db, err := database.OpenDB()
 	if err != nil {
-		return err
+		return errors.Wrap(err, "couldn't open db")
 	}
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(database.ContractorBucket)
 		encoded, err := json.Marshal(a)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "couldn't marshal json")
 		}
 		return b.Put([]byte(utils.ItoB(a.U.Index)), encoded)
 	})
@@ -100,12 +99,12 @@ func RetrieveAllEntitiesWithoutRole() ([]Entity, error) {
 	var arr []Entity
 	temp, err := database.RetrieveAllUsers()
 	if err != nil {
-		return arr, err
+		return arr, errors.Wrap(err, "couldn't retrieve all users from db")
 	}
 	limit := len(temp) + 1
 	db, err := database.OpenDB()
 	if err != nil {
-		return arr, err
+		return arr, errors.Wrap(err, "couldn't open db")
 	}
 	defer db.Close()
 
@@ -120,7 +119,7 @@ func RetrieveAllEntitiesWithoutRole() ([]Entity, error) {
 			}
 			err := json.Unmarshal(x, &rContractor)
 			if err != nil {
-				return nil
+				return errors.Wrap(err, "couldn't marshal json")
 			}
 			arr = append(arr, rContractor)
 		}
@@ -134,12 +133,12 @@ func RetrieveAllEntities(role string) ([]Entity, error) {
 	var arr []Entity
 	temp, err := database.RetrieveAllUsers()
 	if err != nil {
-		return arr, err
+		return arr, errors.Wrap(err, "couldn't retrieve all users from db")
 	}
 	limit := len(temp) + 1
 	db, err := database.OpenDB()
 	if err != nil {
-		return arr, err
+		return arr, errors.Wrap(err, "couldn't open db")
 	}
 	defer db.Close()
 
@@ -154,7 +153,7 @@ func RetrieveAllEntities(role string) ([]Entity, error) {
 			}
 			err := json.Unmarshal(x, &rContractor)
 			if err != nil {
-				return nil
+				return errors.Wrap(err, "couldn't unmarshal json")
 			}
 			switch role {
 			case "contractor":
@@ -189,14 +188,14 @@ func RetrieveEntity(key int) (Entity, error) {
 	var a Entity
 	db, err := database.OpenDB()
 	if err != nil {
-		return a, err
+		return a, errors.Wrap(err, "couldn't open db")
 	}
 	defer db.Close()
 	err = db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket(database.ContractorBucket)
 		x := b.Get(utils.ItoB(key))
 		if x == nil {
-			return fmt.Errorf("Retrieving entity returns nil, quitting!")
+			return errors.New("Retrieving entity returns nil, quitting!")
 		}
 		return json.Unmarshal(x, &a)
 	})
@@ -209,7 +208,7 @@ func newEntity(uname string, pwd string, seedpwd string, Name string, Address st
 	var err error
 	a.U, err = database.NewUser(uname, pwd, seedpwd, Name)
 	if err != nil {
-		return a, err
+		return a, errors.Wrap(err, "couldn't retrieve new user from db")
 	}
 
 	a.U.Address = Address
@@ -225,7 +224,7 @@ func newEntity(uname string, pwd string, seedpwd string, Name string, Address st
 	case "guarantor":
 		a.Guarantor = true
 	default:
-		return a, fmt.Errorf("invalid entity type passed!")
+		return a, errors.New("invalid entity type passed!")
 	}
 
 	err = a.Save()
@@ -236,7 +235,7 @@ func newEntity(uname string, pwd string, seedpwd string, Name string, Address st
 func ChangeReputation(entityIndex int, reputation float64) error {
 	a, err := RetrieveEntity(entityIndex)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "couldn't retreive entity from db")
 	}
 	if reputation > 0 {
 		err = a.U.IncreaseReputation(reputation)
@@ -244,7 +243,7 @@ func ChangeReputation(entityIndex int, reputation float64) error {
 		err = a.U.DecreaseReputation(reputation)
 	}
 	if err != nil {
-		return err
+		return errors.Wrap(err, "couldn't update reputation of user")
 	}
 	return a.Save()
 }
@@ -253,7 +252,7 @@ func ChangeReputation(entityIndex int, reputation float64) error {
 func TopReputationEntitiesWithoutRole() ([]Entity, error) {
 	allEntities, err := RetrieveAllEntitiesWithoutRole()
 	if err != nil {
-		return allEntities, err
+		return allEntities, errors.Wrap(err, "couldn't retrieve all entities without role")
 	}
 	for i, _ := range allEntities {
 		for j, _ := range allEntities {
@@ -272,7 +271,7 @@ func TopReputationEntities(role string) ([]Entity, error) {
 	// caller knows what role he needs this list for, so directly retrieve and do stuff here
 	allEntities, err := RetrieveAllEntities(role)
 	if err != nil {
-		return allEntities, err
+		return allEntities, errors.Wrap(err, "couldn't retrieve all entities")
 	}
 	for i, _ := range allEntities {
 		for j, _ := range allEntities {
@@ -291,7 +290,7 @@ func ValidateEntity(name string, pwhash string) (Entity, error) {
 	var rec Entity
 	user, err := database.ValidateUser(name, pwhash)
 	if err != nil {
-		return rec, err
+		return rec, errors.Wrap(err, "couldn't validate user")
 	}
 	return RetrieveEntity(user.Index)
 }
@@ -313,14 +312,12 @@ func AgreeToContractConditions(contractHash string, projIndex string,
 
 	user, err := database.RetrieveUser(entityIndex)
 	if err != nil {
-		log.Println(err)
-		return err
+		return errors.Wrap(err, "couldn't retrieve user from db")
 	}
 
 	seed, err := wallet.DecryptSeed(user.EncryptedSeed, seedpwd)
 	if err != nil {
-		log.Println(err)
-		return err
+		return errors.Wrap(err, "couldn't decrypt seed")
 	}
 
 	messageHash := "CONTRACTHASH" + strings.ToUpper(utils.SHA3hash(message))
@@ -333,32 +330,27 @@ func AgreeToContractConditions(contractHash string, projIndex string,
 	timeStamp := utils.I64toS(utils.Unix())
 	_, firstHash, err := xlm.SendXLM(user.PublicKey, timeStamp, seed, firstPart)
 	if err != nil {
-		log.Println(err)
-		return err
+		return errors.Wrap(err, "couldn't send tx 1")
 	}
 
 	_, secondHash, err := xlm.SendXLM(user.PublicKey, timeStamp, seed, secondPart)
 	if err != nil {
-		log.Println(err)
-		return err
+		return errors.Wrap(err, "couldn't send tx 2")
 	}
 
 	_, thirdHash, err := xlm.SendXLM(user.PublicKey, timeStamp, seed, thirdPart)
 	if err != nil {
-		log.Println(err)
-		return err
+		return errors.Wrap(err, "couldn't send tx 3")
 	}
 
 	_, fourthHash, err := xlm.SendXLM(user.PublicKey, timeStamp, seed, fourthPart)
 	if err != nil {
-		log.Println(err)
-		return err
+		return errors.Wrap(err, "couldn't send tx 4")
 	}
 
 	_, fifthHash, err := xlm.SendXLM(user.PublicKey, timeStamp, seed, fifthPart)
 	if err != nil {
-		log.Println(err)
-		return err
+		return errors.Wrap(err, "couldn't send tx 5")
 	}
 
 	//if user.Notification {

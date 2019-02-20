@@ -3,7 +3,7 @@ package main
 import (
 	"crypto/rand"
 	"encoding/hex"
-	"fmt"
+	"github.com/pkg/errors"
 	"log"
 	"os"
 	"strings"
@@ -18,7 +18,7 @@ func GenerateRandomString(n int) (string, error) {
 	b := make([]byte, n)
 	_, err := rand.Read(b)
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(err, "could not read random bytes to generate random string")
 	}
 
 	return hex.EncodeToString(b), nil
@@ -28,7 +28,7 @@ func GenerateRandomString(n int) (string, error) {
 func GenerateDeviceID() (string, error) {
 	rs, err := GenerateRandomString(16)
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(err, "could not generate random string")
 	}
 	upperCase := strings.ToUpper(rs)
 	return upperCase, nil
@@ -44,21 +44,21 @@ func CheckDeviceID() error {
 		path := consts.TellerHomeDir + "/deviceid.hex"
 		file, err := os.Create(path)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "could not create device id file")
 		}
 		deviceId, err := GenerateDeviceID()
 		if err != nil {
-			return err
+			return errors.Wrap(err, "could not generate device id")
 		}
 		ColorOutput("GENERATED UNIQUE DEVICE ID: "+deviceId, GreenColor)
 		_, err = file.Write([]byte(deviceId))
 		if err != nil {
-			return err
+			return errors.Wrap(err, "could not write device id to file")
 		}
 		file.Close()
 		err = SetDeviceId(LocalRecipient.U.Username, LocalRecipient.U.Pwhash, deviceId)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "coudl not store device id in remote platform")
 		}
 	}
 	return nil
@@ -69,16 +69,16 @@ func GetDeviceID() (string, error) {
 	path := consts.TellerHomeDir + "/deviceid.hex"
 	file, err := os.Open(path)
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(err, "could not open teller home path")
 	}
 	// read the hex string from the file
 	data := make([]byte, 32)
 	numInt, err := file.Read(data)
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(err, "could not read from file")
 	}
 	if numInt != 32 {
-		return "", fmt.Errorf("Length of strings doesn't match, quitting!")
+		return "", errors.New("Length of strings doesn't match, quitting!")
 	}
 	return string(data), nil
 }

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"github.com/pkg/errors"
 	"log"
 
 	consts "github.com/YaleOpenLab/openx/consts"
@@ -9,9 +9,8 @@ import (
 	solar "github.com/YaleOpenLab/openx/platforms/opensolar"
 	scan "github.com/YaleOpenLab/openx/scan"
 	"github.com/chzyer/readline"
-	"github.com/spf13/viper"
-
 	"github.com/fatih/color"
+	"github.com/spf13/viper"
 )
 
 // package emulator is used to emulate the environment of the platform and make changes
@@ -44,13 +43,12 @@ func SetupConfig() (string, error) {
 
 	err = viper.ReadInConfig()
 	if err != nil {
-		log.Println("Error while reading email values from config file")
-		return "", err
+		return "", errors.Wrap(err, "error while reading email values from config file")
 	}
 
 	PlatformPublicKey = viper.Get("PlatformPublicKey").(string)
 
-	fmt.Println("WELCOME TO THE SMARTSOLAR EMULATOR")
+	log.Println("WELCOME TO THE SMARTSOLAR EMULATOR")
 
 	ColorOutput("ENTER YOUR USERNAME: ", CyanColor)
 	username, err := scan.ScanForString()
@@ -67,7 +65,7 @@ func SetupConfig() (string, error) {
 	// need to validate with the RPC here
 	role, err := Login(username, pwhash)
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(err, "could not login to the platform")
 	}
 	return role, nil
 }

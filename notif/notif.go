@@ -1,6 +1,7 @@
 package notif
 
 import (
+	"github.com/pkg/errors"
 	"log"
 	"net/smtp"
 
@@ -28,8 +29,7 @@ func sendMail(body string, to string) error {
 	viper.AddConfigPath(".")
 	err = viper.ReadInConfig()
 	if err != nil {
-		log.Println("Error while reading email values from config file")
-		return err
+		return errors.Wrap(err, "error while reading email values from config file")
 	}
 	log.Println("SENDING EMAIL: ", viper.Get("email"), viper.Get("password"))
 	from := viper.Get("email").(string)    // interface to string
@@ -42,8 +42,7 @@ func sendMail(body string, to string) error {
 
 	err = smtp.SendMail("smtp.gmail.com:587", auth, from, []string{to}, []byte(msg))
 	if err != nil {
-		log.Printf("smtp error: %s", err)
-		return err
+		return errors.Wrap(err, "smtp error")
 	}
 	return nil
 }
@@ -284,8 +283,8 @@ func SendTellerPaymentFailedEmail(from string, projIndex string, deviceId string
 
 func SendTellerDownEmail(projIndex int, recpIndex int) error {
 	body := "Greetings from the opensolar platform! \n\n We're writing to let you know that remote teller " + utils.ItoS(projIndex) +
-	" installed on behalf of recipient with index: " + utils.ItoS(recpIndex) + " has not been responding to pings for a while. Please take action at " +
-	"the earliest," + "\n\n\n" +
-	footerString
+		" installed on behalf of recipient with index: " + utils.ItoS(recpIndex) + " has not been responding to pings for a while. Please take action at " +
+		"the earliest," + "\n\n\n" +
+		footerString
 	return sendMail(body, consts.PlatformEmail)
 }

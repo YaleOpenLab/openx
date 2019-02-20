@@ -4,8 +4,7 @@ package database
 // the struct itself.
 import (
 	"encoding/json"
-	"fmt"
-	"log"
+	"github.com/pkg/errors"
 
 	utils "github.com/YaleOpenLab/openx/utils"
 	"github.com/boltdb/bolt"
@@ -46,7 +45,7 @@ func NewRecipient(uname string, pwd string, seedpwd string, Name string) (Recipi
 	var err error
 	a.U, err = NewUser(uname, pwd, seedpwd, Name)
 	if err != nil {
-		return a, err
+		return a, errors.Wrap(err, "failed to retrieve new user")
 	}
 	err = a.Save()
 	return a, err
@@ -59,8 +58,7 @@ func (a *Recipient) AddEmail(email string) error {
 	a.U.Notification = true
 	err := a.U.Save()
 	if err != nil {
-		log.Println("Error while saving recipient", err)
-		return err
+		return errors.Wrap(err, "Error while saving recipient")
 	}
 	return a.Save()
 }
@@ -69,16 +67,14 @@ func (a *Recipient) AddEmail(email string) error {
 func (a *Recipient) Save() error {
 	db, err := OpenDB()
 	if err != nil {
-		log.Println("Error while opening database", err)
-		return err
+		return errors.Wrap(err, "Error while opening database")
 	}
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(RecipientBucket)
 		encoded, err := json.Marshal(a)
 		if err != nil {
-			log.Println("Error while marshaling json", err)
-			return err
+			return errors.Wrap(err, "Error while marshaling json")
 		}
 		return b.Put([]byte(utils.ItoB(a.U.Index)), encoded)
 	})
@@ -90,14 +86,12 @@ func RetrieveAllRecipients() ([]Recipient, error) {
 	var arr []Recipient
 	temp, err := RetrieveAllUsers()
 	if err != nil {
-		log.Println("Error while retreiving all users from database", err)
-		return arr, err
+		return arr, errors.Wrap(err, "Error while retreiving all users from database")
 	}
 	limit := len(temp) + 1
 	db, err := OpenDB()
 	if err != nil {
-		log.Println("Error while opening database", err)
-		return arr, err
+		return arr, errors.Wrap(err, "Error while opening database")
 	}
 	defer db.Close()
 
@@ -115,8 +109,7 @@ func RetrieveAllRecipients() ([]Recipient, error) {
 			}
 			err := json.Unmarshal(x, &rRecipient)
 			if err != nil {
-				log.Println("Error while unmarshalling json", err)
-				return err
+				return errors.Wrap(err, "Error while unmarshalling json")
 			}
 			arr = append(arr, rRecipient)
 		}
@@ -130,8 +123,7 @@ func RetrieveRecipient(key int) (Recipient, error) {
 	var inv Recipient
 	db, err := OpenDB()
 	if err != nil {
-		log.Println("Error while opening database", err)
-		return inv, err
+		return inv, errors.Wrap(err, "Error while opening database")
 	}
 	defer db.Close()
 	err = db.View(func(tx *bolt.Tx) error {
@@ -139,7 +131,7 @@ func RetrieveRecipient(key int) (Recipient, error) {
 		x := b.Get(utils.ItoB(key))
 		if x == nil {
 			// there is no key with the specific details
-			return fmt.Errorf("Recipient not found!")
+			return errors.New("Recipient not found!")
 		}
 		return json.Unmarshal(x, &inv)
 	})
@@ -150,8 +142,7 @@ func ValidateRecipient(name string, pwhash string) (Recipient, error) {
 	var rec Recipient
 	user, err := ValidateUser(name, pwhash)
 	if err != nil {
-		log.Println("Error while validating user", err)
-		return rec, err
+		return rec, errors.Wrap(err, "Error while validating user")
 	}
 	return RetrieveRecipient(user.Index)
 }
@@ -159,8 +150,7 @@ func ValidateRecipient(name string, pwhash string) (Recipient, error) {
 func ChangeRecpReputation(recpIndex int, reputation float64) error {
 	a, err := RetrieveRecipient(recpIndex)
 	if err != nil {
-		log.Println("Error while retrieving recipient", err)
-		return err
+		return errors.Wrap(err, "Error while retrieving recipient")
 	}
 	if reputation > 0 {
 		err = a.U.IncreaseReputation(reputation)
@@ -168,8 +158,7 @@ func ChangeRecpReputation(recpIndex int, reputation float64) error {
 		err = a.U.DecreaseReputation(reputation)
 	}
 	if err != nil {
-		log.Println("Error while changing reputation of recipient", err)
-		return err
+		return errors.Wrap(err, "Error while changing reputation of recipient")
 	}
 	return a.Save()
 }
@@ -177,7 +166,7 @@ func ChangeRecpReputation(recpIndex int, reputation float64) error {
 func TopReputationRecipient() ([]Recipient, error) {
 	allRecipients, err := RetrieveAllRecipients()
 	if err != nil {
-		return allRecipients, err
+		return allRecipients, errors.Wrap(err, "failed to retrieve all recipients")
 	}
 	for i, _ := range allRecipients {
 		for j, _ := range allRecipients {

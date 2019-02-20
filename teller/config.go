@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"github.com/pkg/errors"
 	"log"
 
 	utils "github.com/YaleOpenLab/openx/utils"
@@ -18,8 +18,7 @@ func StartTeller() error {
 
 	err = viper.ReadInConfig()
 	if err != nil {
-		log.Println("Error while reading email values from config file")
-		return err
+		return errors.Wrap(err, "Error while reading email values from config file")
 	}
 
 	PlatformPublicKey = viper.Get("platformPublicKey").(string)
@@ -33,77 +32,74 @@ func StartTeller() error {
 
 	projIndex, err := GetProjectIndex(assetName)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "couldn't get project index")
 	}
 
 	if utils.ItoS(projIndex) != LocalProjIndex {
 		log.Println("Project indices don't match, quitting!")
-		return fmt.Errorf("Project indices don't match, quitting!")
+		return errors.New("Project indices don't match, quitting!")
 	}
 
 	// don't allow login before this since that becomes an attack vector where a person can guess
 	// multiple passwords
 	err = LoginToPlatform(username, password)
 	if err != nil {
-		log.Println("Error while logging on to the platform", err)
-		return err
+		return errors.Wrap(err, "Error while logging on to the platform")
 	}
 
 	go RefreshLogin(username, password) // update local copy of the recipient every 5 minutes
 
 	RecpSeed, err = wallet.DecryptSeed(LocalRecipient.U.EncryptedSeed, LocalSeedPwd)
 	if err != nil {
-		log.Println("Error while decrypting seed", err)
-		return err
+		return errors.Wrap(err, "Error while decrypting seed")
 	}
 
 	RecpPublicKey, err = wallet.ReturnPubkey(RecpSeed)
 	if err != nil {
-		log.Println("Error while returning publickey", err)
-		return err
+		return errors.Wrap(err, "Error while returning publickey")
 	}
 
 	if RecpPublicKey != LocalRecipient.U.PublicKey {
 		log.Println("PUBLIC KEYS DON'T MATCH, QUITTING!")
-		return fmt.Errorf("PUBLIC KEYS DON'T MATCH, QUITTING!")
+		return errors.New("PUBLIC KEYS DON'T MATCH, QUITTING!")
 	}
 
 	LocalProject, err = GetLocalProjectDetails(LocalProjIndex)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "couldn't get local project details")
 	}
 
 	if LocalProject.Stage < 4 {
 		log.Println("TRYING TO INSTALL A PROJECT THAT HASN'T BEEN FUNDED YET, QUITTING!")
-		return fmt.Errorf("TRYING TO INSTALL A PROJECT THAT HASN'T BEEN FUNDED YET, QUITTING!")
+		return errors.New("TRYING TO INSTALL A PROJECT THAT HASN'T BEEN FUNDED YET, QUITTING!")
 	}
 
 	// check for device id and set it if none is set
 	err = CheckDeviceID()
 	if err != nil {
-		return err
+		return errors.Wrap(err, "could not check device id")
 	}
 
 	DeviceId, err = GetDeviceID() // Stores DeviceId
 	if err != nil {
-		return err
+		return errors.Wrap(err, "could not get device id from local storage")
 	}
 
 	err = StoreStartTime()
 	if err != nil {
-		return err
+		return errors.Wrap(err, "could not store start time locally")
 	}
 
 	// sotre location at the start because if a person changes location, it is likely that the
 	// teller goes offline and we get notified
 	err = StoreLocation(mapskey) // stores DeviceLocation
 	if err != nil {
-		return err
+		return errors.Wrap(err, "could not store location of teller")
 	}
 
 	err = GetPlatformEmail()
 	if err != nil {
-		return err
+		return errors.Wrap(err, "could not store platform email")
 	}
 
 	DeviceInfo = "Raspberry Pi3 Model B+"

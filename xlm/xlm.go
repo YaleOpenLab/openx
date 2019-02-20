@@ -6,6 +6,7 @@ package xlm
 // would be nice to use them when we require so.
 import (
 	"fmt"
+	"github.com/pkg/errors"
 	"log"
 	"net/http"
 
@@ -31,7 +32,7 @@ func GetXLM(PublicKey string) error {
 	// gives only a constant amount of stellar, so no need to pass it a coin param
 	resp, err := http.Get("https://friendbot.stellar.org/?addr=" + PublicKey)
 	if err != nil || resp.Status != "200 OK" {
-		return fmt.Errorf("API Request did not succeed") // need this separately
+		return errors.New("API Request did not succeed") // need this separately
 	}
 	return nil
 }
@@ -50,17 +51,17 @@ func SendTx(Seed string, tx *build.TransactionBuilder) (int32, string, error) {
 	// Sign the transaction to prove you are actually the person sending it.
 	txe, err := tx.Sign(Seed)
 	if err != nil {
-		return -1, "", err
+		return -1, "", errors.Wrap(err, "could not sign tx")
 	}
 
 	txeB64, err := txe.Base64()
 	if err != nil {
-		return -1, "", err
+		return -1, "", errors.Wrap(err, "could not convert tx to base 64 representation")
 	}
 	// And finally, send it off to Stellar
 	resp, err := TestNetClient.SubmitTransaction(txeB64)
 	if err != nil {
-		return -1, "", err
+		return -1, "", errors.Wrap(err, "could not submit tx to horizon")
 	}
 
 	fmt.Printf("Propagated Transaction: %s, sequence: %d\n", resp.Hash, resp.Ledger)
@@ -117,7 +118,7 @@ func SendXLMCreateAccount(destination string, amount string, Seed string) (int32
 	)
 
 	if err != nil {
-		return -1, "", err
+		return -1, "", errors.Wrap(err, "could not build transaction")
 	}
 
 	return SendTx(Seed, tx)
@@ -140,7 +141,7 @@ func SendXLM(destination string, amount string, Seed string, memo string) (int32
 	)
 
 	if err != nil {
-		return -1, "", err
+		return -1, "", errors.Wrap(err, "could not build transaction")
 	}
 
 	return SendTx(Seed, tx)
@@ -155,19 +156,19 @@ func RefillAccount(publicKey string, platformSeed string) error {
 		_, _, err = SendXLMCreateAccount(publicKey, consts.DonateBalance, platformSeed)
 		if err != nil {
 			log.Println("Account Could not be created")
-			return fmt.Errorf("Account Could not be created")
+			return errors.New("Account Could not be created")
 		}
 	}
 	// balance is in string, convert to float
 	balance, err := GetNativeBalance(publicKey)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "could not get native balance")
 	}
 	balanceI := utils.StoF(balance)
 	if balanceI < 3 { // to setup trustlines
 		_, _, err = SendXLM(publicKey, consts.DonateBalance, platformSeed, "Sending XLM to refill")
 		if err != nil {
-			return fmt.Errorf("Account doesn't have funds or invalid seed")
+			return errors.New("Account doesn't have funds or invalid seed")
 		}
 	}
 	return nil

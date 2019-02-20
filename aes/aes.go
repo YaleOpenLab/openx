@@ -5,10 +5,9 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
-	"fmt"
+	"github.com/pkg/errors"
 	"io"
 	"io/ioutil"
-	"log"
 	"os"
 
 	utils "github.com/YaleOpenLab/openx/utils"
@@ -20,8 +19,7 @@ func Encrypt(data []byte, passphrase string) ([]byte, error) {
 	block, _ := aes.NewCipher(key)
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
-		log.Println("Error while opening new GCM block", err)
-		return data, err
+		return data, errors.Wrap(err, "Error while opening new GCM block")
 	}
 	nonce := make([]byte, gcm.NonceSize())
 	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
@@ -34,26 +32,23 @@ func Encrypt(data []byte, passphrase string) ([]byte, error) {
 // Decrypt decrypts a given data stream with a given passphrase
 func Decrypt(data []byte, passphrase string) ([]byte, error) {
 	if len(data) == 0 || len(passphrase) == 0 {
-		return data, fmt.Errorf("Length of data is zero, can't decrpyt!")
+		return data, errors.New("Length of data is zero, can't decrpyt!")
 	}
 	tempParam := utils.SHA3hash(passphrase)
 	key := []byte(tempParam[96:128]) // last 32 characters in hash
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		log.Println("Error while initalizing new cipher", err)
-		return data, err
+		return data, errors.Wrap(err, "Error while initalizing new cipher")
 	}
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
-		log.Println("", err)
-		return data, err
+		return data, errors.Wrap(err, "failed to initialize new gcm block")
 	}
 	nonceSize := gcm.NonceSize()
 	nonce, ciphertext := data[:nonceSize], data[nonceSize:]
 	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
-		log.Println("Error while opening gcm mode", err)
-		return plaintext, err
+		return plaintext, errors.Wrap(err, "Error while opening gcm mode")
 	}
 	return plaintext, nil
 }
@@ -62,14 +57,12 @@ func Decrypt(data []byte, passphrase string) ([]byte, error) {
 func EncryptFile(filename string, data []byte, passphrase string) error {
 	f, err := os.Create(filename)
 	if err != nil {
-		log.Println("Error whiel creating file", err)
-		return err
+		return errors.Wrap(err, "Error while creating file")
 	}
 	defer f.Close()
 	data, err = Encrypt(data, passphrase)
 	if err != nil {
-		log.Println("Error while encrypting file", err)
-		return err
+		return errors.Wrap(err, "Error while encrypting file")
 	}
 	f.Write(data)
 	return nil

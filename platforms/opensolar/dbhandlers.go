@@ -2,7 +2,7 @@ package opensolar
 
 import (
 	"encoding/json"
-	"fmt"
+	"github.com/pkg/errors"
 
 	database "github.com/YaleOpenLab/openx/database"
 	utils "github.com/YaleOpenLab/openx/utils"
@@ -13,14 +13,14 @@ import (
 func (a *Project) Save() error {
 	db, err := database.OpenDB()
 	if err != nil {
-		return err
+		return errors.Wrap(err, "couldn't open db")
 	}
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(database.ProjectsBucket)
 		encoded, err := json.Marshal(a)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "couldn't marshal json")
 		}
 		return b.Put([]byte(utils.ItoB(a.Index)), encoded)
 	})
@@ -32,14 +32,14 @@ func RetrieveProject(key int) (Project, error) {
 	var inv Project
 	db, err := database.OpenDB()
 	if err != nil {
-		return inv, err
+		return inv, errors.Wrap(err, "couldn't open db")
 	}
 	defer db.Close()
 	err = db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket(database.ProjectsBucket)
 		x := b.Get(utils.ItoB(key))
 		if x == nil {
-			return fmt.Errorf("Retrieved project nil")
+			return errors.New("Retrieved project nil")
 		}
 		return json.Unmarshal(x, &inv)
 	})
@@ -51,7 +51,7 @@ func RetrieveAllProjects() ([]Project, error) {
 	var arr []Project
 	db, err := database.OpenDB()
 	if err != nil {
-		return arr, err
+		return arr, errors.Wrap(err, "couldn't open db")
 	}
 	defer db.Close()
 	err = db.View(func(tx *bolt.Tx) error {
@@ -64,7 +64,7 @@ func RetrieveAllProjects() ([]Project, error) {
 			}
 			err := json.Unmarshal(x, &rProject)
 			if err != nil {
-				return err
+				return errors.Wrap(err, "couldn't marshal json")
 			}
 			arr = append(arr, rProject)
 		}
@@ -78,7 +78,7 @@ func RetrieveProjectsAtStage(stage float64) ([]Project, error) {
 	var arr []Project
 	db, err := database.OpenDB()
 	if err != nil {
-		return arr, err
+		return arr, errors.Wrap(err, "couldn't open db")
 	}
 	defer db.Close()
 	err = db.View(func(tx *bolt.Tx) error {
@@ -91,7 +91,7 @@ func RetrieveProjectsAtStage(stage float64) ([]Project, error) {
 			}
 			err := json.Unmarshal(x, &rProject)
 			if err != nil {
-				return err
+				return errors.Wrap(err, "couldn't marshal json")
 			}
 			if rProject.Stage == stage {
 				arr = append(arr, rProject)
@@ -107,7 +107,7 @@ func RetrieveContractorProjects(stage float64, index int) ([]Project, error) {
 	var arr []Project
 	db, err := database.OpenDB()
 	if err != nil {
-		return arr, err
+		return arr, errors.Wrap(err, "couldn't open db")
 	}
 	defer db.Close()
 	err = db.View(func(tx *bolt.Tx) error {
@@ -120,7 +120,7 @@ func RetrieveContractorProjects(stage float64, index int) ([]Project, error) {
 			}
 			err := json.Unmarshal(x, &rProject)
 			if err != nil {
-				return err
+				return errors.Wrap(err, "couldn't marshal json")
 			}
 			if rProject.Stage == stage && rProject.Contractor.U.Index == index {
 				arr = append(arr, rProject)
@@ -136,7 +136,7 @@ func RetrieveOriginatorProjects(stage float64, index int) ([]Project, error) {
 	var arr []Project
 	db, err := database.OpenDB()
 	if err != nil {
-		return arr, err
+		return arr, errors.Wrap(err, "couldn't open db")
 	}
 	defer db.Close()
 	err = db.View(func(tx *bolt.Tx) error {
@@ -149,7 +149,7 @@ func RetrieveOriginatorProjects(stage float64, index int) ([]Project, error) {
 			}
 			err := json.Unmarshal(x, &rProject)
 			if err != nil {
-				return err
+				return errors.Wrap(err, "couldn't marshal json")
 			}
 			if rProject.Stage == stage && rProject.Originator.U.Index == index {
 				arr = append(arr, rProject)
@@ -165,7 +165,7 @@ func RetrieveRecipientProjects(stage float64, index int) ([]Project, error) {
 	var arr []Project
 	db, err := database.OpenDB()
 	if err != nil {
-		return arr, err
+		return arr, errors.Wrap(err, "couldn't open db")
 	}
 	defer db.Close()
 	err = db.View(func(tx *bolt.Tx) error {
@@ -178,7 +178,7 @@ func RetrieveRecipientProjects(stage float64, index int) ([]Project, error) {
 			}
 			err := json.Unmarshal(x, &rProject)
 			if err != nil {
-				return nil
+				return errors.Wrap(err, "couldn't marshal json")
 			}
 			if rProject.Stage == stage && rProject.RecipientIndex == index {
 				arr = append(arr, rProject)
@@ -195,7 +195,7 @@ func RetrieveLockedProjects() ([]Project, error) {
 	var arr []Project
 	db, err := database.OpenDB()
 	if err != nil {
-		return arr, err
+		return arr, errors.Wrap(err, "couldn't open db")
 	}
 	defer db.Close()
 	err = db.View(func(tx *bolt.Tx) error {
@@ -208,7 +208,7 @@ func RetrieveLockedProjects() ([]Project, error) {
 			}
 			err := json.Unmarshal(x, &rProject)
 			if err != nil {
-				return err
+				return errors.Wrap(err, "couldn't marshal json")
 			}
 			if rProject.Lock {
 				arr = append(arr, rProject)
@@ -223,7 +223,7 @@ func RetrieveLockedProjects() ([]Project, error) {
 func SaveOriginatorMoU(projIndex int, hash string) error {
 	a, err := RetrieveProject(projIndex)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "couldn't retrieve project")
 	}
 	a.OriginatorMoUHash = hash
 	return a.Save()
@@ -233,7 +233,7 @@ func SaveOriginatorMoU(projIndex int, hash string) error {
 func SaveContractHash(projIndex int, hash string) error {
 	a, err := RetrieveProject(projIndex)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "couldn't retrieve project")
 	}
 	a.ContractorContractHash = hash
 	return a.Save()
@@ -243,7 +243,7 @@ func SaveContractHash(projIndex int, hash string) error {
 func SaveInvPlatformContract(projIndex int, hash string) error {
 	a, err := RetrieveProject(projIndex)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "couldn't retrieve project")
 	}
 	a.InvPlatformContractHash = hash
 	return a.Save()
@@ -253,7 +253,7 @@ func SaveInvPlatformContract(projIndex int, hash string) error {
 func SaveRecPlatformContract(projIndex int, hash string) error {
 	a, err := RetrieveProject(projIndex)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "couldn't retrieve project")
 	}
 	a.RecPlatformContractHash = hash
 	return a.Save()

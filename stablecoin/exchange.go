@@ -1,7 +1,7 @@
 package stablecoin
 
 import (
-	"fmt"
+	"github.com/pkg/errors"
 	"log"
 
 	assets "github.com/YaleOpenLab/openx/assets"
@@ -14,30 +14,29 @@ import (
 func Exchange(recipientPK string, recipientSeed string, convAmount string) error {
 
 	if !xlm.AccountExists(recipientPK) {
-		return fmt.Errorf("Account does not exist, quitting!")
+		return errors.New("Account does not exist, quitting!")
 	}
 
 	// check whether user has enough xlm to pay. If not, quit
 	balance, err := xlm.GetNativeBalance(recipientPK)
 	if err != nil {
-		log.Println(err)
-		return err
+		return errors.Wrap(err, "couldn't get native balance from api")
 	}
 
 	if utils.StoF(balance) <= utils.StoF(convAmount) {
-		return fmt.Errorf("insufficient balance")
+		return errors.New("insufficient balance")
 	}
 
 	// TODO: add check for trust limit here
 	hash, err := assets.TrustAsset(consts.Code, consts.StableCoinAddress, consts.StablecoinTrustLimit, recipientPK, recipientSeed)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "couldn't trust asset")
 	}
 	log.Println("tx hash for trusting stableUSD: ", hash)
 	// now send coins across and see if our tracker detects it
 	_, hash, err = xlm.SendXLM(consts.StablecoinPublicKey, convAmount, recipientSeed, "Exchange XLM for stablecoin")
 	if err != nil {
-		return err
+		return errors.Wrap(err, "couldn't send xlm")
 	}
 	log.Println("tx hash for sent xlm: ", hash, "pubkey: ", recipientPK)
 	return nil
@@ -63,13 +62,13 @@ func OfferExchange(publicKey string, seed string, invAmount string) error {
 		// checking whether the user has enough xlm balance to cover for the exchange is done by Exchange()
 		xlmBalance, err := xlm.GetNativeBalance(publicKey)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "couldn't get native balance from api")
 		}
 
 		totalUSD := oracle.ExchangeXLMforUSD(xlmBalance) // amount in stablecoin that the user would receive for diff
 
 		if totalUSD < diff {
-			return fmt.Errorf("User does not have enough funds to compelte this transaction")
+			return errors.New("User does not have enough funds to compelte this transaction")
 		}
 
 		// now we need to exchange XLM equal to diff in stablecoin
@@ -79,7 +78,7 @@ func OfferExchange(publicKey string, seed string, invAmount string) error {
 
 		err = Exchange(publicKey, seed, utils.FtoS(amountToExchange))
 		if err != nil {
-			return fmt.Errorf("Unable to exchange XLM for USD and automate payment. Please get more STABLEUSD to fulfil the payment")
+			return errors.New("Unable to exchange XLM for USD and automate payment. Please get more STABLEUSD to fulfil the payment")
 		}
 	}
 

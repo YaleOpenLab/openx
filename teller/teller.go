@@ -145,9 +145,9 @@ func main() {
 	promptColor := color.New(color.FgHiYellow).SprintFunc()
 	whiteColor := color.New(color.FgHiWhite).SprintFunc()
 	rl, err := readline.NewEx(&readline.Config{
-		Prompt:      promptColor("teller") + whiteColor("# "),
-		HistoryFile: consts.TellerHomeDir + "/history.txt",
-		AutoComplete:  AutoComplete(),
+		Prompt:       promptColor("teller") + whiteColor("# "),
+		HistoryFile:  consts.TellerHomeDir + "/history.txt",
+		AutoComplete: AutoComplete(),
 	})
 	defer rl.Close()
 

@@ -1,7 +1,7 @@
 package rpc
 
 import (
-	"fmt"
+	"github.com/pkg/errors"
 	"log"
 	"net/http"
 
@@ -25,13 +25,12 @@ func EntityValidateHelper(w http.ResponseWriter, r *http.Request) (platform.Enti
 	// need to pass the pwhash param here
 	if r.URL.Query() == nil || r.URL.Query()["username"] == nil ||
 		len(r.URL.Query()["pwhash"][0]) != 128 {
-		return prepInvestor, fmt.Errorf("Invalid params passed")
+		return prepInvestor, errors.New("Invalid params passed")
 	}
 
 	prepEntity, err := platform.ValidateEntity(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
 	if err != nil {
-		log.Println("Error while validating entity", err)
-		return prepEntity, err
+		return prepEntity, errors.Wrap(err, "Error while validating entity")
 	}
 
 	return prepEntity, nil

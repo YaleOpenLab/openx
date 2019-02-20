@@ -1,6 +1,6 @@
 # OpenX
 
-[![Build Status](https://travis-ci.org/YaleOpenLab/openx.svg?branch=master)](https://travis-ci.org/YaleOpenLab/openx)
+[![Build Status](https://travis-ci.com/YaleOpenLab/openx.svg?branch=master)](https://travis-ci.com/YaleOpenLab/openx)
 [![Codecov](https://codecov.io/gh/YaleOpenLab/openx/branch/master/graph/badge.svg)](https://codecov.io/gh/YaleOpenLab/openx)
 
 This repo contains a WIP implementation of the OpenX platform of platforms idea in stellar. Broadly, the openx model seeks to implement the paradigm of investing without hassles and enabling smart ownership with the help of semi trusted entities on the blockchain. The openx model can be thought more generally as a platform of platforms and houses multiple platforms within it (in `platforms/`).  The goal is to have a common interface (where you complete KYC, authentication, etc) and to be able to invest in multiple assets. We use the help of the blockchain to have trustless proof of ownership and debt along with a publicly auditable source of data along with proofs. Currently there are two platforms housed within openx:

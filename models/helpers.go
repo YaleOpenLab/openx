@@ -1,7 +1,7 @@
 package models
 
 import (
-	"fmt"
+	"github.com/pkg/errors"
 	"log"
 	"time"
 
@@ -21,8 +21,7 @@ func SendUSDToPlatform(invSeed string, invAmount string, memo string) (string, e
 
 	invPubkey, err := wallet.ReturnPubkey(invSeed)
 	if err != nil {
-		log.Println("Error while returning pubkey", err)
-		return "", err
+		return "", errors.Wrap(err, "error while returning pubkey")
 	}
 
 	var oldPlatformBalance string
@@ -34,8 +33,7 @@ func SendUSDToPlatform(invSeed string, invAmount string, memo string) (string, e
 
 	_, txhash, err := assets.SendAsset(consts.Code, consts.StablecoinPublicKey, consts.PlatformPublicKey, invAmount, invSeed, invPubkey, memo)
 	if err != nil {
-		log.Println("Sending stableusd to platform failed", consts.PlatformPublicKey, invAmount, invSeed, invPubkey, err)
-		return txhash, err
+		return txhash, errors.Wrap(err, "sending stableusd to platform failed")
 	}
 
 	log.Println("Sent STABLEUSD to platform, confirmation: ", txhash)
@@ -43,13 +41,11 @@ func SendUSDToPlatform(invSeed string, invAmount string, memo string) (string, e
 
 	newPlatformBalance, err := xlm.GetAssetBalance(consts.PlatformPublicKey, consts.Code)
 	if err != nil {
-		log.Println("Error while getting asset balance", err)
-		return txhash, err
+		return txhash, errors.Wrap(err, "error while getting asset balance")
 	}
 
 	if utils.StoF(newPlatformBalance)-utils.StoF(oldPlatformBalance) < utils.StoF(invAmount)-1 {
-		log.Println(newPlatformBalance, oldPlatformBalance)
-		return txhash, fmt.Errorf("Sent amount doesn't match with investment amount")
+		return txhash, errors.New("Sent amount doesn't match with investment amount")
 	}
 	return txhash, nil
 }
