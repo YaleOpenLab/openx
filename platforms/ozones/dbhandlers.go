@@ -70,6 +70,7 @@ func NewConstructionBond(mdate string, stype string, intrate float64, rating str
 	return cBond, err
 }
 
+// Save saves the changes in a living unit coop
 func (a *LivingUnitCoop) Save() error {
 	db, err := database.OpenDB()
 	if err != nil {
@@ -87,6 +88,7 @@ func (a *LivingUnitCoop) Save() error {
 	return err
 }
 
+// Save saves the changes in a construction bond
 func (a *ConstructionBond) Save() error {
 	db, err := database.OpenDB()
 	if err != nil {
@@ -158,7 +160,7 @@ func RetrieveAllConstructionBonds() ([]ConstructionBond, error) {
 	return arr, err
 }
 
-// RetrieveCoop retrieves a specifi coop from the database
+// RetrieveLivingUnitCoop retrieves a specifi coop from the database
 func RetrieveLivingUnitCoop(key int) (LivingUnitCoop, error) {
 	var bond LivingUnitCoop
 	db, err := database.OpenDB()
@@ -178,6 +180,7 @@ func RetrieveLivingUnitCoop(key int) (LivingUnitCoop, error) {
 	return bond, err
 }
 
+// RetrieveConstructionBond retrieves the consturction bond from memory
 func RetrieveConstructionBond(key int) (ConstructionBond, error) {
 	var bond ConstructionBond
 	db, err := database.OpenDB()

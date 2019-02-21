@@ -46,7 +46,7 @@ const (
 // For this, we have an additional param called Role which we can use to classify
 // this information and return to the caller
 
-// ValidateParams
+// ValidateParams is a struct used fro validating user params
 type ValidateParams struct {
 	Role   string
 	Entity interface{}
@@ -474,7 +474,7 @@ func uploadFile() {
 	})
 }
 
-// PlatformEmailResponse
+// PlatformEmailResponse is a structure used to contain the platform's email response
 type PlatformEmailResponse struct {
 	Email string
 }

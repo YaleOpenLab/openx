@@ -28,7 +28,7 @@ var opts struct {
 	Port int `short:"p" description:"The port on which the server runs on"`
 }
 
-// ParseConfig
+// ParseConfig parses ofcli config
 func ParseConfig(args []string) error {
 	_, err := flags.ParseArgs(&opts, args)
 	if err != nil {
