@@ -80,7 +80,7 @@ func endHandler() error {
 }
 
 func splitAndSend2Tx(memo string) (string, string, error) {
-	// 10 + 46 (ipfs hash length) characters
+	// 10 padding chars + 46 (ipfs hash length) characters
 	firstHalf := memo[:28]
 	secondHalf := memo[28:]
 	_, tx1, err := xlm.SendXLM(RecpPublicKey, "1", RecpSeed, firstHalf)
@@ -100,7 +100,7 @@ func splitAndSend2Tx(memo string) (string, string, error) {
 // and it must be over tls for preventing mitm attacks
 func checkPayback() {
 	for {
-		log.Println("PAYBACK TIME")
+		log.Println("Paybck interval reached. Paying back automatically")
 		assetName := LocalProject.DebtAssetCode
 		amount := oracle.MonthlyBill() // TODO: consumption data must be accumulated from zigbee in the future
 
@@ -113,7 +113,7 @@ func checkPayback() {
 	}
 }
 
-// UpdateState hashes the current state of the teller into ipfs and commits the ipfs hash
+// updateState hashes the current state of the teller into ipfs and commits the ipfs hash
 // to the blockchain
 func updateState() {
 	for {

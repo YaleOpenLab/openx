@@ -21,6 +21,13 @@ func StartTeller() error {
 		return errors.Wrap(err, "Error while reading email values from config file")
 	}
 
+	if viper.Get("platformPublicKey") == nil || viper.Get("seedpwd") == nil || viper.Get("username") == nil ||
+		viper.Get("password") == nil || viper.Get("apiurl") == nil || viper.Get("mapskey") == nil ||
+		viper.Get("projIndex") == nil || viper.Get("assetName") == nil {
+		return errors.New("Required parameters to be present in the config file: platformPublicKey, " +
+			"seedpwd, username, password, apiurl, mapskey, projIndex, assetName (case-sensitive)")
+	}
+
 	PlatformPublicKey = viper.Get("platformPublicKey").(string)
 	LocalSeedPwd = viper.Get("seedpwd").(string)               // seed password used to unlock the seed of the recipient on the platform
 	username := viper.Get("username").(string)                 // username of the recipient on the platform

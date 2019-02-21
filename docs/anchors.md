@@ -14,7 +14,7 @@ We only need to identify one anchor for what we aim to do:
 
 On searching, there seem to be multiple options that deal with this. The below section highlights that with a short description of what the various options do, along with pdf links to their whitepapers in case one wants to delve deeper:
 
-1. StrongholdUSD - seems to be the most popular stablecoin on stellar, backed by IBM's blockchain venture arm. They accept deposits in USD and then give back USD deposits that can be used on stellar to interact with the in-protocol DEX. They claim to be 100% USD backed, have an SEC certified custodian of assets named PrimeTrust based in Nevada and also claim to do KYC/AML for all users wishing to interact with StrongholdUSD.
+1. StrongholdUSD - seems to be the most popular stablecoin on stellar, backed by IBM's blockchain venture arm. They accept deposits in USD and then give back USD deposits that can be used on stellar to interact with the in-protocol DEX. They claim to be 100% USD backed, have an SEC certified custodian of assets named PrimeTrust based in Nevada and also claim to do KYC/AML for all users wishing to interact with StrongholdUSD. StableUSD is live: https://stellar.expert/explorer/public/asset/USD-GBSTRUSD7IRX73RQZBL3RQUH6KS3O4NYFY3QCALDLZD77XMZOPWAVTUK
 
 2. Tempo - Jed McCaleb is on the board of this stablecoin. They accept deposits in EUR and have a stablecoin named EURT, which they claim is 1:1 backed by on hand Euro. EU regulated company based out of France and the primary European anchor on Stellar. They also claim to do KYC/AML for all their users. Tempo was funded by an ICO and has some pre-mine stuff as well, so we need to audit this part carefully. They also support smaller anchors like coins.ph on their platform.
 
