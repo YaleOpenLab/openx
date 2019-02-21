@@ -65,13 +65,13 @@ var (
 	// StartHash records the blockhash when the teller starts and NowHash stores the blockhash at a particular instant
 	StartHash string
 	NowHash   string
-	// the header of the ipfs hash chain
+	// HashChainHeader is the header of the ipfs hash chain
 	HashChainHeader string
 )
 
 var cleanupDone chan struct{}
 
-func AutoComplete() readline.AutoCompleter {
+func autoComplete() readline.AutoCompleter {
 	return readline.NewPrefixCompleter(
 		readline.PcItem("help",
 			readline.PcItem("update"),
@@ -157,7 +157,7 @@ func main() {
 	rl, err := readline.NewEx(&readline.Config{
 		Prompt:       promptColor("teller") + whiteColor("# "),
 		HistoryFile:  consts.TellerHomeDir + "/history.txt",
-		AutoComplete: AutoComplete(),
+		AutoComplete: autoComplete(),
 	})
 	defer rl.Close()
 

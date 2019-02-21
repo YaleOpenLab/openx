@@ -176,7 +176,7 @@ func preInvestmentCheck(projIndex int, invIndex int, invAmount string) (Project,
 	return project, nil
 }
 
-// the SeedInvest function of the opensolar platform
+// SeedInvest is the seed investment function of the opensolar platform
 func SeedInvest(projIndex int, invIndex int, recpIndex int, invAmount string,
 	invSeed string, recpSeed string) error {
 
@@ -199,7 +199,7 @@ func SeedInvest(projIndex int, invIndex int, recpIndex int, invAmount string,
 	return err
 }
 
-// the main invest function of the opensolar platform
+// invest is the main invest function of the opensolar platform
 func Invest(projIndex int, invIndex int, invAmount string, invSeed string) error {
 	var err error
 

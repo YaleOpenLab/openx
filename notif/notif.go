@@ -105,7 +105,7 @@ func SendSeedInvestmentNotifToInvestor(projIndex int, to string, stableHash stri
 	return sendMail(body, to)
 }
 
-// SendPaybackNotifToInvestor sends a notification email to the recipient when he
+// SendPaybackNotifToRecipient sends a notification email to the recipient when he
 // pays back towards a particular order
 func SendPaybackNotifToRecipient(projIndex int, to string, stableUSDHash string, debtPaybackHash string) error {
 	// this is sent to the recipient
@@ -247,7 +247,7 @@ func SendSternPaybackAlertEmailG(projIndex int, to string) error {
 	return sendMail(body, to)
 }
 
-// SendSternPaybackAlertEmailG sends a disconnection email notification to the guarantor
+// SendDisconnectionEmailG sends a disconnection email notification to the guarantor
 func SendDisconnectionEmailG(projIndex int, to string) error {
 	startString := "Greetings from the opensolar platform! \n\n" +
 		"We're writing to let you know that electricity produced from your project numbered: " + utils.ItoS(projIndex) +

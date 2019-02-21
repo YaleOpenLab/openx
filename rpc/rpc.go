@@ -15,7 +15,7 @@ import (
 
 // API documentation over at the apidocs repo
 
-// StatusResponse defines a generic status reponse structure
+// StatusResponse defines a generic status response structure
 type StatusResponse struct {
 	Code   int
 	Status string

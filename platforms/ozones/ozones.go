@@ -11,7 +11,7 @@ import (
 
 // TODO: add description of what the construction bond model does in ozones below with inputs from John
 
-// define the various parameters that constitute a Construction Bond
+// ConstructionBond defines the various parameters that constitute a Construction Bond
 type ConstructionBond struct {
 	Index int
 
@@ -42,7 +42,7 @@ type ConstructionBond struct {
 	// TODO: add more parameters based on discussions and feedback from Martin and John
 }
 
-// define the various parameters that constitute a Living Unit Coop
+// LivingUnitCoop defines the various parameters that constitute a Living Unit Coop
 type LivingUnitCoop struct {
 	Index int
 
@@ -71,6 +71,7 @@ type LivingUnitCoop struct {
 	// TODO: add more parameters based on discussions and feedback from Martin and John
 }
 
+// InitializePlatform borrows the init platform method from the common platform handler
 func InitializePlatform() error {
 	return platform.InitializePlatform()
 }

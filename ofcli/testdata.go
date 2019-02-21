@@ -10,7 +10,7 @@ import (
 	utils "github.com/YaleOpenLab/openx/utils"
 )
 
-// InsertDummyData
+// InsertDummyData inserts dummy data into ofcli
 func InsertDummyData() error {
 	var err error
 	// populate database with dumym data
