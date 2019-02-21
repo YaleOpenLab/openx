@@ -180,7 +180,7 @@ func RetrieveLivingUnitCoop(key int) (LivingUnitCoop, error) {
 	return bond, err
 }
 
-// RetrieveConstructionBond retrieves the consturction bond from memory
+// RetrieveConstructionBond retrieves the construction bond from memory
 func RetrieveConstructionBond(key int) (ConstructionBond, error) {
 	var bond ConstructionBond
 	db, err := database.OpenDB()

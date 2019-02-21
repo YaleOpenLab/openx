@@ -1,0 +1,3 @@
+# Ofcli
+
+Ofcli is a command line interface to interface with the platform for platform admins. Ofcli has to be run on the same server as the platform since it requires local db acccess, local db login and similar (along with unlocking the platform seed and stablecoin seed). Ofcli is effective because it can interface with the db and the platform quite effectively and this remediates the need for a front end admin dashboard to some extent. Ofcli has most features of the platform but does not have an option which would enable multiple parties to interact at the same time. An alternative to running ofcli as an admin would be to run the emulator and call the db directly by calling the relevant functions for upgrading privileges.
