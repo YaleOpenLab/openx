@@ -34,7 +34,7 @@ func StartPlatform() (string, string, error) {
 	return publicKey, seed, err
 }
 
-// NewUserPrompt
+// NewUserPrompt is an ofcli helper function
 func NewUserPrompt() (string, string, string, string, error) {
 	realName, err := scan.ScanForString()
 	if err != nil {
@@ -64,7 +64,7 @@ func NewUserPrompt() (string, string, string, string, error) {
 	return realName, loginUserName, loginPassword, seedPassword, err
 }
 
-// NewInvestorPrompt
+// NewInvestorPrompt is an ofcli helper function
 func NewInvestorPrompt() error {
 	log.Println("You have chosen to create a new investor account, welcome")
 	loginUserName, loginPassword, realName, seedpwd, err := NewUserPrompt()
@@ -81,7 +81,7 @@ func NewInvestorPrompt() error {
 	return err
 }
 
-// NewRecipientPrompt
+// NewRecipientPrompt is an ofcli helper function
 func NewRecipientPrompt() error {
 	log.Println("You have chosen to create a new recipient account, welcome")
 	loginUserName, loginPassword, realName, seedpwd, err := NewUserPrompt()
@@ -97,7 +97,7 @@ func NewRecipientPrompt() error {
 	return err
 }
 
-// LoginPrompt
+// LoginPrompt is an ofcli helper function
 func LoginPrompt() (database.Investor, database.Recipient, solar.Entity, bool, bool, error) {
 	rbool := false
 	cbool := false
@@ -163,7 +163,7 @@ func LoginPrompt() (database.Investor, database.Recipient, solar.Entity, bool, b
 	return investor, recipient, contractor, rbool, cbool, nil
 }
 
-// OriginContractPrompt
+// OriginContractPrompt is an ofcli helper function
 func OriginContractPrompt(contractor *solar.Entity) error {
 	fmt.Println("YOU HAVE DECIDED TO PROPOSE A NEW CONTRACT")
 	fmt.Println("ENTER THE PANEL SIZE")
@@ -205,7 +205,7 @@ func OriginContractPrompt(contractor *solar.Entity) error {
 	return nil
 }
 
-// ProposeContractPrompt
+// ProposeContractPrompt is an ofcli helper function
 func ProposeContractPrompt(contractor *solar.Entity) error {
 	fmt.Println("YOU HAVE DECIDED TO PROPOSE A NEW CONTRACT")
 	fmt.Println("ENTER THE PROJECT INDEX")
@@ -255,7 +255,7 @@ func ProposeContractPrompt(contractor *solar.Entity) error {
 	return nil
 }
 
-// Stage3ProjectsDisplayPrompt
+// Stage3ProjectsDisplayPrompt is an ofcli helper function
 func Stage3ProjectsDisplayPrompt() {
 	fmt.Println("------------LIST OF ALL AVAILABLE PROJECTS------------")
 	allProjects, err := solar.RetrieveProjectsAtStage(solar.FinalizedProject)
@@ -266,7 +266,7 @@ func Stage3ProjectsDisplayPrompt() {
 	}
 }
 
-// DisplayOriginProjects
+// DisplayOriginProjects is an ofcli helper function
 func DisplayOriginProjects() {
 	fmt.Println("PRINTING ALL ORIGINATED PROJECTS: ")
 	x, err := solar.RetrieveProjectsAtStage(solar.OriginProject)
@@ -277,7 +277,7 @@ func DisplayOriginProjects() {
 	}
 }
 
-// ExitPrompt
+// ExitPrompt is an ofcli helper function
 func ExitPrompt() {
 	// check whether he wants to go back to the display all screen again
 	fmt.Println("DO YOU REALLY WANT TO EXIT? (PRESS Y TO CONFIRM)")
@@ -291,7 +291,7 @@ func ExitPrompt() {
 	}
 }
 
-// BalanceDisplayPrompt
+// BalanceDisplayPrompt is an ofcli helper function
 func BalanceDisplayPrompt(publicKey string) {
 	balances, err := xlm.GetAllBalances(publicKey)
 	if err != nil {

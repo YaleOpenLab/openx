@@ -5,23 +5,23 @@ import (
 )
 
 var (
-	// WhiteColor
+	// WhiteColor is a pretty handler for the default colors defined
 	WhiteColor = color.FgHiWhite
-	// GreenColor
+	// GreenColor is a pretty handler for the default colors defined
 	GreenColor = color.FgHiGreen
-	// RedColor
+	// RedColor is a pretty handler for the default colors defined
 	RedColor = color.FgHiRed
-	// CyanColor
+	// CyanColor is a pretty handler for the default colors defined
 	CyanColor = color.FgHiCyan
-	// HiYellowColor
+	// HiYellowColor is a pretty handler for the default colors defined
 	HiYellowColor = color.FgHiYellow
-	// YellowColor
+	// YellowColor is a pretty handler for the default colors defined
 	YellowColor = color.FgYellow
-	// MagentaColor
+	// MagentaColor is a pretty handler for the default colors defined
 	MagentaColor = color.FgMagenta
-	// HiWhiteColor
+	// HiWhiteColor is a pretty handler for the default colors defined
 	HiWhiteColor = color.FgHiWhite
-	// FaintColor
+	// FaintColor is a pretty handler for the default colors defined
 	FaintColor = color.Faint
 )
 

@@ -28,7 +28,7 @@ package opensolar
 // TODO: complete this area once we have a rudimentary frontend so that we can test stuff
 // more easily and link it with the reputation system
 
-// Feedback
+// Feedback defines a structure that can be used for providing feedback about entities
 type Feedback struct {
 	Content string
 	// the content of the feedback, good / bad

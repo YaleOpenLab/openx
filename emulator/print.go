@@ -8,7 +8,7 @@ import (
 	"github.com/stellar/go/protocols/horizon"
 )
 
-// PrintProjects
+// PrintProjects is a vanity prettyprint function
 func PrintProjects(projects []solar.Project) {
 	for _, project := range projects {
 		PrintProject(project)
@@ -63,14 +63,14 @@ func PrintInvestor(investor database.Investor) {
 	fmt.Println("         Your Local Assets are: ", investor.U.LocalAssets)
 }
 
-// PrintUsers
+// PrintUsers is a vanity prettyprint function
 func PrintUsers(users []database.User) {
 	for _, elem := range users {
 		PrintUser(elem)
 	}
 }
 
-// PrintUser
+// PrintUser is a vanity prettyprint function
 func PrintUser(user database.User) {
 	fmt.Println("    WELCOME BACK ", user.Name)
 	fmt.Println("          Your user index is: ", user.Index)
@@ -102,7 +102,7 @@ func PrintRecipient(recipient database.Recipient) {
 	fmt.Println("          Your list of state hashes are: ", recipient.StateHashes)
 }
 
-// PrintEntity
+// PrintEntity is a vanity prettyprint function
 func PrintEntity(a solar.Entity) {
 	fmt.Println("    WELCOME BACK ", a.U.Name)
 	fmt.Println("    			 Your Index is ", a.U.Index)
@@ -116,7 +116,7 @@ func PrintEntity(a solar.Entity) {
 	fmt.Println("          Your Collateral Data is: ", a.CollateralData)
 }
 
-// PrintBalances
+// PrintBalances is a vanity prettyprint function
 func PrintBalances(balances []horizon.Balance) {
 	fmt.Println("   LIST OF ALL YOUR BALANCES: ")
 	for _, balance := range balances {
