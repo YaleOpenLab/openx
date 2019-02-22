@@ -61,25 +61,6 @@ func getCoopDetails() {
 	})
 }
 
-// CreateBond creates a new bond with the parameters passed to it
-func CreateBond() {
-	// newParams(mdate string, mrights string, stype string, intrate float64, rating string, bIssuer string, uWriter string
-	// unitCost float64, itype string, nUnits int, tax string
-	var bond opzones.ConstructionBond
-	var err error
-	bond, err = opzones.NewConstructionBond("Dec 21 2049", "Security Type", 5.4, "AAA", "Bond Issuer", "underwriter.com",
-		100000, "Instrument Type", 100, "No Fed tax for 10 years", 1, "title", "location", "string")
-	if err != nil {
-		log.Println("did not create new bond", err)
-		return
-	}
-	_, err = opzones.RetrieveConstructionBond(bond.Index)
-	if err != nil {
-		log.Println("did not retrieve bond", err)
-		return
-	}
-}
-
 // getBondDetails gets the details of a particular bond
 func getBondDetails() {
 	http.HandleFunc("/bond/get", func(w http.ResponseWriter, r *http.Request) {
