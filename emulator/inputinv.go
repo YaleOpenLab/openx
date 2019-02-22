@@ -76,6 +76,8 @@ func ParseInputInv(input []string) error {
 		createHelper(input, LocalInvestor.U.Username, LocalInvestor.U.Pwhash, LocalInvestor.U.PublicKey)
 	case "kyc":
 		kycHelper(input, LocalInvestor.U.Username, LocalInvestor.U.Pwhash, LocalInvestor.U.Inspector)
+	case "increasetrust":
+		increaseTrustHelper(input, LocalInvestor.U.Username, LocalInvestor.U.Pwhash)
 	// Investor only functions
 	case "vote":
 		if len(input) != 3 {

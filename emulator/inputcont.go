@@ -68,6 +68,8 @@ func ParseInputCont(input []string) error {
 		createHelper(input, LocalContractor.U.Username, LocalContractor.U.Pwhash, LocalContractor.U.PublicKey)
 	case "kyc":
 		kycHelper(input, LocalContractor.U.Username, LocalContractor.U.Pwhash, LocalContractor.U.Inspector)
+	case "increasetrust":
+		increaseTrustHelper(input, LocalContractor.U.Username, LocalContractor.U.Pwhash)
 	// Contractor only functions
 	case "propose":
 		fmt.Println("Proposing a contract can be done only through the opensolar webui" +

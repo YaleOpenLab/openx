@@ -28,6 +28,14 @@ func Exchange(recipientPK string, recipientSeed string, convAmount string) error
 		return errors.New("insufficient balance")
 	}
 
+	trustLimit, err := xlm.GetAssetTrustLimit(recipientPK, consts.Code)
+	if err != nil {
+		return errors.Wrap(err, "couldn't get the trustlimit of STABLEUSD, quitting!")
+	}
+
+	if utils.StoF(trustLimit) < utils.StoF(convAmount) {
+		return errors.Wrap(err, "trust limit doesn't warrant investment, please contact platform admin")
+	}
 	// TODO: add check for trust limit here
 	hash, err := assets.TrustAsset(consts.Code, consts.StableCoinAddress, consts.StablecoinTrustLimit, recipientPK, recipientSeed)
 	if err != nil {

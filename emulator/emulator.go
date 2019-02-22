@@ -81,9 +81,9 @@ func main() {
 	promptColor := color.New(color.FgHiYellow).SprintFunc()
 	whiteColor := color.New(color.FgHiWhite).SprintFunc()
 	rl, err := readline.NewEx(&readline.Config{
-		Prompt:      promptColor("emulator") + whiteColor("# "),
-		HistoryFile: consts.TellerHomeDir + "/history_emulator.txt",
-		// AutoComplete: lc.NewAutoCompleter(),
+		Prompt:       promptColor("emulator") + whiteColor("# "),
+		HistoryFile:  consts.TellerHomeDir + "/history_emulator.txt",
+		AutoComplete: autoComplete(),
 	})
 	ColorOutput("YOUR SEED IS: "+LocalSeed, RedColor)
 	if err != nil {

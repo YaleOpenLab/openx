@@ -95,7 +95,7 @@ func setupRoutes() {
 }
 
 // curl https://localhost/ping --insecure {"Code":200,"Status":""}
-// TODO: have an alternative for using insecure SSL here.
+// TODO: have an alternative for using insecure certificates here.
 func startServer(port int) {
 	setupRoutes()
 	err := http.ListenAndServeTLS(":"+utils.ItoS(port), "ssl/server.crt", "ssl/server.key", nil)

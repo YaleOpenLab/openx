@@ -5,6 +5,8 @@ import (
 	"github.com/pkg/errors"
 
 	aes "github.com/YaleOpenLab/openx/aes"
+	assets "github.com/YaleOpenLab/openx/assets"
+	consts "github.com/YaleOpenLab/openx/consts"
 	utils "github.com/YaleOpenLab/openx/utils"
 	wallet "github.com/YaleOpenLab/openx/wallet"
 	xlm "github.com/YaleOpenLab/openx/xlm"
@@ -376,4 +378,29 @@ func TopReputationUsers() ([]User, error) {
 		}
 	}
 	return allUsers, nil
+}
+
+func IncreaseTrustLimit(userIndex int, seedpwd string, trust string) error {
+
+	user, err := RetrieveUser(userIndex)
+	if err != nil {
+		return errors.Wrap(err, "couldn't retrieve user from database, quitting!")
+	}
+
+	seed, err := wallet.DecryptSeed(user.EncryptedSeed, seedpwd)
+	if err != nil {
+		return errors.Wrap(err, "couldn't decrypt seed, quitting!")
+	}
+
+	// we now have the seed, so we should upgrade the trustlimit by the margin requested. The margin passed here
+	// must not include the old trustlimit
+
+	trustLimit := utils.StoF(trust) + utils.StoF(consts.StablecoinTrustLimit)
+
+	_, err = assets.TrustAsset(consts.Code, consts.StableCoinAddress, utils.FtoS(trustLimit), user.PublicKey, seed)
+	if err != nil {
+		return errors.Wrap(err, "couldn't trust asset, quitting!")
+	}
+
+	return nil
 }

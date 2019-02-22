@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"github.com/pkg/errors"
+	"log"
 
 	database "github.com/YaleOpenLab/openx/database"
 	solar "github.com/YaleOpenLab/openx/platforms/opensolar"
@@ -67,40 +68,42 @@ func Login(username string, pwhash string) (string, error) {
 			return wString, errors.Wrap(err, "could not decrypt seed")
 		}
 	case "Entity":
+		log.Println("ENTITY?")
 		data, err = rpc.GetRequest(ApiUrl + "/entity/validate?" + "username=" + username + "&pwhash=" + pwhash)
-		return wString, errors.Wrap(err, "could not call entity validate endpoint")
-	}
-	var entity solar.Entity
-	err = json.Unmarshal(data, &entity)
-	if err != nil {
-		return wString, errors.Wrap(err, "could not unmarshal json")
-	}
-	if entity.Contractor {
-		LocalContractor = entity
-		wString = "Contractor"
-	} else if entity.Originator {
-		LocalOriginator = entity
-		wString = "Originator"
-	} else {
-		return wString, errors.New("Not a contractor")
-	}
-	ColorOutput("ENTER YOUR SEEDPWD: ", CyanColor)
-	LocalSeedPwd, err = scan.ScanRawPassword()
-	if err != nil {
-		return wString, errors.Wrap(err, "could not scan raw password")
-	}
-	if entity.Contractor {
-		LocalSeed, err = wallet.DecryptSeed(LocalContractor.U.EncryptedSeed, LocalSeedPwd)
 		if err != nil {
-			return wString, errors.Wrap(err, "could not decrypt seed")
+			return wString, errors.Wrap(err, "could not call entity validate endpoint")
 		}
-	} else if entity.Originator {
-		LocalSeed, err = wallet.DecryptSeed(LocalOriginator.U.EncryptedSeed, LocalSeedPwd)
+		var entity solar.Entity
+		err = json.Unmarshal(data, &entity)
 		if err != nil {
-			return wString, errors.Wrap(err, "could not decrypt seed")
+			return wString, errors.Wrap(err, "could not unmarshal json")
+		}
+		if entity.Contractor {
+			LocalContractor = entity
+			wString = "Contractor"
+		} else if entity.Originator {
+			LocalOriginator = entity
+			wString = "Originator"
+		} else {
+			return wString, errors.New("Not a contractor")
+		}
+		ColorOutput("ENTER YOUR SEEDPWD: ", CyanColor)
+		LocalSeedPwd, err = scan.ScanRawPassword()
+		if err != nil {
+			return wString, errors.Wrap(err, "could not scan raw password")
+		}
+		if entity.Contractor {
+			LocalSeed, err = wallet.DecryptSeed(LocalContractor.U.EncryptedSeed, LocalSeedPwd)
+			if err != nil {
+				return wString, errors.Wrap(err, "could not decrypt seed")
+			}
+		} else if entity.Originator {
+			LocalSeed, err = wallet.DecryptSeed(LocalOriginator.U.EncryptedSeed, LocalSeedPwd)
+			if err != nil {
+				return wString, errors.Wrap(err, "could not decrypt seed")
+			}
 		}
 	}
-
 	ColorOutput("AUTHENTICATED USER, YOUR ROLE IS: "+wString, GreenColor)
 	return wString, nil
 }

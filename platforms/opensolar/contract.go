@@ -199,7 +199,7 @@ func SeedInvest(projIndex int, invIndex int, recpIndex int, invAmount string,
 	return err
 }
 
-// invest is the main invest function of the opensolar platform
+// Invest is the main invest function of the opensolar platform
 func Invest(projIndex int, invIndex int, invAmount string, invSeed string) error {
 	var err error
 
