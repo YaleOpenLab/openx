@@ -227,7 +227,7 @@ func InsertDummyData() error {
 		log.Fatal(err)
 	}
 
-	// MWTODO: get comments on various fileds in this file
+	// MWTODO: get comments on various fields in this file
 	demoInv, err := database.NewInvestor("Yale OpenLab", "p", "x", "Yale OpenLab")
 	if err != nil {
 		log.Fatal(err)

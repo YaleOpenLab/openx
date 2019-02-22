@@ -69,7 +69,7 @@ func ParseInputRecp(input []string) error {
 		kycHelper(input, LocalRecipient.U.Username, LocalRecipient.U.Pwhash, LocalRecipient.U.Inspector)
 	case "increasetrust":
 		increaseTrustHelper(input, LocalRecipient.U.Username, LocalRecipient.U.Pwhash)
-	// Recipient ONly functions
+	// Recipient Only functions
 	case "unlock":
 		if len(input) < 3 {
 			log.Println("unlock <projIndex> <platform>")
