@@ -37,7 +37,6 @@ import (
 // go get on a raspberry pi with the stellar dependencies.
 // TODO: also run an ipfs node on the raspberry pi to ensure we can commit to ipfs without relying
 // on the platform
-// TODO: add docs on the ipfs hash chain
 
 var opts struct {
 	Daemon bool `short:"d" description:"Run the teller in daemon mode"`

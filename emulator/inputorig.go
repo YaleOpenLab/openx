@@ -68,6 +68,8 @@ func ParseInputOrig(input []string) error {
 		createHelper(input, LocalOriginator.U.Username, LocalOriginator.U.Pwhash, LocalOriginator.U.PublicKey)
 	case "kyc":
 		kycHelper(input, LocalOriginator.U.Username, LocalOriginator.U.Pwhash, LocalOriginator.U.Inspector)
+	case "increasetrust":
+		increaseTrustHelper(input, LocalOriginator.U.Username, LocalOriginator.U.Pwhash)
 	// Originator only functions
 	case "propose":
 		fmt.Println("Proposing a contract can be done only through the opensolar webui" +

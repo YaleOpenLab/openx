@@ -5,7 +5,92 @@ import (
 	"log"
 
 	utils "github.com/YaleOpenLab/openx/utils"
+	"github.com/chzyer/readline"
 )
+
+func autoComplete() readline.AutoCompleter {
+	return readline.NewPrefixCompleter(
+		readline.PcItem("help",
+			readline.PcItem("ping"),
+			readline.PcItem("exchange"),
+			readline.PcItem("ipfs"),
+			readline.PcItem("send"),
+			readline.PcItem("receive"),
+			readline.PcItem("create"),
+			readline.PcItem("kyc"),
+			readline.PcItem("increasetrust"),
+			readline.PcItem("vote"),
+			readline.PcItem("invest"),
+			readline.PcItem("unlock"),
+			readline.PcItem("payback"),
+			readline.PcItem("finalize"),
+			readline.PcItem("originate"),
+			readline.PcItem("calculate"),
+			readline.PcItem("propose"),
+			readline.PcItem("myproposed"),
+			readline.PcItem("addcollateral"),
+			readline.PcItem("mypreoriginated"),
+			readline.PcItem("myoriginated"),
+			readline.PcItem("preoriginate"),
+		),
+		readline.PcItem("display",
+			readline.PcItem("balance",
+				readline.PcItem("xlm"),
+				readline.PcItem("asset"),
+			),
+			readline.PcItem("info"),
+		),
+		readline.PcItem("exchange",
+			readline.PcItem("amount"),
+		),
+		readline.PcItem("ipfs",
+			readline.PcItem("string"),
+		),
+		readline.PcItem("send",
+			readline.PcItem("amount"),
+		),
+		readline.PcItem("receive",
+			readline.PcItem("xlm"),
+			readline.PcItem("asset"),
+		),
+		readline.PcItem("create",
+			readline.PcItem("asset"),
+		),
+		readline.PcItem("kyc",
+			readline.PcItem("user"),
+		),
+		readline.PcItem("increasetrust",
+			readline.PcItem("trustlimit"),
+		),
+		readline.PcItem("vote",
+			readline.PcItem("project"),
+		),
+		readline.PcItem("invest",
+			readline.PcItem("projIndex"),
+			readline.PcItem("amount"),
+			readline.PcItem("platform"),
+		),
+		readline.PcItem("unlock",
+			readline.PcItem("projIndex"),
+		),
+		readline.PcItem("payback",
+			readline.PcItem("projIndex"),
+			readline.PcItem("amount"),
+		),
+		readline.PcItem("finalize",
+			readline.PcItem("projIndex"),
+		),
+		readline.PcItem("originate",
+			readline.PcItem("projIndex"),
+		),
+		readline.PcItem("calculate",
+			readline.PcItem("projIndex"),
+		),
+		readline.PcItem("addcollateral",
+			readline.PcItem("data"),
+		),
+	)
+}
 
 func displayHelper(input []string, username string, pwhash string, role string) {
 	// display is a  broad command and needs to have a subcommand
@@ -324,6 +409,7 @@ func kycHelper(input []string, username string, pwhash string, inspector bool) {
 	}
 	if len(input) == 1 {
 		log.Println("kyc <auth, view>")
+		return
 	}
 	subcommand := input[1]
 	switch subcommand {
@@ -368,4 +454,30 @@ func kycHelper(input []string, username string, pwhash string, inspector bool) {
 		break
 	}
 	// end of kyc
+}
+
+func increaseTrustHelper(input []string, username string, pwhash string) {
+	if len(input) == 1 {
+		log.Println("<increasetrust> trustlimit")
+		return
+	}
+	trustLimit, err := utils.StoFWithCheck(input[1])
+	if err != nil {
+		log.Println(err, "input is not a string!")
+	}
+	if trustLimit == 0 {
+		log.Println("Can't increaset trustlimti by zero, quitting!")
+		return
+	}
+	response, err := IncreaseTrustLimit(username, pwhash, LocalSeedPwd, utils.FtoS(trustLimit))
+	if err != nil {
+		log.Println(err)
+	}
+	if response.Code == 200 {
+		ColorOutput("SUCCESSFULLY INCREASED STABELCOIN TRUST LIMIT", GreenColor)
+	} else {
+		ColorOutput("COULD NOT INCREASE STABELCOIN TRUST LIMIT", RedColor)
+	}
+
+	return
 }

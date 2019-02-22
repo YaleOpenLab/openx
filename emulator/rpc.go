@@ -550,3 +550,19 @@ func UnlockCBond(username string, pwhash string, seedpwd string, projIndex strin
 	}
 	return x, nil
 }
+
+func IncreaseTrustLimit(username string, pwhash string, seedpwd string, trust string) (rpc.StatusResponse, error) {
+	var x rpc.StatusResponse
+	body := ApiUrl + "/user/increasetrustlimit?" + "username=" + username + "&pwhash=" + pwhash +
+		"&seedpwd=" + seedpwd + "&trust=" + trust
+
+	data, err := rpc.GetRequest(body)
+	if err != nil {
+		return x, err
+	}
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return x, err
+	}
+	return x, nil
+}

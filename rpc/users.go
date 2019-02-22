@@ -35,6 +35,7 @@ func setupUserRpcs() {
 	platformEmail()
 	sendTellerShutdownEmail()
 	tellerPing()
+	increaseTrustLimit()
 }
 
 const (
@@ -589,5 +590,31 @@ func tellerPing() {
 		}
 
 		MarshalSend(w, r, x)
+	})
+}
+
+func increaseTrustLimit() {
+	http.HandleFunc("/user/increasetrustlimit", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
+
+		prepUser, err := UserValidateHelper(w, r)
+		if err != nil || r.URL.Query()["trust"] == nil || r.URL.Query()["seedpwd"] == nil {
+			log.Println("did not validate user", err)
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+
+		// now the user is validated, we need to call the db function to increase the trust limit
+		trust := r.URL.Query()["trust"][0]
+		seedpwd := r.URL.Query()["seedpwd"][0]
+
+		err = database.IncreaseTrustLimit(prepUser.Index, seedpwd, trust)
+		if err != nil {
+			log.Println(err)
+			responseHandler(w, r, StatusInternalServerError)
+		}
+
+		responseHandler(w, r, StatusOK)
 	})
 }
