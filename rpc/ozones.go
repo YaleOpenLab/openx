@@ -25,6 +25,7 @@ func setupBondRPCs() {
 func GetAllCoops() {
 	http.HandleFunc("/coop/all", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
+		checkOrigin(w, r)
 		allBonds, err := opzones.RetrieveAllLivingUnitCoops()
 		if err != nil {
 			log.Println("did not retrieve all bonds", err)
@@ -39,6 +40,7 @@ func GetAllCoops() {
 func getCoopDetails() {
 	http.HandleFunc("/coop/get", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
+		checkOrigin(w, r)
 		// get the details of a specific bond by key
 		if r.URL.Query()["index"] == nil {
 			responseHandler(w, r, StatusBadRequest)
@@ -65,6 +67,7 @@ func getCoopDetails() {
 func getBondDetails() {
 	http.HandleFunc("/bond/get", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
+		checkOrigin(w, r)
 		// get the details of a specific bond by key
 		if r.URL.Query()["index"] == nil {
 			responseHandler(w, r, StatusInternalServerError)
@@ -85,6 +88,7 @@ func getBondDetails() {
 func GetAllBonds() {
 	http.HandleFunc("/bond/all", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
+		checkOrigin(w, r)
 		allBonds, err := opzones.RetrieveAllConstructionBonds()
 		if err != nil {
 			log.Println("did not retrieve all bonds", err)
@@ -99,6 +103,7 @@ func GetAllBonds() {
 func Search() {
 	http.HandleFunc("/search", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
+		checkOrigin(w, r)
 		// search for coop / bond  and return accordingly
 		if r.URL.Query()["q"] == nil {
 			responseHandler(w, r, StatusBadRequest)

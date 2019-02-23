@@ -22,6 +22,7 @@ func setupStableCoinRPCs() {
 func getStableCoin() {
 	http.HandleFunc("/stablecoin/get", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
+		checkOrigin(w, r)
 		_, err := database.ValidateUser(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
 		if err != nil || r.URL.Query()["seed"] == nil || r.URL.Query()["amount"] == nil {
 			responseHandler(w, r, StatusBadRequest)

@@ -9,7 +9,7 @@ import (
 	assets "github.com/YaleOpenLab/openx/assets"
 	database "github.com/YaleOpenLab/openx/database"
 	notif "github.com/YaleOpenLab/openx/notif"
-	platform "github.com/YaleOpenLab/openx/platforms/opensolar"
+	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
 	opzones "github.com/YaleOpenLab/openx/platforms/ozones"
 	utils "github.com/YaleOpenLab/openx/utils"
 	wallet "github.com/YaleOpenLab/openx/wallet"
@@ -147,7 +147,7 @@ func invest() {
 		// make it so in the UI that only they can accept an investment so we can get their
 		// seed and send them assets. By not accepting, they would forfeit their investment,
 		// so incentive would be there to unlock the seed.
-		err = platform.Invest(projIndex, investor.U.Index, amount, investorSeed)
+		err = opensolar.Invest(projIndex, investor.U.Index, amount, investorSeed)
 		if err != nil {
 			log.Println("did not invest in order", err)
 			responseHandler(w, r, StatusNotFound)
@@ -213,7 +213,7 @@ func voteTowardsProject() {
 
 		votes := utils.StoI(r.URL.Query()["votes"][0])
 		projIndex := utils.StoI(r.URL.Query()["projIndex"][0])
-		err = platform.VoteTowardsProposedProject(investor.U.Index, votes, projIndex)
+		err = opensolar.VoteTowardsProposedProject(investor.U.Index, votes, projIndex)
 		if err != nil {
 			log.Println("did not vote towards proposed project", err)
 			responseHandler(w, r, StatusInternalServerError)

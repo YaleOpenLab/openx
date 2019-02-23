@@ -80,7 +80,7 @@ func StartPlatform() error {
 		return err
 	}
 	consts.PlatformEmail = viper.Get("platformemail").(string)
-	log.Println("PLATFOMR EMAIL: ", consts.PlatformEmail)
+	log.Println("PLATFORM EMAIL: ", consts.PlatformEmail)
 	return nil
 }
 

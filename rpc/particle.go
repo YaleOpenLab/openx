@@ -170,6 +170,8 @@ func listAllDevices() {
 	// make a curl request out to lcoalhost and get the ping response
 	http.HandleFunc("/particle/devices", func(w http.ResponseWriter, r *http.Request) {
 		// validate if the person requesting this is a vlaid user on the platform
+		checkGet(w, r)
+		checkOrigin(w, r)
 		_, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["accessToken"] == nil {
 			responseHandler(w, r, StatusBadRequest)
@@ -186,7 +188,8 @@ func listAllDevices() {
 // listProductInfo liusts all the producsts belonging to the user with the access token
 func listProductInfo() {
 	http.HandleFunc("/particle/productinfo", func(w http.ResponseWriter, r *http.Request) {
-
+		checkGet(w, r)
+		checkOrigin(w, r)
 		_, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["accessToken"] == nil || r.URL.Query()["productInfo"] == nil {
 			responseHandler(w, r, StatusBadRequest)
@@ -206,6 +209,8 @@ func listProductInfo() {
 func getDeviceInfo() {
 	http.HandleFunc("/particle/deviceinfo", func(w http.ResponseWriter, r *http.Request) {
 		// validate if the person requesting this is a vlaid user on the platform
+		checkGet(w, r)
+		checkOrigin(w, r)
 		_, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["accessToken"] == nil || r.URL.Query()["deviceId"] == nil {
 			responseHandler(w, r, StatusBadRequest)
@@ -225,7 +230,8 @@ func getDeviceInfo() {
 // dashboard of sorts where people can see if their devices are online or not
 func pingDevice() {
 	http.HandleFunc("/particle/deviceping", func(w http.ResponseWriter, r *http.Request) {
-
+		checkGet(w, r)
+		checkOrigin(w, r)
 		_, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["accessToken"] == nil || r.URL.Query()["deviceId"] == nil {
 			responseHandler(w, r, StatusBadRequest)
@@ -246,7 +252,8 @@ func pingDevice() {
 // in rainbow colors or not
 func signalDevice() {
 	http.HandleFunc("/particle/devicesignal", func(w http.ResponseWriter, r *http.Request) {
-
+		checkGet(w, r)
+		checkOrigin(w, r)
 		_, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["signal"] == nil || r.URL.Query()["accessToken"] == nil {
 			responseHandler(w, r, StatusBadRequest)
@@ -278,7 +285,8 @@ func signalDevice() {
 // serialNumberInfo gets the device id of a device on recipt of the serial number
 func serialNumberInfo() {
 	http.HandleFunc("/particle/getdeviceid", func(w http.ResponseWriter, r *http.Request) {
-
+		checkGet(w, r)
+		checkOrigin(w, r)
 		_, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["serialNumber"] == nil || r.URL.Query()["accessToken"] == nil {
 			responseHandler(w, r, StatusBadRequest)
@@ -297,7 +305,8 @@ func serialNumberInfo() {
 // getDiagnosticsLast gets a list of the last diagnostic report that belongs to the specific device
 func getDiagnosticsLast() {
 	http.HandleFunc("/particle/diag/last", func(w http.ResponseWriter, r *http.Request) {
-
+		checkGet(w, r)
+		checkOrigin(w, r)
 		_, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["accessToken"] == nil || r.URL.Query()["deviceId"] == nil {
 			responseHandler(w, r, StatusBadRequest)
@@ -316,7 +325,8 @@ func getDiagnosticsLast() {
 // accessToken for authentication
 func getAllDiagnostics() {
 	http.HandleFunc("/particle/diag/all", func(w http.ResponseWriter, r *http.Request) {
-
+		checkGet(w, r)
+		checkOrigin(w, r)
 		_, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["accessToken"] == nil || r.URL.Query()["deviceId"] == nil {
 			responseHandler(w, r, StatusBadRequest)
@@ -334,7 +344,8 @@ func getAllDiagnostics() {
 // getParticleUserInfo gets the information of a particular user associated with an accessToken
 func getParticleUserInfo() {
 	http.HandleFunc("/particle/user/info", func(w http.ResponseWriter, r *http.Request) {
-
+		checkGet(w, r)
+		checkOrigin(w, r)
 		_, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["accessToken"] == nil {
 			responseHandler(w, r, StatusBadRequest)
@@ -351,7 +362,8 @@ func getParticleUserInfo() {
 // getAllSims gets the informatiomn of all sim card that areassociated with the particular accessToken
 func getAllSims() {
 	http.HandleFunc("/particle/sims", func(w http.ResponseWriter, r *http.Request) {
-
+		checkGet(w, r)
+		checkOrigin(w, r)
 		_, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["accessToken"] == nil {
 			responseHandler(w, r, StatusBadRequest)
