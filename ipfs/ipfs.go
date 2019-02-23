@@ -6,7 +6,6 @@ package ipfs
 // process a pdf file (ie build an xref table) and then convert that into an ipfs file
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -33,7 +32,6 @@ func AddStringToIpfs(a string) (string, error) {
 		log.Println("Error while adding string to ipfs", err)
 		return "", err
 	}
-	fmt.Println("Added text: ", a, " to ipfs, hash: ", hash)
 	return hash, nil
 }
 

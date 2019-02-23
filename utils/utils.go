@@ -3,7 +3,6 @@ package utils
 // utils contains utility functions that are needed commonly in packages
 import (
 	"encoding/hex"
-	"fmt"
 	"math/rand"
 	"os/user"
 	"strconv"
@@ -48,7 +47,8 @@ func BToI(a []byte) int {
 
 // FtoS converts a float to a string
 func FtoS(a float64) string {
-	return fmt.Sprintf("%f", a)
+	return strconv.FormatFloat(a, 'f', 6, 64)
+	// return fmt.Sprintf("%f", a) is also possible, but slower due to the Sprintf
 }
 
 // StoF converts a string to a float
