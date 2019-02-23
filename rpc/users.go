@@ -13,7 +13,7 @@ import (
 	database "github.com/YaleOpenLab/openx/database"
 	ipfs "github.com/YaleOpenLab/openx/ipfs"
 	notif "github.com/YaleOpenLab/openx/notif"
-	platform "github.com/YaleOpenLab/openx/platforms/opensolar"
+	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
 	utils "github.com/YaleOpenLab/openx/utils"
 	wallet "github.com/YaleOpenLab/openx/wallet"
 	xlm "github.com/YaleOpenLab/openx/xlm"
@@ -36,6 +36,7 @@ func setupUserRpcs() {
 	sendTellerShutdownEmail()
 	tellerPing()
 	increaseTrustLimit()
+	addContractHash()
 }
 
 const (
@@ -71,7 +72,7 @@ func removeSeedInv(investor database.Investor) database.Investor {
 }
 
 // removeSeedEntity removes the encrypted seed from the entity structure
-func removeSeedEntity(entity platform.Entity) platform.Entity {
+func removeSeedEntity(entity opensolar.Entity) opensolar.Entity {
 	var dummy []byte
 	entity.U.EncryptedSeed = dummy
 	return entity
@@ -79,7 +80,6 @@ func removeSeedEntity(entity platform.Entity) platform.Entity {
 
 // UserValidateHelper is a helper that validates a user on the platform
 func UserValidateHelper(w http.ResponseWriter, r *http.Request) (database.User, error) {
-	checkGet(w, r)
 	var prepUser database.User
 	var err error
 	// need to pass the pwhash param here
@@ -99,8 +99,8 @@ func UserValidateHelper(w http.ResponseWriter, r *http.Request) (database.User, 
 // ValidateUser is a route that helps validate users on the platform
 func ValidateUser() {
 	http.HandleFunc("/user/validate", func(w http.ResponseWriter, r *http.Request) {
-		checkOrigin(w, r)
 		checkGet(w, r)
+		checkOrigin(w, r)
 		// need to pass the pwhash param here
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil {
@@ -111,7 +111,7 @@ func ValidateUser() {
 		// no we need to see whether this guy is an investor or a recipient.
 		var prepInvestor database.Investor
 		var prepRecipient database.Recipient
-		var prepEntity platform.Entity
+		var prepEntity opensolar.Entity
 		rec := false
 		entity := false
 		prepInvestor, err = database.RetrieveInvestor(prepUser.Index)
@@ -122,7 +122,7 @@ func ValidateUser() {
 			if err != nil {
 				log.Println("did not validate recipient", err)
 				// it is not a recipient either
-				prepEntity, err = platform.ValidateEntity(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
+				prepEntity, err = opensolar.ValidateEntity(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
 				if err != nil {
 					log.Println("did not validate entity", err)
 					// not an investor, recipient or entity, error
@@ -156,6 +156,7 @@ func ValidateUser() {
 // getBalances returns a list of all balances (assets and coins) held by the user
 func getBalances() {
 	http.HandleFunc("/user/balances", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
 		checkOrigin(w, r)
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil {
@@ -178,8 +179,8 @@ func getBalances() {
 // getXLMBalance gets the XLM balance of a user's account
 func getXLMBalance() {
 	http.HandleFunc("/user/balance/xlm", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
 		checkOrigin(w, r)
-
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil {
 			log.Println("did not validate user", err)
@@ -201,8 +202,8 @@ func getXLMBalance() {
 // getAssetBalance gets the balance of a specific asset
 func getAssetBalance() {
 	http.HandleFunc("/user/balance/asset", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
 		checkOrigin(w, r)
-
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["asset"] == nil {
 			responseHandler(w, r, StatusBadRequest)
@@ -224,7 +225,8 @@ func getAssetBalance() {
 // getIpfsHash gets the ipfs hash of the passed string
 func getIpfsHash() {
 	http.HandleFunc("/ipfs/hash", func(w http.ResponseWriter, r *http.Request) {
-
+		checkGet(w, r)
+		checkOrigin(w, r)
 		_, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["string"] == nil {
 			responseHandler(w, r, StatusBadRequest)
@@ -253,7 +255,8 @@ func getIpfsHash() {
 // party service that we choose
 func authKyc() {
 	http.HandleFunc("/user/kyc", func(w http.ResponseWriter, r *http.Request) {
-
+		checkGet(w, r)
+		checkOrigin(w, r)
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["userIndex"] == nil {
 			responseHandler(w, r, StatusBadRequest)
@@ -274,6 +277,8 @@ func authKyc() {
 // sendXLM sends a given amount of XLM to the destination address specified.
 func sendXLM() {
 	http.HandleFunc("/user/sendxlm", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["destination"] == nil || r.URL.Query()["amount"] == nil ||
 			r.URL.Query()["seedpwd"] == nil {
@@ -310,6 +315,8 @@ func sendXLM() {
 // notKycView returns a list of all the users who have not yet been verified through KYC. Called by KYC Inspectors
 func notKycView() {
 	http.HandleFunc("/user/notkycview", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil {
 			log.Println("did not validate user", err)
@@ -336,6 +343,8 @@ func notKycView() {
 // kycView returns a list of all the users who have been verified through KYC. Called by KYC Inspectors
 func kycView() {
 	http.HandleFunc("/user/kycview", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil {
 			log.Println("did not validate user", err)
@@ -362,6 +371,8 @@ func kycView() {
 // askForCoins asks for coins from the testnet faucet. Will be disabled once we move to testnet
 func askForCoins() {
 	http.HandleFunc("/user/askxlm", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil {
 			log.Println("did not validate user", err)
@@ -384,6 +395,8 @@ func askForCoins() {
 func trustAsset() {
 	http.HandleFunc("/user/trustasset", func(w http.ResponseWriter, r *http.Request) {
 		// since this is testnet, give caller coins from the testnet faucet
+		checkGet(w, r)
+		checkOrigin(w, r)
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil {
 			log.Println("did not validate user", err)
@@ -419,10 +432,8 @@ func trustAsset() {
 // this is a POST request
 func uploadFile() {
 	http.HandleFunc("/upload", func(w http.ResponseWriter, r *http.Request) {
-
 		checkPost(w, r)
 		checkOrigin(w, r)
-
 		_, err := UserValidateHelper(w, r)
 		if err != nil {
 			log.Println("did not validate user", err)
@@ -482,10 +493,8 @@ type PlatformEmailResponse struct {
 
 func platformEmail() {
 	http.HandleFunc("/platformemail", func(w http.ResponseWriter, r *http.Request) {
-
 		checkGet(w, r)
 		checkOrigin(w, r)
-
 		_, err := UserValidateHelper(w, r)
 		if err != nil {
 			log.Println("did not validate user", err)
@@ -501,10 +510,8 @@ func platformEmail() {
 
 func sendTellerShutdownEmail() {
 	http.HandleFunc("/tellershutdown", func(w http.ResponseWriter, r *http.Request) {
-
 		checkGet(w, r)
 		checkOrigin(w, r)
-
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["projIndex"] == nil || r.URL.Query()["deviceId"] == nil ||
 			r.URL.Query()["tx1"] == nil || r.URL.Query()["tx2"] == nil {
@@ -524,10 +531,8 @@ func sendTellerShutdownEmail() {
 
 func sendTellerFailedPaybackEmail() {
 	http.HandleFunc("/tellerpayback", func(w http.ResponseWriter, r *http.Request) {
-
 		checkGet(w, r)
 		checkOrigin(w, r)
-
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["projIndex"] == nil || r.URL.Query()["deviceId"] == nil {
 			log.Println("did not validate user", err)
@@ -544,10 +549,8 @@ func sendTellerFailedPaybackEmail() {
 
 func tellerPing() {
 	http.HandleFunc("/tellerping", func(w http.ResponseWriter, r *http.Request) {
-
 		checkGet(w, r)
 		checkOrigin(w, r)
-
 		_, err := UserValidateHelper(w, r)
 		if err != nil {
 			log.Println("did not validate user", err)
@@ -597,7 +600,6 @@ func increaseTrustLimit() {
 	http.HandleFunc("/user/increasetrustlimit", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
 		checkOrigin(w, r)
-
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["trust"] == nil || r.URL.Query()["seedpwd"] == nil {
 			log.Println("did not validate user", err)
@@ -613,6 +615,76 @@ func increaseTrustLimit() {
 		if err != nil {
 			log.Println(err)
 			responseHandler(w, r, StatusInternalServerError)
+		}
+
+		responseHandler(w, r, StatusOK)
+	})
+}
+
+// AddContractHash adds a specific contract hash to the database
+func addContractHash() {
+	http.HandleFunc("/utils/addhash", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
+		var err error
+		_, err = UserValidateHelper(w, r)
+		if err != nil || r.URL.Query()["projIndex"] == nil {
+			log.Println("couldn't validate investor", err)
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+		if r.URL.Query()["choice"] == nil || r.URL.Query()["choicestr"] == nil {
+			log.Println("choice of ipfs hash not given. quitting!")
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+		choice := r.URL.Query()["choice"][0]
+		hashString := r.URL.Query()["choicestr"][0]
+		projIndex, err := utils.StoICheck(r.URL.Query()["projIndex"][0])
+		if err != nil {
+			log.Println("passed project index not int, quitting!")
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+
+		project, err := opensolar.RetrieveProject(projIndex)
+		if err != nil {
+			log.Println("couldn't retrieve prject index from database")
+			responseHandler(w, r, StatusInternalServerError)
+			return
+		}
+		// there are in total 5 types of hashes: OriginatorMoUHash, ContractorContractHash, InvPlatformContractHash, RecPlatformContractHash, SpecSheetHash
+		// lets have a fixed set of strings that we can map on here so we ahve a single endpoitn for storing all these hashes
+
+		// TODO: right now any entity can add the required hashes but in the future we must restrict adding hashes
+		// to entities that are associated with the particular hashes
+		switch choice {
+		case "omh":
+			// update the originator mou hash
+			project.OriginatorMoUHash = hashString
+		case "cch":
+			// update the contractor contract hash
+			project.ContractorContractHash = hashString
+		case "ipch":
+			// update the InvPlatformContractHash
+			project.InvPlatformContractHash = hashString
+		case "rpch":
+			// update the RecPlatformContractHash
+			project.RecPlatformContractHash = hashString
+		case "ssh":
+			// update the SpecSheetHash
+			project.SpecSheetHash = hashString
+		default:
+			log.Println("invalid choice passed, quitting!")
+			responseHandler(w, r, StatusInternalServerError)
+			return
+		}
+
+		err = project.Save()
+		if err != nil {
+			log.Println("error while saving project to db, quitting!")
+			responseHandler(w, r, StatusInternalServerError)
+			return
 		}
 
 		responseHandler(w, r, StatusOK)

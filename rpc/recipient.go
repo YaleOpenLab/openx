@@ -55,6 +55,7 @@ func parseRecipient(r *http.Request) (database.Recipient, error) {
 func getAllRecipients() {
 	http.HandleFunc("/recipient/all", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
+		checkOrigin(w, r)
 		recipients, err := database.RetrieveAllRecipients()
 		if err != nil {
 			log.Println("did not retrieve all recipients", err)
@@ -71,6 +72,7 @@ func insertRecipient() {
 	// that into the database
 	http.HandleFunc("/recipient/insert", func(w http.ResponseWriter, r *http.Request) {
 		checkPost(w, r)
+		checkOrigin(w, r)
 		prepRecipient, err := parseRecipient(r)
 		if err != nil {
 			log.Println("did not parse recipients", err)
@@ -93,7 +95,7 @@ func insertRecipient() {
 func validateRecipient() {
 	http.HandleFunc("/recipient/validate", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
-
+		checkOrigin(w, r)
 		if r.URL.Query() == nil || r.URL.Query()["username"] == nil ||
 			len(r.URL.Query()["pwhash"][0]) != 128 {
 			responseHandler(w, r, StatusBadRequest)
@@ -116,6 +118,7 @@ func payback() {
 	// 	platformPubkey string) error {
 	http.HandleFunc("/recipient/payback", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
+		checkOrigin(w, r)
 		// this is a get request to make things easier for the teller
 		prepRecipient, err := RecpValidateHelper(w, r)
 		if err != nil || r.URL.Query()["assetName"] == nil || r.URL.Query()["amount"] == nil ||
@@ -151,6 +154,7 @@ func payback() {
 func RecpValidateHelper(w http.ResponseWriter, r *http.Request) (database.Recipient, error) {
 	// first validate the recipient or anyone would be able to set device ids
 	checkGet(w, r)
+	checkOrigin(w, r)
 	var prepRecipient database.Recipient
 	// need to pass the pwhash param here
 	if r.URL.Query() == nil || r.URL.Query()["username"] == nil ||
@@ -171,6 +175,8 @@ func RecpValidateHelper(w http.ResponseWriter, r *http.Request) (database.Recipi
 func storeDeviceId() {
 	http.HandleFunc("/recipient/deviceId", func(w http.ResponseWriter, r *http.Request) {
 		// first validate the recipient or anyone would be able to set device ids
+		checkGet(w, r)
+		checkOrigin(w, r)
 		prepRecipient, err := RecpValidateHelper(w, r)
 		if err != nil || r.URL.Query()["deviceid"] == nil {
 			responseHandler(w, r, StatusBadRequest)
@@ -193,6 +199,8 @@ func storeDeviceId() {
 // Called by the teller
 func storeStartTime() {
 	http.HandleFunc("/recipient/startdevice", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
 		// first validate the recipient or anyone would be able to set device ids
 		prepRecipient, err := RecpValidateHelper(w, r)
 		if err != nil || r.URL.Query()["start"] == nil {
@@ -214,6 +222,8 @@ func storeStartTime() {
 // storeDeviceLocation stores the location of the remote device when it starts up. Called by the teller
 func storeDeviceLocation() {
 	http.HandleFunc("/recipient/storelocation", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
 		// first validate the recipient or anyone would be able to set device ids
 		prepRecipient, err := RecpValidateHelper(w, r)
 		if err != nil || r.URL.Query()["location"] == nil {
@@ -235,6 +245,8 @@ func storeDeviceLocation() {
 // changeReputation changes the reputation of a specified recipient
 func changeReputationRecp() {
 	http.HandleFunc("/recipient/reputation", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
 		recipient, err := RecpValidateHelper(w, r)
 		if err != nil || r.URL.Query()["reputation"] == nil {
 			responseHandler(w, r, StatusBadRequest)
@@ -260,6 +272,8 @@ func changeReputationRecp() {
 // known as a 1st price auction.
 func chooseBlindAuction() {
 	http.HandleFunc("/recipient/auction/choose/blind", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
 		recipient, err := RecpValidateHelper(w, r)
 		if err != nil {
 			log.Println("did not validate recipient", err)
@@ -296,6 +310,8 @@ func chooseBlindAuction() {
 // also known as a second price auction
 func chooseVickreyAuction() {
 	http.HandleFunc("/recipient/auction/choose/vickrey", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
 		recipient, err := RecpValidateHelper(w, r)
 		if err != nil {
 			log.Println("did not validate recipient", err)
@@ -333,6 +349,8 @@ func chooseVickreyAuction() {
 // chooseTimeAuction chooses the winning contractor based on least completion time
 func chooseTimeAuction() {
 	http.HandleFunc("/recipient/auction/choose/time", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
 		recipient, err := RecpValidateHelper(w, r)
 		if err != nil {
 			log.Println("did not validate recipient", err)
@@ -371,6 +389,8 @@ func chooseTimeAuction() {
 // has accepted the investment.
 func unlockOpenSolar() {
 	http.HandleFunc("/recipient/unlock/opensolar", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
 		recipient, err := RecpValidateHelper(w, r)
 		if err != nil || r.URL.Query()["seedpwd"] == nil {
 			responseHandler(w, r, StatusBadRequest)
@@ -399,6 +419,8 @@ func unlockOpenSolar() {
 // addEmail adds an email address to the recipient's profile
 func addEmail() {
 	http.HandleFunc("/recipient/addemail", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
 		recipient, err := RecpValidateHelper(w, r)
 		if err != nil || r.URL.Query()["email"] == nil {
 			responseHandler(w, r, StatusBadRequest)
@@ -421,6 +443,8 @@ func addEmail() {
 // contractor
 func finalizeProject() {
 	http.HandleFunc("/recipient/finalize", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
 		_, err := RecpValidateHelper(w, r)
 		if err != nil || r.URL.Query()["projIndex"] == nil {
 			responseHandler(w, r, StatusBadRequest)
@@ -449,6 +473,8 @@ func finalizeProject() {
 // originateProject originates (ie moves from stage 0 to 1) a project
 func originateProject() {
 	http.HandleFunc("/recipient/originate", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
 		recipient, err := RecpValidateHelper(w, r)
 		if err != nil || r.URL.Query()["projIndex"] == nil {
 			responseHandler(w, r, StatusBadRequest)
@@ -470,6 +496,8 @@ func originateProject() {
 // calculateTrustLimit calculates the trust limit associated with a specific asset.
 func calculateTrustLimit() {
 	http.HandleFunc("/recipient/trustlimit", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
 		recipient, err := RecpValidateHelper(w, r)
 		if err != nil || r.URL.Query()["assetName"] == nil {
 			responseHandler(w, r, StatusBadRequest)
@@ -492,6 +520,8 @@ func calculateTrustLimit() {
 // has accepted the investment.
 func unlockCBond() {
 	http.HandleFunc("/recipient/unlock/opzones/cbond", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
 		recipient, err := RecpValidateHelper(w, r)
 		if err != nil || r.URL.Query()["seedpwd"] == nil {
 			responseHandler(w, r, StatusBadRequest)
@@ -521,6 +551,8 @@ func unlockCBond() {
 // Called by the teller
 func storeStateHash() {
 	http.HandleFunc("/recipient/ssh", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
 		// first validate the recipient or anyone would be able to set device ids
 		prepRecipient, err := RecpValidateHelper(w, r)
 		if err != nil || r.URL.Query()["hash"] == nil {

@@ -114,6 +114,7 @@ func sanitizeAllUsers(users []database.User) []SnUser {
 func getAllInvestorsPublic() {
 	http.HandleFunc("/public/investor/all", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
+		checkOrigin(w, r)
 		investors, err := database.RetrieveAllInvestors()
 		if err != nil {
 			log.Println("did not retrieve all investors", err)
@@ -130,6 +131,7 @@ func getAllInvestorsPublic() {
 func getAllRecipientsPublic() {
 	http.HandleFunc("/public/recipient/all", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
+		checkOrigin(w, r)
 		recipients, err := database.RetrieveAllRecipients()
 		if err != nil {
 			log.Println("did not retrieve all recipients", err)
@@ -146,6 +148,7 @@ func getAllRecipientsPublic() {
 func getTopReputationPublic() {
 	http.HandleFunc("/public/reputation/top", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
+		checkOrigin(w, r)
 		allUsers, err := database.TopReputationUsers()
 		if err != nil {
 			log.Println("did not retrive all top reputation users", err)
@@ -161,6 +164,7 @@ func getTopReputationPublic() {
 func getRecpTopReputationPublic() {
 	http.HandleFunc("/public/recipient/reputation/top", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
+		checkOrigin(w, r)
 		allRecps, err := database.TopReputationRecipient()
 		if err != nil {
 			log.Println("did not retrieve all top reputaiton recipients", err)
@@ -176,6 +180,7 @@ func getRecpTopReputationPublic() {
 func getInvTopReputationPublic() {
 	http.HandleFunc("/public/investor/reputation/top", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
+		checkOrigin(w, r)
 		allInvs, err := database.TopReputationInvestors()
 		if err != nil {
 			log.Println("did not retrieve all top reputation investors", err)

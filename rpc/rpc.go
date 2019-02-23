@@ -129,6 +129,8 @@ func PutRequest(body string, payload io.Reader) ([]byte, error) {
 func setupDefaultHandler() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		// default to 404 for every application not running on localhost
+		checkGet(w, r)
+		checkOrigin(w, r)
 		responseHandler(w, r, StatusNotFound)
 		return
 	})
@@ -138,6 +140,7 @@ func setupDefaultHandler() {
 func setupPingHandler() {
 	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
+		checkOrigin(w, r)
 		responseHandler(w, r, StatusOK)
 	})
 }
