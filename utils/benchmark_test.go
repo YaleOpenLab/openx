@@ -6,6 +6,12 @@ import (
 	"testing"
 )
 
+// the utils benchmarks contains stuff other than that defined in the utils package since
+// we can compare different libraries, optimizations, etc withoutworrying too much about
+// the run time of the benchmark tests themselves.
+
+// go test -run=XXX -tags="all" -bench=.
+
 func BenchmarkItoB(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
