@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/pkg/errors"
 	"io/ioutil"
-	"log"
 	"net/http"
 
 	protocols "github.com/stellar/go/protocols/horizon"
@@ -37,6 +36,5 @@ func GetTransactionHeight(txhash string) (int, error) {
 	}
 	var x protocols.Transaction
 	err = json.Unmarshal(b, &x)
-	log.Printf("Tx height of %s is %d", txhash, x.Ledger)
 	return int(x.Ledger), err
 }
