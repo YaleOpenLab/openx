@@ -12,11 +12,13 @@ before_install:
   #- rm Gopkg.lock
   - dep ensure -v
   - cd ${TRAVIS_HOME}/gopath/src/github.com/YaleOpenLab/openx
+  - git clone https://github.com/Varunram/easyjson.git
+  - go get -u github.com/mailru/easyjson/...
+  - go get github.com/pkg/errors
+script:
   - ./easyjson/linux/easyjson -all */*.go
   - ./easyjson/linux/easyjson -all */**/*.go
   - ./easyjson/linux/easyjson -all */**/**/*.go
-
-script:
   - go test --tags="travis" -race -coverprofile=coverage.txt -covermode=atomic ./...
 after_success:
 - bash <(curl -s https://codecov.io/bash)
