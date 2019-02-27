@@ -12,12 +12,12 @@ import (
 
 func TestApi(t *testing.T) {
 	// test out stuff here
-	blockNumber := "1000000"
+	blockNumber := "2"
 	hash, err := GetBlockHash(blockNumber)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if hash != "8267f8beb7c461bbc00af5e153d0d28fdf332b2b21c421d8423a59b995c958b1" {
+	if hash != "1685117d8d2270aed3cf81b641087b4f8d8e2b0774b4bb82d1de34d9472fb3d5" {
 		t.Fatalf("Hashes don't match, quitting!")
 	}
 	log.Println(hash)
@@ -38,7 +38,7 @@ func TestApi(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if x.ID != "8267f8beb7c461bbc00af5e153d0d28fdf332b2b21c421d8423a59b995c958b1" {
+	if x.ID != "1685117d8d2270aed3cf81b641087b4f8d8e2b0774b4bb82d1de34d9472fb3d5" {
 		t.Fatal(err)
 	}
 	_, err = GetLatestBlockHash()
