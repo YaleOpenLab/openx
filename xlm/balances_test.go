@@ -7,7 +7,7 @@ import (
 )
 
 func TestBalances(t *testing.T) {
-	balance, err := GetNativeBalance("GC6Z2KKU4EDTIHAYTJC3Y3AER4ZS5GDSX7S5IKJRRTHLRMJIMCPKQY34")
+	balance, err := GetNativeBalance("GDPCBDVZGJ3WXL2B7YUSTRYPNZ464MCZDAHA3ZTPC36KULDYAMPNX423")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -15,7 +15,7 @@ func TestBalances(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Account doesn't exist, quitting!")
 	}
-	_, err = GetAccountData("GC6Z2KKU4EDTIHAYTJC3Y3AER4ZS5GDSX7S5IKJRRTHLRMJIMCPKQY34")
+	_, err = GetAccountData("GDPCBDVZGJ3WXL2B7YUSTRYPNZ464MCZDAHA3ZTPC36KULDYAMPNX423")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -30,25 +30,25 @@ func TestBalances(t *testing.T) {
 		t.Fatalf("Can return data with invalid url, quitting!")
 	}
 	TestNetClient.URL = oldTc
-	if balance != "9.9999900" {
+	if balance != "9998.9999600" {
 		t.Fatalf("Balance doesn't match with remote API, quitting!")
 	}
-	balance, err = GetAssetBalance("GC6Z2KKU4EDTIHAYTJC3Y3AER4ZS5GDSX7S5IKJRRTHLRMJIMCPKQY34", "YOL77fa301ef")
+	balance, err = GetAssetBalance("GDPCBDVZGJ3WXL2B7YUSTRYPNZ464MCZDAHA3ZTPC36KULDYAMPNX423", "YOL9e0b5fa3d")
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = GetAssetBalance("blah", "YOL77fa301ef")
+	_, err = GetAssetBalance("blah", "YOL9e0b5fa3d")
 	if err == nil {
 		t.Fatalf("Account doesn't exist, quitting!")
 	}
-	_, err = GetAssetBalance("GC6Z2KKU4EDTIHAYTJC3Y3AER4ZS5GDSX7S5IKJRRTHLRMJIMCPKQY34", "blah")
+	_, err = GetAssetBalance("GDPCBDVZGJ3WXL2B7YUSTRYPNZ464MCZDAHA3ZTPC36KULDYAMPNX423", "blah")
 	if err == nil {
 		t.Fatalf("Asset doesn't exist, quitting!")
 	}
-	if balance != "40000.0000000" {
+	if balance != "1000.0000000" {
 		t.Fatalf("Balance doesn't match with remote API, quitting!")
 	}
-	_, err = GetAllBalances("GC6Z2KKU4EDTIHAYTJC3Y3AER4ZS5GDSX7S5IKJRRTHLRMJIMCPKQY34")
+	_, err = GetAllBalances("GDPCBDVZGJ3WXL2B7YUSTRYPNZ464MCZDAHA3ZTPC36KULDYAMPNX423")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -56,9 +56,9 @@ func TestBalances(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Account doesn't exist, quitting!")
 	}
-	if HasStableCoin("GC6Z2KKU4EDTIHAYTJC3Y3AER4ZS5GDSX7S5IKJRRTHLRMJIMCPKQY34") {
+	if !HasStableCoin("GDPCBDVZGJ3WXL2B7YUSTRYPNZ464MCZDAHA3ZTPC36KULDYAMPNX423") {
 		// no token balance, should error out
-		t.Fatal("Stablecoin present on an address which should have no stablecoin associated with it")
+		t.Fatal("Stablecoin not present on an address which should have no stablecoin associated with it")
 	}
 	if HasStableCoin("blah") {
 		t.Fatalf("Balance exists on something that ideally shouldn't have balance!")
