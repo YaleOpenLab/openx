@@ -1,7 +1,6 @@
 package database
 
 import (
-	"encoding/json"
 	"github.com/pkg/errors"
 
 	aes "github.com/YaleOpenLab/openx/aes"
@@ -103,7 +102,7 @@ func (a *User) Save() error {
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(UserBucket)
-		encoded, err := json.Marshal(a)
+		encoded, err := a.MarshalJSON()
 		if err != nil {
 			return errors.Wrap(err, "Error while marshaling json")
 		}
@@ -129,7 +128,7 @@ func RetrieveAllUsersWithoutKyc() ([]User, error) {
 			if x == nil {
 				return nil
 			}
-			err := json.Unmarshal(x, &rUser)
+			err := rUser.UnmarshalJSON(x)
 			if err != nil {
 				return errors.Wrap(err, "Error while unmarshalling json")
 			}
@@ -158,7 +157,7 @@ func RetrieveAllUsersWithKyc() ([]User, error) {
 			if x == nil {
 				return nil
 			}
-			err := json.Unmarshal(x, &rUser)
+			err := rUser.UnmarshalJSON(x)
 			if err != nil {
 				return errors.Wrap(err, "Error while unmarshalling json")
 			}
@@ -187,7 +186,7 @@ func RetrieveAllUsers() ([]User, error) {
 			if x == nil {
 				return nil
 			}
-			err := json.Unmarshal(x, &rUser)
+			err := rUser.UnmarshalJSON(x)
 			if err != nil {
 				return errors.Wrap(err, "Error while unmarshalling json")
 			}
@@ -211,7 +210,7 @@ func RetrieveUser(key int) (User, error) {
 		if x == nil {
 			return errors.New("retrieved user nil, quitting!")
 		}
-		return json.Unmarshal(x, &inv)
+		return inv.UnmarshalJSON(x)
 	})
 	return inv, err
 }
@@ -234,7 +233,7 @@ func ValidateUser(name string, pwhash string) (User, error) {
 		for i := 1; i < limit; i++ {
 			var rUser User
 			x := b.Get(utils.ItoB(i))
-			err := json.Unmarshal(x, &rUser)
+			err := rUser.UnmarshalJSON(x)
 			if err != nil {
 				return errors.Wrap(err, "could not unmarshal json, quitting!")
 			}
@@ -289,7 +288,7 @@ func CheckUsernameCollision(uname string) error {
 		for i := 1; i < limit; i++ {
 			var rUser User
 			x := b.Get(utils.ItoB(i))
-			err := json.Unmarshal(x, &rUser)
+			err := rUser.UnmarshalJSON(x)
 			if err != nil {
 				return errors.Wrap(err, "error while unmarshalling json")
 			}

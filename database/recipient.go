@@ -3,7 +3,6 @@ package database
 // recipient.go defines all recipient related functions that are not defined on
 // the struct itself.
 import (
-	"encoding/json"
 	"github.com/pkg/errors"
 
 	utils "github.com/YaleOpenLab/openx/utils"
@@ -75,7 +74,7 @@ func (a *Recipient) Save() error {
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(RecipientBucket)
-		encoded, err := json.Marshal(a)
+		encoded, err := a.MarshalJSON()
 		if err != nil {
 			return errors.Wrap(err, "Error while marshaling json")
 		}
@@ -110,7 +109,7 @@ func RetrieveAllRecipients() ([]Recipient, error) {
 				// this is where the key does not exist
 				continue
 			}
-			err := json.Unmarshal(x, &rRecipient)
+			err := rRecipient.UnmarshalJSON(x)
 			if err != nil {
 				return errors.Wrap(err, "Error while unmarshalling json")
 			}
@@ -123,10 +122,10 @@ func RetrieveAllRecipients() ([]Recipient, error) {
 
 // RetrieveRecipient retrieves a specific recipient from the database
 func RetrieveRecipient(key int) (Recipient, error) {
-	var inv Recipient
+	var rec Recipient
 	db, err := OpenDB()
 	if err != nil {
-		return inv, errors.Wrap(err, "Error while opening database")
+		return rec, errors.Wrap(err, "Error while opening database")
 	}
 	defer db.Close()
 	err = db.View(func(tx *bolt.Tx) error {
@@ -136,9 +135,9 @@ func RetrieveRecipient(key int) (Recipient, error) {
 			// there is no key with the specific details
 			return errors.New("Recipient not found!")
 		}
-		return json.Unmarshal(x, &inv)
+		return rec.UnmarshalJSON(x)
 	})
-	return inv, err
+	return rec, err
 }
 
 // ValidateRecipient validates a particular recipient

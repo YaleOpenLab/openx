@@ -12,6 +12,10 @@ before_install:
   #- rm Gopkg.lock
   - dep ensure -v
   - cd ${TRAVIS_HOME}/gopath/src/github.com/YaleOpenLab/openx
+  - ./easyjson/linux/easyjson -all */*.go
+  - ./easyjson/linux/easyjson -all */**/*.go
+  - ./easyjson/linux/easyjson -all */**/**/*.go
+
 script:
   - go test --tags="travis" -race -coverprofile=coverage.txt -covermode=atomic ./...
 after_success:

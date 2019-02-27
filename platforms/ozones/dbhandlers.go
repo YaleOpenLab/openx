@@ -1,7 +1,6 @@
 package ozones
 
 import (
-	"encoding/json"
 	"github.com/pkg/errors"
 
 	database "github.com/YaleOpenLab/openx/database"
@@ -18,7 +17,7 @@ func (a *LivingUnitCoop) Save() error {
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(database.CoopBucket)
-		encoded, err := json.Marshal(a)
+		encoded, err := a.MarshalJSON()
 		if err != nil {
 			return errors.Wrap(err, "failed to marshal json")
 		}
@@ -36,7 +35,7 @@ func (a *ConstructionBond) Save() error {
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(database.BondBucket)
-		encoded, err := json.Marshal(a)
+		encoded, err := a.MarshalJSON()
 		if err != nil {
 			return errors.Wrap(err, "failed to marshal json")
 		}
@@ -62,7 +61,7 @@ func RetrieveAllLivingUnitCoops() ([]LivingUnitCoop, error) {
 			if x == nil {
 				return nil
 			}
-			err := json.Unmarshal(x, &rCoop)
+			err := rCoop.UnmarshalJSON(x)
 			if err != nil {
 				return errors.Wrap(err, "failed to unmarshal json")
 			}
@@ -89,7 +88,7 @@ func RetrieveAllConstructionBonds() ([]ConstructionBond, error) {
 			if x == nil {
 				return nil
 			}
-			err := json.Unmarshal(x, &rBond)
+			err := rBond.UnmarshalJSON(x)
 			if err != nil {
 				return errors.Wrap(err, "failed to unmarshal json")
 			}
@@ -114,7 +113,7 @@ func RetrieveLivingUnitCoop(key int) (LivingUnitCoop, error) {
 		if x == nil {
 			return errors.New("Retrieved LivingUnitCoop nil")
 		}
-		return json.Unmarshal(x, &bond)
+		return bond.UnmarshalJSON(x)
 	})
 	return bond, err
 }
@@ -134,7 +133,7 @@ func RetrieveConstructionBond(key int) (ConstructionBond, error) {
 		if x == nil {
 			return errors.New("Retrieved Bond returns nil")
 		}
-		return json.Unmarshal(x, &bond)
+		return bond.UnmarshalJSON(x)
 	})
 	return bond, err
 }

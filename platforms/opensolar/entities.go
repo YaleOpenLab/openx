@@ -1,7 +1,6 @@
 package opensolar
 
 import (
-	"encoding/json"
 	"github.com/pkg/errors"
 	"strings"
 
@@ -87,7 +86,7 @@ func (a *Entity) Save() error {
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(database.ContractorBucket)
-		encoded, err := json.Marshal(a)
+		encoded, err := a.MarshalJSON()
 		if err != nil {
 			return errors.Wrap(err, "couldn't marshal json")
 		}
@@ -119,7 +118,7 @@ func RetrieveAllEntitiesWithoutRole() ([]Entity, error) {
 				// might be some other user like an investor or recipient
 				continue
 			}
-			err := json.Unmarshal(x, &rContractor)
+			err := rContractor.UnmarshalJSON(x)
 			if err != nil {
 				return errors.Wrap(err, "couldn't marshal json")
 			}
@@ -153,7 +152,7 @@ func RetrieveAllEntities(role string) ([]Entity, error) {
 				// might be some other user like an investor or recipient
 				continue
 			}
-			err := json.Unmarshal(x, &rContractor)
+			err := rContractor.UnmarshalJSON(x)
 			if err != nil {
 				return errors.Wrap(err, "couldn't unmarshal json")
 			}
@@ -199,7 +198,7 @@ func RetrieveEntity(key int) (Entity, error) {
 		if x == nil {
 			return errors.New("Retrieving entity returns nil, quitting!")
 		}
-		return json.Unmarshal(x, &a)
+		return a.UnmarshalJSON(x)
 	})
 	return a, err
 }

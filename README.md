@@ -33,6 +33,10 @@ ipfs is used by some parts of the program to store legal contracts, files that t
 
 You need to keep your peer key (`ipfs.key` usually) in a safe place for future reference. Start ipfs using `ipfs daemon` and you can test if it worked by creating a test file `test.txt` and run `ipfs add test.txt` to see if it succeeds. The resultant hash can be decrypted using `curl "http://127.0.0.1:8080/ipfs/hash"` where 8080 is the endpoint of the ipfs server or by doing `cat /ipfs/hash` directly. You can also refer to [this helpful tutorial](https://michalzalecki.com/set-up-ipfs-node-on-the-server/) in order to get started with ipfs.
 
+# Installing EasyJson
+
+[EasyJson](https://github.com/mailru/easyjson) is a project that generates fast json encoding and decoding code that we use. Benchmarks show that it is ~3x faster than the native `encoding/json` package. To generate the required files, run `./easyjson -all */*.go` and `./easyjson -all */**/*.go` to generate json encoding for all required files.
+
 ## Running tests
 
 Running tests is simple with `go test` but the tests have flags since some require running other daemons in the background (`ipfs`). There are two kinds of flags right now - `travis` and `all`. If you need the coverage stats as well, you need to

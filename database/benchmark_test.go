@@ -3,7 +3,6 @@
 package database
 
 import (
-	"encoding/json"
 	"github.com/pkg/errors"
 	"log"
 	"os"
@@ -36,7 +35,7 @@ func RetrieveInvestor2(key int) (Investor, error) {
 			// no investor with the specific details
 			return errors.New("No investor found with required credentials")
 		}
-		return json.Unmarshal(x, &inv)
+		return inv.UnmarshalJSON(x)
 	})
 	db.Close()
 	return inv, err
@@ -90,42 +89,14 @@ func BenchmarkRetrieveWarmup(b *testing.B) {
 	}
 }
 
-func BenchmarkRetrieveWD1(b *testing.B) {
-	b.ResetTimer()
-	for i := 1; i < b.N; i++ {
-		_, _ = RetrieveInvestor(i)
-	}
-}
-
-func BenchmarkRetrieveWOD1(b *testing.B) {
+func BenchmarkRetrieveWithoutDefer(b *testing.B) {
 	b.ResetTimer()
 	for i := 1; i < b.N; i++ {
 		_, _ = RetrieveInvestor2(i)
 	}
 }
 
-func BenchmarkRetrieveWOD2(b *testing.B) {
-	b.ResetTimer()
-	for i := 1; i < b.N; i++ {
-		_, _ = RetrieveInvestor2(i)
-	}
-}
-
-func BenchmarkRetrieveWD2(b *testing.B) {
-	b.ResetTimer()
-	for i := 1; i < b.N; i++ {
-		_, _ = RetrieveInvestor(i)
-	}
-}
-
-func BenchmarkRetrieveWOD3(b *testing.B) {
-	b.ResetTimer()
-	for i := 1; i < b.N; i++ {
-		_, _ = RetrieveInvestor2(i)
-	}
-}
-
-func BenchmarkRetrieveWD3(b *testing.B) {
+func BenchmarkRetrieveWithDefer(b *testing.B) {
 	b.ResetTimer()
 	for i := 1; i < b.N; i++ {
 		_, _ = RetrieveInvestor(i)
@@ -165,7 +136,7 @@ func RetrieveAllInvestors1() ([]Investor, error) {
 				// this is where the key does not exist, we search until limit, so don't error out
 				continue
 			}
-			err := json.Unmarshal(x, &rInvestor)
+			err := rInvestor.UnmarshalJSON(x)
 			if err != nil {
 				// error in unmarshalling this struct, error out
 				return errors.Wrap(err, "failed to unmarshal json")
@@ -178,31 +149,17 @@ func RetrieveAllInvestors1() ([]Investor, error) {
 	return arr, err
 }
 
-func BenchmarkRetrieveAllWOD1(b *testing.B) {
+func BenchmarkRetrieveAllWithoutDelay(b *testing.B) {
 	b.ResetTimer()
 	for i := 1; i < b.N; i++ {
 		_, _ = RetrieveAllInvestors1()
 	}
 }
 
-func BenchmarkRetrieveAllWD1(b *testing.B) {
+func BenchmarkRetrieveAllWithDelay(b *testing.B) {
 	b.ResetTimer()
 	for i := 1; i < b.N; i++ {
 		_, _ = RetrieveAllInvestors()
-	}
-}
-
-func BenchmarkRetrieveAllWD2(b *testing.B) {
-	b.ResetTimer()
-	for i := 1; i < b.N; i++ {
-		_, _ = RetrieveAllInvestors()
-	}
-}
-
-func BenchmarkRetrieveAllWOD2(b *testing.B) {
-	b.ResetTimer()
-	for i := 1; i < b.N; i++ {
-		_, _ = RetrieveAllInvestors1()
 	}
 }
 

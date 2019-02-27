@@ -2,7 +2,6 @@ package opensolar
 
 import (
 	"crypto/tls"
-	"encoding/json"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -93,6 +92,9 @@ type Project struct {
 	/// provide users with a predefined list of payback periods periods
 }
 
+//easyjson:json
+type SolarProjectArray []Project
+
 // InitializePlatform imports handlers from the main platform struct that are necessary for starting the platform
 func InitializePlatform() error {
 	return platform.InitializePlatform()
@@ -153,7 +155,7 @@ func MonitorTeller(projIndex int) {
 
 		var x statusResponse
 
-		err = json.Unmarshal(data, &x)
+		err = x.UnmarshalJSON(data)
 		if err != nil {
 			log.Println("error while unmarshalling data", err)
 			notif.SendTellerDownEmail(project.Index, project.RecipientIndex)

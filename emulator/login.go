@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"github.com/pkg/errors"
 	"log"
 
@@ -20,7 +19,7 @@ func Login(username string, pwhash string) (string, error) {
 		return wString, errors.Wrap(err, "validate request failed")
 	}
 	var x rpc.ValidateParams
-	err = json.Unmarshal(data, &x)
+	err = x.UnmarshalJSON(data)
 	if err != nil {
 		return wString, errors.Wrap(err, "could not unmarshal json")
 	}
@@ -32,7 +31,7 @@ func Login(username string, pwhash string) (string, error) {
 			return wString, errors.Wrap(err, "could not call ivnestor validate function")
 		}
 		var inv database.Investor
-		err = json.Unmarshal(data, &inv)
+		err = inv.UnmarshalJSON(data)
 		if err != nil {
 			return wString, errors.Wrap(err, "could not unmarshal json")
 		}
@@ -53,7 +52,7 @@ func Login(username string, pwhash string) (string, error) {
 			return wString, errors.Wrap(err, "could not call recipient validate endpoint")
 		}
 		var recp database.Recipient
-		err = json.Unmarshal(data, &recp)
+		err = recp.UnmarshalJSON(data)
 		if err != nil {
 			return wString, errors.Wrap(err, "could not unmarshal json")
 		}
@@ -74,7 +73,7 @@ func Login(username string, pwhash string) (string, error) {
 			return wString, errors.Wrap(err, "could not call entity validate endpoint")
 		}
 		var entity solar.Entity
-		err = json.Unmarshal(data, &entity)
+		err = entity.UnmarshalJSON(data)
 		if err != nil {
 			return wString, errors.Wrap(err, "could not unmarshal json")
 		}

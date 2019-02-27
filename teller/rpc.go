@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
 	"log"
@@ -33,7 +32,7 @@ func PingRpc() error {
 	}
 	var x rpc.StatusResponse
 	// now data is in byte, we need the other structure now
-	err = json.Unmarshal(data, &x)
+	err = x.UnmarshalJSON(data)
 	if err != nil {
 		return err
 	}
@@ -49,8 +48,8 @@ func GetProjectIndex(assetName string) (int, error) {
 		log.Println(err)
 		return -1, err
 	}
-	var x []solar.Project
-	err = json.Unmarshal(data, &x)
+	var x solar.SolarProjectArray
+	err = x.UnmarshalJSON(data)
 	if err != nil {
 		return -1, err
 	}
@@ -69,7 +68,7 @@ func LoginToPlatform(username string, pwhash string) error {
 		return err
 	}
 	var x database.Recipient
-	err = json.Unmarshal(data, &x)
+	err = x.UnmarshalJSON(data)
 	if err != nil {
 		return err
 	}
@@ -88,7 +87,7 @@ func ProjectPayback(assetName string, amount string) error {
 		return err
 	}
 	var x rpc.StatusResponse
-	err = json.Unmarshal(data, &x)
+	err = x.UnmarshalJSON(data)
 	if err != nil {
 		return err
 	}
@@ -107,7 +106,7 @@ func SetDeviceId(username string, pwhash string, deviceId string) error {
 		return err
 	}
 	var x rpc.StatusResponse
-	err = json.Unmarshal(data, &x)
+	err = x.UnmarshalJSON(data)
 	if err != nil {
 		return err
 	}
@@ -127,7 +126,7 @@ func StoreStartTime() error {
 	}
 
 	var x rpc.StatusResponse
-	err = json.Unmarshal(data, &x)
+	err = x.UnmarshalJSON(data)
 	if err != nil {
 		return err
 	}
@@ -148,7 +147,7 @@ func StoreLocation(mapskey string) error {
 	}
 
 	var x rpc.StatusResponse
-	err = json.Unmarshal(data, &x)
+	err = x.UnmarshalJSON(data)
 	if err != nil {
 		return err
 	}
@@ -169,7 +168,7 @@ func GetPlatformEmail() error {
 	}
 
 	var x rpc.PlatformEmailResponse
-	err = json.Unmarshal(data, &x)
+	err = x.UnmarshalJSON(data)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -191,7 +190,7 @@ func SendDeviceShutdownEmail(tx1 string, tx2 string) error {
 	}
 
 	var x rpc.StatusResponse
-	err = json.Unmarshal(data, &x)
+	err = x.UnmarshalJSON(data)
 	if err != nil {
 		return err
 	}
@@ -213,7 +212,7 @@ func GetLocalProjectDetails(projIndex string) (solar.Project, error) {
 		return x, err
 	}
 
-	err = json.Unmarshal(data, &x)
+	err = x.UnmarshalJSON(data)
 	if err != nil {
 		log.Println(err)
 		return x, err
@@ -233,7 +232,7 @@ func SendDevicePaybackFailedEmail() error {
 	}
 
 	var x rpc.StatusResponse
-	err = json.Unmarshal(data, &x)
+	err = x.UnmarshalJSON(data)
 	if err != nil {
 		return err
 	}
@@ -254,7 +253,7 @@ func StoreStateHistory(hash string) error {
 	}
 
 	var x rpc.StatusResponse
-	err = json.Unmarshal(data, &x)
+	err = x.UnmarshalJSON(data)
 	if err != nil {
 		return err
 	}

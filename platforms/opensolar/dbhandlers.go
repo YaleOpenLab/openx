@@ -1,7 +1,6 @@
 package opensolar
 
 import (
-	"encoding/json"
 	"github.com/pkg/errors"
 
 	database "github.com/YaleOpenLab/openx/database"
@@ -18,7 +17,7 @@ func (a *Project) Save() error {
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(database.ProjectsBucket)
-		encoded, err := json.Marshal(a)
+		encoded, err := a.MarshalJSON()
 		if err != nil {
 			return errors.Wrap(err, "couldn't marshal json")
 		}
@@ -41,7 +40,7 @@ func RetrieveProject(key int) (Project, error) {
 		if x == nil {
 			return errors.New("Retrieved project nil")
 		}
-		return json.Unmarshal(x, &inv)
+		return inv.UnmarshalJSON(x)
 	})
 	return inv, err
 }
@@ -62,7 +61,7 @@ func RetrieveAllProjects() ([]Project, error) {
 			if x == nil {
 				break
 			}
-			err := json.Unmarshal(x, &rProject)
+			err := rProject.UnmarshalJSON(x)
 			if err != nil {
 				return errors.Wrap(err, "couldn't marshal json")
 			}
@@ -89,7 +88,7 @@ func RetrieveProjectsAtStage(stage float64) ([]Project, error) {
 			if x == nil {
 				break
 			}
-			err := json.Unmarshal(x, &rProject)
+			err := rProject.UnmarshalJSON(x)
 			if err != nil {
 				return errors.Wrap(err, "couldn't marshal json")
 			}
@@ -118,7 +117,7 @@ func RetrieveContractorProjects(stage float64, index int) ([]Project, error) {
 			if x == nil {
 				return nil // key does not exist
 			}
-			err := json.Unmarshal(x, &rProject)
+			err := rProject.UnmarshalJSON(x)
 			if err != nil {
 				return errors.Wrap(err, "couldn't marshal json")
 			}
@@ -146,7 +145,7 @@ func RetrieveOriginatorProjects(stage float64, index int) ([]Project, error) {
 			if x == nil {
 				return nil
 			}
-			err := json.Unmarshal(x, &rProject)
+			err := rProject.UnmarshalJSON(x)
 			if err != nil {
 				return errors.Wrap(err, "couldn't marshal json")
 			}
@@ -174,7 +173,7 @@ func RetrieveRecipientProjects(stage float64, index int) ([]Project, error) {
 			if x == nil {
 				return nil
 			}
-			err := json.Unmarshal(x, &rProject)
+			err := rProject.UnmarshalJSON(x)
 			if err != nil {
 				return errors.Wrap(err, "couldn't marshal json")
 			}
@@ -203,7 +202,7 @@ func RetrieveLockedProjects() ([]Project, error) {
 			if x == nil {
 				break
 			}
-			err := json.Unmarshal(x, &rProject)
+			err := rProject.UnmarshalJSON(x)
 			if err != nil {
 				return errors.Wrap(err, "couldn't marshal json")
 			}

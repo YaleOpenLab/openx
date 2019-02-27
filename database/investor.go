@@ -1,7 +1,6 @@
 package database
 
 import (
-	"encoding/json"
 	"github.com/pkg/errors"
 
 	assets "github.com/YaleOpenLab/openx/assets"
@@ -82,7 +81,7 @@ func (a *Investor) Save() error {
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(InvestorBucket)
-		encoded, err := json.Marshal(a)
+		encoded, err := a.MarshalJSON()
 		if err != nil {
 			return errors.Wrap(err, "error while marshaling json struct")
 		}
@@ -106,7 +105,7 @@ func RetrieveInvestor(key int) (Investor, error) {
 			// no investor with the specific details
 			return errors.New("No investor found with required credentials")
 		}
-		return json.Unmarshal(x, &inv)
+		return inv.UnmarshalJSON(x)
 	})
 	return inv, err
 }
@@ -136,7 +135,7 @@ func RetrieveAllInvestors() ([]Investor, error) {
 				// this is where the key does not exist, we search until limit, so don't error out
 				continue
 			}
-			err := json.Unmarshal(x, &rInvestor)
+			err := rInvestor.UnmarshalJSON(x)
 			if err != nil {
 				// error in unmarshalling this struct, error out
 				return errors.Wrap(err, "failed to unmarshal json")
