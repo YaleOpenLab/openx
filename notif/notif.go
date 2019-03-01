@@ -304,3 +304,28 @@ func SendTellerDownEmail(projIndex int, recpIndex int) error {
 		footerString
 	return sendMail(body, consts.PlatformEmail)
 }
+
+func SendSecretsEmail(userEmail string, email1 string, email2 string, email3 string, secret1 string, secret2 string, secret3 string) error {
+	bodyBase := "Greetings from the opensolar platform! \n\nWe're writing to let you know that user with email: " + userEmail +
+	" has designated you as a trusted entity. Towards this, we request that you keep the attached secret in a safe and secure place and provide " +
+	"it to the above user in case they request for it. \n\n" + "SECRET:\n\n"
+	body1 := bodyBase + secret1 + "\n\n\n" + footerString
+	err := sendMail(body1, email1)
+	if err != nil {
+		return err
+	}
+
+	body2 := bodyBase + secret2 + "\n\n\n" + footerString
+	err = sendMail(body2, email2)
+	if err != nil {
+		return err
+	}
+
+	body3 := bodyBase + secret3 + "\n\n\n" + footerString
+	err = sendMail(body3, email3)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

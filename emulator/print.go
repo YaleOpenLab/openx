@@ -61,6 +61,7 @@ func PrintInvestor(investor database.Investor) {
 		fmt.Println("         Your Email id is: ", investor.U.Email)
 	}
 	fmt.Println("         Your Local Assets are: ", investor.U.LocalAssets)
+	fmt.Println("          Your Recovery Shares are: ", investor.U.RecoveryShares)
 }
 
 // PrintUsers is a vanity prettyprint function
@@ -79,6 +80,7 @@ func PrintUser(user database.User) {
 	fmt.Println("          Your Username is: ", user.Username)
 	fmt.Println("          Your Password hash is: ", user.Pwhash)
 	fmt.Println("          Your KYC status is: ", user.Kyc)
+	fmt.Println("          Your Recovery Shares are: ", user.RecoveryShares)
 	if user.Notification {
 		fmt.Println("         Your Email id is: ", user.Email)
 	}
@@ -100,6 +102,7 @@ func PrintRecipient(recipient database.Recipient) {
 	fmt.Println("          Your Device Start Times are: ", recipient.DeviceStarts)
 	fmt.Println("          Your Device Location is: ", recipient.DeviceLocation)
 	fmt.Println("          Your list of state hashes are: ", recipient.StateHashes)
+	fmt.Println("          Your Recovery Shares are: ", recipient.U.RecoveryShares)
 }
 
 // PrintEntity is a vanity prettyprint function

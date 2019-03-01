@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	//"fmt"
 	"log"
 	"net/http"
@@ -11,14 +10,6 @@ import (
 )
 
 // server starts a local server which would inform us about the uptime of the teller and provide a data endpoint
-
-// Data defines a structure to be used while capturing data
-type Data struct {
-	// the data that is going to be streamed
-	// TODO: define what goes in here
-	Timestamp string
-	Info      string
-}
 
 func checkGet(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
@@ -79,7 +70,7 @@ func hashChainHeaderHandler() {
 		checkGet(w, r)
 		var x HCHeaderResponse
 		x.Hash = HashChainHeader
-		xJson, err := json.Marshal(x)
+		xJson, err := x.MarshalJSON()
 		if err != nil {
 			responseHandler(w, r, rpc.StatusInternalServerError)
 			return

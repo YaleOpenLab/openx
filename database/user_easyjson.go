@@ -94,6 +94,29 @@ func easyjson9e1087fdDecodeGithubComYaleOpenLabOpenxDatabase(in *jlexer.Lexer, o
 				}
 				in.Delim(']')
 			}
+		case "RecoveryShares":
+			if in.IsNull() {
+				in.Skip()
+				out.RecoveryShares = nil
+			} else {
+				in.Delim('[')
+				if out.RecoveryShares == nil {
+					if !in.IsDelim(']') {
+						out.RecoveryShares = make([]string, 0, 4)
+					} else {
+						out.RecoveryShares = []string{}
+					}
+				} else {
+					out.RecoveryShares = (out.RecoveryShares)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v3 string
+					v3 = string(in.String())
+					out.RecoveryShares = append(out.RecoveryShares, v3)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -270,11 +293,32 @@ func easyjson9e1087fdEncodeGithubComYaleOpenLabOpenxDatabase(out *jwriter.Writer
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v5, v6 := range in.LocalAssets {
-				if v5 > 0 {
+			for v6, v7 := range in.LocalAssets {
+				if v6 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v6))
+				out.String(string(v7))
+			}
+			out.RawByte(']')
+		}
+	}
+	{
+		const prefix string = ",\"RecoveryShares\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		if in.RecoveryShares == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+			out.RawString("null")
+		} else {
+			out.RawByte('[')
+			for v8, v9 := range in.RecoveryShares {
+				if v8 > 0 {
+					out.RawByte(',')
+				}
+				out.String(string(v9))
 			}
 			out.RawByte(']')
 		}

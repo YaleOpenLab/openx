@@ -566,3 +566,54 @@ func IncreaseTrustLimit(username string, pwhash string, seedpwd string, trust st
 	}
 	return x, nil
 }
+
+func SendSharesEmail(username string, pwhash string, email1 string, email2 string, email3 string) (rpc.StatusResponse, error) {
+	var x rpc.StatusResponse
+	body := ApiUrl + "/user/sendrecovery?" + "username=" + username + "&pwhash=" + pwhash +
+		"&email1=" + email1 + "&email2=" + email2 + "&email3=" + email3
+
+	data, err := rpc.GetRequest(body)
+	if err != nil {
+		return x, err
+	}
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return x, err
+	}
+	return x, nil
+}
+
+func MergeSharesEmail(username string, pwhash string, secret1 string, secret2 string) (rpc.StatusResponse, error) {
+	// currently this does not work since its in base64, might work if its in other formats
+	// TODO: see if there's some way around this
+	var x rpc.StatusResponse
+	body := ApiUrl + "/user/seedrecovery?" + "username=" + username + "&pwhash=" + pwhash +
+		"&secret1=" + secret1 + "&secret2=" + secret2
+
+	data, err := rpc.GetRequest(body)
+	if err != nil {
+		return x, err
+	}
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return x, err
+	}
+	return x, nil
+}
+
+
+func SendNewSharesEmail(username string, pwhash string, seedpwd string, email1 string, email2 string, email3 string)(rpc.StatusResponse, error) {
+	var x rpc.StatusResponse
+	body := ApiUrl + "/user/newsecrets?" + "username=" + username + "&pwhash=" + pwhash +
+		"&seedpwd=" + seedpwd + "&email1=" + email1 + "&email2=" + email2 + "&email3=" + email3
+
+	data, err := rpc.GetRequest(body)
+	if err != nil {
+		return x, err
+	}
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return x, err
+	}
+	return x, nil
+}

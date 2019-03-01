@@ -1,7 +1,6 @@
 package rpc
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 	"strings"
@@ -53,7 +52,7 @@ func getCoopDetails() {
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
-		bondJson, err := json.Marshal(bond)
+		bondJson, err := bond.MarshalJSON()
 		if err != nil {
 			log.Println("did not marhsal json", err)
 			responseHandler(w, r, StatusInternalServerError)

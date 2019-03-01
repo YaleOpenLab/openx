@@ -2,7 +2,6 @@ package rpc
 
 import (
 	"crypto/tls"
-	"encoding/json"
 	"errors"
 	"io/ioutil"
 	"log"
@@ -14,6 +13,7 @@ import (
 	ipfs "github.com/YaleOpenLab/openx/ipfs"
 	notif "github.com/YaleOpenLab/openx/notif"
 	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
+	recovery "github.com/YaleOpenLab/openx/recovery"
 	utils "github.com/YaleOpenLab/openx/utils"
 	wallet "github.com/YaleOpenLab/openx/wallet"
 	xlm "github.com/YaleOpenLab/openx/xlm"
@@ -37,6 +37,9 @@ func setupUserRpcs() {
 	tellerPing()
 	increaseTrustLimit()
 	addContractHash()
+	SendSecrets()
+	MergeSecrets()
+	GenerateNewSecrets()
 }
 
 const (
@@ -586,7 +589,7 @@ func tellerPing() {
 
 		var x StatusResponse
 
-		err = json.Unmarshal(data, &x)
+		err = x.UnmarshalJSON(data)
 		if err != nil {
 			responseHandler(w, r, StatusBadRequest)
 			return
@@ -687,6 +690,122 @@ func addContractHash() {
 			return
 		}
 
+		responseHandler(w, r, StatusOK)
+	})
+}
+
+func SendSecrets() {
+	http.HandleFunc("/user/sendrecovery", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
+
+		user, err := UserValidateHelper(w, r)
+		if err != nil || r.URL.Query()["email1"] == nil || r.URL.Query()["email2"] == nil || r.URL.Query()["email3"] == nil {
+			log.Println("couldn't validate investor", err)
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+
+		// we should distribute the shares and then set them to nil since a person who is in
+		// control of the server c ould then reconstruct the seed
+		// now send emails out to these three trusted entities with the share
+		email1 := r.URL.Query()["email1"][0]
+		email2 := r.URL.Query()["email2"][0]
+		email3 := r.URL.Query()["email3"][0]
+
+		err = notif.SendSecretsEmail(user.Email, email1, email2, email3, user.RecoveryShares[0], user.RecoveryShares[1], user.RecoveryShares[2])
+		if err != nil {
+			responseHandler(w, r, StatusInternalServerError)
+			return
+		}
+
+		responseHandler(w, r, StatusOK)
+	})
+}
+
+type SeedResponse struct {
+	Seed string
+}
+
+func MergeSecrets() {
+	http.HandleFunc("/user/seedrecovery", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
+
+		_, err := UserValidateHelper(w, r)
+		if err != nil || r.URL.Query()["secret1"] == nil || r.URL.Query()["secret2"] == nil {
+			log.Println("couldn't validate investor", err)
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+
+		var shares []string
+		secret1 := r.URL.Query()["secret1"][0]
+		secret2 := r.URL.Query()["secret2"][0]
+		shares = append(shares, secret1, secret2)
+		// now we have 2 out of the 3 secrets needed to reconstruct. Reconstruct the seed.
+		secret, err := recovery.Combine(shares)
+		if err != nil {
+			log.Println("couldn't combine shares: ", err)
+			responseHandler(w, r, StatusInternalServerError)
+			return
+		}
+
+		var x SeedResponse
+		x.Seed = secret
+		MarshalSend(w, r, x)
+	})
+}
+
+func GenerateNewSecrets() {
+	http.HandleFunc("/user/newsecrets", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
+
+		user, err := UserValidateHelper(w, r)
+		if err != nil || r.URL.Query()["seedpwd"] == nil || r.URL.Query()["email1"] == nil ||
+			r.URL.Query()["email2"] == nil || r.URL.Query()["email3"] == nil {
+			log.Println("couldn't validate investor", err)
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+
+		seedpwd := r.URL.Query()["seedpwd"][0]
+		// we've validated the seedpwd, try decrypting the Encrypted Seed.
+		seed, err := wallet.DecryptSeed(user.EncryptedSeed, seedpwd)
+		if err != nil {
+			responseHandler(w, r, StatusInternalServerError)
+			return
+		}
+
+		// now get the pubkey from this seed and match with original pubkey
+		pubkey, err := wallet.ReturnPubkey(seed)
+		if err != nil {
+			responseHandler(w, r, StatusInternalServerError)
+			return
+		}
+
+		if pubkey != user.PublicKey {
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+
+		// user has validated his seed and identity. Generate new shares and send them out
+		shares, err := recovery.Create(2, 3, seed)
+		if err != nil {
+			responseHandler(w, r, StatusInternalServerError)
+			return
+		}
+
+		email1 := r.URL.Query()["email1"][0]
+		email2 := r.URL.Query()["email2"][0]
+		email3 := r.URL.Query()["email3"][0]
+
+		err = notif.SendSecretsEmail(user.Email, email1, email2, email3, shares[0], shares[1], shares[2])
+		if err != nil {
+			responseHandler(w, r, StatusInternalServerError)
+			return
+		}
 		responseHandler(w, r, StatusOK)
 	})
 }
