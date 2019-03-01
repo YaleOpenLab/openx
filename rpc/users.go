@@ -2,7 +2,6 @@ package rpc
 
 import (
 	"crypto/tls"
-	"encoding/json"
 	"errors"
 	"io/ioutil"
 	"log"
@@ -586,7 +585,7 @@ func tellerPing() {
 
 		var x StatusResponse
 
-		err = json.Unmarshal(data, &x)
+		err = x.UnmarshalJSON(data)
 		if err != nil {
 			responseHandler(w, r, StatusBadRequest)
 			return

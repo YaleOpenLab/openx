@@ -1,11 +1,13 @@
 package database
 
 import (
+	"log"
 	"github.com/pkg/errors"
 
 	aes "github.com/YaleOpenLab/openx/aes"
 	assets "github.com/YaleOpenLab/openx/assets"
 	consts "github.com/YaleOpenLab/openx/consts"
+	recovery "github.com/YaleOpenLab/openx/recovery"
 	utils "github.com/YaleOpenLab/openx/utils"
 	wallet "github.com/YaleOpenLab/openx/wallet"
 	xlm "github.com/YaleOpenLab/openx/xlm"
@@ -58,6 +60,9 @@ type User struct {
 	// awarding badges or something to users with high reputation
 	LocalAssets []string
 	// a collection of assets that the user can own and trade locally using the emulator
+	RecoveryShares []string
+	// RecoveryShares are shares that you could hare out to a party and one could reconstruct the
+	// seed from 2 out of 3 parts. Based on Shamir's Secret Sharing Scheme.
 }
 
 // NewUser creates a new user
@@ -89,6 +94,7 @@ func NewUser(uname string, pwd string, seedpwd string, Name string) (User, error
 	a.FirstSignedUp = utils.Timestamp()
 	a.Kyc = false
 	a.Notification = false
+	log.Println("RECOVERY SHARES: ", a.RecoveryShares)
 	err = a.Save()
 	return a, err // since user is a meta structure, insert it and then return the function
 }
@@ -261,6 +267,16 @@ func (a *User) GenKeys(seedpwd string) error {
 	if err != nil {
 		return errors.Wrap(err, "error while encrypting seed")
 	}
+
+	tmp, err := recovery.Create(2, 3, seed)
+	if err != nil {
+		return errors.Wrap(err, "error while storing recovery shares")
+	}
+
+	for _, elem := range tmp {
+		a.RecoveryShares = append(a.RecoveryShares, elem)
+	}
+
 	err = a.Save()
 	return err
 }
