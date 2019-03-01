@@ -481,3 +481,68 @@ func increaseTrustHelper(input []string, username string, pwhash string) {
 
 	return
 }
+
+func sendSharesEmailHelper(input []string, username string, pwhash string) {
+	if len(input) != 4 {
+		log.Println("<sendshares> email1 email2 email3")
+		return
+	}
+	email1 := input[1]
+	email2 := input[2]
+	email3 := input[3]
+
+	response, err := SendSharesEmail(username, pwhash, email1, email2, email3)
+	if err != nil {
+		log.Println(err)
+	}
+	if response.Code == 200 {
+		ColorOutput("SUCCESSFULLY SENT SHARES", GreenColor)
+	} else {
+		ColorOutput("COULD NOT SEND SHARES OUT TO PARTIES", RedColor)
+	}
+
+	return
+}
+
+func mergeSharesEmailHelper(input []string, username string, pwhash string) {
+	if len(input) != 3 {
+		log.Println("<mergeshares> secret1 secret2")
+		return
+	}
+	secret1 := input[1]
+	secret2 := input[2]
+
+	response, err := MergeSharesEmail(username, pwhash, secret1, secret2)
+	if err != nil {
+		log.Println(err)
+	}
+	if response.Code == 200 {
+		ColorOutput("SUCCESSFULLY SENT SHARES", GreenColor)
+	} else {
+		ColorOutput("COULD NOT SEND SHARES OUT TO PARTIES", RedColor)
+	}
+
+	return
+}
+
+func genNewSharesHelper(input []string, username string, pwhash string, seedpwd string) {
+	if len(input) != 4 {
+		log.Println("<newshares> email1 email2 email3")
+		return
+	}
+
+	email1 := input[1]
+	email2 := input[2]
+	email3 := input[3]
+
+	response, err := SendNewSharesEmail(username, pwhash, seedpwd, email1, email2, email3)
+	if err != nil {
+		log.Println(err)
+	}
+
+	if response.Code == 200 {
+		ColorOutput("SUCCESSFULLY SENT NEW SHARES", GreenColor)
+	} else {
+		ColorOutput("COULD NOT SEND NEW SHARES OUT TO PARTIES", RedColor)
+	}
+}

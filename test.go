@@ -60,13 +60,6 @@ func StartPlatform() error {
 		}
 	}
 
-
-	x, err := database.RetrieveAllUsers()
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println(x)
-
 	// init stablecoin before platform so we don't have to create a stablecoin in case our dbdir is wiped
 	err = stablecoin.InitStableCoin() // start the stablecoin daemon
 	if err != nil {

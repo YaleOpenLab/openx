@@ -78,6 +78,12 @@ func ParseInputInv(input []string) error {
 		kycHelper(input, LocalInvestor.U.Username, LocalInvestor.U.Pwhash, LocalInvestor.U.Inspector)
 	case "increasetrust":
 		increaseTrustHelper(input, LocalInvestor.U.Username, LocalInvestor.U.Pwhash)
+	case "sendshares":
+		sendSharesEmailHelper(input, LocalInvestor.U.Username, LocalInvestor.U.Pwhash)
+	case "mergeshares":
+		mergeSharesEmailHelper(input, LocalInvestor.U.Username, LocalInvestor.U.Pwhash)
+	case "newshares":
+		genNewSharesHelper(input, LocalInvestor.U.Username, LocalInvestor.U.Pwhash, LocalSeedPwd)
 	// Investor only functions
 	case "vote":
 		if len(input) != 3 {
