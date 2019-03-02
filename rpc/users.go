@@ -37,9 +37,11 @@ func setupUserRpcs() {
 	tellerPing()
 	increaseTrustLimit()
 	addContractHash()
-	SendSecrets()
-	MergeSecrets()
-	GenerateNewSecrets()
+	sendSecrets()
+	mergeSecrets()
+	generateNewSecrets()
+	generateResetPwdCode()
+	resetPassword()
 }
 
 const (
@@ -694,7 +696,9 @@ func addContractHash() {
 	})
 }
 
-func SendSecrets() {
+// sendSecrets sends secrets out to the email ids passed. This does not require the seedpwd since one can generate a new seed
+// anyway using the username and password, so possessing the secrets does not require seed authentication
+func sendSecrets() {
 	http.HandleFunc("/user/sendrecovery", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
 		checkOrigin(w, r)
@@ -719,6 +723,11 @@ func SendSecrets() {
 			return
 		}
 
+		// set the stored shares to nil since possessing them would enable an attacker to generate the secrets he needs by simply controlling the server
+		user.RecoveryShares[0] = ""
+		user.RecoveryShares[1] = ""
+		user.RecoveryShares[2] = ""
+
 		responseHandler(w, r, StatusOK)
 	})
 }
@@ -727,7 +736,8 @@ type SeedResponse struct {
 	Seed string
 }
 
-func MergeSecrets() {
+// mergeSecrets tkaes in two shares in a 2 of 3 Shamir Secret Sharing Scheme and reconstructs the seed
+func mergeSecrets() {
 	http.HandleFunc("/user/seedrecovery", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
 		checkOrigin(w, r)
@@ -757,7 +767,8 @@ func MergeSecrets() {
 	})
 }
 
-func GenerateNewSecrets() {
+// generateNewSecrets generates an ew set of secrets for the given function
+func generateNewSecrets() {
 	http.HandleFunc("/user/newsecrets", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
 		checkOrigin(w, r)
@@ -806,6 +817,124 @@ func GenerateNewSecrets() {
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
+		responseHandler(w, r, StatusOK)
+	})
+}
+
+// TODO: sweep function
+// we must provide users with a function using which they can sweep funds around (requires seed password)
+// we must also have a forgot password function which sends people a link to reset their password to their email id
+// also would be nice to have a function which generates a new keypair and moves funds into the account given the seedpwd for authentication
+
+func generateResetPwdCode() {
+	http.HandleFunc("/user/resetpwd", func(w http.ResponseWriter, r *http.Request) {
+		log.Println("CALLING ENDPOINT")
+		checkGet(w, r)
+		checkOrigin(w, r)
+
+		// the notion here si that the user must have his seedpwd in order to reset the password.
+		// we retrieve the user using his email id and lookup his encrypted seed. If the
+		// seed can be unlocked using hte seedpwd, we send a pwd reset email. One of two password
+		// must be remembered
+		if r.URL.Query()["email"] == nil || r.URL.Query()["seedpwd"] == nil {
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+		email := r.URL.Query()["email"][0]
+		seedpwd := r.URL.Query()["seedpwd"][0]
+
+		rUser, err := database.SearchWithEmailId(email)
+		if err != nil {
+			responseHandler(w, r, StatusInternalServerError)
+			return
+		}
+
+		seed, err := wallet.DecryptSeed(rUser.EncryptedSeed, seedpwd)
+		if err != nil {
+			responseHandler(w, r, StatusInternalServerError)
+			return
+		}
+
+		pubkey, err := wallet.ReturnPubkey(seed)
+		if err != nil {
+			responseHandler(w, r, StatusInternalServerError)
+			return
+		}
+
+		if pubkey != rUser.PublicKey {
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+		// now we can verify that this is rellay the user. Now we need to cgenerate a verification code
+		// and send it over to the user.
+		verificationCode := utils.GetRandomString(16)
+		log.Println("VERIFICATION CODE: ", verificationCode)
+		rUser.PwdResetCode = verificationCode
+		err = rUser.Save()
+		if err != nil {
+			responseHandler(w, r, StatusInternalServerError)
+			return
+		}
+
+		// now send this verification code to the email we have in the database
+		err = notif.SendPasswordResetEmail(rUser.Email, verificationCode)
+		if err != nil {
+			responseHandler(w, r, StatusInternalServerError)
+			return
+		}
+
+		responseHandler(w, r, StatusOK)
+	})
+}
+
+func resetPassword() {
+	http.HandleFunc("/user/pwdreset", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
+
+		if r.URL.Query()["email"] == nil || r.URL.Query()["seedpwd"] == nil || r.URL.Query()["verificationCode"] == nil ||
+			r.URL.Query()["pwhash"] == nil {
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+
+		email := r.URL.Query()["email"][0]
+		seedpwd := r.URL.Query()["seedpwd"][0]
+		vCode := r.URL.Query()["verificationCode"][0]
+		pwhash := r.URL.Query()["pwhash"][0]
+
+		rUser, err := database.SearchWithEmailId(email)
+		if err != nil {
+			responseHandler(w, r, StatusInternalServerError)
+			return
+		}
+
+		seed, err := wallet.DecryptSeed(rUser.EncryptedSeed, seedpwd)
+		if err != nil {
+			responseHandler(w, r, StatusInternalServerError)
+			return
+		}
+
+		pubkey, err := wallet.ReturnPubkey(seed)
+		if err != nil {
+			responseHandler(w, r, StatusInternalServerError)
+			return
+		}
+
+		if pubkey != rUser.PublicKey || vCode != rUser.PwdResetCode || vCode == "INVALID" {
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+
+		// reset the user's password
+		rUser.Pwhash = pwhash
+		rUser.PwdResetCode = "INVALID" // invalidate the pwd reset code to avoid replay attacks
+		err = rUser.Save()
+		if err != nil {
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+
 		responseHandler(w, r, StatusOK)
 	})
 }
