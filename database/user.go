@@ -1,8 +1,8 @@
 package database
 
 import (
-	"log"
 	"github.com/pkg/errors"
+	"log"
 
 	aes "github.com/YaleOpenLab/openx/aes"
 	assets "github.com/YaleOpenLab/openx/assets"
@@ -63,6 +63,7 @@ type User struct {
 	RecoveryShares []string
 	// RecoveryShares are shares that you could hare out to a party and one could reconstruct the
 	// seed from 2 out of 3 parts. Based on Shamir's Secret Sharing Scheme.
+	PwdResetCode string
 }
 
 // NewUser creates a new user
@@ -418,4 +419,33 @@ func IncreaseTrustLimit(userIndex int, seedpwd string, trust string) error {
 	}
 
 	return nil
+}
+
+// SearchWithEmailId searches for a given user who has the given email id
+func SearchWithEmailId(email string) (User, error) {
+	var foundUser User
+	db, err := OpenDB()
+	if err != nil {
+		return foundUser, errors.Wrap(err, "Error while opening database")
+	}
+	defer db.Close()
+
+	err = db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket(UserBucket)
+		for i := 1; ; i++ {
+			var rUser User
+			x := b.Get(utils.ItoB(i))
+			if x == nil {
+				return nil
+			}
+			err := rUser.UnmarshalJSON(x)
+			if err != nil {
+				return errors.Wrap(err, "Error while unmarshalling json")
+			}
+			if rUser.Email == email {
+				foundUser = rUser
+			}
+		}
+	})
+	return foundUser, err
 }

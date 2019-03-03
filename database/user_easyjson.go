@@ -117,6 +117,8 @@ func easyjson9e1087fdDecodeGithubComYaleOpenLabOpenxDatabase(in *jlexer.Lexer, o
 				}
 				in.Delim(']')
 			}
+		case "PwdResetCode":
+			out.PwdResetCode = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -322,6 +324,16 @@ func easyjson9e1087fdEncodeGithubComYaleOpenLabOpenxDatabase(out *jwriter.Writer
 			}
 			out.RawByte(']')
 		}
+	}
+	{
+		const prefix string = ",\"PwdResetCode\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.PwdResetCode))
 	}
 	out.RawByte('}')
 }

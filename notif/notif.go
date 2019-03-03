@@ -329,3 +329,11 @@ func SendSecretsEmail(userEmail string, email1 string, email2 string, email3 str
 
 	return nil
 }
+
+func SendPasswordResetEmail(email string, vCode string) error {
+	body := "Greetings from the opensolar platform! \n\nWe're writing to let you know that you requested a password reset recently\n\n" +
+	"Please use this given code along with the link attached in order to reset your password\n\n" +
+	"VERIFICATION CODE: " + vCode + "\n\n\n" + footerString
+
+	return sendMail(body, email)
+}
