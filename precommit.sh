@@ -1,0 +1,3 @@
+# Pre-commit checks, can add them in a git hook if desired
+./easyjson -all database/user.go database/recipient.go database/investor.go rpc/rpc.go platforms/opensolar/opensolar.go platforms/ozones/ozones.go rpc/users.go platforms/opensolar/entities.go
+./staticcheck github.com/YaleOpenLab/openx/...

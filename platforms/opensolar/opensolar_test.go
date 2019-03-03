@@ -352,23 +352,12 @@ func TestDb(t *testing.T) {
 	if len(allPCs) != 1 { // add check for stuff here
 		log.Println("LEN all proposed projects", len(allPCs))
 	}
-	rPC, err := findInKey(2, allPCs)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if rPC.Index != rOx.Index {
-		t.Fatal("Indices don't match")
-	}
 
 	// now come the failure cases which should fail and we shall catch the case when they don't
 	allPCs, _ = RetrieveContractorProjects(ProposedProject, 2)
 	if len(allPCs) != 0 {
 		log.Println("LEBNGRG: ", len(allPCs))
 		t.Fatalf("Retrieving a missing contract succeeds, quitting!")
-	}
-	rPC, err = findInKey(2, allPCs)
-	if err == nil {
-		t.Fatalf("Entity which should be missing exists!")
 	}
 
 	trC1, err := RetrieveEntity(7)
