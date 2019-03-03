@@ -12,17 +12,17 @@ var (
 	// RedColor is a pretty handler for the default colors defined
 	RedColor = color.FgHiRed
 	// CyanColor is a pretty handler for the default colors defined
-	CyanColor = color.FgHiCyan
+	// CyanColor = color.FgHiCyan
 	// HiYellowColor is a pretty handler for the default colors defined
-	HiYellowColor = color.FgHiYellow
+	// HiYellowColor = color.FgHiYellow
 	// YellowColor is a pretty handler for the default colors defined
 	YellowColor = color.FgYellow
 	// MagentaColor is a pretty handler for the default colors defined
 	MagentaColor = color.FgMagenta
 	// HiWhiteColor is a pretty handler for the default colors defined
-	HiWhiteColor = color.FgHiWhite
+	// HiWhiteColor = color.FgHiWhite
 	// FaintColor is a pretty handler for the default colors defined
-	FaintColor = color.Faint
+	// FaintColor = color.Faint
 )
 
 // ColorOutput prints the string in the passed color

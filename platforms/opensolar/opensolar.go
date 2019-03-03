@@ -144,7 +144,6 @@ func MonitorTeller(projIndex int) {
 			time.Sleep(consts.TellerPollInterval * time.Second)
 			continue
 		}
-		defer res.Body.Close()
 		data, err := ioutil.ReadAll(res.Body)
 		if err != nil {
 			log.Println("error while reading response body", err)
@@ -167,6 +166,7 @@ func MonitorTeller(projIndex int) {
 			notif.SendTellerDownEmail(project.Index, project.RecipientIndex)
 		}
 
+		res.Body.Close()
 		time.Sleep(consts.TellerPollInterval * time.Second)
 	}
 }

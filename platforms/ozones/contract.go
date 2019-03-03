@@ -219,17 +219,6 @@ func (project *ConstructionBond) sendRecipientNotification() error {
 	return project.Save()
 }
 
-// sendRecipientNotification sends the notification to the recipient requesting them
-// to logon to the platform and unlock the project that has just been invested in
-func (project *LivingUnitCoop) sendDeveloperNotification() error {
-	recipient, err := database.RetrieveRecipient(project.RecipientIndex)
-	if err != nil {
-		return errors.Wrap(err, "couldn't retrieve recipient from db")
-	}
-	notif.SendUnlockNotifToRecipient(project.Index, recipient.U.Email)
-	return nil
-}
-
 // UnlockProject unlocks a specific project that has just been invested in
 func UnlockProject(username string, pwhash string, projIndex int, seedpwd string, application string) error {
 	fmt.Println("UNLOCKING PROJECT")

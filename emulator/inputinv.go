@@ -110,8 +110,6 @@ func ParseInputInv(input []string) error {
 		} else {
 			ColorOutput("VOTE NOT CAST", RedColor)
 		}
-		break
-		// end of vote
 	case "invest":
 		if len(input) < 4 {
 			log.Println("Invest Params: invest <proj_number> <amount> <platform>")
@@ -160,9 +158,19 @@ func ParseInputInv(input []string) error {
 				} else {
 					ColorOutput("INVESTMENT NOT SUCCESSFUL", RedColor)
 				}
+			case "lucoop":
+				status, err := InvestInLivingUnitCoop(input[1], input[2], LocalInvestor.U.Username, LocalInvestor.U.Pwhash, LocalSeedPwd)
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				if status.Code == 200 {
+					ColorOutput("INVESTMENT SUCCESSFUL, CHECK EMAIL", GreenColor)
+				} else {
+					ColorOutput("INVESTMENT NOT SUCCESSFUL", RedColor)
+				}
 			}
 		}
-		break // end of invest
-	} // end of investor
+	}
 	return nil
 }

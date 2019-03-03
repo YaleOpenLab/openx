@@ -74,7 +74,6 @@ func ParseInputCont(input []string) error {
 	case "propose":
 		fmt.Println("Proposing a contract can be done only through the opensolar webui" +
 			"since that involves document verification")
-		break
 		// end of propose
 	case "myproposed":
 		x, err := GetProposedContracts(LocalContractor.U.Username, LocalContractor.U.Pwhash)
@@ -83,7 +82,6 @@ func ParseInputCont(input []string) error {
 			break
 		}
 		log.Println(x)
-		break
 	case "addcollateral":
 		if len(input) != 3 {
 			log.Println("<addcollateral> collateral amount")
@@ -110,7 +108,6 @@ func ParseInputCont(input []string) error {
 		} else {
 			ColorOutput("RESPONSE STATUS: "+utils.ItoS(response.Code), GreenColor)
 		}
-		break
 	case "mypreoriginated":
 		x, err := GetPreOriginatedContracts(LocalContractor.U.Username, LocalContractor.U.Pwhash)
 		if err != nil {
@@ -118,8 +115,6 @@ func ParseInputCont(input []string) error {
 			break
 		}
 		log.Println(x)
-		break
-		// end of myoriginated
 	case "myoriginated": // if the contractor acts as an originator sometime. Bool setting would be weird,
 		// but I guess there's nothing that prevents a contractor from acting as an originator, so we allow this.
 		x, err := GetOriginatedContracts(LocalContractor.U.Username, LocalContractor.U.Pwhash)
@@ -128,9 +123,6 @@ func ParseInputCont(input []string) error {
 			break
 		}
 		PrintProjects(x)
-		break
-		// end of myoriginated
-		// end of originate
 	}
 	return nil
 }

@@ -2,8 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/pkg/errors"
-	"log"
 
 	database "github.com/YaleOpenLab/openx/database"
 	solar "github.com/YaleOpenLab/openx/platforms/opensolar"
@@ -28,82 +26,6 @@ func PingRpc() error {
 	ColorOutput("PLATFORM STATUS: "+utils.ItoS(x.Code), GreenColor)
 	return nil
 }
-
-func GetInvestors() error {
-	data, err := rpc.GetRequest(ApiUrl + "/investor/all")
-	if err != nil {
-		return err
-	}
-	var x []database.Investor
-	err = json.Unmarshal(data, &x)
-	if err != nil {
-		return err
-	}
-	// the result would be the status of the platform
-	ColorOutput("REQUEST SUCCEEDED", GreenColor)
-	log.Println(x)
-	return nil
-}
-
-func GetRecipients() error {
-	data, err := rpc.GetRequest(ApiUrl + "/recipient/all")
-	if err != nil {
-		return err
-	}
-	var x []database.Recipient
-	err = json.Unmarshal(data, &x)
-	if err != nil {
-		return err
-	}
-	ColorOutput("REQUEST SUCCEEDED", GreenColor)
-	log.Println(x)
-	return nil
-}
-
-func GetProjectIndex(assetName string) (int, error) {
-	data, err := rpc.GetRequest(ApiUrl + "/project/funded")
-	if err != nil {
-		return -1, err
-	}
-	var x []solar.Project
-	err = json.Unmarshal(data, &x)
-	if err != nil {
-		return -1, err
-	}
-	for _, elem := range x {
-		if elem.DebtAssetCode == assetName {
-			return elem.Index, nil
-		}
-	}
-	return -1, errors.New("Not found")
-}
-
-func ProjectPayback(recpIndex string, assetName string,
-	recipientSeed string, amount string) error {
-	// retrieve project index
-	projIndexI, err := GetProjectIndex(assetName)
-	if err != nil {
-		return errors.New("Couldn't pay")
-	}
-	projIndex := utils.ItoS(projIndexI)
-	data, err := rpc.GetRequest(ApiUrl + "/recipient/payback?" + "recpIndex=" + recpIndex +
-		"&projIndex=" + projIndex + "&assetName=" + assetName + "&recipientSeed=" +
-		recipientSeed + "&amount=" + amount)
-	if err != nil {
-		return err
-	}
-	var x rpc.StatusResponse
-	err = json.Unmarshal(data, &x)
-	if err != nil {
-		return err
-	}
-	if x.Code == 200 {
-		ColorOutput("PAID!", GreenColor)
-		return nil
-	}
-	return errors.New("Errored out")
-}
-
 func RetrieveProject(stage float64) ([]solar.Project, error) {
 	// retrieve project at a particular stage
 	var x []solar.Project
@@ -531,7 +453,7 @@ func InvestInLivingUnitCoop(projIndex string, amount string, username string, pw
 	if err != nil {
 		return x, err
 	}
-	// RETURNS FALSE, SEE WHY
+	// TODO: RETURNS FALSE, SEE WHY
 	return x, nil
 }
 

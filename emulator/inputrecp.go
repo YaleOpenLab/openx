@@ -93,7 +93,6 @@ func ParseInputRecp(input []string) error {
 			} else {
 				ColorOutput("PAYBACK NOT SUCCESSFUL", RedColor)
 			}
-			break
 		case "opzones":
 			if len(input) < 4 {
 				log.Println("unlock <projIndex> opzones <cbond, lucoop>")
@@ -113,10 +112,8 @@ func ParseInputRecp(input []string) error {
 				} else {
 					ColorOutput("PAYBACK NOT SUCCESSFUL", RedColor)
 				}
-				break
 			} // end of model switch
 		}
-		break
 	case "payback":
 		if len(input) != 3 {
 			log.Println("payback <projIndex> <amount>")
@@ -147,8 +144,6 @@ func ParseInputRecp(input []string) error {
 		} else {
 			ColorOutput("PAYBACK NOT SUCCESSFUL", RedColor)
 		}
-		break
-		// end of payback
 	case "finalize":
 		if len(input) != 2 {
 			log.Println("finalize <projIndex>")
@@ -173,7 +168,6 @@ func ParseInputRecp(input []string) error {
 		} else {
 			ColorOutput("PAYBACK NOT SUCCESSFUL", RedColor)
 		}
-		break
 	case "originate":
 		if len(input) != 2 {
 			log.Println("originate <projIndex>")
@@ -198,8 +192,6 @@ func ParseInputRecp(input []string) error {
 		} else {
 			ColorOutput("PAYBACK NOT SUCCESSFUL", RedColor)
 		}
-		break
-		// end of originate
 	case "calculate":
 		if len(input) == 1 {
 			log.Println("calculate <payback>")
@@ -233,8 +225,6 @@ func ParseInputRecp(input []string) error {
 			debtF := utils.StoF(debtBalance)
 			ownership := (1 - debtF/(limitF/2)) * 100
 			ColorOutput("YOUR PERCENTAGE OWNERSHIP OF THE ASSET: "+utils.FtoS(ownership), MagentaColor)
-			break
-			// end of payback
 		}
 	}
 	return nil

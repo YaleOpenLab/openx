@@ -37,7 +37,7 @@ func parseInvestor(r *http.Request) (database.Investor, error) {
 	var prepInvestor database.Investor
 	err := r.ParseForm()
 	if err != nil || r.FormValue("username") == "" || r.FormValue("pwhash") == "" || r.FormValue("Name") == "" || r.FormValue("EPassword") == "" {
-		return prepInvestor, errors.New("One of required fields missing: username, pwhash, Name, EPassword")
+		return prepInvestor, errors.New("one of required fields missing: username, pwhash, Name, EPassword")
 	}
 
 	prepInvestor.AmountInvested = float64(0)
@@ -165,7 +165,7 @@ func InvValidateHelper(w http.ResponseWriter, r *http.Request) (database.Investo
 	// need to pass the pwhash param here
 	if r.URL.Query() == nil || r.URL.Query()["username"] == nil ||
 		len(r.URL.Query()["pwhash"][0]) != 128 {
-		return prepInvestor, errors.New("Invalid params passed")
+		return prepInvestor, errors.New("invalid params passed")
 	}
 
 	prepInvestor, err := database.ValidateInvestor(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])

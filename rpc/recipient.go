@@ -28,6 +28,8 @@ func setupRecipientRPCs() {
 	storeDeviceLocation()
 	changeReputationRecp()
 	chooseBlindAuction()
+	chooseVickreyAuction()
+	chooseTimeAuction()
 	unlockOpenSolar()
 	addEmail()
 	finalizeProject()
@@ -44,7 +46,7 @@ func parseRecipient(r *http.Request) (database.Recipient, error) {
 	err := r.ParseForm()
 	if err != nil || r.FormValue("username") == "" || r.FormValue("pwhash") == "" || r.FormValue("Name") == "" || r.FormValue("EPassword") == "" {
 		// don't care which type of error because you send 404 anyway
-		return prepRecipient, errors.New("One of required fields missing: username, pwhash, Name, EPassword")
+		return prepRecipient, errors.New("one of required fields missing: username, pwhash, Name, EPassword")
 	}
 
 	prepRecipient.U, err = database.NewUser(r.FormValue("username"), r.FormValue("pwhash"), r.FormValue("Name"), r.FormValue("EPassword"))
@@ -159,7 +161,7 @@ func RecpValidateHelper(w http.ResponseWriter, r *http.Request) (database.Recipi
 	// need to pass the pwhash param here
 	if r.URL.Query() == nil || r.URL.Query()["username"] == nil ||
 		len(r.URL.Query()["pwhash"][0]) != 128 {
-		return prepRecipient, errors.New("Invalid params passed")
+		return prepRecipient, errors.New("invalid params passed")
 	}
 
 	prepRecipient, err := database.ValidateRecipient(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])

@@ -86,7 +86,7 @@ func fromBase64(number string) (*big.Int, error) {
 **/
 func modInverse(number *big.Int) (*big.Int, error) {
 	if number == big.NewInt(0) {
-		return big.NewInt(-1), fmt.Errorf("Number is zero")
+		return big.NewInt(-1), fmt.Errorf("number is zero")
 	}
 	copy := big.NewInt(0).Set(number)
 	copy = copy.Mod(copy, prime)

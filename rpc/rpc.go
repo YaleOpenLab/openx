@@ -132,7 +132,6 @@ func setupDefaultHandler() {
 		checkGet(w, r)
 		checkOrigin(w, r)
 		responseHandler(w, r, StatusNotFound)
-		return
 	})
 }
 

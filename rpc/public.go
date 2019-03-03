@@ -38,6 +38,7 @@ func setupPublicRoutes() {
 	getAllRecipientsPublic()
 	getTopReputationPublic()
 	getInvTopReputationPublic()
+	getRecpTopReputationPublic()
 }
 
 // public contains all the RPC routes that we explicitly intend to make public. Other
