@@ -39,10 +39,13 @@ func GetXLM(PublicKey string) error {
 // in multiple places
 func AccountExists(address string) bool {
 	_, err := TestNetClient.LoadAccount(address)
+	return !(err != nil)
+	/*
 	if err != nil {
 		return false
 	}
 	return true
+	*/
 }
 
 // SendTx sends out a transaction via horizon to the blockchain

@@ -34,6 +34,7 @@ func setupUserRpcs() {
 	uploadFile()
 	platformEmail()
 	sendTellerShutdownEmail()
+	sendTellerFailedPaybackEmail()
 	tellerPing()
 	increaseTrustLimit()
 	addContractHash()
@@ -89,7 +90,7 @@ func UserValidateHelper(w http.ResponseWriter, r *http.Request) (database.User, 
 	var err error
 	// need to pass the pwhash param here
 	if r.URL.Query() == nil || r.URL.Query()["username"] == nil || r.URL.Query()["pwhash"] == nil || len(r.URL.Query()["pwhash"][0]) != 128 {
-		return prepUser, errors.New("Invalid params passed!")
+		return prepUser, errors.New("invalid params passed")
 	}
 
 	prepUser, err = database.ValidateUser(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])

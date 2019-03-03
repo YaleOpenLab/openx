@@ -74,12 +74,9 @@ func ParseInputOrig(input []string) error {
 	case "propose":
 		fmt.Println("Proposing a contract can be done only through the opensolar webui" +
 			"since that involves document verification")
-		break
 	case "preoriginate":
 		fmt.Println("Pre originating a contract can be done only through the opensolar webui" +
 			"since that involves document verification")
-		break
-		// end of propose
 	case "addcollateral":
 		if len(input) != 3 {
 			log.Println("<addcollateral> collateral amount")
@@ -106,8 +103,6 @@ func ParseInputOrig(input []string) error {
 		} else {
 			ColorOutput("RESPONSE STATUS: "+utils.ItoS(response.Code), GreenColor)
 		}
-		break
-		// end of addcollateral
 	case "myproposed":
 		x, err := GetProposedContracts(LocalOriginator.U.Username, LocalOriginator.U.Pwhash)
 		if err != nil {
@@ -115,8 +110,6 @@ func ParseInputOrig(input []string) error {
 			break
 		}
 		log.Println(x)
-		break
-		// end of myproposed
 	case "mypreoriginated":
 		x, err := GetPreOriginatedContracts(LocalOriginator.U.Username, LocalOriginator.U.Pwhash)
 		if err != nil {
@@ -124,8 +117,6 @@ func ParseInputOrig(input []string) error {
 			break
 		}
 		log.Println(x)
-		break
-		// end of myoriginated
 	case "myoriginated":
 		x, err := GetOriginatedContracts(LocalOriginator.U.Username, LocalOriginator.U.Pwhash)
 		if err != nil {
@@ -133,8 +124,6 @@ func ParseInputOrig(input []string) error {
 			break
 		}
 		log.Println(x)
-		break
-		// end of myoriginated
 	}
 	return nil
 }

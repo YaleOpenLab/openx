@@ -138,7 +138,7 @@ func Combine(shares []string) (string, error) {
 	// For each share...
 	for i := range shares {
 		// ...ensure that it is valid...
-		if IsValidShare(shares[i]) == false {
+		if !IsValidShare(shares[i]){
 			return "", fmt.Errorf("one of the shares is invalid")
 		}
 

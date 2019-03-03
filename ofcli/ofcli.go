@@ -44,8 +44,7 @@ func ParseConfig(args []string) error {
 }
 
 func main() {
-	var err error
-	err = ParseConfig(os.Args)
+	err := ParseConfig(os.Args)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -166,12 +165,10 @@ func main() {
 				err = solar.UnlockProject(recipient.U.Username, recipient.U.Pwhash, pIndex, seedpwd)
 				if err != nil {
 					log.Println(err)
-					break
 				}
 			case 1:
 				// getFinalProjects RPC
 				Stage3ProjectsDisplayPrompt()
-				break
 			case 2:
 				// validateRecipient RPC
 				// retrieve again to get changes that may have occurred in between
@@ -181,7 +178,6 @@ func main() {
 					break
 				}
 				PrintRecipient(recipient)
-				break
 			case 3:
 				// payback RPC
 				log.Println(recipient.ReceivedSolarProjects)
@@ -220,9 +216,7 @@ func main() {
 				err = solar.Payback(recipient.U.Index, rtContract.Index, rtContract.DebtAssetCode, paybackAmount, recipientSeed)
 				if err != nil {
 					log.Println("PAYBACK TX FAILED, PLEASE TRY AGAIN!", err)
-					break
 				}
-				break
 			case 4:
 				// getStableCoin RPC
 				log.Println("Enter the amount you want to convert into STABLEUSD")
@@ -234,9 +228,7 @@ func main() {
 				err = stablecoin.Exchange(recipient.U.PublicKey, recipientSeed, convAmount)
 				if err != nil {
 					log.Println(err)
-					break
 				}
-				break
 			case 5:
 				var bestContract solar.Project
 				var err error
@@ -327,7 +319,6 @@ func main() {
 				err = solar.RecipientAuthorize(projectIndex, recipient.U.Index)
 				if err != nil {
 					log.Println(err)
-					break
 				}
 			case 7:
 				fmt.Println("PRINTING ALL PROJECTS: ")
@@ -492,10 +483,8 @@ func main() {
 			switch optI {
 			case 1:
 				Stage3ProjectsDisplayPrompt()
-				break
 			case 2:
 				PrintInvestor(investor)
-				break
 			case 3:
 				// investInProject RPC
 				// This function has been removed from the CLI since once you invest in a particular order and it reaches
@@ -505,7 +494,6 @@ func main() {
 				// curl -X GET -H "Content-Type: application/x-www-form-urlencoded" -H "Origin: localhost" -H "Cache-Control: no-cache" "http://localhost:8080/investor/invest?username=john&password=9a768ace36ff3d1771d5c145a544de3d68343b2e76093cb7b2a8ea89ac7f1a20c852e6fc1d71275b43abffefac381c5b906f55c3bcff4225353d02f1d3498758&seedpwd=x&projIndex=1&amount=14000"
 			case 4:
 				BalanceDisplayPrompt(investor.U.PublicKey)
-				break
 			case 5:
 				// Stablecoin/get route
 				// curl -X GET -H "Content-Type: application/x-www-form-urlencoded" -H "Origin: localhost" -H "Cache-Control: no-cache" "http://localhost:8080/stablecoin/get?seed=SB2Z5GZASNF4ZR7263WWYISZP3UXSP7A6IP6ENZ44G4T44G6NVUCSVSP&amount=1"
@@ -518,9 +506,7 @@ func main() {
 				err = stablecoin.Exchange(investor.U.PublicKey, investorSeed, convAmount)
 				if err != nil {
 					log.Println(err)
-					break
 				}
-				break
 			case 6:
 				DisplayOriginProjects()
 			case 7:
@@ -623,7 +609,6 @@ func main() {
 						break
 					}
 					PrintUsers(allUsers)
-					break
 				case 2:
 					allUsers, err := database.RetrieveAllUsersWithoutKyc()
 					if err != nil {
@@ -642,10 +627,8 @@ func main() {
 						log.Println(err)
 						break
 					}
-					break
 				default:
 					log.Println("Invalid input, please enter valid input")
-					break
 				}
 			default:
 				ExitPrompt()

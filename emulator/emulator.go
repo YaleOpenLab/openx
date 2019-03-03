@@ -23,7 +23,6 @@ import (
 var (
 	// have a global variable for each entity
 	LocalRecipient    database.Recipient
-	LocalUser         database.User
 	LocalInvestor     database.Investor
 	LocalContractor   solar.Entity
 	LocalOriginator   solar.Entity

@@ -9,3 +9,4 @@ emulator/emulator
 ofcli/ofcli
 build/_workspace
 easyjson
+staticcheck

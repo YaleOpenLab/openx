@@ -274,9 +274,7 @@ func (a *User) GenKeys(seedpwd string) error {
 		return errors.Wrap(err, "error while storing recovery shares")
 	}
 
-	for _, elem := range tmp {
-		a.RecoveryShares = append(a.RecoveryShares, elem)
-	}
+	a.RecoveryShares = append(a.RecoveryShares, tmp...)
 
 	err = a.Save()
 	return err

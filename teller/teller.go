@@ -158,14 +158,16 @@ func main() {
 		HistoryFile:  consts.TellerHomeDir + "/history.txt",
 		AutoComplete: autoComplete(),
 	})
+	if err != nil {
+		log.Fatal(err)
+	}
 	defer rl.Close()
 
 	for {
 		// setup reader with max 4K input chars
 		msg, err := rl.Readline()
 		if err != nil {
-			var err error
-			err = endHandler() // error, user wants to quit
+			err := endHandler() // error, user wants to quit
 			for err != nil {
 				log.Println(err)
 				err = endHandler()

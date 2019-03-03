@@ -35,7 +35,6 @@ func responseHandler(w http.ResponseWriter, r *http.Request, status int) {
 func setupDefaultHandler() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		responseHandler(w, r, rpc.StatusNotFound)
-		return
 	})
 }
 

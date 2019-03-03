@@ -6,7 +6,7 @@ import (
 
 var (
 	// WhiteColor
-	WhiteColor = color.FgHiWhite
+	// WhiteColor = color.FgHiWhite
 	// GreenColor
 	GreenColor = color.FgHiGreen
 	// RedColor
@@ -14,15 +14,15 @@ var (
 	// CyanColor
 	CyanColor = color.FgHiCyan
 	// HiYellowColor
-	HiYellowColor = color.FgHiYellow
+	// HiYellowColor = color.FgHiYellow
 	// YellowColor
 	YellowColor = color.FgYellow
 	// MagentaColor
 	MagentaColor = color.FgMagenta
 	// HiWhiteColor
-	HiWhiteColor = color.FgHiWhite
+	// HiWhiteColor = color.FgHiWhite
 	// FaintColor
-	FaintColor = color.Faint
+	// FaintColor = color.Faint
 )
 
 // ColorOutput prints the passed string in the passed color

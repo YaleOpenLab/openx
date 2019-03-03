@@ -122,7 +122,6 @@ func displayHelper(input []string, username string, pwhash string, role string) 
 				break
 			}
 			ColorOutput("BALANCE: "+balance, MagentaColor)
-			break
 		case "all":
 			balances, err := GetBalances(username, pwhash)
 			if err != nil {
@@ -130,7 +129,6 @@ func displayHelper(input []string, username string, pwhash string, role string) 
 				break
 			}
 			PrintBalances(balances)
-			break
 		default:
 			balance, err := GetAssetBalance(username, pwhash, subcommand)
 			if err != nil {
@@ -138,8 +136,6 @@ func displayHelper(input []string, username string, pwhash string, role string) 
 				break
 			}
 			ColorOutput("BALANCE: "+balance, MagentaColor)
-			break
-			// print asset balance
 		}
 	case "profile":
 		log.Println("Displaying Profile")
@@ -153,7 +149,6 @@ func displayHelper(input []string, username string, pwhash string, role string) 
 		case "originator":
 			PrintEntity(LocalOriginator)
 		}
-		break
 	case "projects":
 		if len(input) != 4 {
 			// only display was given, so display help command
@@ -171,7 +166,6 @@ func displayHelper(input []string, username string, pwhash string, role string) 
 			case "lucoops":
 				log.Println("PRINTGING ALL OPEN Living unit coops")
 			}
-			break
 		case "opensolar":
 			subsubcommand := input[3]
 			var stage float64
@@ -179,39 +173,30 @@ func displayHelper(input []string, username string, pwhash string, role string) 
 			case "preorigin":
 				log.Println("Displaying all pre-originated (stage 0) projects")
 				stage = 0
-				break
 			case "origin":
 				log.Println("Displaying all originated (stage 1) projects")
 				stage = 1
-				break
 			case "seed":
 				log.Println("Displaying all seed (stage 1.5) projects")
 				stage = 1.5
-				break
 			case "proposed":
 				log.Println("Displaying all proposed (stage 2) projects")
 				stage = 2
-				break
 			case "open":
 				log.Println("Displaying open (stage 3) projects")
 				stage = 3
-				break
 			case "funded":
 				log.Println("Displaying funded (stage 4) projects")
 				stage = 4
-				break
 			case "installed":
 				log.Println("Displaying installed (stage 5) projects")
 				stage = 5
-				break
 			case "power":
 				log.Println("Displaying funded (stage 6) projects")
 				stage = 6
-				break
 			case "fin":
 				log.Println("Displaying funded (stage 7) projects")
 				stage = 7
-				break
 			}
 			arr, err := RetrieveProject(stage)
 			if err != nil {
@@ -219,7 +204,6 @@ func displayHelper(input []string, username string, pwhash string, role string) 
 				break
 			}
 			PrintProjects(arr)
-			break
 		}
 	} // end of display
 }
@@ -369,7 +353,6 @@ func receiveHelper(input []string, username string, pwhash string) {
 		} else {
 			ColorOutput("COIN REQUEST NOT SUCCESSFUL", RedColor)
 		}
-		break
 	} // end of receive
 }
 
@@ -433,7 +416,6 @@ func kycHelper(input []string, username string, pwhash string, inspector bool) {
 		} else {
 			ColorOutput("USER NOT KYC'D", RedColor)
 		}
-		break
 	case "notdone":
 		users, err := NotKycView(username, pwhash)
 		if err != nil {
@@ -442,7 +424,6 @@ func kycHelper(input []string, username string, pwhash string, inspector bool) {
 		}
 		PrintUsers(users)
 		// print all the users who have kyc'd
-		break
 	case "done":
 		users, err := KycView(username, pwhash)
 		if err != nil {
@@ -451,7 +432,6 @@ func kycHelper(input []string, username string, pwhash string, inspector bool) {
 		}
 		PrintUsers(users)
 		// print all the users who have kyc'd
-		break
 	}
 	// end of kyc
 }
@@ -478,8 +458,6 @@ func increaseTrustHelper(input []string, username string, pwhash string) {
 	} else {
 		ColorOutput("COULD NOT INCREASE STABELCOIN TRUST LIMIT", RedColor)
 	}
-
-	return
 }
 
 func sendSharesEmailHelper(input []string, username string, pwhash string) {
@@ -500,8 +478,6 @@ func sendSharesEmailHelper(input []string, username string, pwhash string) {
 	} else {
 		ColorOutput("COULD NOT SEND SHARES OUT TO PARTIES", RedColor)
 	}
-
-	return
 }
 
 func mergeSharesEmailHelper(input []string, username string, pwhash string) {
@@ -521,8 +497,6 @@ func mergeSharesEmailHelper(input []string, username string, pwhash string) {
 	} else {
 		ColorOutput("COULD NOT SEND SHARES OUT TO PARTIES", RedColor)
 	}
-
-	return
 }
 
 func genNewSharesHelper(input []string, username string, pwhash string, seedpwd string) {
