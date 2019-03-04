@@ -75,7 +75,7 @@ func RecipientAuthorize(projIndex int, recpIndex int) error {
 		return errors.New("You can't authorize a project which is not assigned to you!")
 	}
 
-	err = project.SetOriginProject() // set the project as originated
+	err = project.SetStage1() // set the project as originated
 	if err != nil {
 		return errors.Wrap(err, "Error while setting origin project")
 	}
@@ -374,7 +374,7 @@ func sendRecipientAssets(projIndex int) error {
 func (project *Project) updateProjectAfterAcceptance() error {
 
 	project.BalLeft = float64(project.TotalValue)
-	project.Stage = FundedProject // set funded project stage
+	project.Stage = Stage4.Number // set to stage 4
 
 	err := project.Save()
 	if err != nil {

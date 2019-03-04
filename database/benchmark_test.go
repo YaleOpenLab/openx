@@ -12,6 +12,7 @@ import (
 	utils "github.com/YaleOpenLab/openx/utils"
 	"github.com/boltdb/bolt"
 )
+
 // the investor test functions is a place where we have all the benchmark tests. Not having them in the other
 // parts since they unvolve removing the db multiple times and populating it with spam values (in some sense)
 

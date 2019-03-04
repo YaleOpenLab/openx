@@ -71,8 +71,8 @@ type Project struct {
 	InvestorIndices     []int // The various investors who have invested in the project
 	SeedInvestorIndices []int // Investors who took part before the contract was at stage 3
 
-	Stage       float64 // the stage at which the contract is at, float due to potential support of 0.5 state changes in the future
-	AuctionType string  // the type of the auction in question. Default is blind auction unless explicitly mentioned
+	Stage       int    // the stage at which the contract is at, float due to potential support of 0.5 state changes in the future
+	AuctionType string // the type of the auction in question. Default is blind auction unless explicitly mentioned
 
 	// Various ipfs hashes that we need to store
 	OriginatorMoUHash       string // the contract between the originator and the recipient at stage LegalContractStage

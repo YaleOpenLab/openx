@@ -79,17 +79,7 @@ There are various users and entities defined in the code (and more on the way), 
 
 #### PROJECT STAGES
 
- Each solar system deployment is defined as a "Project" and a given project right now has stages till 7, with decimal values denoting smaller increments regarding the project's stage:
-
- - Stage 0: A pre origin contract, which is given by an originator to a recipient
- - Stage 0.5: A MOU between the originator and the recipient regarding the originator's participation in the project.
- - Stage 1: An originated contract, which is the evolution of a pre origin contract at the behest of the recipient, who may require a legal contract to be signed by the originator for doing so
- - Stage 2: A proposed contract, which is a contract given by a contractor who is willing to lend his services for the particular project at a fee that will be paid by the recipient and in turn, the investor as well
- - Stage 3: A finalised contract, which is open for investor funds. A contract can be promoted from stage 2 to 3 only by a recipient, who chooses the best contract that fits in with his needs and requirements
- - Stage 4: A contract that has raised the money required for investment from investors and is ready to be installed. The control of the contract now passes over from the recipient to the developer, who is responsible to take this project to stage 5.
- - Stage 5: the stage where the developer should install all the required devices and the contractor must do his job of supervising.
- - Stage 6: Power Generation s tarts and the recipient starts to payback the investor in monthly instalments similar to an electricity bill
- - Stage 7: The recipient has finished paying back the investors and can now own the solar panels installed in his space.
+ Each solar system deployment is defined as a "Project" and a given project has specific stages with activities that have to be completed before moving on to the next stage. The various stages and their definition can be found [here](stages.go)
 
 ![Project Stages](../../docs/figures/ProjectStages.png)
 

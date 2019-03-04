@@ -1,8 +1,8 @@
 package recovery
 
 import (
-	"log"
 	"fmt"
+	"log"
 	"math/big"
 )
 
@@ -90,14 +90,14 @@ func Create(minimum int, shares int, raw string) ([]string, error) {
 			number, err := random()
 			if err != nil {
 				log.Println(err)
-				return dummy ,err
+				return dummy, err
 			}
 			for inNumbers(numbers, number) {
 				var err error
 				number, err = random()
 				if err != nil {
 					log.Println(err)
-					return dummy ,err
+					return dummy, err
 				}
 			}
 			numbers = append(numbers, number)
@@ -138,7 +138,7 @@ func Combine(shares []string) (string, error) {
 	// For each share...
 	for i := range shares {
 		// ...ensure that it is valid...
-		if !IsValidShare(shares[i]){
+		if !IsValidShare(shares[i]) {
 			return "", fmt.Errorf("one of the shares is invalid")
 		}
 

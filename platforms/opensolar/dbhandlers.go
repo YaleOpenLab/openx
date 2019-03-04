@@ -73,7 +73,7 @@ func RetrieveAllProjects() ([]Project, error) {
 }
 
 // RetrieveProjectsAtStage retrieves projects at a specific stage
-func RetrieveProjectsAtStage(stage float64) ([]Project, error) {
+func RetrieveProjectsAtStage(stage int) ([]Project, error) {
 	var arr []Project
 	db, err := database.OpenDB()
 	if err != nil {
@@ -102,7 +102,7 @@ func RetrieveProjectsAtStage(stage float64) ([]Project, error) {
 }
 
 // RetrieveContractorProjects retrieves projects that are associated with a specific contractor
-func RetrieveContractorProjects(stage float64, index int) ([]Project, error) {
+func RetrieveContractorProjects(stage int, index int) ([]Project, error) {
 	var arr []Project
 	db, err := database.OpenDB()
 	if err != nil {
@@ -130,7 +130,7 @@ func RetrieveContractorProjects(stage float64, index int) ([]Project, error) {
 }
 
 // RetrieveOriginatorProjects retrieves projects that are associated with a specific originator
-func RetrieveOriginatorProjects(stage float64, index int) ([]Project, error) {
+func RetrieveOriginatorProjects(stage int, index int) ([]Project, error) {
 	var arr []Project
 	db, err := database.OpenDB()
 	if err != nil {
@@ -158,7 +158,7 @@ func RetrieveOriginatorProjects(stage float64, index int) ([]Project, error) {
 }
 
 // RetrieveRecipientProjects retrieves projects that are associated with a specific originator
-func RetrieveRecipientProjects(stage float64, index int) ([]Project, error) {
+func RetrieveRecipientProjects(stage int, index int) ([]Project, error) {
 	var arr []Project
 	db, err := database.OpenDB()
 	if err != nil {

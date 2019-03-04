@@ -307,8 +307,8 @@ func SendTellerDownEmail(projIndex int, recpIndex int) error {
 
 func SendSecretsEmail(userEmail string, email1 string, email2 string, email3 string, secret1 string, secret2 string, secret3 string) error {
 	bodyBase := "Greetings from the opensolar platform! \n\nWe're writing to let you know that user with email: " + userEmail +
-	" has designated you as a trusted entity. Towards this, we request that you keep the attached secret in a safe and secure place and provide " +
-	"it to the above user in case they request for it. \n\n" + "SECRET:\n\n"
+		" has designated you as a trusted entity. Towards this, we request that you keep the attached secret in a safe and secure place and provide " +
+		"it to the above user in case they request for it. \n\n" + "SECRET:\n\n"
 	body1 := bodyBase + secret1 + "\n\n\n" + footerString
 	err := sendMail(body1, email1)
 	if err != nil {
@@ -332,8 +332,8 @@ func SendSecretsEmail(userEmail string, email1 string, email2 string, email3 str
 
 func SendPasswordResetEmail(email string, vCode string) error {
 	body := "Greetings from the opensolar platform! \n\nWe're writing to let you know that you requested a password reset recently\n\n" +
-	"Please use this given code along with the link attached in order to reset your password\n\n" +
-	"VERIFICATION CODE: " + vCode + "\n\n\n" + footerString
+		"Please use this given code along with the link attached in order to reset your password\n\n" +
+		"VERIFICATION CODE: " + vCode + "\n\n\n" + footerString
 
 	return sendMail(body, email)
 }

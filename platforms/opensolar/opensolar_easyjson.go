@@ -306,7 +306,7 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar2(in *jlex
 				in.Delim(']')
 			}
 		case "Stage":
-			out.Stage = float64(in.Float64())
+			out.Stage = int(in.Int())
 		case "AuctionType":
 			out.AuctionType = string(in.String())
 		case "OriginatorMoUHash":
@@ -763,7 +763,7 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar2(out *jwr
 		} else {
 			out.RawString(prefix)
 		}
-		out.Float64(float64(in.Stage))
+		out.Int(int(in.Stage))
 	}
 	{
 		const prefix string = ",\"AuctionType\":"

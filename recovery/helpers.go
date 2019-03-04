@@ -18,7 +18,7 @@ var prime *big.Int
  * Returns a random number from the range (0, prime-1) inclusive
 **/
 func random() (*big.Int, error) {
-	max := big.NewInt(0).Set(prime) // max = prime
+	max := big.NewInt(0).Set(prime)   // max = prime
 	max = max.Sub(max, big.NewInt(1)) // max = max -1
 	return rand.Int(rand.Reader, max)
 }
