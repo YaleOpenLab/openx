@@ -3,8 +3,8 @@
 package main
 
 import (
-	"testing"
 	"encoding/json"
+	"testing"
 
 	database "github.com/YaleOpenLab/openx/database"
 	"github.com/pquerna/ffjson/ffjson"

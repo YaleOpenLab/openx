@@ -1,6 +1,7 @@
 package opensolar
 
 import (
+	"fmt"
 	"github.com/pkg/errors"
 
 	database "github.com/YaleOpenLab/openx/database"
@@ -73,8 +74,11 @@ func RetrieveAllProjects() ([]Project, error) {
 }
 
 // RetrieveProjectsAtStage retrieves projects at a specific stage
-func RetrieveProjectsAtStage(stage float64) ([]Project, error) {
+func RetrieveProjectsAtStage(stage int) ([]Project, error) {
 	var arr []Project
+	if stage > 9 { // check for this and fail early instead of wasting compute time on this
+		return arr, errors.Wrap(fmt.Errorf(""), "stage can not be greater than 9, quitting!")
+	}
 	db, err := database.OpenDB()
 	if err != nil {
 		return arr, errors.Wrap(err, "couldn't open db")
@@ -102,8 +106,11 @@ func RetrieveProjectsAtStage(stage float64) ([]Project, error) {
 }
 
 // RetrieveContractorProjects retrieves projects that are associated with a specific contractor
-func RetrieveContractorProjects(stage float64, index int) ([]Project, error) {
+func RetrieveContractorProjects(stage int, index int) ([]Project, error) {
 	var arr []Project
+	if stage > 9 { // check for this and fail early instead of wasting compute time on this
+		return arr, errors.Wrap(fmt.Errorf(""), "stage can not be greater than 9, quitting!")
+	}
 	db, err := database.OpenDB()
 	if err != nil {
 		return arr, errors.Wrap(err, "couldn't open db")
@@ -130,8 +137,11 @@ func RetrieveContractorProjects(stage float64, index int) ([]Project, error) {
 }
 
 // RetrieveOriginatorProjects retrieves projects that are associated with a specific originator
-func RetrieveOriginatorProjects(stage float64, index int) ([]Project, error) {
+func RetrieveOriginatorProjects(stage int, index int) ([]Project, error) {
 	var arr []Project
+	if stage > 9 { // check for this and fail early instead of wasting compute time on this
+		return arr, errors.Wrap(fmt.Errorf(""), "stage can not be greater than 9, quitting!")
+	}
 	db, err := database.OpenDB()
 	if err != nil {
 		return arr, errors.Wrap(err, "couldn't open db")
@@ -158,8 +168,11 @@ func RetrieveOriginatorProjects(stage float64, index int) ([]Project, error) {
 }
 
 // RetrieveRecipientProjects retrieves projects that are associated with a specific originator
-func RetrieveRecipientProjects(stage float64, index int) ([]Project, error) {
+func RetrieveRecipientProjects(stage int, index int) ([]Project, error) {
 	var arr []Project
+	if stage > 9 { // check for this and fail early instead of wasting compute time on this
+		return arr, errors.Wrap(fmt.Errorf(""), "stage can not be greater than 9, quitting!")
+	}
 	db, err := database.OpenDB()
 	if err != nil {
 		return arr, errors.Wrap(err, "couldn't open db")

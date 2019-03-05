@@ -308,6 +308,7 @@ func CheckUsernameCollision(uname string) error {
 				return errors.Wrap(err, "error while unmarshalling json")
 			}
 			// check names
+			log.Println("USERNAME: ", rUser.Username)
 			if rUser.Username == uname {
 				return errors.New("Username collision")
 			}

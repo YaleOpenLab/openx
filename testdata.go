@@ -12,7 +12,7 @@ import (
 
 func newSolarProject(index int, panelsize string, totalValue float64, location string, moneyRaised float64,
 	metadata string, invAssetCode string, debtAssetCode string, pbAssetCode string, years int, recpIndex int,
-	contractor solar.Entity, originator solar.Entity, stage float64, pbperiod int, auctionType string) (solar.Project, error) {
+	contractor solar.Entity, originator solar.Entity, stage int, pbperiod int, auctionType string) (solar.Project, error) {
 
 	var project solar.Project
 	project.Index = index
@@ -211,15 +211,15 @@ func InsertDummyData() error {
 
 	_, err = newSolarProject(1, "100 1000 sq.ft homes each with their own private spaces for luxury", 14000, "India Basin, San Francisco",
 		0, "India Basin is an upcoming creative project based in San Francisco that seeks to invite innovators from all around to participate", "", "", "",
-		3, recp.U.Index, contractor, originator, 3, 2, "blind")
+		3, recp.U.Index, contractor, originator, 4, 2, "blind")
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	_, err = newSolarProject(1, "180 1200 sq.ft homes in a high rise building 0.1mi from Kendall Square", 30000, "Kendall Square, Boston",
+	_, err = newSolarProject(2, "180 1200 sq.ft homes in a high rise building 0.1mi from Kendall Square", 30000, "Kendall Square, Boston",
 		0, "Kendall Square is set in the heart of Cambridge and is a popular startup IT hub", "", "", "",
-		5, recp.U.Index, contractor, originator, 3, 2, "blind")
+		5, recp.U.Index, contractor, originator, 4, 2, "blind")
 
 	if err != nil {
 		log.Fatal(err)
@@ -227,7 +227,7 @@ func InsertDummyData() error {
 
 	_, err = newSolarProject(3, "260 1500 sq.ft homes set in a medieval cathedral style construction", 40000, "Trafalgar Square, London",
 		0, "Trafalgar Square is set in the heart of London's financial district, with big banks all over", "", "", "",
-		7, recp.U.Index, contractor, originator, 3, 2, "blind")
+		7, recp.U.Index, contractor, originator, 4, 2, "blind")
 
 	if err != nil {
 		log.Fatal(err)

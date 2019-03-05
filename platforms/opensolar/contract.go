@@ -75,7 +75,7 @@ func RecipientAuthorize(projIndex int, recpIndex int) error {
 		return errors.New("You can't authorize a project which is not assigned to you!")
 	}
 
-	err = project.SetOriginProject() // set the project as originated
+	err = project.SetStage1() // set the project as originated
 	if err != nil {
 		return errors.Wrap(err, "Error while setting origin project")
 	}
@@ -85,12 +85,6 @@ func RecipientAuthorize(projIndex int, recpIndex int) error {
 		return errors.Wrap(err, "error while increasing reputation of originator")
 	}
 
-	/* set the open for money stage if we choose to have it in the end
-	err = project.SetOpenForMoneyStage()
-	if err != nil {
-		return err
-	}
-	*/
 	return nil
 }
 
@@ -185,6 +179,9 @@ func SeedInvest(projIndex int, invIndex int, recpIndex int, invAmount string,
 		return errors.Wrap(err, "error while performing pre investment check")
 	}
 
+	if project.Stage != 1 {
+		return fmt.Errorf("Proejct stage not at 1, you either have passed the seed stage or project is not at seed stage yet")
+	}
 	err = model.MunibondInvest(consts.OpenSolarIssuerDir, invIndex, invSeed, invAmount, projIndex,
 		project.SeedAssetCode, project.TotalValue)
 	if err != nil {
@@ -209,6 +206,9 @@ func Invest(projIndex int, invIndex int, invAmount string, invSeed string) error
 		return errors.Wrap(err, "pre investment check failed")
 	}
 
+	if project.Stage != 4 {
+		return fmt.Errorf("Project not at stage where it can solicit investment, quitting!")
+	}
 	// call the model and invest in the particular project
 	err = model.MunibondInvest(consts.OpenSolarIssuerDir, invIndex, invSeed, invAmount, projIndex,
 		project.InvestorAssetCode, project.TotalValue)
@@ -374,7 +374,7 @@ func sendRecipientAssets(projIndex int) error {
 func (project *Project) updateProjectAfterAcceptance() error {
 
 	project.BalLeft = float64(project.TotalValue)
-	project.Stage = FundedProject // set funded project stage
+	project.Stage = Stage5.Number // set to stage 5 (after the raise is done, we need to wait for people o actualyl construct the soalr panels)
 
 	err := project.Save()
 	if err != nil {
@@ -406,7 +406,7 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 	project.DateLastPaid = utils.Unix()
 	if project.BalLeft == 0 {
 		log.Println("YOU HAVE PAID OFF THIS ASSET, TRANSFERRING OWNERSHIP OF ASSET TO YOU")
-		project.Stage = 7
+		project.Stage = 9 // stage 9 is the disposal stage, we don't wait for stage 9 to complete and hence leave ti as is, jsut deleting the accoutn and stuff associated with the project
 		// we should call neighborly or some other partner here to transfer assets using the bond they provide us with
 		// the nice part here is that the recipient can not pay off more than what is
 		// invested because the trustline will not allow such an incident to happen

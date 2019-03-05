@@ -112,7 +112,78 @@ func (v *ValidateParams) UnmarshalJSON(data []byte) error {
 func (v *ValidateParams) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjson84c0690eDecodeGithubComYaleOpenLabOpenxRpc(l, v)
 }
-func easyjson84c0690eDecodeGithubComYaleOpenLabOpenxRpc1(in *jlexer.Lexer, out *PlatformEmailResponse) {
+func easyjson84c0690eDecodeGithubComYaleOpenLabOpenxRpc1(in *jlexer.Lexer, out *SeedResponse) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeString()
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "Seed":
+			out.Seed = string(in.String())
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson84c0690eEncodeGithubComYaleOpenLabOpenxRpc1(out *jwriter.Writer, in SeedResponse) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	{
+		const prefix string = ",\"Seed\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Seed))
+	}
+	out.RawByte('}')
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v SeedResponse) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjson84c0690eEncodeGithubComYaleOpenLabOpenxRpc1(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v SeedResponse) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjson84c0690eEncodeGithubComYaleOpenLabOpenxRpc1(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *SeedResponse) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjson84c0690eDecodeGithubComYaleOpenLabOpenxRpc1(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *SeedResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjson84c0690eDecodeGithubComYaleOpenLabOpenxRpc1(l, v)
+}
+func easyjson84c0690eDecodeGithubComYaleOpenLabOpenxRpc2(in *jlexer.Lexer, out *PlatformEmailResponse) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -143,7 +214,7 @@ func easyjson84c0690eDecodeGithubComYaleOpenLabOpenxRpc1(in *jlexer.Lexer, out *
 		in.Consumed()
 	}
 }
-func easyjson84c0690eEncodeGithubComYaleOpenLabOpenxRpc1(out *jwriter.Writer, in PlatformEmailResponse) {
+func easyjson84c0690eEncodeGithubComYaleOpenLabOpenxRpc2(out *jwriter.Writer, in PlatformEmailResponse) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -163,23 +234,23 @@ func easyjson84c0690eEncodeGithubComYaleOpenLabOpenxRpc1(out *jwriter.Writer, in
 // MarshalJSON supports json.Marshaler interface
 func (v PlatformEmailResponse) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson84c0690eEncodeGithubComYaleOpenLabOpenxRpc1(&w, v)
+	easyjson84c0690eEncodeGithubComYaleOpenLabOpenxRpc2(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v PlatformEmailResponse) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson84c0690eEncodeGithubComYaleOpenLabOpenxRpc1(w, v)
+	easyjson84c0690eEncodeGithubComYaleOpenLabOpenxRpc2(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *PlatformEmailResponse) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson84c0690eDecodeGithubComYaleOpenLabOpenxRpc1(&r, v)
+	easyjson84c0690eDecodeGithubComYaleOpenLabOpenxRpc2(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *PlatformEmailResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson84c0690eDecodeGithubComYaleOpenLabOpenxRpc1(l, v)
+	easyjson84c0690eDecodeGithubComYaleOpenLabOpenxRpc2(l, v)
 }

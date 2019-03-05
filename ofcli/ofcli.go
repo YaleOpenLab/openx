@@ -232,7 +232,7 @@ func main() {
 			case 5:
 				var bestContract solar.Project
 				var err error
-				allContracts, err := solar.RetrieveRecipientProjects(solar.ProposedProject, recipient.U.Index)
+				allContracts, err := solar.RetrieveRecipientProjects(solar.Stage2.Number, recipient.U.Index)
 				if err != nil {
 					log.Println(err)
 					continue
@@ -294,7 +294,7 @@ func main() {
 				default:
 					break
 				}
-				err = bestContract.SetFinalizedProject()
+				err = bestContract.SetStage3()
 				if err != nil {
 					log.Println(err)
 					break
@@ -304,7 +304,7 @@ func main() {
 				// now the contract is at stage 3
 			case 6:
 				fmt.Println("LIST OF ALL PRE ORIGIN PROJECTS BY ORIGINATORS (STAGE 0)")
-				allMyProjects, err := solar.RetrieveProjectsAtStage(solar.PreOriginProject)
+				allMyProjects, err := solar.RetrieveProjectsAtStage(solar.Stage0.Number)
 				if err != nil {
 					log.Println(err)
 					continue
@@ -387,7 +387,7 @@ func main() {
 					}
 				case 4:
 					fmt.Println("LIST OF ALL PROPOSED CONTRACTS BY ME: ")
-					allMyProjects, err := solar.RetrieveContractorProjects(solar.ProposedProject, contractor.U.Index)
+					allMyProjects, err := solar.RetrieveContractorProjects(solar.Stage2.Number, contractor.U.Index)
 					if err != nil {
 						log.Println(err)
 						continue
@@ -438,14 +438,14 @@ func main() {
 				case 2:
 					PrintEntity(contractor)
 				case 3:
-					allMyProjects, err := solar.RetrieveOriginatorProjects(solar.PreOriginProject, contractor.U.Index)
+					allMyProjects, err := solar.RetrieveOriginatorProjects(solar.Stage0.Number, contractor.U.Index)
 					if err != nil {
 						fmt.Println("RETURNING BACK TO THE MAIN LOOP: ", err)
 						continue
 					}
 					PrintProjects(allMyProjects)
 				case 4:
-					allMyProjects, err := solar.RetrieveOriginatorProjects(solar.OriginProject, contractor.U.Index)
+					allMyProjects, err := solar.RetrieveOriginatorProjects(solar.Stage1.Number, contractor.U.Index)
 					if err != nil {
 						fmt.Println("RETURNING BACK TO THE MAIN LOOP: ", err)
 						continue
@@ -514,7 +514,7 @@ func main() {
 				// ie stage 2 projects for the recipient to have an understanding about
 				// which contracts are popular and can receive more investor money
 				fmt.Println("LIST OF ALL PROPOSED ORDERS: ")
-				allProposedProjects, err := solar.RetrieveProjectsAtStage(solar.ProposedProject)
+				allProposedProjects, err := solar.RetrieveProjectsAtStage(solar.Stage2.Number)
 				if err != nil {
 					log.Println(err)
 					break
@@ -567,7 +567,7 @@ func main() {
 				// try to retrieve the string back from ipfs and check if it works correctly
 			case 9:
 				fmt.Println("LIST OF ALL FUNDED PROJECTS: ")
-				allFundedProjects, err := solar.RetrieveProjectsAtStage(solar.FundedProject)
+				allFundedProjects, err := solar.RetrieveProjectsAtStage(solar.Stage3.Number)
 				if err != nil {
 					fmt.Println(err)
 					break

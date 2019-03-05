@@ -147,15 +147,15 @@ func TestDb(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Can updateProjectAfterAcceptance in the prsence of an invalid db")
 	}
-	tmpProj.SetInstalledProjectStage()
+	tmpProj.SetStage5()
 	if err == nil {
 		t.Fatalf("Setting stage works with invalid db, quitting!")
 	}
-	tmpProj.SetPowerGenerationStage()
+	tmpProj.SetStage6()
 	if err == nil {
 		t.Fatalf("Setting stage works with invalid db, quitting!")
 	}
-	tmpProj.SetFinalizedProject()
+	tmpProj.SetStage3()
 	if err == nil {
 		t.Fatalf("Setting stage works with invalid db, quitting!")
 	}
@@ -245,7 +245,7 @@ func TestDb(t *testing.T) {
 	if projects[0].Index != 1 {
 		t.Fatalf("Index of first element doesn't match, quitting!")
 	}
-	oProjects, err := RetrieveProjectsAtStage(OriginProject)
+	oProjects, err := RetrieveProjectsAtStage(Stage0.Number)
 	if err != nil {
 		log.Println("Retrieve all error: ", err)
 		t.Errorf("Failed in retrieving all originated projects")
@@ -311,7 +311,12 @@ func TestDb(t *testing.T) {
 		t.Fatalf("Category which does not exist exists?")
 	}
 	if len(allOrigs) != 2 || allOrigs[0].U.Name != "NameOrigTest2" {
-		log.Println(allOrigs[0].U.Name)
+		log.Println(allOrigs)
+		x, err := RetrieveAllEntitiesWithoutRole()
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Println(x)
 		t.Fatal("Names don't match, quitting!")
 	}
 	_, err = RetrieveAllEntities("guarantor")
@@ -345,7 +350,7 @@ func TestDb(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	allPCs, err := RetrieveRecipientProjects(ProposedProject, 6)
+	allPCs, err := RetrieveRecipientProjects(Stage2.Number, 6)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -354,7 +359,7 @@ func TestDb(t *testing.T) {
 	}
 
 	// now come the failure cases which should fail and we shall catch the case when they don't
-	allPCs, _ = RetrieveContractorProjects(ProposedProject, 2)
+	allPCs, _ = RetrieveContractorProjects(Stage2.Number, 2)
 	if len(allPCs) != 0 {
 		log.Println("LEBNGRG: ", len(allPCs))
 		t.Fatalf("Retrieving a missing contract succeeds, quitting!")
@@ -402,20 +407,12 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = testProject.SetPreOriginProject()
+	err = testProject.SetStage0()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = testProject.SetLegalContractStage()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if testProject.Stage != 0.5 {
-		t.Fatalf("Stage doesn't match, quitting!")
-	}
-
-	err = testProject.SetOriginProject()
+	err = testProject.SetStage1()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -423,15 +420,7 @@ func TestDb(t *testing.T) {
 		t.Fatalf("Stage doesn't match, quitting!")
 	}
 
-	err = testProject.SetOpenForMoneyStage()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if testProject.Stage != 1.5 {
-		t.Fatalf("Stage doesn't match, quitting!")
-	}
-
-	err = testProject.SetProposedProject()
+	err = testProject.SetStage2()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -439,7 +428,7 @@ func TestDb(t *testing.T) {
 		t.Fatalf("Stage doesn't match, quitting!")
 	}
 
-	err = testProject.SetFinalizedProject()
+	err = testProject.SetStage3()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -447,7 +436,7 @@ func TestDb(t *testing.T) {
 		t.Fatalf("Stage doesn't match, quitting!")
 	}
 
-	err = testProject.SetFundedProject()
+	err = testProject.SetStage4()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -461,7 +450,7 @@ func TestDb(t *testing.T) {
 		t.Fatalf("Stage doesn't match, quitting!")
 	}
 
-	err = testProject.SetPowerGenerationStage()
+	err = testProject.SetStage6()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -470,18 +459,18 @@ func TestDb(t *testing.T) {
 	}
 
 	// cycle back to stage 0 and try using the other function to modify the stage
-	err = testProject.SetPreOriginProject()
+	err = testProject.SetStage0()
 	if err != nil {
 		t.Fatal(err)
 	}
 	if testProject.Stage != 0 {
 		t.Fatalf("Stage doesn't match, quitting!")
 	}
-	err = testProject.SetOriginProject()
+	err = testProject.SetStage1()
 	if err != nil {
 		t.Fatal(err)
 	}
-	allO, err := RetrieveOriginatorProjects(OriginProject, newCE2.U.Index)
+	allO, err := RetrieveOriginatorProjects(Stage1.Number, newCE2.U.Index)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -492,7 +481,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = testProject.SetProposedProject()
+	err = testProject.SetStage2()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -696,7 +685,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = testProject.SetInstalledProjectStage()
+	err = testProject.SetStage5()
 	if err != nil {
 		t.Fatal(err)
 	}

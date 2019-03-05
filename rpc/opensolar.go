@@ -54,7 +54,7 @@ func parseProject(r *http.Request) (platform.Project, error) {
 	prepProject.TotalValue = utils.StoF(r.FormValue("TotalValue"))
 	prepProject.Location = r.FormValue("Location")
 	prepProject.Metadata = r.FormValue("Metadata")
-	prepProject.Stage = utils.StoF(r.FormValue("Stage"))
+	prepProject.Stage = utils.StoI(r.FormValue("Stage"))
 	prepProject.MoneyRaised = 0
 	prepProject.BalLeft = float64(0)
 	prepProject.DateInitiated = utils.Timestamp()
@@ -128,7 +128,7 @@ func getProject() {
 }
 
 // projectHandler gets proejcts at a specific stage from the database
-func projectHandler(w http.ResponseWriter, r *http.Request, stage float64) {
+func projectHandler(w http.ResponseWriter, r *http.Request, stage int) {
 	checkGet(w, r)
 	checkOrigin(w, r)
 	allProjects, err := platform.RetrieveProjectsAtStage(stage)

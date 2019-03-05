@@ -403,7 +403,7 @@ func TestDb(t *testing.T) {
 	}
 	err = CheckUsernameCollision("recipient1")
 	if err == nil {
-		t.Fatalf("username collision not picked up")
+		t.Fatalf("recipient username collision not picked up")
 	}
 	err = user.IncreaseReputation(1.0)
 	if err != nil {

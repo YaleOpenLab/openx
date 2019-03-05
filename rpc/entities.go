@@ -67,7 +67,7 @@ func getPreOriginatedContracts() {
 			return
 		}
 
-		x, err := opensolar.RetrieveOriginatorProjects(opensolar.PreOriginProject, prepEntity.U.Index)
+		x, err := opensolar.RetrieveOriginatorProjects(opensolar.Stage0.Number, prepEntity.U.Index)
 		if err != nil {
 			log.Println("Error while retrieving originator project", err)
 			responseHandler(w, r, StatusInternalServerError)
@@ -88,7 +88,7 @@ func getOriginatedContracts() {
 			return
 		}
 
-		x, err := opensolar.RetrieveOriginatorProjects(opensolar.OriginProject, prepEntity.U.Index)
+		x, err := opensolar.RetrieveOriginatorProjects(opensolar.Stage1.Number, prepEntity.U.Index)
 		if err != nil {
 			log.Println("Error while retrieving originator projects", err)
 			responseHandler(w, r, StatusInternalServerError)
@@ -109,7 +109,7 @@ func getProposedContracts() {
 			return
 		}
 
-		x, err := opensolar.RetrieveContractorProjects(opensolar.ProposedProject, prepEntity.U.Index)
+		x, err := opensolar.RetrieveContractorProjects(opensolar.Stage2.Number, prepEntity.U.Index)
 		if err != nil {
 			log.Println("Error while retrieving contractor projects", err)
 			responseHandler(w, r, StatusInternalServerError)

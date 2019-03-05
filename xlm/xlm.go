@@ -41,10 +41,10 @@ func AccountExists(address string) bool {
 	_, err := TestNetClient.LoadAccount(address)
 	return !(err != nil)
 	/*
-	if err != nil {
-		return false
-	}
-	return true
+		if err != nil {
+			return false
+		}
+		return true
 	*/
 }
 

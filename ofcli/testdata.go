@@ -12,7 +12,7 @@ import (
 
 func newSolarProject(index int, panelsize string, totalValue float64, location string, moneyRaised float64,
 	metadata string, invAssetCode string, debtAssetCode string, pbAssetCode string, years int, recpIndex int,
-	contractor solar.Entity, originator solar.Entity, stage float64, pbperiod int, auctionType string) (solar.Project, error) {
+	contractor solar.Entity, originator solar.Entity, stage int, pbperiod int, auctionType string) (solar.Project, error) {
 
 	var project solar.Project
 	project.Index = index

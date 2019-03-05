@@ -283,7 +283,7 @@ func chooseBlindAuction() {
 			return
 		}
 
-		allContracts, err := opensolar.RetrieveRecipientProjects(opensolar.ProposedProject, recipient.U.Index)
+		allContracts, err := opensolar.RetrieveRecipientProjects(opensolar.Stage2.Number, recipient.U.Index)
 		if err != nil {
 			log.Println("did not validate recipient projects", err)
 			responseHandler(w, r, StatusInternalServerError)
@@ -297,7 +297,7 @@ func chooseBlindAuction() {
 			return
 		}
 
-		err = bestContract.SetFinalizedProject()
+		err = bestContract.SetStage4() // TODO: change to 3
 		if err != nil {
 			log.Println("did not set final project", err)
 			responseHandler(w, r, StatusInternalServerError)
@@ -321,7 +321,7 @@ func chooseVickreyAuction() {
 			return
 		}
 
-		allContracts, err := opensolar.RetrieveRecipientProjects(opensolar.ProposedProject, recipient.U.Index)
+		allContracts, err := opensolar.RetrieveRecipientProjects(opensolar.Stage2.Number, recipient.U.Index)
 		if err != nil {
 			log.Println("did not retrieve recipient projects", err)
 			responseHandler(w, r, StatusInternalServerError)
@@ -337,7 +337,7 @@ func chooseVickreyAuction() {
 			return
 		}
 
-		err = bestContract.SetFinalizedProject()
+		err = bestContract.SetStage4() // change to 3 once done
 		if err != nil {
 			log.Println("did not set final project", err)
 			responseHandler(w, r, StatusInternalServerError)
@@ -360,7 +360,7 @@ func chooseTimeAuction() {
 			return
 		}
 
-		allContracts, err := opensolar.RetrieveRecipientProjects(opensolar.ProposedProject, recipient.U.Index)
+		allContracts, err := opensolar.RetrieveRecipientProjects(opensolar.Stage2.Number, recipient.U.Index)
 		if err != nil {
 			log.Println("did not retrieve recipient projects", err)
 			responseHandler(w, r, StatusInternalServerError)
@@ -376,7 +376,7 @@ func chooseTimeAuction() {
 			return
 		}
 
-		err = bestContract.SetFinalizedProject()
+		err = bestContract.SetStage4() // TODO: change to 3
 		if err != nil {
 			log.Println("did not set final project", err)
 			responseHandler(w, r, StatusInternalServerError)
@@ -461,7 +461,7 @@ func finalizeProject() {
 			return
 		}
 
-		err = project.SetFinalizedProject()
+		err = project.SetStage4() // TODO: in the future once this is defined well enough, this must be set to stage 3
 		if err != nil {
 			log.Println("did not set final project", err)
 			responseHandler(w, r, StatusInternalServerError)

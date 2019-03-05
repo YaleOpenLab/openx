@@ -523,8 +523,7 @@ func MergeSharesEmail(username string, pwhash string, secret1 string, secret2 st
 	return x, nil
 }
 
-
-func SendNewSharesEmail(username string, pwhash string, seedpwd string, email1 string, email2 string, email3 string)(rpc.StatusResponse, error) {
+func SendNewSharesEmail(username string, pwhash string, seedpwd string, email1 string, email2 string, email3 string) (rpc.StatusResponse, error) {
 	var x rpc.StatusResponse
 	body := ApiUrl + "/user/newsecrets?" + "username=" + username + "&pwhash=" + pwhash +
 		"&seedpwd=" + seedpwd + "&email1=" + email1 + "&email2=" + email2 + "&email3=" + email3
