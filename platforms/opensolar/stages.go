@@ -14,7 +14,6 @@ import (
 // present for the particular platform (opensolar in this case)
 
 // MWTODO: are the stages immutable?
-// TODO: change the stage workflow (change numbers and stuff like that)
 
 // SetStage sets the stage of a project
 func (a *Project) SetStage(number int) error {
