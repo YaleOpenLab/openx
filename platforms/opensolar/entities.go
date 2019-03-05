@@ -95,7 +95,7 @@ func (a *Entity) Save() error {
 	return err
 }
 
-// RetrieveAllEntitiesWithoutRole gets all the proposed contracts for a particular recipient
+// RetrieveAllEntitiesWithoutRole gets all the entities in the opensolar platform
 func RetrieveAllEntitiesWithoutRole() ([]Entity, error) {
 	var arr []Entity
 	temp, err := database.RetrieveAllUsers()

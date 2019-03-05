@@ -258,7 +258,7 @@ func ProposeContractPrompt(contractor *solar.Entity) error {
 // Stage3ProjectsDisplayPrompt is an ofcli helper function
 func Stage3ProjectsDisplayPrompt() {
 	fmt.Println("------------LIST OF ALL AVAILABLE PROJECTS------------")
-	allProjects, err := solar.RetrieveProjectsAtStage(solar.FinalizedProject)
+	allProjects, err := solar.RetrieveProjectsAtStage(solar.Stage3.Number)
 	if err != nil {
 		log.Println("Error retrieving all projects from the database")
 	} else {
@@ -269,7 +269,7 @@ func Stage3ProjectsDisplayPrompt() {
 // DisplayOriginProjects is an ofcli helper function
 func DisplayOriginProjects() {
 	fmt.Println("PRINTING ALL ORIGINATED PROJECTS: ")
-	x, err := solar.RetrieveProjectsAtStage(solar.OriginProject)
+	x, err := solar.RetrieveProjectsAtStage(solar.Stage0.Number)
 	if err != nil {
 		log.Println(err)
 	} else {
