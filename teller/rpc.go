@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
 	"log"
@@ -262,4 +263,100 @@ func StoreStateHistory(hash string) error {
 		return nil
 	}
 	return errors.New("Errored out, didn't receive 200")
+}
+
+// testSwytch tests whether the swytch workflow works correctly
+func testSwytch() {
+	body := "http://localhost:8080/swytch/accessToken?" +
+		"clientId=" + SwytchClientid + "&clientSecret=" + SwytchPassword + "&username=" + SwytchPassword +
+		"&password=" + SwytchPassword
+	log.Println(body)
+	data, err := rpc.GetRequest(body)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	var x1 rpc.GetAccessTokenData
+	err = json.Unmarshal(data, &x1)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	refresh_token := x1.Data[0].Refresh_token
+	// we have the access token as well but need to refresh it using the refresh token, so
+	// might as well store later.
+	data, err = rpc.GetRequest("http://localhost:8080/swytch/refreshToken?clientId=c0fe38566a254a3a80b2a42081b46843&clientSecret=46d10252a4954007af5e2f8941aeeb37&" +
+		"refreshToken=" + refresh_token)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	var x2 rpc.GetAccessTokenData
+	err = json.Unmarshal(data, &x2)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	access_token := x1.Data[0].Access_token
+
+	data, err = rpc.GetRequest("http://localhost:8080/swytch/getuser?authToken=" + access_token)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	var x3 rpc.GetSwytchUserStruct
+	err = json.Unmarshal(data, &x3)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	user_id := x3.Data[0].Id
+	log.Println("USER ID: ", user_id)
+	// we have the user id, query for assets
+
+	data, err = rpc.GetRequest("http://localhost:8080/swytch/getassets?authToken=" + access_token + "&userId=" + user_id)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	var x4 rpc.GetAssetStruct
+	err = json.Unmarshal(data, &x4)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	asset_id := x4.Data[0].Id
+	log.Println("ASSETID: ", asset_id)
+	// we have the asset id, try to get some info
+	data, err = rpc.GetRequest("http://localhost:8080/swytch/getenergy?authToken=" + access_token + "&assetId=" + asset_id)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	var x5 rpc.GetEnergyStruct
+	err = json.Unmarshal(data, &x5)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("Energy data from installed asset: ", x4)
+
+	data, err = rpc.GetRequest("http://localhost:8080/swytch/getattributes?authToken=" + access_token + "&assetId=" + asset_id)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	var x6 rpc.GetEnergyAttributionData
+	err = json.Unmarshal(data, &x6)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("Energy Attribute data: ", x6)
 }

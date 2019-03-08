@@ -25,7 +25,7 @@ type getAccessTokenDataHelper struct {
 	Expires_in    int64  `json:"expires_in"`
 }
 
-type getAccessTokenData struct {
+type GetAccessTokenData struct {
 	Data []getAccessTokenDataHelper `json:data"`
 }
 
@@ -75,7 +75,7 @@ func getAccessToken() {
 		defer res.Body.Close()
 		body, _ := ioutil.ReadAll(res.Body)
 
-		var x getAccessTokenData
+		var x GetAccessTokenData
 		err = json.Unmarshal(body, &x)
 		if err != nil {
 			log.Println(err)
@@ -133,7 +133,7 @@ func getRefreshToken() {
 		defer res.Body.Close()
 		body, _ := ioutil.ReadAll(res.Body)
 
-		var x getAccessTokenData
+		var x GetAccessTokenData
 		err = json.Unmarshal(body, &x)
 		if err != nil {
 			log.Println(err)
@@ -163,7 +163,7 @@ type getSwytchUserStructHelper struct {
 	Wallet        string                   `json:"wallet"`
 }
 
-type getSwytchUserStruct struct {
+type GetSwytchUserStruct struct {
 	Data []getSwytchUserStructHelper `json:"data"`
 }
 
@@ -204,7 +204,7 @@ func getSwytchUser() {
 
 		log.Println(res)
 
-		var x getSwytchUserStruct
+		var x GetSwytchUserStruct
 		err = json.Unmarshal(body, &x)
 		if err != nil {
 			log.Println(err)
@@ -248,7 +248,7 @@ type gA2 struct {
 	Node_type  string      `json:"node_type"`
 }
 
-type gA struct {
+type GetAssetStruct struct {
 	Data []gA2 `json:"data"`
 }
 
@@ -289,7 +289,7 @@ func getAssets() {
 		}
 
 		log.Println(string(body))
-		var x gA
+		var x GetAssetStruct
 		err = json.Unmarshal(body, &x)
 		if err != nil {
 			log.Println(err)
@@ -344,7 +344,7 @@ type getEnergyHelper struct {
 	UpdatedAt        string     `json:"updatedAt"`
 }
 
-type getEnergyStruct struct {
+type GetEnergyStruct struct {
 	Data []getEnergyHelper `json:"data"`
 }
 
@@ -384,7 +384,7 @@ func getEnergy() {
 			MarshalSend(w, r, StatusInternalServerError)
 		}
 
-		var x getEnergyStruct
+		var x GetEnergyStruct
 		err = json.Unmarshal(body, &x)
 		if err != nil {
 			log.Println(err)
@@ -442,7 +442,7 @@ type getEnergyAttributionHelper struct {
 	Confirmed              bool                       `json:"confirmed"`
 }
 
-type getEnergyAttributionData struct {
+type GetEnergyAttributionData struct {
 	Data []getEnergyAttributionHelper `json:"data"`
 }
 
@@ -483,7 +483,7 @@ func getEnergyAttribution() {
 		}
 
 		log.Println(string(body))
-		var x getEnergyAttributionData
+		var x GetEnergyAttributionData
 		err = json.Unmarshal(body, &x)
 		if err != nil {
 			log.Println(err)

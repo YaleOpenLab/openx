@@ -36,6 +36,10 @@ func StartTeller() error {
 	mapskey := viper.Get("mapskey").(string)                   // google maps API key
 	LocalProjIndex = utils.ItoS(viper.Get("projIndex").(int))  // get the project index which should be in the config file
 	assetName := viper.Get("assetName").(string)               // used to double check before starting the teller
+	SwytchUsername = viper.Get("susername").(string)
+	SwytchPassword = viper.Get("spassword").(string)
+	SwytchClientid = viper.Get("sclientid").(string)
+	SwytchClientSecret = viper.Get("sclientsecret").(string)
 
 	projIndex, err := GetProjectIndex(assetName)
 	if err != nil {

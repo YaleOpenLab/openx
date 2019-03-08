@@ -12,3 +12,11 @@ apiurl: "http://localhost:8080"
 projIndex: 1
 # This received asset must be the debt asset code of the particular order
 assetName: ""
+# The clientID of the IoT hub as defined by Stellar
+sclientid: "c0fe38566a254a3a80b2a42081b46843"
+# The clientSecret of the IoT hub as defined by Stellar
+sclientsecret: "46d10252a4954007af5e2f8941aeeb37"
+# The username used to logon to swytch
+susername: "pr-collab%40swytch.io"
+# The password used to logon to swytch
+spassword: "S%4091380ee5cfad455a919db9985f913f69"
