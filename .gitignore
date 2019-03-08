@@ -10,3 +10,4 @@ ofcli/ofcli
 build/_workspace
 easyjson
 staticcheck
+watcher/watcher
