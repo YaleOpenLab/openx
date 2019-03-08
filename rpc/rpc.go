@@ -171,6 +171,7 @@ func StartServer(port string) {
 	setupPublicRoutes()
 	setupEntityRPCs()
 	setupParticleHandlers()
+	setupSwytchApis()
 
 	portString := ":" + port // weird construction, but this should work
 	log.Fatal(http.ListenAndServe(portString, nil))
