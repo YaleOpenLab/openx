@@ -66,6 +66,14 @@ var (
 	NowHash   string
 	// HashChainHeader is the header of the ipfs hash chain
 	HashChainHeader string
+	// username that the teller has on the swytch platform
+	SwytchUsername string
+	// password that the teller has on the swytch platform
+	SwytchPassword string
+	// clientId associated with the given IoT Hub on swytch
+	SwytchClientid string
+	// password associated with the given IoT Hub on swytch
+	SwytchClientSecret string
 )
 
 var cleanupDone chan struct{}
@@ -109,6 +117,7 @@ func main() {
 	}
 	ColorOutput("TELLER PUBKEY: "+RecpPublicKey, GreenColor)
 	ColorOutput("DEVICE ID: "+DeviceId, GreenColor)
+	// testSwytch() tests the endpoints associated with the swytch platform
 	// channels for preventing immediate sigint. Need this so that the action of any party which attempts
 	// to close the teller would still be reported to the platform and emailed to the recipient
 	signalChan := make(chan os.Signal, 1)
