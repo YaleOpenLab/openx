@@ -102,7 +102,7 @@ type Stage struct {
 	BreachCondition []string // define breach conditions for a particular stage
 }
 
-var Stage0 = &Stage{
+var Stage0 = Stage{
 	Number:       0,
 	FriendlyName: "Handshake",
 	Name:         "Idea Consolidation",
@@ -117,7 +117,7 @@ var Stage0 = &Stage{
 	},
 }
 
-var Stage1 = &Stage{
+var Stage1 = Stage{
 	Number:       1,
 	FriendlyName: "Engagement",
 	Name:         "RFP Development",
@@ -138,7 +138,7 @@ var Stage1 = &Stage{
 	},
 }
 
-var Stage2 = &Stage{
+var Stage2 = Stage{
 	Number:       2,
 	FriendlyName: "Quotes",
 	Name:         "Actions",
@@ -161,7 +161,7 @@ var Stage2 = &Stage{
 	},
 }
 
-var Stage3 = &Stage{
+var Stage3 = Stage{
 	Number:       3,
 	FriendlyName: "Signing",
 	Name:         "Contract Execution",
@@ -185,7 +185,7 @@ var Stage3 = &Stage{
 	},
 }
 
-var Stage4 = &Stage{
+var Stage4 = Stage{
 	Number:       4,
 	FriendlyName: "The Raise",
 	Name:         "Finance and Capitalization",
@@ -202,7 +202,7 @@ var Stage4 = &Stage{
 	},
 }
 
-var Stage5 = &Stage{
+var Stage5 = Stage{
 	Number:       5,
 	FriendlyName: "Construction",
 	Name:         "Payments and Construction",
@@ -222,7 +222,7 @@ var Stage5 = &Stage{
 	},
 }
 
-var Stage6 = &Stage{
+var Stage6 = Stage{
 	Number:       6,
 	FriendlyName: "Interconnection",
 	Name:         "Contract Execution",
@@ -238,7 +238,7 @@ var Stage6 = &Stage{
 	},
 }
 
-var Stage7 = &Stage{
+var Stage7 = Stage{
 	Number:       7,
 	FriendlyName: "Legacy",
 	Name:         "Operation and Management",
@@ -263,7 +263,7 @@ var Stage7 = &Stage{
 	},
 }
 
-var Stage8 = &Stage{
+var Stage8 = Stage{
 	Number:       8,
 	FriendlyName: "Handoff",
 	Name:         "Ownership Flip",
@@ -277,7 +277,7 @@ var Stage8 = &Stage{
 	},
 }
 
-var Stage9 = &Stage{
+var Stage9 = Stage{
 	Number:       9,
 	FriendlyName: "End of Life",
 	Name:         "Disposal",

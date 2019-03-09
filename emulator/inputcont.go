@@ -51,7 +51,7 @@ func ParseInputCont(input []string) error {
 	case "help":
 		fmt.Println("LIST OF SUPPORTED COMMANDS: ")
 		fmt.Println("ping, display, exchange, ipfs, create, send, receive, originate, " +
-			"propose, myproposed, addcollateral, myoriginated, mypreoriginated")
+			"propose, myproposed, addcollateral, mystage1, mystage0")
 	case "ping":
 		pingHelper()
 	case "display":
@@ -76,7 +76,7 @@ func ParseInputCont(input []string) error {
 			"since that involves document verification")
 		// end of propose
 	case "myproposed":
-		x, err := GetProposedContracts(LocalContractor.U.Username, LocalContractor.U.Pwhash)
+		x, err := GetStage2Contracts(LocalContractor.U.Username, LocalContractor.U.Pwhash)
 		if err != nil {
 			log.Println(err)
 			break
@@ -108,16 +108,16 @@ func ParseInputCont(input []string) error {
 		} else {
 			ColorOutput("RESPONSE STATUS: "+utils.ItoS(response.Code), GreenColor)
 		}
-	case "mypreoriginated":
-		x, err := GetPreOriginatedContracts(LocalContractor.U.Username, LocalContractor.U.Pwhash)
+	case "mystage0":
+		x, err := GetStage0Contracts(LocalContractor.U.Username, LocalContractor.U.Pwhash)
 		if err != nil {
 			log.Println(err)
 			break
 		}
 		log.Println(x)
-	case "myoriginated": // if the contractor acts as an originator sometime. Bool setting would be weird,
+	case "mystage1": // if the contractor acts as an originator sometime. Bool setting would be weird,
 		// but I guess there's nothing that prevents a contractor from acting as an originator, so we allow this.
-		x, err := GetOriginatedContracts(LocalContractor.U.Username, LocalContractor.U.Pwhash)
+		x, err := GetStage1Contracts(LocalContractor.U.Username, LocalContractor.U.Pwhash)
 		if err != nil {
 			log.Println(err)
 			break

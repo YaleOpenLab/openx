@@ -32,8 +32,8 @@ Broadly, the emulator has 4 different modes geared at 4 entities right now (2 in
 - Propose: propose a new stage 2 contract that will be voted on by investors and selected by recipients
 - MyProposed: displays a list of all the contracts proposed by this specific entity
 - AddCollateral: adds a specific amount of collateral towards proposing a contract
-- mypreoriginated: view a list of all the preoriginated contracts proposed by this entity
-- myoriginated: view a list of all the originated contracts proposed by this entity
+- mystage0: view a list of all the stage0 contracts proposed by this entity
+- mystage1: view a list of all the stage1 contracts proposed by this entity
 
 ## Originator only functions
 
@@ -41,8 +41,8 @@ Broadly, the emulator has 4 different modes geared at 4 entities right now (2 in
 - PreOriginate: propose a new stage 0 contract that has to be taken to the recipient for upgradation to a stage 1 contract
 - AddCollateral: adds a specific amount of collateral towards proposing a contract
 - MyProposed: displays a list of all the contracts proposed by this specific entity
-- mypreoriginated: view a list of all the preoriginated contracts proposed by this entity
-- myoriginated: view a list of all the originated contracts proposed by this entity
+- mystage0: view a list of all the stage0 contracts proposed by this entity
+- mystage1: view a list of all the stage1 contracts proposed by this entity
 
 
 In the above list of commands, some are placeholders since they require user action such as uploading pdfs of signed legal contracts, kyc documents and similar. These would also be abstracted in the future if desired by the participants in the platform ecosystem. Also, since a person can create and exchange local assets, this can give rise to a token ecosystem where you (can) have multiple parties interacting with various tokens and continuing to vote on measures like on and off-chain governance.

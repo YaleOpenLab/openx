@@ -18,11 +18,7 @@ func setupProjectRPCs() {
 	insertProject()
 	getProject()
 	getAllProjects()
-	getPreOriginProjects()
-	getOriginProjects()
-	getProposedProjects()
-	getFinalProjects()
-	getFundedProjects()
+	getProjectsAtIndex()
 }
 
 // parseProject is a helper that is used to validate POST data. This returns a project struct
@@ -141,35 +137,23 @@ func projectHandler(w http.ResponseWriter, r *http.Request, stage int) {
 }
 
 // various handlers for fetching projects which are at different stages on the platform
-func getPreOriginProjects() {
-	http.HandleFunc("/project/preorigin", func(w http.ResponseWriter, r *http.Request) {
-		projectHandler(w, r, 0)
-	})
-}
+func getProjectsAtIndex() {
+	http.HandleFunc("/projects", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Query()["index"] == nil {
+			log.Println("NO index passed, not returning anything!")
+			responseHandler(w, r, StatusBadRequest)
+		}
 
-func getOriginProjects() {
-	http.HandleFunc("/project/origin", func(w http.ResponseWriter, r *http.Request) {
-		projectHandler(w, r, 1)
-	})
-}
+		index, err := utils.StoICheck(r.URL.Query()["index"][0])
+		if err != nil {
+			log.Println("Passed index not an integer, quitting!")
+			responseHandler(w, r, StatusBadRequest)
+		}
 
-func getProposedProjects() {
-	// we need to read passed the key from the URL that the user calls
-	http.HandleFunc("/project/proposed", func(w http.ResponseWriter, r *http.Request) {
-		projectHandler(w, r, 2)
-	})
-}
+		if index > 9 || index < 0 {
+			index = 0
+		}
 
-func getFinalProjects() {
-	// we need to read passed the key from the URL that the user calls
-	http.HandleFunc("/project/final", func(w http.ResponseWriter, r *http.Request) {
-		projectHandler(w, r, 3)
-	})
-}
-
-func getFundedProjects() {
-	// we need to read passed the key from the URL that the user calls
-	http.HandleFunc("/project/funded", func(w http.ResponseWriter, r *http.Request) {
-		projectHandler(w, r, 4)
+		projectHandler(w, r, index)
 	})
 }
