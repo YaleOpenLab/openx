@@ -1,15 +1,17 @@
 package rpc
 
 import (
-	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
-	utils "github.com/YaleOpenLab/openx/utils"
 	"log"
 	"net/http"
+
+	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
+	utils "github.com/YaleOpenLab/openx/utils"
 )
 
 func setupStagesHandlers() {
 	returnAllStages()
 	returnSpecificStage()
+	promoteStage()
 }
 
 // returnAllStages returns all the defined stages for this specific platform.
@@ -71,5 +73,50 @@ func returnSpecificStage() {
 		}
 
 		MarshalSend(w, r, x)
+	})
+}
+
+// promoteStage returns details on a specific stage defined in the opensolar platform
+func promoteStage() {
+	http.HandleFunc("/stages/promote", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
+
+		// we need to authorize users (obviously). But the question is what / who triggers these changes
+		// MWTODO: get feedback on this
+		if r.URL.Query()["basestage"] == nil || r.URL.Query()["finalstage"] == nil || r.URL.Query()["index"] == nil {
+			log.Println("some fields missing to promote from stage x to y, quitting!")
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+
+		baseStageNumber, err := utils.StoICheck(r.URL.Query()["basestage"][0])
+		if err != nil {
+			log.Println(err)
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+
+		finalStageNumber, err := utils.StoICheck(r.URL.Query()["finalstage"][0])
+		if err != nil {
+			log.Println(err)
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+
+		index, err := utils.StoICheck(r.URL.Query()["index"][0])
+		if err != nil {
+			log.Println(err)
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+		log.Println(baseStageNumber, finalStageNumber)
+		err = opensolar.StageXtoY(index, baseStageNumber, finalStageNumber)
+		if err != nil {
+			log.Println(err)
+			responseHandler(w, r, StatusInternalServerError)
+			return
+		}
+		responseHandler(w, r, StatusOK)
 	})
 }

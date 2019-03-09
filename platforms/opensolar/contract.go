@@ -75,7 +75,7 @@ func RecipientAuthorize(projIndex int, recpIndex int) error {
 		return errors.New("You can't authorize a project which is not assigned to you!")
 	}
 
-	err = project.SetStage1() // set the project as originated
+	err = project.SetStage(1) // set the project as originated
 	if err != nil {
 		return errors.Wrap(err, "Error while setting origin project")
 	}
