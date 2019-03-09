@@ -13,9 +13,9 @@ import (
 
 func setupEntityRPCs() {
 	validateEntity()
-	getPreOriginatedContracts()
-	getOriginatedContracts()
-	getProposedContracts()
+	getStage0Contracts()
+	getStage1Contracts()
+	getStage2Contracts()
 	addCollateral()
 	createOpensolarProject()
 	proposeOpensolarProject()
@@ -56,9 +56,9 @@ func validateEntity() {
 	})
 }
 
-// getPreOriginatedContracts gets a list of all the pre origianted contracts on the platform
-func getPreOriginatedContracts() {
-	http.HandleFunc("/entity/getpreorigin", func(w http.ResponseWriter, r *http.Request) {
+// getStage0Contracts gets a list of all the pre origianted contracts on the platform
+func getStage0Contracts() {
+	http.HandleFunc("/entity/stage0", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
 		prepEntity, err := EntityValidateHelper(w, r)
 		if err != nil {
@@ -77,9 +77,9 @@ func getPreOriginatedContracts() {
 	})
 }
 
-// getOriginatedContracts gets a list of all the originated contracts on the platform
-func getOriginatedContracts() {
-	http.HandleFunc("/entity/getorigin", func(w http.ResponseWriter, r *http.Request) {
+// getStage1Contracts gets a list of all the originated contracts on the platform
+func getStage1Contracts() {
+	http.HandleFunc("/entity/stage1", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
 		prepEntity, err := EntityValidateHelper(w, r)
 		if err != nil {
@@ -98,9 +98,9 @@ func getOriginatedContracts() {
 	})
 }
 
-// getProposedContracts gets a list of all the proposed contracts on the platform
-func getProposedContracts() {
-	http.HandleFunc("/entity/getproposed", func(w http.ResponseWriter, r *http.Request) {
+// getStage2Contracts gets a list of all the proposed contracts on the platform
+func getStage2Contracts() {
+	http.HandleFunc("/entity/stage2", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
 		prepEntity, err := EntityValidateHelper(w, r)
 		if err != nil {

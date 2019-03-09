@@ -51,7 +51,7 @@ func ParseInputOrig(input []string) error {
 	case "help":
 		fmt.Println("LIST OF SUPPORTED COMMANDS: ")
 		fmt.Println("ping, display, exchange, ipfs, create, send, receive, propose, " +
-			"preoriginate, myproposed, addcollateral, myoriginated, mypreoriginated")
+			"newstage0, myproposed, addcollateral, mystage1, mystage0")
 	case "ping":
 		pingHelper()
 	case "display":
@@ -74,8 +74,8 @@ func ParseInputOrig(input []string) error {
 	case "propose":
 		fmt.Println("Proposing a contract can be done only through the opensolar webui" +
 			"since that involves document verification")
-	case "preoriginate":
-		fmt.Println("Pre originating a contract can be done only through the opensolar webui" +
+	case "newstage0":
+		fmt.Println("Pre-originating a contract can be done only through the opensolar webui" +
 			"since that involves document verification")
 	case "addcollateral":
 		if len(input) != 3 {
@@ -104,21 +104,21 @@ func ParseInputOrig(input []string) error {
 			ColorOutput("RESPONSE STATUS: "+utils.ItoS(response.Code), GreenColor)
 		}
 	case "myproposed":
-		x, err := GetProposedContracts(LocalOriginator.U.Username, LocalOriginator.U.Pwhash)
+		x, err := GetStage2Contracts(LocalOriginator.U.Username, LocalOriginator.U.Pwhash)
 		if err != nil {
 			log.Println(err)
 			break
 		}
 		log.Println(x)
-	case "mypreoriginated":
-		x, err := GetPreOriginatedContracts(LocalOriginator.U.Username, LocalOriginator.U.Pwhash)
+	case "mystage0":
+		x, err := GetStage0Contracts(LocalOriginator.U.Username, LocalOriginator.U.Pwhash)
 		if err != nil {
 			log.Println(err)
 			break
 		}
 		log.Println(x)
-	case "myoriginated":
-		x, err := GetOriginatedContracts(LocalOriginator.U.Username, LocalOriginator.U.Pwhash)
+	case "mystage1":
+		x, err := GetStage1Contracts(LocalOriginator.U.Username, LocalOriginator.U.Pwhash)
 		if err != nil {
 			log.Println(err)
 			break

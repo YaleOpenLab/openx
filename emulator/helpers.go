@@ -29,8 +29,8 @@ func autoComplete() readline.AutoCompleter {
 			readline.PcItem("propose"),
 			readline.PcItem("myproposed"),
 			readline.PcItem("addcollateral"),
-			readline.PcItem("mypreoriginated"),
-			readline.PcItem("myoriginated"),
+			readline.PcItem("mystage0"),
+			readline.PcItem("mystage1"),
 			readline.PcItem("preoriginate"),
 		),
 		readline.PcItem("display",
@@ -152,7 +152,7 @@ func displayHelper(input []string, username string, pwhash string, role string) 
 	case "projects":
 		if len(input) != 4 {
 			// only display was given, so display help command
-			log.Println("display projects <platform> <preorigin, origin, seed, proposed, open, funded, installed, power, fin>")
+			log.Println("display projects <platform> <stageNumber>")
 			break
 		}
 		platform := input[2]
@@ -168,37 +168,12 @@ func displayHelper(input []string, username string, pwhash string, role string) 
 			}
 		case "opensolar":
 			subsubcommand := input[3]
-			var stage float64
-			switch subsubcommand {
-			case "preorigin":
-				log.Println("Displaying all pre-originated (stage 0) projects")
-				stage = 0
-			case "origin":
-				log.Println("Displaying all originated (stage 1) projects")
-				stage = 1
-			case "seed":
-				log.Println("Displaying all seed (stage 1.5) projects")
-				stage = 1.5
-			case "proposed":
-				log.Println("Displaying all proposed (stage 2) projects")
-				stage = 2
-			case "open":
-				log.Println("Displaying open (stage 3) projects")
-				stage = 3
-			case "funded":
-				log.Println("Displaying funded (stage 4) projects")
-				stage = 4
-			case "installed":
-				log.Println("Displaying installed (stage 5) projects")
-				stage = 5
-			case "power":
-				log.Println("Displaying funded (stage 6) projects")
-				stage = 6
-			case "fin":
-				log.Println("Displaying funded (stage 7) projects")
-				stage = 7
+			index, err := utils.StoICheck(subsubcommand)
+			if err != nil {
+				log.Println("Input not int, not retrieving!")
+				return
 			}
-			arr, err := RetrieveProject(stage)
+			arr, err := RetrieveProject(index)
 			if err != nil {
 				log.Println(err)
 				break

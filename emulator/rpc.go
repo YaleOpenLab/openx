@@ -26,65 +26,17 @@ func PingRpc() error {
 	ColorOutput("PLATFORM STATUS: "+utils.ItoS(x.Code), GreenColor)
 	return nil
 }
-func RetrieveProject(stage float64) ([]solar.Project, error) {
+
+func RetrieveProject(index int) ([]solar.Project, error) {
 	// retrieve project at a particular stage
 	var x []solar.Project
-	switch stage {
-	case 0:
-		data, err := rpc.GetRequest(ApiUrl + "/project/preorigin")
-		if err != nil {
-			return x, err
-		}
-		var x []solar.Project
-		err = json.Unmarshal(data, &x)
-		if err != nil {
-			return x, err
-		}
-		return x, nil
-	case 1:
-		data, err := rpc.GetRequest(ApiUrl + "/project/origin")
-		if err != nil {
-			return x, err
-		}
-		var x []solar.Project
-		err = json.Unmarshal(data, &x)
-		if err != nil {
-			return x, err
-		}
-		return x, nil
-	case 2:
-		data, err := rpc.GetRequest(ApiUrl + "/project/proposed")
-		if err != nil {
-			return x, err
-		}
-		var x []solar.Project
-		err = json.Unmarshal(data, &x)
-		if err != nil {
-			return x, err
-		}
-		return x, nil
-	case 3:
-		data, err := rpc.GetRequest(ApiUrl + "/project/final")
-		if err != nil {
-			return x, err
-		}
-		var x []solar.Project
-		err = json.Unmarshal(data, &x)
-		if err != nil {
-			return x, err
-		}
-		return x, nil
-	case 4:
-		data, err := rpc.GetRequest(ApiUrl + "/project/funded")
-		if err != nil {
-			return x, err
-		}
-		var x []solar.Project
-		err = json.Unmarshal(data, &x)
-		if err != nil {
-			return x, err
-		}
-		return x, nil
+	data, err := rpc.GetRequest(ApiUrl + "/projects?index=" + utils.ItoS(index))
+	if err != nil {
+		return x, err
+	}
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		return x, err
 	}
 	return x, nil
 }
@@ -261,9 +213,9 @@ func OriginateProject(username string, pwhash string, projIndex string) (rpc.Sta
 	return x, nil
 }
 
-func GetOriginatedContracts(username string, pwhash string) ([]solar.Project, error) {
+func GetStage1Contracts(username string, pwhash string) ([]solar.Project, error) {
 	var x []solar.Project
-	data, err := rpc.GetRequest(ApiUrl + "/entity/getorigin?" + "username=" + username + "&pwhash=" + pwhash)
+	data, err := rpc.GetRequest(ApiUrl + "/entity/stage1?" + "username=" + username + "&pwhash=" + pwhash)
 	if err != nil {
 		return x, err
 	}
@@ -274,9 +226,9 @@ func GetOriginatedContracts(username string, pwhash string) ([]solar.Project, er
 	return x, nil
 }
 
-func GetPreOriginatedContracts(username string, pwhash string) ([]solar.Project, error) {
+func GetStage0Contracts(username string, pwhash string) ([]solar.Project, error) {
 	var x []solar.Project
-	data, err := rpc.GetRequest(ApiUrl + "/entity/getpreorigin?" + "username=" + username + "&pwhash=" + pwhash)
+	data, err := rpc.GetRequest(ApiUrl + "/entity/stage0?" + "username=" + username + "&pwhash=" + pwhash)
 	if err != nil {
 		return x, err
 	}
@@ -287,9 +239,9 @@ func GetPreOriginatedContracts(username string, pwhash string) ([]solar.Project,
 	return x, nil
 }
 
-func GetProposedContracts(username string, pwhash string) ([]solar.Project, error) {
+func GetStage2Contracts(username string, pwhash string) ([]solar.Project, error) {
 	var x []solar.Project
-	data, err := rpc.GetRequest(ApiUrl + "/entity/getproposed?" + "username=" + username + "&pwhash=" + pwhash)
+	data, err := rpc.GetRequest(ApiUrl + "/entity/stage2?" + "username=" + username + "&pwhash=" + pwhash)
 	if err != nil {
 		return x, err
 	}
