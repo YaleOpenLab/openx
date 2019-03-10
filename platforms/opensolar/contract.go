@@ -180,7 +180,7 @@ func SeedInvest(projIndex int, invIndex int, recpIndex int, invAmount string,
 	}
 
 	if project.Stage != 1 {
-		return fmt.Errorf("Proejct stage not at 1, you either have passed the seed stage or project is not at seed stage yet")
+		return fmt.Errorf("project stage not at 1, you either have passed the seed stage or project is not at seed stage yet")
 	}
 	err = model.MunibondInvest(consts.OpenSolarIssuerDir, invIndex, invSeed, invAmount, projIndex,
 		project.SeedAssetCode, project.TotalValue)
@@ -207,7 +207,7 @@ func Invest(projIndex int, invIndex int, invAmount string, invSeed string) error
 	}
 
 	if project.Stage != 4 {
-		return fmt.Errorf("Project not at stage where it can solicit investment, quitting!")
+		return fmt.Errorf("project not at stage where it can solicit investment, quitting")
 	}
 	// call the model and invest in the particular project
 	err = model.MunibondInvest(consts.OpenSolarIssuerDir, invIndex, invSeed, invAmount, projIndex,

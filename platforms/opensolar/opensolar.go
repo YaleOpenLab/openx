@@ -74,13 +74,6 @@ type Project struct {
 	Stage       int    // the stage at which the contract is at, float due to potential support of 0.5 state changes in the future
 	AuctionType string // the type of the auction in question. Default is blind auction unless explicitly mentioned
 
-	// Various ipfs hashes that we need to store
-	OriginatorMoUHash       string // the contract between the originator and the recipient at stage LegalContractStage
-	ContractorContractHash  string // the contract between the contractor and the platform at stage ProposeProject
-	InvPlatformContractHash string // the contract between the investor and the platform at stage FundedProject
-	RecPlatformContractHash string // the contract between the recipient and the platform at stage FundedProject
-	SpecSheetHash           string // the ipfs hash of the specification document containing installation details
-
 	Reputation float64 // the positive reputation associated with a given project
 	Lock       bool    // lock investment in order to wait for recipient's confirmation
 	LockPwd    string  // the recipient's seedpwd. Will be set to null as soon as we use it.
@@ -92,11 +85,13 @@ type Project struct {
 	// provide users with a predefined list of payback periods periods
 
 	// List of checklists that the user can go and check in the past whether they have been fulfilled or not
-	// this is a string-strign map sicne I can add any arbitrary data that I want to without checking for stuff
+	// this is a string-strign map since I can add any arbitrary data that I want to without checking for stuff.
+	// this is of length 9 since there are nine stages defined for the opensolar platform
 	StageChecklist []map[string]bool
 
 	// List of data associated with each checkpoint in order for someone who comes in later to verify
-	// that we indeed have the right project
+	// that we indeed have the right project. THe various hashes and stuff are stored here instead of
+	// having separate fields for each contract
 	StageData []string
 }
 

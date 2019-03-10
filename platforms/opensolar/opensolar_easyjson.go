@@ -309,16 +309,6 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar2(in *jlex
 			out.Stage = int(in.Int())
 		case "AuctionType":
 			out.AuctionType = string(in.String())
-		case "OriginatorMoUHash":
-			out.OriginatorMoUHash = string(in.String())
-		case "ContractorContractHash":
-			out.ContractorContractHash = string(in.String())
-		case "InvPlatformContractHash":
-			out.InvPlatformContractHash = string(in.String())
-		case "RecPlatformContractHash":
-			out.RecPlatformContractHash = string(in.String())
-		case "SpecSheetHash":
-			out.SpecSheetHash = string(in.String())
 		case "Reputation":
 			out.Reputation = float64(in.Float64())
 		case "Lock":
@@ -329,6 +319,70 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar2(in *jlex
 			out.InvestmentType = string(in.String())
 		case "PaybackPeriod":
 			out.PaybackPeriod = int(in.Int())
+		case "StageChecklist":
+			if in.IsNull() {
+				in.Skip()
+				out.StageChecklist = nil
+			} else {
+				in.Delim('[')
+				if out.StageChecklist == nil {
+					if !in.IsDelim(']') {
+						out.StageChecklist = make([]map[string]bool, 0, 8)
+					} else {
+						out.StageChecklist = []map[string]bool{}
+					}
+				} else {
+					out.StageChecklist = (out.StageChecklist)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v6 map[string]bool
+					if in.IsNull() {
+						in.Skip()
+					} else {
+						in.Delim('{')
+						if !in.IsDelim('}') {
+							v6 = make(map[string]bool)
+						} else {
+							v6 = nil
+						}
+						for !in.IsDelim('}') {
+							key := string(in.String())
+							in.WantColon()
+							var v7 bool
+							v7 = bool(in.Bool())
+							(v6)[key] = v7
+							in.WantComma()
+						}
+						in.Delim('}')
+					}
+					out.StageChecklist = append(out.StageChecklist, v6)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
+		case "StageData":
+			if in.IsNull() {
+				in.Skip()
+				out.StageData = nil
+			} else {
+				in.Delim('[')
+				if out.StageData == nil {
+					if !in.IsDelim(']') {
+						out.StageData = make([]string, 0, 4)
+					} else {
+						out.StageData = []string{}
+					}
+				} else {
+					out.StageData = (out.StageData)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v8 string
+					v8 = string(in.String())
+					out.StageData = append(out.StageData, v8)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -725,11 +779,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar2(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v6, v7 := range in.InvestorIndices {
-				if v6 > 0 {
+			for v9, v10 := range in.InvestorIndices {
+				if v9 > 0 {
 					out.RawByte(',')
 				}
-				out.Int(int(v7))
+				out.Int(int(v10))
 			}
 			out.RawByte(']')
 		}
@@ -746,11 +800,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar2(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v8, v9 := range in.SeedInvestorIndices {
-				if v8 > 0 {
+			for v11, v12 := range in.SeedInvestorIndices {
+				if v11 > 0 {
 					out.RawByte(',')
 				}
-				out.Int(int(v9))
+				out.Int(int(v12))
 			}
 			out.RawByte(']')
 		}
@@ -774,56 +828,6 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar2(out *jwr
 			out.RawString(prefix)
 		}
 		out.String(string(in.AuctionType))
-	}
-	{
-		const prefix string = ",\"OriginatorMoUHash\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.OriginatorMoUHash))
-	}
-	{
-		const prefix string = ",\"ContractorContractHash\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.ContractorContractHash))
-	}
-	{
-		const prefix string = ",\"InvPlatformContractHash\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.InvPlatformContractHash))
-	}
-	{
-		const prefix string = ",\"RecPlatformContractHash\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.RecPlatformContractHash))
-	}
-	{
-		const prefix string = ",\"SpecSheetHash\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.SpecSheetHash))
 	}
 	{
 		const prefix string = ",\"Reputation\":"
@@ -874,6 +878,64 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar2(out *jwr
 			out.RawString(prefix)
 		}
 		out.Int(int(in.PaybackPeriod))
+	}
+	{
+		const prefix string = ",\"StageChecklist\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		if in.StageChecklist == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+			out.RawString("null")
+		} else {
+			out.RawByte('[')
+			for v13, v14 := range in.StageChecklist {
+				if v13 > 0 {
+					out.RawByte(',')
+				}
+				if v14 == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
+					out.RawString(`null`)
+				} else {
+					out.RawByte('{')
+					v15First := true
+					for v15Name, v15Value := range v14 {
+						if v15First {
+							v15First = false
+						} else {
+							out.RawByte(',')
+						}
+						out.String(string(v15Name))
+						out.RawByte(':')
+						out.Bool(bool(v15Value))
+					}
+					out.RawByte('}')
+				}
+			}
+			out.RawByte(']')
+		}
+	}
+	{
+		const prefix string = ",\"StageData\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		if in.StageData == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+			out.RawString("null")
+		} else {
+			out.RawByte('[')
+			for v16, v17 := range in.StageData {
+				if v16 > 0 {
+					out.RawByte(',')
+				}
+				out.String(string(v17))
+			}
+			out.RawByte(']')
+		}
 	}
 	out.RawByte('}')
 }

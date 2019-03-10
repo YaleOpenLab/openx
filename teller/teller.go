@@ -39,8 +39,9 @@ import (
 // on the platform
 
 var opts struct {
-	Daemon bool `short:"d" description:"Run the teller in daemon mode"`
-	Port   int  `short:"p" description:"The port on which the teller runs on (default: 443)"`
+	Daemon     bool `short:"d" description:"Run the teller in daemon mode"`
+	Port       int  `short:"p" description:"The port on which the teller runs on (default: 443)"`
+	TestSwytch bool `long:"ts" description:"Test swytch API workflow"`
 }
 
 var (
@@ -107,6 +108,9 @@ func main() {
 	}
 	if opts.Port == 0 {
 		opts.Port = consts.Tlsport
+	}
+	if opts.TestSwytch {
+		testSwytch()
 	}
 
 	fmt.Println("---------------WELCOME TO THE TELLER INTERFACE---------------")
