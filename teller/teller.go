@@ -75,6 +75,8 @@ var (
 	SwytchClientid string
 	// password associated with the given IoT Hub on swytch
 	SwytchClientSecret string
+	// AssetName is the asset for which this teller has been installed towards
+	AssetName string
 )
 
 var cleanupDone chan struct{}

@@ -80,8 +80,6 @@ func ParseInputInv(input []string) error {
 		increaseTrustHelper(input, LocalInvestor.U.Username, LocalInvestor.U.Pwhash)
 	case "sendshares":
 		sendSharesEmailHelper(input, LocalInvestor.U.Username, LocalInvestor.U.Pwhash)
-	case "mergeshares":
-		mergeSharesEmailHelper(input, LocalInvestor.U.Username, LocalInvestor.U.Pwhash)
 	case "newshares":
 		genNewSharesHelper(input, LocalInvestor.U.Username, LocalInvestor.U.Pwhash, LocalSeedPwd)
 	// Investor only functions

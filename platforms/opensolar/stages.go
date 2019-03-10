@@ -16,8 +16,6 @@ import (
 // circle scale timeline where a person who's visiting the site can see how many stages are
 // present for the particular platform (opensolar in this case)
 
-// MWTODO: are the stages immutable?
-
 // SetStage sets the stage of a project
 func (a *Project) SetStage(number int) error {
 	switch number {
