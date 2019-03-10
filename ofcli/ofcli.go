@@ -294,7 +294,7 @@ func main() {
 				default:
 					break
 				}
-				err = bestContract.SetStage3()
+				err = bestContract.SetStage(3)
 				if err != nil {
 					log.Println(err)
 					break

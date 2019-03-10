@@ -1,8 +1,11 @@
 package opensolar
 
 import (
-	database "github.com/YaleOpenLab/openx/database"
+	"fmt"
+	"github.com/pkg/errors"
 	"log"
+
+	database "github.com/YaleOpenLab/openx/database"
 )
 
 // this file contains the different stages associated with an opensolar project and the handlers
@@ -17,79 +20,49 @@ import (
 
 // SetStage sets the stage of a project
 func (a *Project) SetStage(number int) error {
+	switch number {
+	case 3:
+		a.Reputation = a.TotalValue // upgrade reputation since totalValue might have changed from the originated contract
+		err := a.Save()
+		if err != nil {
+			log.Println("Error while saving project", err)
+			return err
+		}
+		err = RepOriginatedProject(a.Originator.U.Index, a.Index) // modify originator reputation now that the final price is fixed
+		if err != nil {
+			log.Println("Error while increasing reputation", err)
+			return err
+		}
+	case 5:
+		err := a.Contractor.U.IncreaseReputation(a.TotalValue * ContractorWeight) // modify contractor Reputation now that a project has been installed
+		if err != nil {
+			log.Println("Couldn't increase contractor reputation", err)
+			return err
+		}
+
+		for _, i := range a.InvestorIndices {
+			elem, err := database.RetrieveInvestor(i)
+			if err != nil {
+				log.Println("Error while retrieving investor", err)
+				return err
+			}
+			err = database.ChangeInvReputation(elem.U.Index, a.TotalValue*InvestorWeight)
+			if err != nil {
+				log.Println("Couldn't change investor reputation", err)
+				return err
+			}
+		}
+	case 6:
+		err := database.ChangeRecpReputation(a.RecipientIndex, a.TotalValue*RecipientWeight) // modify recipient reputation now that the system had begun power generation
+		if err != nil {
+			log.Println("Error while changing recipient reputation", err)
+			return err
+		}
+	default:
+		log.Println("default")
+	}
 	a.Stage = number
 	return a.Save()
-}
-
-// SetStage0 sets project stage to 0
-func (a *Project) SetStage0() error {
-	return a.SetStage(0)
-}
-
-// SetStage1 sets project stage to 1
-func (a *Project) SetStage1() error {
-	return a.SetStage(1)
-}
-
-// SetStage2 sets project stage to 2
-func (a *Project) SetStage2() error {
-	return a.SetStage(2)
-}
-
-// SetStage3 sets project stage to 3
-func (a *Project) SetStage3() error {
-	a.Reputation = a.TotalValue // upgrade reputation since totalValue might have changed from the originated contract
-	err := a.Save()
-	if err != nil {
-		log.Println("Error while saving project", err)
-		return err
-	}
-	err = RepOriginatedProject(a.Originator.U.Index, a.Index) // modify originator reputation now that the final price is fixed
-	if err != nil {
-		log.Println("Error while increasing reputation", err)
-		return err
-	}
-	return a.SetStage(3)
-}
-
-// SetStage4 sets project stage to 4
-func (a *Project) SetStage4() error {
-	return a.SetStage(4)
-}
-
-// SetStage5 sets project stage to 5
-func (a *Project) SetStage5() error {
-	err := a.Contractor.U.IncreaseReputation(a.TotalValue * ContractorWeight) // modify contractor Reputation now that a project has been installed
-	if err != nil {
-		log.Println("Couldn't increase contractor reputation", err)
-		return err
-	}
-
-	for _, i := range a.InvestorIndices {
-		elem, err := database.RetrieveInvestor(i)
-		if err != nil {
-			log.Println("Error while retrieving investor", err)
-			return err
-		}
-		err = database.ChangeInvReputation(elem.U.Index, a.TotalValue*InvestorWeight)
-		if err != nil {
-			log.Println("Couldn't change investor reputation", err)
-			return err
-		}
-	}
-
-	return a.SetStage(5)
-}
-
-// SetStage6 sets project stage to 6
-func (a *Project) SetStage6() error {
-	err := database.ChangeRecpReputation(a.RecipientIndex, a.TotalValue*RecipientWeight) // modify recipient reputation now that the system had begun power generation
-	if err != nil {
-		log.Println("Error while changing recipient reputation", err)
-		return err
-	}
-
-	return a.SetStage(6)
 }
 
 // Stage is the evolution of the erstwhile static stage integer construction
@@ -107,14 +80,91 @@ var Stage0 = Stage{
 	FriendlyName: "Handshake",
 	Name:         "Idea Consolidation",
 	Activities: []string{
-		"[Originator] proposes project and either secures or agrees to serve as [Solar Developer]",
-		"NOTE: Originator is the community leader or catalyst for the project, they may opt to serve as the solar developer themselves, or pass that responsibility off, going forward we will use solar developer to represent the interest of both.",
+		"[Originator] proposes project and either secures or agrees to serve as [Solar Developer]. NOTE: Originator is the community leader or catalyst for the project, they may opt to serve as the solar developer themselves, or pass that responsibility off, going forward we will use solar developer to represent the interest of both.",
 		"[Solar Developer] creates general estimation of project (eg. with an automatic calculation through Google Project Sunroof, PV) ",
 		"If [Originator]/[Solar Developer] is not landowner [Host] states legal ownership of site (hard proof is optional at this stage)",
 	},
 	StateTrigger: []string{
 		"Matching of originator with receiver, and mutual approval/intention of interest.",
 	},
+}
+
+// StageXtoY promtoes a contract from  stage X.Number to stage Y.Number
+func StageXtoY(index int, x int, y int) error {
+	// check for out of bound errors
+	if x < 0 || x > 9 || y < 0 || y > 9 {
+		log.Println("stage number out of bounds, quitting!")
+		return fmt.Errorf("stage number out of bounds, quitting!")
+	}
+
+	// retrieve the project
+	project, err := RetrieveProject(index)
+	if err != nil {
+		log.Println(err)
+		return errors.Wrap(err, "couldn't retrieve project")
+	}
+
+	if project.StageChecklist == nil || project.StageData == nil {
+		log.Println("stage checklist or stage data is nil, quitting!")
+		return fmt.Errorf("stage checklist or stage data is nil, quitting!")
+	}
+
+	var baseStage Stage
+	var finalStage Stage
+	switch x {
+	case 0:
+		baseStage = Stage0
+		finalStage = Stage1
+	case 1:
+		baseStage = Stage1
+		finalStage = Stage2
+	case 2:
+		baseStage = Stage2
+		finalStage = Stage3
+	case 3:
+		baseStage = Stage3
+		finalStage = Stage4
+	case 4:
+		baseStage = Stage4
+		finalStage = Stage5
+	case 5:
+		baseStage = Stage5
+		finalStage = Stage6
+	case 6:
+		baseStage = Stage6
+		finalStage = Stage7
+	case 7:
+		baseStage = Stage7
+		finalStage = Stage8
+	case 8:
+		baseStage = Stage8
+		finalStage = Stage9
+	default:
+		// shouldn't come here? in case it does, error out.
+		return fmt.Errorf("base stage doesn't match with predefined stages, quitting!")
+	}
+
+	if len(project.StageChecklist[baseStage.Number]) != len(baseStage.Activities) {
+		log.Println("length of checklists don't match, quitting!")
+		return fmt.Errorf("length of checklists don't match, quitting!")
+	}
+
+	if len(project.StageData[baseStage.Number]) == 0 {
+		log.Println("baseStage data is empty, can't upgrade stages!")
+		return fmt.Errorf("baseStage data is empty, can't upgrade stages!")
+	}
+
+	// go through the checklist and see if something's wrong
+	for _, check := range project.StageChecklist[baseStage.Number] {
+		if !check {
+			log.Println("checklist not satisfied, quitting!")
+			return fmt.Errorf("checklist not satisfied, quitting!")
+		}
+	}
+
+	// everything in the checklist is set to true, so we can upgrade from stage 0 to 1 safely
+	log.Println("Upgrading: ", project.Index, " from stage: ", baseStage.Number, " to stage: ", finalStage.Number)
+	return project.SetStage(finalStage.Number)
 }
 
 var Stage1 = Stage{
@@ -283,7 +333,7 @@ var Stage9 = Stage{
 	Name:         "Disposal",
 	Activities: []string{
 		"[IoT] Solar equipment is generating below a productivity threshold, or shows general malfunction",
-		"[Beneficiaries][Developers]  dispose of the equipment to a recycling program",
+		"[Beneficiaries][Developers] dispose of the equipment to a recycling program",
 		"[Developer/Recycler] Certifies equipment is received",
 	},
 	StateTrigger: []string{

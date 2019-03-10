@@ -89,7 +89,15 @@ type Project struct {
 
 	PaybackPeriod int // the frequency in number of weeks that the recipient has to pay the platform.
 	// this has to be set to atleast a week since the payback monitoring thread runs every week. Ideally, we could
-	/// provide users with a predefined list of payback periods periods
+	// provide users with a predefined list of payback periods periods
+
+	// List of checklists that the user can go and check in the past whether they have been fulfilled or not
+	// this is a string-strign map sicne I can add any arbitrary data that I want to without checking for stuff
+	StageChecklist []map[string]bool
+
+	// List of data associated with each checkpoint in order for someone who comes in later to verify
+	// that we indeed have the right project
+	StageData []string
 }
 
 //easyjson:json

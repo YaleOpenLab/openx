@@ -297,7 +297,7 @@ func chooseBlindAuction() {
 			return
 		}
 
-		err = bestContract.SetStage4() // TODO: change to 3
+		err = bestContract.SetStage(4) // TODO: change to 3
 		if err != nil {
 			log.Println("did not set final project", err)
 			responseHandler(w, r, StatusInternalServerError)
@@ -337,7 +337,7 @@ func chooseVickreyAuction() {
 			return
 		}
 
-		err = bestContract.SetStage4() // change to 3 once done
+		err = bestContract.SetStage(4) // change to 3 once done
 		if err != nil {
 			log.Println("did not set final project", err)
 			responseHandler(w, r, StatusInternalServerError)
@@ -376,7 +376,7 @@ func chooseTimeAuction() {
 			return
 		}
 
-		err = bestContract.SetStage4() // TODO: change to 3
+		err = bestContract.SetStage(4) // TODO: change to 3
 		if err != nil {
 			log.Println("did not set final project", err)
 			responseHandler(w, r, StatusInternalServerError)
@@ -461,7 +461,7 @@ func finalizeProject() {
 			return
 		}
 
-		err = project.SetStage4() // TODO: in the future once this is defined well enough, this must be set to stage 3
+		err = project.SetStage(4) // TODO: in the future once this is defined well enough, this must be set to stage 3
 		if err != nil {
 			log.Println("did not set final project", err)
 			responseHandler(w, r, StatusInternalServerError)

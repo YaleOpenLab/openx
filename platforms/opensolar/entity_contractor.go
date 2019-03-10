@@ -79,7 +79,7 @@ func RepInstalledProject(contrIndex int, projIndex int) error {
 		return errors.Wrap(err, "couldn't retrieve project from db")
 	}
 
-	err = project.SetStage5()
+	err = project.SetStage(5)
 	if err != nil {
 		return errors.Wrap(err, "couldn't set installed project's stage")
 	}
