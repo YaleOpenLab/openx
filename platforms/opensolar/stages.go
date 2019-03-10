@@ -93,8 +93,8 @@ var Stage0 = Stage{
 func StageXtoY(index int, x int, y int) error {
 	// check for out of bound errors
 	if x < 0 || x > 9 || y < 0 || y > 9 {
-		log.Println("stage number out of bounds, quitting!")
-		return fmt.Errorf("stage number out of bounds, quitting!")
+		log.Println("stage number out of bounds, quitting")
+		return fmt.Errorf("stage number out of bounds, quitting")
 	}
 
 	// retrieve the project
@@ -105,8 +105,8 @@ func StageXtoY(index int, x int, y int) error {
 	}
 
 	if project.StageChecklist == nil || project.StageData == nil {
-		log.Println("stage checklist or stage data is nil, quitting!")
-		return fmt.Errorf("stage checklist or stage data is nil, quitting!")
+		log.Println("stage checklist or stage data is nil, quitting")
+		return fmt.Errorf("stage checklist or stage data is nil, quitting")
 	}
 
 	var baseStage Stage
@@ -141,24 +141,24 @@ func StageXtoY(index int, x int, y int) error {
 		finalStage = Stage9
 	default:
 		// shouldn't come here? in case it does, error out.
-		return fmt.Errorf("base stage doesn't match with predefined stages, quitting!")
+		return fmt.Errorf("base stage doesn't match with predefined stages, quitting")
 	}
 
 	if len(project.StageChecklist[baseStage.Number]) != len(baseStage.Activities) {
-		log.Println("length of checklists don't match, quitting!")
-		return fmt.Errorf("length of checklists don't match, quitting!")
+		log.Println("length of checklists don't match, quitting")
+		return fmt.Errorf("length of checklists don't match, quitting")
 	}
 
 	if len(project.StageData[baseStage.Number]) == 0 {
 		log.Println("baseStage data is empty, can't upgrade stages!")
-		return fmt.Errorf("baseStage data is empty, can't upgrade stages!")
+		return fmt.Errorf("baseStage data is empty, can't upgrade stages")
 	}
 
 	// go through the checklist and see if something's wrong
 	for _, check := range project.StageChecklist[baseStage.Number] {
 		if !check {
-			log.Println("checklist not satisfied, quitting!")
-			return fmt.Errorf("checklist not satisfied, quitting!")
+			log.Println("checklist not satisfied, quitting")
+			return fmt.Errorf("checklist not satisfied, quitting")
 		}
 	}
 

@@ -667,19 +667,16 @@ func addContractHash() {
 		switch choice {
 		case "omh":
 			// update the originator mou hash
-			project.OriginatorMoUHash = hashString
+			// TODO: change this based no different stages. right now static
+			project.StageData = append(project.StageData, hashString)
 		case "cch":
-			// update the contractor contract hash
-			project.ContractorContractHash = hashString
+			project.StageData = append(project.StageData, hashString)
 		case "ipch":
-			// update the InvPlatformContractHash
-			project.InvPlatformContractHash = hashString
+			project.StageData = append(project.StageData, hashString)
 		case "rpch":
-			// update the RecPlatformContractHash
-			project.RecPlatformContractHash = hashString
+			project.StageData = append(project.StageData, hashString)
 		case "ssh":
-			// update the SpecSheetHash
-			project.SpecSheetHash = hashString
+			project.StageData = append(project.StageData, hashString)
 		default:
 			log.Println("invalid choice passed, quitting!")
 			responseHandler(w, r, StatusInternalServerError)

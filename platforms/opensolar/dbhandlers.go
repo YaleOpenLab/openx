@@ -234,7 +234,7 @@ func SaveOriginatorMoU(projIndex int, hash string) error {
 	if err != nil {
 		return errors.Wrap(err, "couldn't retrieve project")
 	}
-	a.OriginatorMoUHash = hash
+	a.StageData = append(a.StageData, hash)
 	return a.Save()
 }
 
@@ -244,7 +244,7 @@ func SaveContractHash(projIndex int, hash string) error {
 	if err != nil {
 		return errors.Wrap(err, "couldn't retrieve project")
 	}
-	a.ContractorContractHash = hash
+	a.StageData = append(a.StageData, hash)
 	return a.Save()
 }
 
@@ -254,7 +254,7 @@ func SaveInvPlatformContract(projIndex int, hash string) error {
 	if err != nil {
 		return errors.Wrap(err, "couldn't retrieve project")
 	}
-	a.InvPlatformContractHash = hash
+	a.StageData = append(a.StageData, hash)
 	return a.Save()
 }
 
@@ -264,6 +264,6 @@ func SaveRecPlatformContract(projIndex int, hash string) error {
 	if err != nil {
 		return errors.Wrap(err, "couldn't retrieve project")
 	}
-	a.RecPlatformContractHash = hash
+	a.StageData = append(a.StageData, hash)
 	return a.Save()
 }
