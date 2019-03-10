@@ -147,15 +147,15 @@ func TestDb(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Can updateProjectAfterAcceptance in the prsence of an invalid db")
 	}
-	tmpProj.SetStage5()
+	tmpProj.SetStage(5)
 	if err == nil {
 		t.Fatalf("Setting stage works with invalid db, quitting!")
 	}
-	tmpProj.SetStage6()
+	tmpProj.SetStage(6)
 	if err == nil {
 		t.Fatalf("Setting stage works with invalid db, quitting!")
 	}
-	tmpProj.SetStage3()
+	tmpProj.SetStage(3)
 	if err == nil {
 		t.Fatalf("Setting stage works with invalid db, quitting!")
 	}
@@ -407,12 +407,12 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = testProject.SetStage0()
+	err = testProject.SetStage(0)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = testProject.SetStage1()
+	err = testProject.SetStage(1)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -420,7 +420,7 @@ func TestDb(t *testing.T) {
 		t.Fatalf("Stage doesn't match, quitting!")
 	}
 
-	err = testProject.SetStage2()
+	err = testProject.SetStage(2)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -428,7 +428,7 @@ func TestDb(t *testing.T) {
 		t.Fatalf("Stage doesn't match, quitting!")
 	}
 
-	err = testProject.SetStage3()
+	err = testProject.SetStage(3)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -436,7 +436,7 @@ func TestDb(t *testing.T) {
 		t.Fatalf("Stage doesn't match, quitting!")
 	}
 
-	err = testProject.SetStage4()
+	err = testProject.SetStage(4)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -450,7 +450,7 @@ func TestDb(t *testing.T) {
 		t.Fatalf("Stage doesn't match, quitting!")
 	}
 
-	err = testProject.SetStage6()
+	err = testProject.SetStage(6)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -459,14 +459,14 @@ func TestDb(t *testing.T) {
 	}
 
 	// cycle back to stage 0 and try using the other function to modify the stage
-	err = testProject.SetStage0()
+	err = testProject.SetStage(0)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if testProject.Stage != 0 {
 		t.Fatalf("Stage doesn't match, quitting!")
 	}
-	err = testProject.SetStage1()
+	err = testProject.SetStage(1)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -481,7 +481,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = testProject.SetStage2()
+	err = testProject.SetStage(2)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -685,7 +685,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = testProject.SetStage5()
+	err = testProject.SetStage(5)
 	if err != nil {
 		t.Fatal(err)
 	}
