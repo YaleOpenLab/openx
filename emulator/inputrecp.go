@@ -206,7 +206,7 @@ func ParseInputRecp(input []string) error {
 				break
 			}
 
-			assetName := LocalRecipient.ReceivedSolarProjects[0]
+			assetName := LocalRecipient.ReceivedSolarProjects[0] // TODO: change this
 
 			limit, err := GetTrustLimit(LocalRecipient.U.Username, LocalRecipient.U.Pwhash, assetName)
 			if err != nil {

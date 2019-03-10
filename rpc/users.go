@@ -3,8 +3,10 @@ package rpc
 import (
 	"crypto/tls"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
+	"math"
 	"net/http"
 
 	assets "github.com/YaleOpenLab/openx/assets"
@@ -43,6 +45,8 @@ func setupUserRpcs() {
 	generateNewSecrets()
 	generateResetPwdCode()
 	resetPassword()
+	sweepFunds()
+	sweepAsset()
 }
 
 const (
@@ -664,10 +668,10 @@ func addContractHash() {
 
 		// TODO: right now any entity can add the required hashes but in the future we must restrict adding hashes
 		// to entities that are associated with the particular hashes
+		// TODO: change this based oo different stages. right now static
 		switch choice {
 		case "omh":
 			// update the originator mou hash
-			// TODO: change this based no different stages. right now static
 			project.StageData = append(project.StageData, hashString)
 		case "cch":
 			project.StageData = append(project.StageData, hashString)
@@ -779,26 +783,17 @@ func generateNewSecrets() {
 			return
 		}
 
-		seedpwd := r.URL.Query()["seedpwd"][0]
-		// we've validated the seedpwd, try decrypting the Encrypted Seed.
+		seedpwd, err := ValidateSeedPwd(w, r, user.EncryptedSeed, user.PublicKey)
+		if err != nil {
+			log.Println(err)
+			responseHandler(w, r, StatusBadRequest)
+		}
+
 		seed, err := wallet.DecryptSeed(user.EncryptedSeed, seedpwd)
 		if err != nil {
-			responseHandler(w, r, StatusInternalServerError)
-			return
-		}
-
-		// now get the pubkey from this seed and match with original pubkey
-		pubkey, err := wallet.ReturnPubkey(seed)
-		if err != nil {
-			responseHandler(w, r, StatusInternalServerError)
-			return
-		}
-
-		if pubkey != user.PublicKey {
+			log.Println(err)
 			responseHandler(w, r, StatusBadRequest)
-			return
 		}
-
 		// user has validated his seed and identity. Generate new shares and send them out
 		shares, err := recovery.Create(2, 3, seed)
 		if err != nil {
@@ -819,11 +814,6 @@ func generateNewSecrets() {
 	})
 }
 
-// TODO: sweep function
-// we must provide users with a function using which they can sweep funds around (requires seed password)
-// we must also have a forgot password function which sends people a link to reset their password to their email id
-// also would be nice to have a function which generates a new keypair and moves funds into the account given the seedpwd for authentication
-
 func generateResetPwdCode() {
 	http.HandleFunc("/user/resetpwd", func(w http.ResponseWriter, r *http.Request) {
 		log.Println("CALLING ENDPOINT")
@@ -839,7 +829,6 @@ func generateResetPwdCode() {
 			return
 		}
 		email := r.URL.Query()["email"][0]
-		seedpwd := r.URL.Query()["seedpwd"][0]
 
 		rUser, err := database.SearchWithEmailId(email)
 		if err != nil {
@@ -847,21 +836,9 @@ func generateResetPwdCode() {
 			return
 		}
 
-		seed, err := wallet.DecryptSeed(rUser.EncryptedSeed, seedpwd)
+		_, err = ValidateSeedPwd(w, r, rUser.EncryptedSeed, rUser.PublicKey)
 		if err != nil {
-			responseHandler(w, r, StatusInternalServerError)
-			return
-		}
-
-		pubkey, err := wallet.ReturnPubkey(seed)
-		if err != nil {
-			responseHandler(w, r, StatusInternalServerError)
-			return
-		}
-
-		if pubkey != rUser.PublicKey {
 			responseHandler(w, r, StatusBadRequest)
-			return
 		}
 		// now we can verify that this is rellay the user. Now we need to cgenerate a verification code
 		// and send it over to the user.
@@ -897,7 +874,6 @@ func resetPassword() {
 		}
 
 		email := r.URL.Query()["email"][0]
-		seedpwd := r.URL.Query()["seedpwd"][0]
 		vCode := r.URL.Query()["verificationCode"][0]
 		pwhash := r.URL.Query()["pwhash"][0]
 
@@ -907,19 +883,12 @@ func resetPassword() {
 			return
 		}
 
-		seed, err := wallet.DecryptSeed(rUser.EncryptedSeed, seedpwd)
+		_, err = ValidateSeedPwd(w, r, rUser.EncryptedSeed, rUser.PublicKey)
 		if err != nil {
-			responseHandler(w, r, StatusInternalServerError)
-			return
+			responseHandler(w, r, StatusBadRequest)
 		}
 
-		pubkey, err := wallet.ReturnPubkey(seed)
-		if err != nil {
-			responseHandler(w, r, StatusInternalServerError)
-			return
-		}
-
-		if pubkey != rUser.PublicKey || vCode != rUser.PwdResetCode || vCode == "INVALID" {
+		if vCode != rUser.PwdResetCode || vCode == "INVALID" {
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -935,4 +904,169 @@ func resetPassword() {
 
 		responseHandler(w, r, StatusOK)
 	})
+}
+
+// sweepFunds tries to sweep all funds that we have from one account to another. Requires
+// the seedpwd. Can't transfre assets automatically since platform does not know the list
+// of issuer publickeys
+func sweepFunds() {
+	http.HandleFunc("/user/sweep", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
+
+		prepUser, err := UserValidateHelper(w, r)
+		if err != nil || r.URL.Query()["seedpwd"] == nil || r.URL.Query()["destination"] == nil {
+			log.Println("did not validate user", err)
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+
+		transferAddress := r.URL.Query()["destination"][0]
+		if !xlm.AccountExists(transferAddress) {
+			log.Println("Can only transfer to existing accounts, quitting")
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+
+		seedpwd, err := ValidateSeedPwd(w, r, prepUser.EncryptedSeed, prepUser.PublicKey)
+		if err != nil {
+			log.Println(err)
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+
+		seed, err := wallet.DecryptSeed(prepUser.EncryptedSeed, seedpwd)
+		if err != nil {
+			log.Println(err)
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+		// validated the user, so now proceed to sweep funds
+		xlmBalance, err := xlm.GetNativeBalance(prepUser.PublicKey)
+		if err != nil {
+			log.Println(err)
+			responseHandler(w, r, StatusInternalServerError)
+			return
+		}
+		xlmBalanceF, err := utils.StoFWithCheck(xlmBalance)
+		if err != nil {
+			log.Println(err)
+			responseHandler(w, r, StatusInternalServerError)
+			return
+		}
+
+		// reduce 0.05 xlm and then sweep funds
+		if xlmBalanceF < 5 {
+			log.Println("xlm balance for user too smal lto sweep funds, quitting!")
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+		xlmBalanceF -= 5
+		// now we have the xlm balance, shift funds to the other account as requested by the user.
+		sweepAmt := math.Round(xlmBalanceF)
+		sweepStr := utils.FtoS(sweepAmt)
+		_, txhash, err := xlm.SendXLM(transferAddress, sweepStr, seed, "sweep funds")
+		if err != nil {
+			log.Println(err)
+			responseHandler(w, r, StatusInternalServerError)
+			return
+		}
+
+		log.Println("txhash: ", txhash)
+		responseHandler(w, r, StatusOK)
+		return
+	})
+}
+
+// sweepAsset sweeps a given asset from one account to another. Can't transfer multiple
+// assets since we require the issuer pubkey
+func sweepAsset() {
+	http.HandleFunc("/user/sweepasset", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
+
+		prepUser, err := UserValidateHelper(w, r)
+		if err != nil || r.URL.Query()["seedpwd"] == nil || r.URL.Query()["destination"] == nil ||
+			r.URL.Query()["assetName"] == nil || r.URL.Query()["issuerPubkey"] == nil {
+			log.Println("did not validate user", err)
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+
+		assetName := r.URL.Query()["assetName"][0]
+		destination := r.URL.Query()["destination"][0]
+		issuerPubkey := r.URL.Query()["issuerPubkey"][0]
+
+		seedpwd, err := ValidateSeedPwd(w, r, prepUser.EncryptedSeed, prepUser.PublicKey)
+		if err != nil {
+			log.Println(err)
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+
+		seed, err := wallet.DecryptSeed(prepUser.EncryptedSeed, seedpwd)
+		if err != nil {
+			log.Println(err)
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+
+		// validated the user, so now proceed to sweep funds
+		assetBalance, err := xlm.GetAssetBalance(prepUser.PublicKey, assetName)
+		if err != nil {
+			log.Println(err)
+			responseHandler(w, r, StatusInternalServerError)
+			return
+		}
+
+		assetBalanceF, err := utils.StoFWithCheck(assetBalance)
+		if err != nil {
+			log.Println(err)
+			responseHandler(w, r, StatusInternalServerError)
+			return
+		}
+
+		// reduce 0.05 xlm and then sweep funds
+		if assetBalanceF < 5 {
+			log.Println("asset balance for user too smal lto sweep funds, quitting!")
+			responseHandler(w, r, StatusBadRequest)
+			return
+		} else {
+			assetBalanceF -= 5
+		}
+
+		sweepAmt := math.Round(assetBalanceF)
+		sweepStr := utils.FtoS(sweepAmt)
+
+		_, txhash, err := assets.SendAsset(assetName, issuerPubkey, destination, sweepStr, seed, prepUser.PublicKey, "sweeping funds")
+		if err != nil {
+			log.Println(err)
+			responseHandler(w, r, StatusInternalServerError)
+			return
+		}
+
+		log.Println("txhash: ", txhash)
+		responseHandler(w, r, StatusOK)
+	})
+}
+
+func ValidateSeedPwd(w http.ResponseWriter, r *http.Request, encryptedSeed []byte, userPublickey string) (string, error) {
+	seedpwd := r.URL.Query()["seedpwd"][0]
+	// we've validated the seedpwd, try decrypting the Encrypted Seed.
+	seed, err := wallet.DecryptSeed(encryptedSeed, seedpwd)
+	if err != nil {
+		return seedpwd, fmt.Errorf("could not decrypt seed")
+	}
+
+	// now get the pubkey from this seed and match with original pubkey
+	pubkey, err := wallet.ReturnPubkey(seed)
+	if err != nil {
+		return seedpwd, fmt.Errorf("could not retrieve pubkey")
+	}
+
+	if pubkey != userPublickey {
+		return seedpwd, fmt.Errorf("pubkeys don't match, quitting!")
+	}
+
+	return seedpwd, nil
 }

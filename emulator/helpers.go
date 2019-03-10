@@ -455,25 +455,6 @@ func sendSharesEmailHelper(input []string, username string, pwhash string) {
 	}
 }
 
-func mergeSharesEmailHelper(input []string, username string, pwhash string) {
-	if len(input) != 3 {
-		log.Println("<mergeshares> secret1 secret2")
-		return
-	}
-	secret1 := input[1]
-	secret2 := input[2]
-
-	response, err := MergeSharesEmail(username, pwhash, secret1, secret2)
-	if err != nil {
-		log.Println(err)
-	}
-	if response.Code == 200 {
-		ColorOutput("SUCCESSFULLY SENT SHARES", GreenColor)
-	} else {
-		ColorOutput("COULD NOT SEND SHARES OUT TO PARTIES", RedColor)
-	}
-}
-
 func genNewSharesHelper(input []string, username string, pwhash string, seedpwd string) {
 	if len(input) != 4 {
 		log.Println("<newshares> email1 email2 email3")
