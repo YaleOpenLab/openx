@@ -24,7 +24,6 @@ func LoopInv(rl *readline.Instance) error {
 	// it doesn't seem to work
 	// the problem with having a conditional statement inside the loop is that it checks
 	// role each time and that's not nice performance wise
-	// TODO: look at alternatives if possible
 	for {
 		// setup reader with max 4K input chars
 		msg, err := rl.Readline()
