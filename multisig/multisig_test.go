@@ -9,7 +9,6 @@ import (
 	xlm "github.com/YaleOpenLab/openx/xlm"
 )
 
-/*
 func TestMultisig2of2(t *testing.T) {
 	seed1, pubkey1, err := xlm.GetKeyPair()
 	if err != nil {
@@ -45,6 +44,7 @@ func TestMultisig2of2(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
 // we're forced to hav separate tests because we can't use the same tests (they'll eb converted to multisig accounts)
 func TestNew2of2MultiSig(t *testing.T) {
 	seed1, pubkey1, err := xlm.GetKeyPair()
@@ -125,4 +125,46 @@ func TestNew1of2MultiSig(t *testing.T) {
 		t.Fatal(err)
 	}
 }
-*/
+
+func Test1ofxMultiSig(t *testing.T) {
+	seed1, pubkey1, err := xlm.GetKeyPair()
+	if err != nil {
+		log.Println(err)
+	}
+
+	seed2, pubkey2, err := xlm.GetKeyPair()
+	if err != nil {
+		log.Println(err)
+	}
+
+	// setup both accounts
+	err = xlm.GetXLM(pubkey1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = xlm.GetXLM(pubkey2)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	pubkey, err := Newxofy(1, 2, pubkey1, pubkey2)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	log.Println("New 1of2 Multisig Pubkey: ", pubkey)
+	destination := pubkey
+	amount := "1"
+	memo := "seed1test"
+	// we now have a one of 2 multisig, this means we can send a tx using one of the 2 seeds generated above
+	_, _, err = xlm.SendXLM(destination, amount, seed1, memo)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, _, err = xlm.SendXLM(destination, amount, seed2, memo)
+	if err != nil {
+		t.Fatal(err)
+	}
+}

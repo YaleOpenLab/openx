@@ -30,44 +30,8 @@ var TestNetClient = &clients.Client{
 	HTTP: http.DefaultClient,
 }
 
-// Convert2of2 converts the accoutn wiht pubeky myPubkey to a 2of2 multisig account
-func Convert2of2(myPubkey string, mySeed string, cosignerPubkey string) error {
-	// don't check if the account exists or not, hopefully it does
-	memo := "testsign"
-	amount := "1"
-
-	tx, err := build.Transaction(
-		build.SourceAccount{myPubkey},
-		build.AutoSequence{TestNetClient},
-		build.Network{network.TestNetworkPassphrase},
-		build.MemoText{memo},
-		build.Payment(
-			build.Destination{myPubkey},
-			build.NativeAmount{amount},
-		),
-		build.SetOptions(
-			build.MasterWeight(1),
-			build.AddSigner(cosignerPubkey, 1), // add x-1 signers here
-			build.SetThresholds(2, 2, 2),       // set all thresholds to the threshold you want
-		),
-	)
-
-	if err != nil {
-		log.Println("error while constructing tx", err)
-		return err
-	}
-
-	_, _, err = xlm.SendTx(mySeed, tx)
-	if err != nil {
-		log.Println(err)
-		return err
-	}
-
-	return nil
-}
-
-// AddSignerTx is used to add a signer to the account with Public Key pubkey
-func AddSignerTx(seed string, pubkey string, cosignerPubkey string) error {
+// AddSigner is used to add a signer to the account with Public Key pubkey
+func AddSigner(seed string, pubkey string, cosignerPubkey string) error {
 	memo := "addsigner"
 	amount := "1" // some token amount, this can be any number though (even larger than the number of xlm in  xistence)
 
@@ -135,7 +99,13 @@ func ConstructThresholdTx(seed string, pubkey string, cosignerPubkey string, y i
 	return err
 }
 
-func New1of2(cosigner1Pubkey string, cosigner2Pubkey string) (string, error) {
+// Newxofy defines a new x of y multisig contract. Returns the pubkey of the multisig account created
+func Newxofy(x int, y int, signers ...string) (string, error) {
+
+	if y != len(signers) {
+		log.Println("length of multisig tx and number of signers don't match, quitting!")
+		return "", fmt.Errorf("length of multisig tx and number of signers don't match, quitting!")
+	}
 
 	tempSeed, pubkey, err := xlm.GetKeyPair()
 	if err != nil {
@@ -143,22 +113,22 @@ func New1of2(cosigner1Pubkey string, cosigner2Pubkey string) (string, error) {
 		return "", err
 	}
 
-	// setup both accounts
+	// setup account
 	err = xlm.GetXLM(pubkey)
 	if err != nil {
 		log.Println(err)
 		return pubkey, err
 	}
 
-	err = AddSignerTx(tempSeed, pubkey, cosigner1Pubkey)
-	if err != nil {
-		log.Println(err)
-		return pubkey, err
+	for i := 0; i < y-1; i++ {
+		err = AddSigner(tempSeed, pubkey, signers[i])
+		if err != nil {
+			log.Println(err)
+			return pubkey, err
+		}
 	}
-
-	// we've reached x-1 = 1 signers, call threshold tx
-	// threshold is 1 here since we need a 1 of 2 multisig account
-	err = ConstructThresholdTx(tempSeed, pubkey, cosigner2Pubkey, 1)
+	// we've reached x-1 = 1 signers, call threshold tx with the x-1'th signer
+	err = ConstructThresholdTx(tempSeed, pubkey, signers[y-1], x)
 	if err != nil {
 		log.Println(err)
 		return pubkey, err
@@ -167,36 +137,12 @@ func New1of2(cosigner1Pubkey string, cosigner2Pubkey string) (string, error) {
 	return pubkey, nil
 }
 
+func New1of2(cosigner1Pubkey string, cosigner2Pubkey string) (string, error) {
+	return Newxofy(1, 2, cosigner1Pubkey, cosigner2Pubkey)
+}
+
 func New2of2(cosigner1Pubkey string, cosigner2Pubkey string) (string, error) {
-	// don't check if the account exists or not, hopefully it does
-
-	tempSeed, pubkey, err := xlm.GetKeyPair()
-	if err != nil {
-		log.Println(err)
-		return "", err
-	}
-
-	// setup both accounts
-	err = xlm.GetXLM(pubkey)
-	if err != nil {
-		log.Println(err)
-		return pubkey, err
-	}
-
-	err = AddSignerTx(tempSeed, pubkey, cosigner1Pubkey)
-	if err != nil {
-		log.Println(err)
-		return pubkey, err
-	}
-
-	// we've reached x-1 = 1 signers, call threshold tx
-	err = ConstructThresholdTx(tempSeed, pubkey, cosigner2Pubkey, 2)
-	if err != nil {
-		log.Println(err)
-		return pubkey, err
-	}
-
-	return pubkey, nil
+	return Newxofy(2, 2, cosigner1Pubkey, cosigner2Pubkey)
 }
 
 // Construct2of2Tx constructs a tx where the source account pubkey1 is the 2of2 account
@@ -236,5 +182,41 @@ func Tx2of2(pubkey1 string, destination string, signer1 string, signer2 string) 
 	}
 
 	log.Printf("Two party multisig tx: %s, sequence: %d\n", resp.Hash, resp.Ledger)
+	return nil
+}
+
+// Convert2of2 converts the accoutn wiht pubeky myPubkey to a 2of2 multisig account
+func Convert2of2(myPubkey string, mySeed string, cosignerPubkey string) error {
+	// don't check if the account exists or not, hopefully it does
+	memo := "testsign"
+	amount := "1"
+
+	tx, err := build.Transaction(
+		build.SourceAccount{myPubkey},
+		build.AutoSequence{TestNetClient},
+		build.Network{network.TestNetworkPassphrase},
+		build.MemoText{memo},
+		build.Payment(
+			build.Destination{myPubkey},
+			build.NativeAmount{amount},
+		),
+		build.SetOptions(
+			build.MasterWeight(1),
+			build.AddSigner(cosignerPubkey, 1), // add x-1 signers here
+			build.SetThresholds(2, 2, 2),       // set all thresholds to the threshold you want
+		),
+	)
+
+	if err != nil {
+		log.Println("error while constructing tx", err)
+		return err
+	}
+
+	_, _, err = xlm.SendTx(mySeed, tx)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
 	return nil
 }
