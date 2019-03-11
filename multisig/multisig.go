@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"github.com/pkg/errors"
 
 	xlm "github.com/YaleOpenLab/openx/xlm"
 	"github.com/stellar/go/build"
@@ -50,14 +51,12 @@ func AddSigner(seed string, pubkey string, cosignerPubkey string) error {
 	)
 
 	if err != nil {
-		log.Println("error while constructing tx", err)
-		return err
+		return errors.Wrap(err, "error while constructing tx")
 	}
 
 	_, _, err = xlm.SendTx(seed, tx)
 	if err != nil {
-		log.Println(err)
-		return err
+		return errors.Wrap(err, "error while sending tx to horizon")
 	}
 
 	return err
@@ -86,14 +85,12 @@ func ConstructThresholdTx(seed string, pubkey string, cosignerPubkey string, y i
 	)
 
 	if err != nil {
-		log.Println("error while constructing tx", err)
-		return err
+		return errors.Wrap(err, "error while constructing tx")
 	}
 
 	_, _, err = xlm.SendTx(seed, tx)
 	if err != nil {
-		log.Println(err)
-		return err
+		return errors.Wrap(err, "error while sending tx to horizon")
 	}
 
 	return err
@@ -103,35 +100,31 @@ func ConstructThresholdTx(seed string, pubkey string, cosignerPubkey string, y i
 func Newxofy(x int, y int, signers ...string) (string, error) {
 
 	if y != len(signers) {
-		log.Println("length of multisig tx and number of signers don't match, quitting!")
-		return "", fmt.Errorf("length of multisig tx and number of signers don't match, quitting!")
+		return "", fmt.Errorf("length of multisig tx and number of signers don't match, quitting")
 	}
 
 	tempSeed, pubkey, err := xlm.GetKeyPair()
 	if err != nil {
-		log.Println(err)
-		return "", err
+		return "", errors.Wrap(err, "error while getting keypair")
+		// return errors.Wrap(err, "error while getting keypair") doesnt' return an error, weird
 	}
 
 	// setup account
 	err = xlm.GetXLM(pubkey)
 	if err != nil {
-		log.Println(err)
-		return pubkey, err
+		return pubkey, errors.Wrap(err, "error while getting xlm from friendbot")
 	}
 
 	for i := 0; i < y-1; i++ {
 		err = AddSigner(tempSeed, pubkey, signers[i])
 		if err != nil {
-			log.Println(err)
-			return pubkey, err
+			return pubkey, errors.Wrap(err, "error whole adding signer to tx")
 		}
 	}
 	// we've reached x-1 = 1 signers, call threshold tx with the x-1'th signer
 	err = ConstructThresholdTx(tempSeed, pubkey, signers[y-1], x)
 	if err != nil {
-		log.Println(err)
-		return pubkey, err
+		return pubkey, errors.Wrap(err, "error while constructing threshold tx")
 	}
 
 	return pubkey, nil
@@ -163,22 +156,23 @@ func Tx2of2(pubkey1 string, destination string, signer1 string, signer2 string) 
 		),
 	)
 
+	if err != nil {
+		return errors.Wrap(err, "error while building tx")
+	}
+
 	txe, err := tx.Sign(signer1, signer2) // sign using party 2's seed
 	if err != nil {
-		log.Println("second party couldn't sign tx", err)
-		return err
+		return errors.Wrap(err, "second party couldn't sign tx")
 	}
 
 	txeB64, err := txe.Base64()
 	if err != nil {
-		log.Println(err)
-		return err
+		return errors.Wrap(err, "error while converting tx to base64")
 	}
 
 	resp, err := TestNetClient.SubmitTransaction(txeB64)
 	if err != nil {
-		log.Println("error while submitting tx", err)
-		return err
+		return errors.Wrap(err, "error while submitting tx")
 	}
 
 	log.Printf("Two party multisig tx: %s, sequence: %d\n", resp.Hash, resp.Ledger)
@@ -208,14 +202,12 @@ func Convert2of2(myPubkey string, mySeed string, cosignerPubkey string) error {
 	)
 
 	if err != nil {
-		log.Println("error while constructing tx", err)
-		return err
+		return errors.Wrap(err, "error while constructing tx")
 	}
 
 	_, _, err = xlm.SendTx(mySeed, tx)
 	if err != nil {
-		log.Println(err)
-		return err
+		return errors.Wrap(err, "error while sending tx to horizon")
 	}
 
 	return nil

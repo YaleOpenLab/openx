@@ -98,7 +98,6 @@ func StageXtoY(index int, x int, y int) error {
 	// retrieve the project
 	project, err := RetrieveProject(index)
 	if err != nil {
-		log.Println(err)
 		return errors.Wrap(err, "couldn't retrieve project")
 	}
 

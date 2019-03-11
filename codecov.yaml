@@ -1,2 +1,10 @@
 ignore:
-  - "*_easyjson.go"
+  - "database/user_easyjson.go"
+  - "database/investor_easyjson.go"
+  - "database/recipient_easyjson.go"
+  - rpc/rpc_easyjson.go
+  - rpc/users_easyjson.go
+  - rpc/rpc_easyjson.go
+  - platforms/opensolar/entities_easyjson.go
+  - platforms/ozones/ozones_easyjson.go
+  - platforms/opensolar/opensolar_easyjson.go

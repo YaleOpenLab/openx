@@ -668,7 +668,7 @@ func addContractHash() {
 
 		// TODO: right now any entity can add the required hashes but in the future we must restrict adding hashes
 		// to entities that are associated with the particular hashes
-		// TODO: change this based oo different stages. right now static
+		// TODO: change this based on different stages. right now static
 		switch choice {
 		case "omh":
 			// update the originator mou hash
@@ -822,7 +822,7 @@ func generateResetPwdCode() {
 
 		// the notion here si that the user must have his seedpwd in order to reset the password.
 		// we retrieve the user using his email id and lookup his encrypted seed. If the
-		// seed can be unlocked using hte seedpwd, we send a pwd reset email. One of two password
+		// seed can be unlocked using hte seedpwd, we send a pwd reset email. One of two passwords
 		// must be remembered
 		if r.URL.Query()["email"] == nil || r.URL.Query()["seedpwd"] == nil {
 			responseHandler(w, r, StatusBadRequest)
@@ -957,7 +957,7 @@ func sweepFunds() {
 
 		// reduce 0.05 xlm and then sweep funds
 		if xlmBalanceF < 5 {
-			log.Println("xlm balance for user too smal lto sweep funds, quitting!")
+			log.Println("xlm balance for user too small to sweep funds, quitting!")
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -972,9 +972,8 @@ func sweepFunds() {
 			return
 		}
 
-		log.Println("txhash: ", txhash)
+		log.Println("sweep funds txhash: ", txhash)
 		responseHandler(w, r, StatusOK)
-		return
 	})
 }
 
@@ -1065,7 +1064,7 @@ func ValidateSeedPwd(w http.ResponseWriter, r *http.Request, encryptedSeed []byt
 	}
 
 	if pubkey != userPublickey {
-		return seedpwd, fmt.Errorf("pubkeys don't match, quitting!")
+		return seedpwd, fmt.Errorf("pubkeys don't match, quitting")
 	}
 
 	return seedpwd, nil

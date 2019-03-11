@@ -2,8 +2,9 @@ package recovery
 
 import (
 	"fmt"
-	"log"
 	"math/big"
+
+	"github.com/pkg/errors"
 )
 
 const (
@@ -50,15 +51,13 @@ func Create(minimum int, shares int, raw string) ([]string, error) {
 			// Each coefficient should be unique
 			number, err := random()
 			if err != nil {
-				log.Println(err)
-				return dummy, err
+				return dummy, errors.Wrap(err, "couldn't get random number")
 			}
 			for inNumbers(numbers, number) {
 				var err error
 				number, err = random()
 				if err != nil {
-					log.Println(err)
-					return dummy, err
+					return dummy, errors.Wrap(err, "couldn't get random number")
 				}
 			}
 			numbers = append(numbers, number)
@@ -89,15 +88,13 @@ func Create(minimum int, shares int, raw string) ([]string, error) {
 			// ...generate a new x-coordinate...
 			number, err := random()
 			if err != nil {
-				log.Println(err)
-				return dummy, err
+				return dummy, errors.Wrap(err, "couldn't get random number")
 			}
 			for inNumbers(numbers, number) {
 				var err error
 				number, err = random()
 				if err != nil {
-					log.Println(err)
-					return dummy, err
+					return dummy, errors.Wrap(err, "couldn't get random number")
 				}
 			}
 			numbers = append(numbers, number)
@@ -199,8 +196,7 @@ func Combine(shares []string) (string, error) {
 			working = working.Mul(working, numerator)
 			mI, err := modInverse(denominator)
 			if err != nil {
-				log.Println(err)
-				return "", err
+				return "", errors.Wrap(err, "couldn't get random number")
 			}
 			working = working.Mul(working, mI)
 

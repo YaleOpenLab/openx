@@ -29,6 +29,7 @@ import (
 	wallet "github.com/YaleOpenLab/openx/wallet"
 	xlm "github.com/YaleOpenLab/openx/xlm"
 	"github.com/stellar/go/clients/horizon"
+	"github.com/pkg/errors"
 )
 
 // InitStableCoin returns the platform structure and the seed
@@ -41,8 +42,7 @@ func InitStableCoin() error {
 		fmt.Println("ENTER YOUR PASSWORD TO DECRYPT THE STABLECOIN SEED FILE")
 		password, err := scan.ScanRawPassword()
 		if err != nil {
-			log.Println(err)
-			return err
+			return errors.Wrap(err, "couldn't scan raw password")
 		}
 		publicKey, seed, err = wallet.RetrieveSeed(consts.StableCoinSeedFile, password)
 		// catch error here due to scope sharing
@@ -116,8 +116,7 @@ func ListenForPayments() {
 			// now send the stableusd asset over to this guy
 			_, hash, err := assets.SendAssetFromIssuer(consts.Code, payee, utils.FtoS(xlmWorth), consts.StablecoinSeed, consts.StablecoinPublicKey)
 			if err != nil {
-				log.Println("Error while sending USD Assets back to payee: ", payee)
-				log.Println(err)
+				log.Println("Error while sending USD Assets back to payee: ", payee, err)
 				//  don't skip here, there's technically nothing we can do
 			}
 			log.Println("Successful payment, hash: ", hash)
