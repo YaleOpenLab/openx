@@ -134,7 +134,7 @@ func SendXLM(destination string, amount string, Seed string, memo string) (int32
 	// don't check if the account exists or not, hopefully it does
 	passphrase := network.TestNetworkPassphrase
 	tx, err := build.Transaction(
-		build.SourceAccount{Seed},
+		build.SourceAccount{Seed}, // this can be the seed or the pubkey. We sign the tx in SendTx anyways
 		build.AutoSequence{TestNetClient},
 		build.Network{passphrase},
 		build.MemoText{memo},
