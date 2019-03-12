@@ -19,6 +19,7 @@ import (
 // to avoid code duplication
 // not exporting this function because its being used only within the same package
 func setupRecipientRPCs() {
+	registerRecipient()
 	insertRecipient()
 	validateRecipient()
 	getAllRecipients()
@@ -51,6 +52,32 @@ func parseRecipient(r *http.Request) (database.Recipient, error) {
 
 	prepRecipient.U, err = database.NewUser(r.FormValue("username"), r.FormValue("pwhash"), r.FormValue("Name"), r.FormValue("EPassword"))
 	return prepRecipient, err
+}
+
+func registerRecipient() {
+	http.HandleFunc("/recipient/register", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
+
+		// to register, we need the name, username and pwhash
+		if r.URL.Query()["name"] == nil || r.URL.Query()["username"] == nil || r.URL.Query()["pwd"] == nil || r.URL.Query()["seedpwd"] == nil{
+			log.Println("missing basic set of params that can be used ot validate a user")
+			responseHandler(w, r, StatusBadRequest)
+		}
+
+		name := r.URL.Query()["name"][0]
+		username := r.URL.Query()["username"][0]
+		pwd := r.URL.Query()["pwd"][0]
+		seedpwd := r.URL.Query()["seedpwd"][0]
+
+		user, err := database.NewRecipient(username, pwd, seedpwd, name)
+		if err != nil {
+			log.Println(err)
+			responseHandler(w, r, StatusInternalServerError)
+		}
+
+		MarshalSend(w, r, user)
+	})
 }
 
 // getAllRecipients gets a list of all the recipients who have registered on the platform
