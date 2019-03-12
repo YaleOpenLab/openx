@@ -12,6 +12,7 @@ import (
 	notif "github.com/YaleOpenLab/openx/notif"
 	utils "github.com/YaleOpenLab/openx/utils"
 	wallet "github.com/YaleOpenLab/openx/wallet"
+	"github.com/pkg/errors"
 )
 
 // Debt Crowdfunding is a model where the investor loans out some initial capital and receives interest on that investment
@@ -23,9 +24,7 @@ func Invest(projIndex int, invIndex int, invAssetCode string, invSeed string,
 	issuerPath := consts.OpzonesIssuerDir
 	issuerPubkey, issuerSeed, err := wallet.RetrieveSeed(issuer.CreatePath(issuerPath, projIndex), consts.IssuerSeedPwd)
 	if err != nil {
-		log.Println("Unable to retrieve issuer seed", err)
-		log.Println(err)
-		return err
+		return errors.Wrap(err, "Unable to retrieve issuer seed")
 	}
 
 	if len(investorIndices) == 0 {
@@ -112,8 +111,7 @@ func ReceiveBond(issuerPath string, recpIndex int, projIndex int, debtAssetCode 
 	recipient.ReceivedConstructionBonds = append(recipient.ReceivedConstructionBonds, debtAssetCode)
 	err = recipient.Save()
 	if err != nil {
-		log.Println(err)
-		return err
+		return errors.Wrap(err, "can't save recipient")
 	}
 
 	txhash, err := issuer.FreezeIssuer(issuerPath, projIndex, "blah")

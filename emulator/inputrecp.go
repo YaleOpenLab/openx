@@ -115,8 +115,8 @@ func ParseInputRecp(input []string) error {
 			} // end of model switch
 		}
 	case "payback":
-		if len(input) != 3 {
-			log.Println("payback <projIndex> <amount>")
+		if len(input) != 4 {
+			log.Println("payback <projIndex> <amount> <assetName>")
 			break
 		}
 		_, err = utils.StoICheck(input[1]) // projectIndex
@@ -132,8 +132,20 @@ func ParseInputRecp(input []string) error {
 
 		projIndex := input[1]
 		amount := input[2]
+		assetName := input[3]
 
-		assetName := LocalRecipient.ReceivedSolarProjects[0] // hardcode for now, TODO: change this
+		found := false
+		for _, elem := range LocalRecipient.ReceivedSolarProjects {
+			if elem == assetName {
+				found = true
+			}
+		}
+
+		if !found {
+			log.Println("Asset not found within received projects list")
+			return fmt.Errorf("Asset not found within received projects list")
+		}
+
 		status, err := Payback(projIndex, LocalSeedPwd, LocalRecipient.U.Username, LocalRecipient.U.Pwhash, assetName, amount)
 		if err != nil {
 			log.Println(err)
@@ -201,12 +213,24 @@ func ParseInputRecp(input []string) error {
 		switch subcommand {
 		case "ownership":
 			// calculate the balance of the debt asset here
-			if len(input) == 1 {
-				fmt.Println("payback <assetName>")
+			if len(input) != 2 {
+				fmt.Println("payback assetName")
 				break
 			}
 
-			assetName := LocalRecipient.ReceivedSolarProjects[0] // TODO: change this
+			assetName := input[1]
+
+			found := false
+			for _, elem := range LocalRecipient.ReceivedSolarProjects {
+				if elem == assetName {
+					found = true
+				}
+			}
+
+			if !found {
+				log.Println("Asset not found within received projects list")
+				return fmt.Errorf("Asset not found within received projects list")
+			}
 
 			limit, err := GetTrustLimit(LocalRecipient.U.Username, LocalRecipient.U.Pwhash, assetName)
 			if err != nil {

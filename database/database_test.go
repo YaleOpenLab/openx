@@ -514,5 +514,19 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	var blah Investor
+	blah.U.Name = "Cool"
+	blahBytes, err := blah.MarshalJSON()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var uBlah Investor
+	err = uBlah.UnmarshalJSON(blahBytes)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	os.Remove(consts.DbDir + "/yol.db")
 }

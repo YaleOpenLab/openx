@@ -7,6 +7,7 @@ import (
 	utils "github.com/YaleOpenLab/openx/utils"
 	wallet "github.com/YaleOpenLab/openx/wallet"
 	xlm "github.com/YaleOpenLab/openx/xlm"
+	"github.com/pkg/errors"
 )
 
 // issuer defines the issuer of asset for a specific project. We should generate a
@@ -36,16 +37,14 @@ func InitIssuer(issuerPath string, projIndex int, seedpwd string) error {
 	// init a new pk and seed pair
 	seed, _, err := xlm.GetKeyPair()
 	if err != nil {
-		log.Println("Error while generating keypair", err)
-		return err
+		return errors.Wrap(err, "Error while generating keypair")
 	}
 	// store this seed in home/projects/projIndex.hex
 	// we need a password for encrypting the seed
 	path := CreateFile(issuerPath, projIndex)
 	err = wallet.StoreSeed(seed, seedpwd, path)
 	if err != nil {
-		log.Println("Error while storing seed", err)
-		return err
+		return errors.Wrap(err, "Error while storing seed")
 	}
 	return nil
 }
@@ -66,21 +65,18 @@ func FundIssuer(issuerPath string, projIndex int, seedpwd string, platformSeed s
 	path := CreatePath(issuerPath, projIndex)
 	pubkey, seed, err := wallet.RetrieveSeed(path, seedpwd)
 	if err != nil {
-		log.Println("Error while retrieving seed", err)
-		return err
+		return errors.Wrap(err, "Error while retrieving seed")
 	}
 	log.Printf("Project Index: %d, Seed: %s, Address: %s", projIndex, seed, pubkey)
 	// func SendXLMCreateAccount(destination string, amount string, Seed string) (int32, string, error) {
 	_, txhash, err := xlm.SendXLMCreateAccount(pubkey, "100", platformSeed)
 	if err != nil {
-		log.Println("Error while sending xlm to create account", err)
-		return err
+		return errors.Wrap(err, "Error while sending xlm to create account")
 	}
 	log.Printf("Txhash for setting up Project Issuer for project %d is %s", projIndex, txhash)
 	_, txhash, err = xlm.SetAuthImmutable(seed)
 	if err != nil {
-		log.Println("Error while setting auth immutable on account", err)
-		return err
+		return errors.Wrap(err, "Error while setting auth immutable on account")
 	}
 	log.Printf("Txhash for setting Auth Immutable on project %d is %s", projIndex, txhash)
 	return nil
@@ -93,12 +89,12 @@ func FreezeIssuer(issuerPath string, projIndex int, seedpwd string) (string, err
 	_, seed, err := wallet.RetrieveSeed(path, seedpwd)
 	if err != nil {
 		log.Println("Error while retrieving seed", err)
-		return "", nil
+		return "", errors.Wrap(err, "Error while retrieving seed")
 	}
 	_, txhash, err := xlm.FreezeAccount(seed)
 	if err != nil {
 		log.Println("Error while freezing account", err)
-		return "", nil
+		return "", errors.Wrap(err, "Error while freezing account")
 	}
 	log.Println("Tx hash for freezing account is: ", txhash)
 	return txhash, nil

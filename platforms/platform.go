@@ -11,6 +11,7 @@ import (
 	utils "github.com/YaleOpenLab/openx/utils"
 	wallet "github.com/YaleOpenLab/openx/wallet"
 	xlm "github.com/YaleOpenLab/openx/xlm"
+	"github.com/pkg/errors"
 )
 
 // the platform structure is the backend representation of the frontend UI.
@@ -24,10 +25,6 @@ import (
 // be able to transact with the account although people can still send funds to it
 // in this case, they would send us back DebtAssets provided they have sufficient
 // stableUSD balance. Else they would not be able to trigger payback.
-// TODO: this password could also be agreed upon by the party of investors and the recipient
-// so that we act as a trustless entity, which is cool. This has to be done on the frontend preferably
-// the main platform still has its pubkey and seed pair and sends funds out to issuers
-// but is not directly involved in the setting up of trustlines
 
 // InitializePlatform starts the platform
 func InitializePlatform() error {
@@ -41,8 +38,7 @@ func InitializePlatform() error {
 		fmt.Println("ENTER YOUR PASSWORD TO DECRYPT THE PLATFORM SEED FILE")
 		password, err := scan.ScanRawPassword()
 		if err != nil {
-			log.Println(err)
-			return err
+			return errors.Wrap(err, "couldn't scan raw password")
 		}
 		consts.PlatformPublicKey, consts.PlatformSeed, err = wallet.RetrieveSeed(consts.PlatformSeedFile, password)
 		return err
@@ -51,8 +47,7 @@ func InitializePlatform() error {
 	fmt.Println("DO YOU HAVE YOUR RAW SEED? IF SO, ENTER SEED. ELSE ENTER N")
 	seed, err = scan.ScanForString()
 	if err != nil {
-		log.Println(err)
-		return err
+		return errors.Wrap(err, "couldn't scan raw string")
 	}
 	if seed == "N" || seed == "n" {
 		// no seed, no file, create new keypair
@@ -64,13 +59,11 @@ func InitializePlatform() error {
 		}
 		publicKey, seed, err = wallet.NewSeed(consts.PlatformSeedFile, password)
 		if err != nil {
-			log.Println(err)
-			return err
+			return errors.Wrap(err, "couldn't retrieve seed")
 		}
 		err = xlm.GetXLM(publicKey)
 		if err != nil {
-			log.Println(err)
-			return err
+			return errors.Wrap(err, "error while getting xlm")
 		}
 	} else {
 		// no file, retrieve pukbey
@@ -82,8 +75,7 @@ func InitializePlatform() error {
 		}
 		publicKey, err = wallet.RetrieveAndStorePubkey(seed, consts.PlatformSeedFile, password)
 		if err != nil {
-			log.Println(err)
-			return err
+			return errors.Wrap(err, "error while retrieving and storing pubkey")
 		}
 	}
 	_ = xlm.GetXLM(publicKey) // the API request errors out even on success, so

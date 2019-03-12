@@ -280,7 +280,6 @@ func UnlockProject(username string, pwhash string, projIndex int, seedpwd string
 
 func (project *ConstructionBond) updateConstructionBondAfterInvestment(invAmount string, invIndex int) error {
 	project.InvestorIndices = append(project.InvestorIndices, invIndex)
-	// TODO: have the amount in escrow or something
 	project.AmountRaised += utils.StoF(invAmount)
 	return project.Save()
 }
