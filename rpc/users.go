@@ -22,6 +22,7 @@ import (
 )
 
 func setupUserRpcs() {
+	registerUser()
 	ValidateUser()
 	getBalances()
 	getXLMBalance()
@@ -104,6 +105,32 @@ func UserValidateHelper(w http.ResponseWriter, r *http.Request) (database.User, 
 	}
 
 	return prepUser, nil
+}
+
+func registerUser() {
+	http.HandleFunc("/user/register", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
+
+		// to register, we need the name, username and pwhash
+		if r.URL.Query()["name"] == nil || r.URL.Query()["username"] == nil || r.URL.Query()["pwd"] == nil || r.URL.Query()["seedpwd"] == nil {
+			log.Println("missing basic set of params that can be used ot validate a user")
+			responseHandler(w, r, StatusBadRequest)
+		}
+
+		name := r.URL.Query()["name"][0]
+		username := r.URL.Query()["username"][0]
+		pwd := r.URL.Query()["pwd"][0]
+		seedpwd := r.URL.Query()["seedpwd"][0]
+
+		user, err := database.NewUser(username, pwd, seedpwd, name)
+		if err != nil {
+			log.Println(err)
+			responseHandler(w, r, StatusInternalServerError)
+		}
+
+		MarshalSend(w, r, user)
+	})
 }
 
 // ValidateUser is a route that helps validate users on the platform
