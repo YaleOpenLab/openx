@@ -17,7 +17,7 @@ import (
 
 // All investors will be referenced by their public key, name is optional (maybe necessary?)
 // we need to still decide on identity and stuff and how much we want to track
-// people who invest in the schools
+// people who invest in projects
 
 // Investor defines the investor structure
 type Investor struct {
