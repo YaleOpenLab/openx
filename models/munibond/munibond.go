@@ -171,8 +171,9 @@ func sendPaymentNotif(recpIndex int, projIndex int, paybackPeriod int, email str
 	}
 }
 
-// MunibondPayback is used by the recipient to pay the platform back
-func MunibondPayback(issuerPath string, recpIndex int, amount string, recipientSeed string, projIndex int,
+// MunibondPayback is used by the recipient to pay the platform back. Here, we pay the
+// project escrow instead of the platform since it would be responsible for redistribution of funds
+func MunibondPayback(issuerPath string, escrowPath string, recpIndex int, amount string, recipientSeed string, projIndex int,
 	assetName string, projectInvestors []int) error {
 
 	recipient, err := database.RetrieveRecipient(recpIndex)
@@ -181,6 +182,11 @@ func MunibondPayback(issuerPath string, recpIndex int, amount string, recipientS
 	}
 
 	issuerPubkey, _, err := wallet.RetrieveSeed(issuer.CreatePath(issuerPath, projIndex), consts.IssuerSeedPwd)
+	if err != nil {
+		return errors.Wrap(err, "Unable to retrieve issuer seed")
+	}
+
+	escrowPubkey, _, err := wallet.RetrieveSeed(escrowPath, consts.EscrowPwd)
 	if err != nil {
 		return errors.Wrap(err, "Unable to retrieve issuer seed")
 	}
@@ -195,7 +201,7 @@ func MunibondPayback(issuerPath string, recpIndex int, amount string, recipientS
 		return errors.Wrap(err, "You do not have the required stablecoin balance, please refill")
 	}
 
-	_, stableUSDHash, err := assets.SendAsset(consts.Code, consts.StableCoinAddress, consts.PlatformPublicKey, amount, recipientSeed, recipient.U.PublicKey, "Opensolar payback: "+utils.ItoS(projIndex))
+	_, stableUSDHash, err := assets.SendAsset(consts.Code, consts.StableCoinAddress, escrowPubkey, amount, recipientSeed, recipient.U.PublicKey, "Opensolar payback: "+utils.ItoS(projIndex))
 	if err != nil {
 		return errors.Wrap(err, "Error while sending STABLEUSD back")
 	}

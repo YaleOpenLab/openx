@@ -252,6 +252,33 @@ func (project *Project) updateProjectAfterInvestment(invAmount string, invIndex 
 		go sendRecipientAssets(project.Index)
 	}
 
+	// we need to udpate the project investment map here
+	project.InvestorMap = make([]map[string]float64) // make the map
+
+	for _, elem := range project.InvestorIndices {
+		investor, err := database.RetrieveInvestor(elem)
+		if err != nil {
+			return errrs.Wrap(err, "error while retrieving investors, quitting")
+		}
+
+		balanceS, err := xlm.GetAssetBalance(investor.U.PublicKey, project.InvestorAsset)
+		if err != nil {
+			return errors.Wrap(err, "error while retrieving asset balance, quitting")
+		}
+
+		balanceF, err := utils.StoFWithCheck(balanceS)
+		if err != nil {
+			return errors.Wrap(err, "error while converting to float, quitting")
+		}
+
+		percentageInvestment := balanceF / project.TotalValue
+		project.InvestorMap[investor.U.PublicKey] = percentageInvestment
+	}
+
+	err = project.Save()
+	if err != nil {
+		return errors.Wrap(err, "error while saving project, quitting")
+	}
 	return nil
 }
 
@@ -366,6 +393,11 @@ func sendRecipientAssets(projIndex int) error {
 		return errors.Wrap(err, "failed to update project after acceptance of asset")
 	}
 
+	err = InitEscrow(consts.EscrowDir, projIndex, consts.EscrowPwd)
+	if err != nil {
+		return errors.Wrap(err, "error while initializing issuer")
+	}
+
 	return nil
 }
 
@@ -397,7 +429,8 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 		return errors.Wrap(err, "Couldn't retrieve project")
 	}
 
-	err = model.MunibondPayback(consts.OpenSolarIssuerDir, recpIndex, amount, recipientSeed, projIndex, assetName, project.InvestorIndices)
+	escrowPath := CreatePath(consts.EscrowDir, projIndex)
+	err = model.MunibondPayback(consts.OpenSolarIssuerDir, escrowPath, recpIndex, amount, recipientSeed, projIndex, assetName, project.InvestorIndices)
 	if err != nil {
 		return errors.Wrap(err, "Error while paying back the issuer")
 	}
@@ -417,7 +450,31 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 		return errors.Wrap(err, "coudln't save project")
 	}
 
+	escrowPubkey, escrowSeed, err := wallet.RetrieveSeed(escrowPath, consts.EscrowPwd)
+	if err != nil {
+		return errors.Wrap(err, "Unable to retrieve issuer seed")
+	}
+
+	err = DistributePayments(escrowSeed, escrowPubkey, projIndex)
+	if err != nil {
+		return errors.Wrap(err, "error while distributing payments")
+	}
+
 	return err
+}
+
+func DistributePayments(escrowSeed string, escrowPubkey string, projIndex int) error {
+	// this should act as the service which redistributes payments received out to the parties involved
+	project, err := RetrieveProject(projIndex)
+	if err != nil {
+		errors.Wrap(err, "couldn't retrieve project, quitting!")
+	}
+
+	fixedRate := 0.05 // 5 % of the totla investment as return or somethign similar. Should not be hardcoded
+	for pubkey, percentage := range project.InvestorMap {
+		// send x to this publey
+	}
+	// we have the projects, we need to find the percentages donated by investors
 }
 
 // CalculatePayback calculates the amount of payback assets that must be issued in relation
