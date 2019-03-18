@@ -44,7 +44,6 @@ const (
 // 2. Peer-based star-rating
 // This should be the normal 5 star system that users get from other users that are involved in the same transaction.
 
-
 // TODO: Consider that in the family of Recipients or Investors, there are more than one actor, and sometimes signatory authorization is from only some of the actors.
 // See the Project Stages document for reference of Beneficiary or Investor families. A clear example is a Recipient that is the actual issuer of the security,
 // and another that is the actual offtaker.
@@ -196,7 +195,7 @@ func SeedInvest(projIndex int, invIndex int, recpIndex int, invAmount string,
 		return fmt.Errorf("project stage not at 1, you either have passed the seed stage or project is not at seed stage yet")
 	}
 
-// MW: Here it is using a specific model investment, eg. Muni Bond. If this is hard coded here, how can you set an opensolar project as equity crowdfunding or bond or debt?
+	// MW: Here it is using a specific model investment, eg. Muni Bond. If this is hard coded here, how can you set an opensolar project as equity crowdfunding or bond or debt?
 	if project.InvestmentType != "munibond" {
 		return fmt.Errorf("other investment models are not supported right now, quitting")
 	}
@@ -443,7 +442,7 @@ func (project *Project) updateProjectAfterAcceptance() error {
 
 	err := project.Save()
 	if err != nil {
-		return errors.Wrap(err, "couln't save project")
+		return errors.Wrap(err, "couldn't save project")
 	}
 
 	go monitorPaybacks(project.RecipientIndex, project.Index)
@@ -477,7 +476,7 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 	}
 
 	// MW: Ownership of asset could shift as payments happen, or flip at the end.
-	// 		Also, wouldnt it make sense to make the 'Ownership Flip or Handoff' as a separate function? Since this will have to trigger changes in a registry?
+	// Also, wouldnt it make sense to make the 'Ownership Flip or Handoff' as a separate function? Since this will have to trigger changes in a registry?
 	project.BalLeft -= utils.StoF(amount) // can directly change this since we've checked for it in the MunibondPayback call
 	project.DateLastPaid = utils.Unix()
 	if project.BalLeft == 0 {
@@ -613,6 +612,6 @@ func monitorPaybacks(recpIndex int, projIndex int) {
 			// send an email out to the guarantor
 		}
 
-		time.Sleep(time.Duration(consts.OneWeekInSecond)) // poll every week to ch eckprogress on payments
+		time.Sleep(time.Duration(consts.OneWeekInSecond)) // poll every week to check progress on payments
 	}
 }
