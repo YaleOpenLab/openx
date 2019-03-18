@@ -42,3 +42,7 @@ Centre offers KYC/AML to exchanges and could potentially help us on the front si
 ## Other Services
 
 These are services that claim to offer only kyc as a service (apart from other things). Most companies in the space are offering ICOs as a service and KYC/AML is bundled into that package. An example of that is ICOBox, which charges 40btc + 3% of the token sale amount for its services. Another category is traditional banking partners such as Deloitte, who offer consulting services for ICOs and companies.
+
+## ComplyAdvantage
+Provides an AI-driven AML (Anti-Money Laundering) service
+https://complyadvantage.com/
