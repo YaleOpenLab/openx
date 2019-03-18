@@ -17,14 +17,17 @@ import (
 	xlm "github.com/YaleOpenLab/openx/xlm"
 )
 
-// the smart contract that powers this particular platform. Designed to be monolithic by design
+// This script represents the smart contract that powers a project in this particular platform. Designed to be monolithic by design
 // so that we can have everything we automate in one place for easy audits.
 
-// these are the reputation weights associated with a project on the opensolar platform. For eg if
+// —ACTOR REPUTATION SCHEMES—
+
+// 1. Automatic Contants Based on Stage Completion and Project Success:
+// These constants are the reputation weights associated with a project on the opensolar platform. For eg if
 // a project's total worth is 10000 and everything in the project goes well and
 // all entities are satisfied by the outcome, the originator gains 1000 points,
-// the contractor gains 3000 points and so on
-// MWTODO: get comments on the weights and tweak them if needed
+// the contractor gains 3000 points and so on. MW: These are allocated at what point in terms of the project stages? They will have to vary
+// Thresholds relate to the payment cycles owed by the Recipient. MW: How are these executed, and how are points added or removes? Its unclear
 const (
 	InvestorWeight         = 0.1 // the percentage weight of the project's total reputation assigned to the investor
 	OriginatorWeight       = 0.1 // the percentage weight of the project's total reputation assigned to the originator
@@ -33,16 +36,18 @@ const (
 	RecipientWeight        = 0.3 // the percentage weight of the project's total reputation assigned to the recipient
 	NormalThreshold        = 1   // NormalThreshold is the normal payback interval of 1 payback period. Regular notifications are sent regardless of whether the user has paid back towards the project.
 	AlertThreshold         = 2   // AlertThreshold is the threshold above which the user gets a nice email requesting a quick payback whenever possible
-	SternAlertThreshold    = 4   // SternAlertThreshold is the threshold above the user gets a warning that services will be disconnected if the user doesn't payback soon
+	SternAlertThreshold    = 4   // SternAlertThreshold is the threshold above when the user gets a warning that services will be disconnected if the user doesn't payback soon.
 	DisconnectionThreshold = 6   // DisconnectionThreshold is the threshold above which the user gets a notification telling that services have been disconnected.
 )
 
-// TODO: Consider that for this authorization to happen, there could be a
-// verification requirement (eg. that the project is relatively feasible),
-// and that it may need several approvals for it (eg. Recipient can be two
-// figures here — the school entity (more visible) and the department of
-// education (more admin) who is the actual issuer) along with a validation
-// requirement
+// TODO:
+// 2. Peer-based star-rating
+// This should be the normal 5 star system that users get from other users that are involved in the same transaction.
+
+
+// TODO: Consider that in the family of Recipients or Investors, there are more than one actor, and sometimes signatory authorization is from only some of the actors.
+// See the Project Stages document for reference of Beneficiary or Investor families. A clear example is a Recipient that is the actual issuer of the security,
+// and another that is the actual offtaker.
 
 // VerifyBeforeAuthorizing verifies some information on the originator before upgrading
 // the project stage
@@ -89,8 +94,12 @@ func RecipientAuthorize(projIndex int, recpIndex int) error {
 	return nil
 }
 
+// —VOTING SCHEMES—
+// MW: Lets design this together. Very cool to have votes (which are 'Likes'), but why only investors can vote? Why not projects at stage 1?
+// What does it mean if a project has high votes?
+
 // VoteTowardsProposedProject is a handler that an investor would use to vote towards a
-// specific proposed project on the platform
+// specific proposed project on the platform.
 func VoteTowardsProposedProject(invIndex int, votes int, projectIndex int) error {
 	inv, err := database.RetrieveInvestor(invIndex)
 	if err != nil {
@@ -123,7 +132,8 @@ func VoteTowardsProposedProject(invIndex int, votes int, projectIndex int) error
 	return nil
 }
 
-// the preInvestmentChecks associated with the opensolar platform
+// -- INVESTMENT VERIFICATIONS--
+// the preInvestmentChecks associated with the opensolar platform when an Investor bids an investment amount of a specific project
 func preInvestmentCheck(projIndex int, invIndex int, invAmount string) (Project, error) {
 	var project Project
 	var investor database.Investor
@@ -142,17 +152,17 @@ func preInvestmentCheck(projIndex int, invIndex int, invAmount string) (Project,
 	// here we should check whether the investor has adequate STABLEUSD or XLM and not just the stablecoin
 	// since we automate asset conversion in the MunibondInvest function
 	if !investor.CanInvest(invAmount) {
-		return project, errors.New("Investor has less balance than what is required to ivnest in this asset")
+		return project, errors.New("Investor has less balance than what is required to invest in this project")
 	}
 
 	// check if investment amount is greater than or equal to the project requirements
 	if utils.StoF(invAmount) > project.TotalValue-project.MoneyRaised {
-		return project, errors.New("Investment amount greater than what is required!")
+		return project, errors.New("Investment amount greater than what is required! Adjust your investment")
 	}
 
 	if project.SeedAssetCode == "" && project.InvestorAssetCode == "" {
-		// this project does not have an issuer associated with it yet since there has been
-		// no seed round and an investment round
+		// this project does not have an asset issuer associated with it yet since there has been
+		// no seed round nor investment round
 		project.InvestorAssetCode = assets.AssetID(consts.InvestorAssetPrefix + project.Metadata) // you can retrieve asetCodes anywhere since metadata is assumed to be unique
 		err = project.Save()
 		if err != nil {
@@ -171,6 +181,7 @@ func preInvestmentCheck(projIndex int, invIndex int, invAmount string) (Project,
 	return project, nil
 }
 
+// --SEED INVESTMENT--
 // SeedInvest is the seed investment function of the opensolar platform
 func SeedInvest(projIndex int, invIndex int, recpIndex int, invAmount string,
 	invSeed string, recpSeed string) error {
@@ -180,10 +191,12 @@ func SeedInvest(projIndex int, invIndex int, recpIndex int, invAmount string,
 		return errors.Wrap(err, "error while performing pre investment check")
 	}
 
+	// MW: Consider other seed investments in stages before the big raise of stage 4
 	if project.Stage != 1 {
 		return fmt.Errorf("project stage not at 1, you either have passed the seed stage or project is not at seed stage yet")
 	}
 
+// MW: Here it is using a specific model investment, eg. Muni Bond. If this is hard coded here, how can you set an opensolar project as equity crowdfunding or bond or debt?
 	if project.InvestmentType != "munibond" {
 		return fmt.Errorf("other investment models are not supported right now, quitting")
 	}
@@ -202,6 +215,7 @@ func SeedInvest(projIndex int, invIndex int, recpIndex int, invAmount string,
 	return err
 }
 
+// -- INVEST --
 // Invest is the main invest function of the opensolar platform
 func Invest(projIndex int, invIndex int, invAmount string, invSeed string) error {
 	var err error
@@ -238,7 +252,7 @@ func Invest(projIndex int, invIndex int, invAmount string, invSeed string) error
 
 // the updateProjectAfterInvestment of the opensolar platform
 func (project *Project) updateProjectAfterInvestment(invAmount string, invIndex int) error {
-
+	// MW: It seems that all your messages strings relate to errors, but not to confirmed transactions. It would be useful to add those
 	var err error
 	project.MoneyRaised += utils.StoF(invAmount)
 	project.InvestorIndices = append(project.InvestorIndices, invIndex)
@@ -304,6 +318,7 @@ func (project *Project) updateProjectAfterInvestment(invAmount string, invIndex 
 	return nil
 }
 
+// MW: Why does the recipient have to unlock the project? Why is the project locked in the first place?
 // sendRecipientNotification sends the notification to the recipient requesting them
 // to logon to the platform and unlock the project that has just been invested in
 func (project *Project) sendRecipientNotification() error {
@@ -339,7 +354,7 @@ func UnlockProject(username string, pwhash string, projIndex int, seedpwd string
 
 	checkPubkey, err := wallet.ReturnPubkey(recpSeed)
 	if err != nil {
-		return errors.Wrap(err, "couldn't get pubkey from seed")
+		return errors.Wrap(err, "couldn't get public key from seed")
 	}
 
 	if checkPubkey != recipient.U.PublicKey {
@@ -418,22 +433,26 @@ func sendRecipientAssets(projIndex int) error {
 	return nil
 }
 
+// - PROJECT INVESTMENT UPDATES THROUGHOUT 'THE RAISE' IN STAGE 7 --
 // updateProjectAfterAcceptance updates the project after acceptance of investment
 // by the recipient
 func (project *Project) updateProjectAfterAcceptance() error {
 
 	project.BalLeft = float64(project.TotalValue)
-	project.Stage = Stage5.Number // set to stage 5 (after the raise is done, we need to wait for people o actualyl construct the soalr panels)
+	project.Stage = Stage5.Number // set to stage 5 (after the raise is done, we need to wait for people to actually construct the solar panels)
 
 	err := project.Save()
 	if err != nil {
-		return errors.Wrap(err, "coudln't save project")
+		return errors.Wrap(err, "couln't save project")
 	}
 
 	go monitorPaybacks(project.RecipientIndex, project.Index)
 	return nil
 }
 
+// MW: Here, the project jumps from stage 5, the end to the raise, to stage 7, the payback period. What happens to everything in between?
+
+// -- SOLAR OFFTAKING PAYMENTS IN STAGE 7 --
 // Payback pays the platform back in STABLEUSD and DebtAsset and receives PaybackAssets
 // in return. Price to be paid per month depends on the electricity consumed by the recipient
 // in the particular time frame
@@ -457,11 +476,13 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 		return errors.Wrap(err, "Error while paying back the issuer")
 	}
 
+	// MW: Ownership of asset could shift as payments happen, or flip at the end.
+	// 		Also, wouldnt it make sense to make the 'Ownership Flip or Handoff' as a separate function? Since this will have to trigger changes in a registry?
 	project.BalLeft -= utils.StoF(amount) // can directly change this since we've checked for it in the MunibondPayback call
 	project.DateLastPaid = utils.Unix()
 	if project.BalLeft == 0 {
 		log.Println("YOU HAVE PAID OFF THIS ASSET, TRANSFERRING OWNERSHIP OF ASSET TO YOU")
-		project.Stage = 9 // stage 9 is the disposal stage, we don't wait for stage 9 to complete and hence leave ti as is, jsut deleting the accoutn and stuff associated with the project
+		project.Stage = 9 // stage 9 is the disposal stage, we don't wait for stage 9 to complete and hence leave it as is, just deleting the account and stuff associated with the project
 		// we should call neighborly or some other partner here to transfer assets using the bond they provide us with
 		// the nice part here is that the recipient can not pay off more than what is
 		// invested because the trustline will not allow such an incident to happen
@@ -511,6 +532,7 @@ func DistributePayments(escrowSeed string, escrowPubkey string, projIndex int, a
 
 // CalculatePayback calculates the amount of payback assets that must be issued in relation
 // to the total amount invested in the project
+// MW: Why is this after payback?
 func (project Project) CalculatePayback(amount string) string {
 	amountF := utils.StoF(amount)
 	amountPB := (amountF / float64(project.TotalValue)) * float64(project.Years*12)
@@ -520,6 +542,7 @@ func (project Project) CalculatePayback(amount string) string {
 
 // monitorPaybacks monitors whether the user is paying back regularly towards the given project
 // thread has to be isolated since if this fails, we stop tracking paybacks by the recipient.
+// TODO: Add first loss guarantor here
 func monitorPaybacks(recpIndex int, projIndex int) {
 	for {
 		project, err := RetrieveProject(projIndex)
@@ -544,8 +567,9 @@ func monitorPaybacks(recpIndex int, projIndex int) {
 		}
 		factor := timeElapsed / period
 
+		// Reputation adjustments based on payback history:
 		if factor <= 1 {
-			// don't do anything since the suer has been paying back regularly
+			// don't do anything since the user has been paying back regularly
 			log.Println("User: ", recipient.U.Email, "is on track paying towards order: ", projIndex)
 			// maybe even update reputation here on a fractional basis depending on a user's timely payments
 		} else if factor > NormalThreshold && factor < AlertThreshold {
@@ -589,6 +613,6 @@ func monitorPaybacks(recpIndex int, projIndex int) {
 			// send an email out to the guarantor
 		}
 
-		time.Sleep(time.Duration(consts.OneWeekInSecond)) // poll every week to ch eck progress on payments
+		time.Sleep(time.Duration(consts.OneWeekInSecond)) // poll every week to ch eckprogress on payments
 	}
 }
