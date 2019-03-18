@@ -14,6 +14,7 @@ import (
 	notif "github.com/YaleOpenLab/openx/notif"
 	utils "github.com/YaleOpenLab/openx/utils"
 	wallet "github.com/YaleOpenLab/openx/wallet"
+	xlm "github.com/YaleOpenLab/openx/xlm"
 )
 
 // the smart contract that powers this particular platform. Designed to be monolithic by design
@@ -182,6 +183,11 @@ func SeedInvest(projIndex int, invIndex int, recpIndex int, invAmount string,
 	if project.Stage != 1 {
 		return fmt.Errorf("project stage not at 1, you either have passed the seed stage or project is not at seed stage yet")
 	}
+
+	if project.InvestmentType != "munibond" {
+		return fmt.Errorf("other investment models are not supported right now, quitting")
+	}
+
 	err = model.MunibondInvest(consts.OpenSolarIssuerDir, invIndex, invSeed, invAmount, projIndex,
 		project.SeedAssetCode, project.TotalValue)
 	if err != nil {
@@ -204,6 +210,10 @@ func Invest(projIndex int, invIndex int, invAmount string, invSeed string) error
 	project, err := preInvestmentCheck(projIndex, invIndex, invAmount)
 	if err != nil {
 		return errors.Wrap(err, "pre investment check failed")
+	}
+
+	if project.InvestmentType != "munibond" {
+		return fmt.Errorf("other investment models are not supported right now, quitting")
 	}
 
 	if project.Stage != 4 {
@@ -249,9 +259,48 @@ func (project *Project) updateProjectAfterInvestment(invAmount string, invIndex 
 			return errors.Wrap(err, "error while sending notifications to recipient")
 		}
 
+		err = InitEscrow(consts.EscrowDir, project.Index, consts.EscrowPwd)
+		if err != nil {
+			return errors.Wrap(err, "error while initializing issuer")
+		}
+
+		err = TransferFundsToEscrow(project.TotalValue, project.Index)
+		if err != nil {
+			log.Println(err)
+			return errors.Wrap(err, "could not transfer funds to the escrow, quitting!")
+		}
+
 		go sendRecipientAssets(project.Index)
 	}
 
+	// we need to udpate the project investment map here
+	project.InvestorMap = make(map[string]float64) // make the map
+
+	for _, elem := range project.InvestorIndices {
+		investor, err := database.RetrieveInvestor(elem)
+		if err != nil {
+			return errors.Wrap(err, "error while retrieving investors, quitting")
+		}
+
+		balanceS, err := xlm.GetAssetBalance(investor.U.PublicKey, project.InvestorAssetCode)
+		if err != nil {
+			return errors.Wrap(err, "error while retrieving asset balance, quitting")
+		}
+
+		balanceF, err := utils.StoFWithCheck(balanceS)
+		if err != nil {
+			return errors.Wrap(err, "error while converting to float, quitting")
+		}
+
+		percentageInvestment := balanceF / project.TotalValue
+		project.InvestorMap[investor.U.PublicKey] = percentageInvestment
+	}
+
+	err = project.Save()
+	log.Println("INVESTOR MAP: ", project.InvestorMap)
+	if err != nil {
+		return errors.Wrap(err, "error while saving project, quitting")
+	}
 	return nil
 }
 
@@ -397,7 +446,13 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 		return errors.Wrap(err, "Couldn't retrieve project")
 	}
 
-	err = model.MunibondPayback(consts.OpenSolarIssuerDir, recpIndex, amount, recipientSeed, projIndex, assetName, project.InvestorIndices)
+	escrowPath := CreatePath(consts.EscrowDir, projIndex)
+
+	if project.InvestmentType != "munibond" {
+		return fmt.Errorf("other investment models are not supported right now, quitting")
+	}
+
+	err = model.MunibondPayback(consts.OpenSolarIssuerDir, escrowPath, recpIndex, amount, recipientSeed, projIndex, assetName, project.InvestorIndices)
 	if err != nil {
 		return errors.Wrap(err, "Error while paying back the issuer")
 	}
@@ -417,7 +472,41 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 		return errors.Wrap(err, "coudln't save project")
 	}
 
+	escrowPubkey, escrowSeed, err := wallet.RetrieveSeed(escrowPath, consts.EscrowPwd)
+	if err != nil {
+		return errors.Wrap(err, "Unable to retrieve issuer seed")
+	}
+
+	err = DistributePayments(escrowSeed, escrowPubkey, projIndex, utils.StoI(amount))
+	if err != nil {
+		return errors.Wrap(err, "error while distributing payments")
+	}
+
 	return err
+}
+
+func DistributePayments(escrowSeed string, escrowPubkey string, projIndex int, amount int) error {
+	// this should act as the service which redistributes payments received out to the parties involved
+	// amount is the amount that we want to give back to the investors and other entities involved
+	project, err := RetrieveProject(projIndex)
+	if err != nil {
+		errors.Wrap(err, "couldn't retrieve project, quitting!")
+	}
+
+	fixedRate := 0.05 // 5 % of the totla investment as return or somethign similar. Should not be hardcoded
+	// TODO: return money to the developers and other people involved
+	amountGivenBack := fixedRate * float64(amount)
+	for pubkey, percentage := range project.InvestorMap {
+		// send x to this pubkey
+		txAmount := percentage * amountGivenBack
+		_, _, err := xlm.SendXLM(pubkey, utils.FtoS(txAmount), escrowSeed, "returns")
+		if err != nil {
+			log.Println(err) // if there is an error with one payback, doesn't mean we should stop and wait for the others
+			continue
+		}
+	}
+	return nil
+	// we have the projects, we need to find the percentages donated by investors
 }
 
 // CalculatePayback calculates the amount of payback assets that must be issued in relation

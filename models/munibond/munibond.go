@@ -167,12 +167,13 @@ func sendPaymentNotif(recpIndex int, projIndex int, paybackPeriod int, email str
 		// sleep until the next payment is due
 		paybackTimes += 1
 		log.Println("Sent: ", email, "a notification on payments for payment cycle: ", paybackTimes)
-		time.Sleep(time.Duration(paybackPeriod * consts.OneWeekInSecond))
+		time.Sleep(time.Duration(1000 * paybackPeriod * consts.OneWeekInSecond))
 	}
 }
 
-// MunibondPayback is used by the recipient to pay the platform back
-func MunibondPayback(issuerPath string, recpIndex int, amount string, recipientSeed string, projIndex int,
+// MunibondPayback is used by the recipient to pay the platform back. Here, we pay the
+// project escrow instead of the platform since it would be responsible for redistribution of funds
+func MunibondPayback(issuerPath string, escrowPath string, recpIndex int, amount string, recipientSeed string, projIndex int,
 	assetName string, projectInvestors []int) error {
 
 	recipient, err := database.RetrieveRecipient(recpIndex)
@@ -185,9 +186,14 @@ func MunibondPayback(issuerPath string, recpIndex int, amount string, recipientS
 		return errors.Wrap(err, "Unable to retrieve issuer seed")
 	}
 
+	escrowPubkey, _, err := wallet.RetrieveSeed(escrowPath, consts.EscrowPwd)
+	if err != nil {
+		return errors.Wrap(err, "Unable to retrieve issuer seed")
+	}
+
 	err = stablecoin.OfferExchange(recipient.U.PublicKey, recipientSeed, amount)
 	if err != nil {
-		return errors.Wrap(err, "Unable to offer xlm to STABLEUSD excahnge for investor")
+		return errors.Wrap(err, "Unable to offer xlm to STABLEUSD exchange for investor")
 	}
 
 	StableBalance, err := xlm.GetAssetBalance(recipient.U.PublicKey, "STABLEUSD")
@@ -195,8 +201,10 @@ func MunibondPayback(issuerPath string, recpIndex int, amount string, recipientS
 		return errors.Wrap(err, "You do not have the required stablecoin balance, please refill")
 	}
 
-	_, stableUSDHash, err := assets.SendAsset(consts.Code, consts.StableCoinAddress, consts.PlatformPublicKey, amount, recipientSeed, recipient.U.PublicKey, "Opensolar payback: "+utils.ItoS(projIndex))
+	log.Println("ESCROW PUBKEY: ", escrowPubkey)
+	_, stableUSDHash, err := assets.SendAsset(consts.Code, consts.StableCoinAddress, escrowPubkey, amount, recipientSeed, recipient.U.PublicKey, "Opensolar payback: "+utils.ItoS(projIndex))
 	if err != nil {
+		log.Println("ESCROW PUBKEY: ", escrowPubkey)
 		return errors.Wrap(err, "Error while sending STABLEUSD back")
 	}
 	log.Printf("Paid %s back to platform in stableUSD, txhash %s ", amount, stableUSDHash)

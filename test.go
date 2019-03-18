@@ -9,7 +9,6 @@ import (
 	database "github.com/YaleOpenLab/openx/database"
 	// ipfs "github.com/YaleOpenLab/openx/ipfs"
 	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
-	solar "github.com/YaleOpenLab/openx/platforms/opensolar"
 	rpc "github.com/YaleOpenLab/openx/rpc"
 	// scan "github.com/YaleOpenLab/openx/scan"
 	stablecoin "github.com/YaleOpenLab/openx/stablecoin"
@@ -46,7 +45,7 @@ func ParseConfig(args []string) (string, error) {
 func StartPlatform() error {
 
 	database.CreateHomeDir()
-	allContracts, err := solar.RetrieveAllProjects()
+	allContracts, err := opensolar.RetrieveAllProjects()
 	if err != nil {
 		log.Println("Error retrieving all projects from the database")
 		return err
