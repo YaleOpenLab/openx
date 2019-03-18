@@ -52,3 +52,8 @@ As the name may suggest, a debt crowdfunding model is when an investor gives a s
 ## Regulation
 
 While introducing the above tools for raising funds, it is also good to know the regulations pertaining to the various models and that can be found over at the SEC's website
+
+# Energy Specific
+## Tax Partnership Flips
+Partnership flips are used to raise tax equity in the US renewable energy market. They are not the only structure for doing so, but they are the most common, and they are the only way to raise tax equity for wind farms and other projects on which production tax credits will be claimed.
+https://www.projectfinance.law/publications/2017/April/partnership-flips
