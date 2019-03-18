@@ -14,6 +14,7 @@ import (
 	notif "github.com/YaleOpenLab/openx/notif"
 	utils "github.com/YaleOpenLab/openx/utils"
 	wallet "github.com/YaleOpenLab/openx/wallet"
+	xlm "github.com/YaleOpenLab/openx/xlm"
 )
 
 // the smart contract that powers this particular platform. Designed to be monolithic by design
@@ -253,15 +254,15 @@ func (project *Project) updateProjectAfterInvestment(invAmount string, invIndex 
 	}
 
 	// we need to udpate the project investment map here
-	project.InvestorMap = make([]map[string]float64) // make the map
+	project.InvestorMap = make(map[string]float64) // make the map
 
 	for _, elem := range project.InvestorIndices {
 		investor, err := database.RetrieveInvestor(elem)
 		if err != nil {
-			return errrs.Wrap(err, "error while retrieving investors, quitting")
+			return errors.Wrap(err, "error while retrieving investors, quitting")
 		}
 
-		balanceS, err := xlm.GetAssetBalance(investor.U.PublicKey, project.InvestorAsset)
+		balanceS, err := xlm.GetAssetBalance(investor.U.PublicKey, project.InvestorAssetCode)
 		if err != nil {
 			return errors.Wrap(err, "error while retrieving asset balance, quitting")
 		}
@@ -276,6 +277,7 @@ func (project *Project) updateProjectAfterInvestment(invAmount string, invIndex 
 	}
 
 	err = project.Save()
+	log.Println("INVESTOR MAP: ", project.InvestorMap)
 	if err != nil {
 		return errors.Wrap(err, "error while saving project, quitting")
 	}
@@ -388,14 +390,14 @@ func sendRecipientAssets(projIndex int) error {
 		return errors.Wrap(err, "error while receiving assets from issuer on recipient's end")
 	}
 
-	err = project.updateProjectAfterAcceptance()
-	if err != nil {
-		return errors.Wrap(err, "failed to update project after acceptance of asset")
-	}
-
 	err = InitEscrow(consts.EscrowDir, projIndex, consts.EscrowPwd)
 	if err != nil {
 		return errors.Wrap(err, "error while initializing issuer")
+	}
+
+	err = project.updateProjectAfterAcceptance()
+	if err != nil {
+		return errors.Wrap(err, "failed to update project after acceptance of asset")
 	}
 
 	return nil
@@ -455,7 +457,7 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 		return errors.Wrap(err, "Unable to retrieve issuer seed")
 	}
 
-	err = DistributePayments(escrowSeed, escrowPubkey, projIndex)
+	err = DistributePayments(escrowSeed, escrowPubkey, projIndex, utils.StoI(amount))
 	if err != nil {
 		return errors.Wrap(err, "error while distributing payments")
 	}
@@ -463,17 +465,27 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 	return err
 }
 
-func DistributePayments(escrowSeed string, escrowPubkey string, projIndex int) error {
+func DistributePayments(escrowSeed string, escrowPubkey string, projIndex int, amount int) error {
 	// this should act as the service which redistributes payments received out to the parties involved
+	// amount is the amount that we want to give back to the investors and other entities involved
 	project, err := RetrieveProject(projIndex)
 	if err != nil {
 		errors.Wrap(err, "couldn't retrieve project, quitting!")
 	}
 
 	fixedRate := 0.05 // 5 % of the totla investment as return or somethign similar. Should not be hardcoded
+	// TODO: return money to the developers and other people involved
+	amountGivenBack := fixedRate * float64(amount)
 	for pubkey, percentage := range project.InvestorMap {
-		// send x to this publey
+		// send x to this pubkey
+		txAmount := percentage * amountGivenBack
+		_, _, err := xlm.SendXLM(pubkey, utils.FtoS(txAmount), escrowSeed, "returns")
+		if err != nil {
+			log.Println(err) // if there is an error with one payback, doesn't mean we should stop and wait for the others
+			continue
+		}
 	}
+	return nil
 	// we have the projects, we need to find the percentages donated by investors
 }
 

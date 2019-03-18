@@ -4,6 +4,8 @@ import (
 	"log"
 	"os"
 
+	consts "github.com/YaleOpenLab/openx/consts"
+	assets "github.com/YaleOpenLab/openx/assets"
 	utils "github.com/YaleOpenLab/openx/utils"
 	wallet "github.com/YaleOpenLab/openx/wallet"
 	xlm "github.com/YaleOpenLab/openx/xlm"
@@ -47,7 +49,7 @@ func InitEscrow(issuerPath string, projIndex int, seedpwd string) error {
 		return errors.Wrap(err, "Error while storing seed")
 	}
 
-	_, txhash, err := xlm.SendXLMCreateAccount(pubkey, "100", seed)
+	_, txhash, err := xlm.SendXLMCreateAccount(pubkey, "100", consts.PlatformSeed) // pass the platform seed to be the account that seeds the escrow
 	if err != nil {
 		return errors.Wrap(err, "Error while sending xlm to create account")
 	}
@@ -57,6 +59,14 @@ func InitEscrow(issuerPath string, projIndex int, seedpwd string) error {
 		return errors.Wrap(err, "Error while setting auth immutable on account")
 	}
 	log.Printf("Txhash for setting Auth Immutable on project %d is %s", projIndex, txhash)
+
+	// create a trustline with the stablecoin
+	txhash, err = assets.TrustAsset(consts.Code, consts.StablecoinPublicKey, "10000000000", pubkey, seed)
+	if err != nil {
+		return err
+	}
+
+	log.Println("TRUST HASH FOR ESCROW TRUSTING STABLECOIN: ", txhash)
 	return nil
 }
 

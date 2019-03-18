@@ -60,7 +60,7 @@ func registerRecipient() {
 		checkOrigin(w, r)
 
 		// to register, we need the name, username and pwhash
-		if r.URL.Query()["name"] == nil || r.URL.Query()["username"] == nil || r.URL.Query()["pwd"] == nil || r.URL.Query()["seedpwd"] == nil{
+		if r.URL.Query()["name"] == nil || r.URL.Query()["username"] == nil || r.URL.Query()["pwd"] == nil || r.URL.Query()["seedpwd"] == nil {
 			log.Println("missing basic set of params that can be used ot validate a user")
 			responseHandler(w, r, StatusBadRequest)
 		}

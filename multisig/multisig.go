@@ -2,9 +2,9 @@ package multisig
 
 import (
 	"fmt"
+	"github.com/pkg/errors"
 	"log"
 	"net/http"
-	"github.com/pkg/errors"
 
 	xlm "github.com/YaleOpenLab/openx/xlm"
 	"github.com/stellar/go/build"

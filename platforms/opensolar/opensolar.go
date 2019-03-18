@@ -93,7 +93,7 @@ type Project struct {
 	// that we indeed have the right project. THe various hashes and stuff are stored here instead of
 	// having separate fields for each contract
 	StageData   []string
-	InvestorMap []map[string]float64 // publicKey: percentage donation
+	InvestorMap map[string]float64 // publicKey: percentage donation
 }
 
 //easyjson:json

@@ -167,7 +167,7 @@ func sendPaymentNotif(recpIndex int, projIndex int, paybackPeriod int, email str
 		// sleep until the next payment is due
 		paybackTimes += 1
 		log.Println("Sent: ", email, "a notification on payments for payment cycle: ", paybackTimes)
-		time.Sleep(time.Duration(paybackPeriod * consts.OneWeekInSecond))
+		time.Sleep(time.Duration(1000 * paybackPeriod * consts.OneWeekInSecond))
 	}
 }
 
@@ -193,7 +193,7 @@ func MunibondPayback(issuerPath string, escrowPath string, recpIndex int, amount
 
 	err = stablecoin.OfferExchange(recipient.U.PublicKey, recipientSeed, amount)
 	if err != nil {
-		return errors.Wrap(err, "Unable to offer xlm to STABLEUSD excahnge for investor")
+		return errors.Wrap(err, "Unable to offer xlm to STABLEUSD exchange for investor")
 	}
 
 	StableBalance, err := xlm.GetAssetBalance(recipient.U.PublicKey, "STABLEUSD")
@@ -201,8 +201,10 @@ func MunibondPayback(issuerPath string, escrowPath string, recpIndex int, amount
 		return errors.Wrap(err, "You do not have the required stablecoin balance, please refill")
 	}
 
+	log.Println("ESCROW PUBKEY: ", escrowPubkey)
 	_, stableUSDHash, err := assets.SendAsset(consts.Code, consts.StableCoinAddress, escrowPubkey, amount, recipientSeed, recipient.U.PublicKey, "Opensolar payback: "+utils.ItoS(projIndex))
 	if err != nil {
+		log.Println("ESCROW PUBKEY: ", escrowPubkey)
 		return errors.Wrap(err, "Error while sending STABLEUSD back")
 	}
 	log.Printf("Paid %s back to platform in stableUSD, txhash %s ", amount, stableUSDHash)

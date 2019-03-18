@@ -28,8 +28,8 @@ import (
 	utils "github.com/YaleOpenLab/openx/utils"
 	wallet "github.com/YaleOpenLab/openx/wallet"
 	xlm "github.com/YaleOpenLab/openx/xlm"
-	"github.com/stellar/go/clients/horizon"
 	"github.com/pkg/errors"
+	"github.com/stellar/go/clients/horizon"
 )
 
 // InitStableCoin returns the platform structure and the seed

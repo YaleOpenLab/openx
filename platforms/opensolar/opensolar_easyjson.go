@@ -383,6 +383,26 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar2(in *jlex
 				}
 				in.Delim(']')
 			}
+		case "InvestorMap":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				in.Delim('{')
+				if !in.IsDelim('}') {
+					out.InvestorMap = make(map[string]float64)
+				} else {
+					out.InvestorMap = nil
+				}
+				for !in.IsDelim('}') {
+					key := string(in.String())
+					in.WantColon()
+					var v9 float64
+					v9 = float64(in.Float64())
+					(out.InvestorMap)[key] = v9
+					in.WantComma()
+				}
+				in.Delim('}')
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -779,11 +799,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar2(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v9, v10 := range in.InvestorIndices {
-				if v9 > 0 {
+			for v10, v11 := range in.InvestorIndices {
+				if v10 > 0 {
 					out.RawByte(',')
 				}
-				out.Int(int(v10))
+				out.Int(int(v11))
 			}
 			out.RawByte(']')
 		}
@@ -800,11 +820,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar2(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v11, v12 := range in.SeedInvestorIndices {
-				if v11 > 0 {
+			for v12, v13 := range in.SeedInvestorIndices {
+				if v12 > 0 {
 					out.RawByte(',')
 				}
-				out.Int(int(v12))
+				out.Int(int(v13))
 			}
 			out.RawByte(']')
 		}
@@ -891,24 +911,24 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar2(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v13, v14 := range in.StageChecklist {
-				if v13 > 0 {
+			for v14, v15 := range in.StageChecklist {
+				if v14 > 0 {
 					out.RawByte(',')
 				}
-				if v14 == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
+				if v15 == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
 					out.RawString(`null`)
 				} else {
 					out.RawByte('{')
-					v15First := true
-					for v15Name, v15Value := range v14 {
-						if v15First {
-							v15First = false
+					v16First := true
+					for v16Name, v16Value := range v15 {
+						if v16First {
+							v16First = false
 						} else {
 							out.RawByte(',')
 						}
-						out.String(string(v15Name))
+						out.String(string(v16Name))
 						out.RawByte(':')
-						out.Bool(bool(v15Value))
+						out.Bool(bool(v16Value))
 					}
 					out.RawByte('}')
 				}
@@ -928,13 +948,39 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar2(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v16, v17 := range in.StageData {
-				if v16 > 0 {
+			for v17, v18 := range in.StageData {
+				if v17 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v17))
+				out.String(string(v18))
 			}
 			out.RawByte(']')
+		}
+	}
+	{
+		const prefix string = ",\"InvestorMap\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		if in.InvestorMap == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
+			out.RawString(`null`)
+		} else {
+			out.RawByte('{')
+			v19First := true
+			for v19Name, v19Value := range in.InvestorMap {
+				if v19First {
+					v19First = false
+				} else {
+					out.RawByte(',')
+				}
+				out.String(string(v19Name))
+				out.RawByte(':')
+				out.Float64(float64(v19Value))
+			}
+			out.RawByte('}')
 		}
 	}
 	out.RawByte('}')
