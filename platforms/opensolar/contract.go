@@ -183,6 +183,11 @@ func SeedInvest(projIndex int, invIndex int, recpIndex int, invAmount string,
 	if project.Stage != 1 {
 		return fmt.Errorf("project stage not at 1, you either have passed the seed stage or project is not at seed stage yet")
 	}
+
+	if project.InvestmentType != "munibond" {
+		return fmt.Errorf("other investment models are not supported right now, quitting")
+	}
+
 	err = model.MunibondInvest(consts.OpenSolarIssuerDir, invIndex, invSeed, invAmount, projIndex,
 		project.SeedAssetCode, project.TotalValue)
 	if err != nil {
@@ -205,6 +210,10 @@ func Invest(projIndex int, invIndex int, invAmount string, invSeed string) error
 	project, err := preInvestmentCheck(projIndex, invIndex, invAmount)
 	if err != nil {
 		return errors.Wrap(err, "pre investment check failed")
+	}
+
+	if project.InvestmentType != "munibond" {
+		return fmt.Errorf("other investment models are not supported right now, quitting")
 	}
 
 	if project.Stage != 4 {
@@ -248,6 +257,17 @@ func (project *Project) updateProjectAfterInvestment(invAmount string, invIndex 
 		err = project.sendRecipientNotification()
 		if err != nil {
 			return errors.Wrap(err, "error while sending notifications to recipient")
+		}
+
+		err = InitEscrow(consts.EscrowDir, project.Index, consts.EscrowPwd)
+		if err != nil {
+			return errors.Wrap(err, "error while initializing issuer")
+		}
+
+		err = TransferFundsToEscrow(project.TotalValue, project.Index)
+		if err != nil {
+			log.Println(err)
+			return errors.Wrap(err, "could not transfer funds to the escrow, quitting!")
 		}
 
 		go sendRecipientAssets(project.Index)
@@ -390,11 +410,6 @@ func sendRecipientAssets(projIndex int) error {
 		return errors.Wrap(err, "error while receiving assets from issuer on recipient's end")
 	}
 
-	err = InitEscrow(consts.EscrowDir, projIndex, consts.EscrowPwd)
-	if err != nil {
-		return errors.Wrap(err, "error while initializing issuer")
-	}
-
 	err = project.updateProjectAfterAcceptance()
 	if err != nil {
 		return errors.Wrap(err, "failed to update project after acceptance of asset")
@@ -432,6 +447,11 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 	}
 
 	escrowPath := CreatePath(consts.EscrowDir, projIndex)
+
+	if project.InvestmentType != "munibond" {
+		return fmt.Errorf("other investment models are not supported right now, quitting")
+	}
+
 	err = model.MunibondPayback(consts.OpenSolarIssuerDir, escrowPath, recpIndex, amount, recipientSeed, projIndex, assetName, project.InvestorIndices)
 	if err != nil {
 		return errors.Wrap(err, "Error while paying back the issuer")

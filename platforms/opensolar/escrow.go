@@ -4,15 +4,15 @@ import (
 	"log"
 	"os"
 
-	consts "github.com/YaleOpenLab/openx/consts"
 	assets "github.com/YaleOpenLab/openx/assets"
+	consts "github.com/YaleOpenLab/openx/consts"
 	utils "github.com/YaleOpenLab/openx/utils"
 	wallet "github.com/YaleOpenLab/openx/wallet"
 	xlm "github.com/YaleOpenLab/openx/xlm"
 	"github.com/pkg/errors"
 )
 
-// issuer defines the issuer of asset for a specific project. We should generate a
+// escrow defines the escrow of asset for a specific project. We should generate a
 // new seed and public key pair for each project that is at stage 3, so this would be
 // automated at that stage. Once an investor has finished investing in the project,
 // we need to send the recipient DebtAssets and then set all weights to zero in order
@@ -27,15 +27,15 @@ func CreatePath(path string, projIndex int) string {
 }
 
 // CreateFile creates a new empty keyfile
-func CreateFile(issuerPath string, projIndex int) string {
-	path := CreatePath(issuerPath, projIndex)
+func CreateFile(escrowPath string, projIndex int) string {
+	path := CreatePath(escrowPath, projIndex)
 	// we need to create this file
 	os.Create(path)
 	return path
 }
 
 // InitEscrow creates a new keypair and stores it in a file
-func InitEscrow(issuerPath string, projIndex int, seedpwd string) error {
+func InitEscrow(escrowPath string, projIndex int, seedpwd string) error {
 	// init a new pk and seed pair
 	seed, pubkey, err := xlm.GetKeyPair()
 	if err != nil {
@@ -43,7 +43,7 @@ func InitEscrow(issuerPath string, projIndex int, seedpwd string) error {
 	}
 	// store this seed in home/projects/projIndex.hex
 	// we need a password for encrypting the seed
-	path := CreateFile(issuerPath, projIndex)
+	path := CreateFile(escrowPath, projIndex)
 	err = wallet.StoreSeed(seed, seedpwd, path)
 	if err != nil {
 		return errors.Wrap(err, "Error while storing seed")
@@ -53,7 +53,7 @@ func InitEscrow(issuerPath string, projIndex int, seedpwd string) error {
 	if err != nil {
 		return errors.Wrap(err, "Error while sending xlm to create account")
 	}
-	log.Printf("Txhash for setting up Project Issuer for project %d is %s", projIndex, txhash)
+	log.Printf("Txhash for setting up Project escrow for project %d is %s", projIndex, txhash)
 	_, txhash, err = xlm.SetAuthImmutable(seed)
 	if err != nil {
 		return errors.Wrap(err, "Error while setting auth immutable on account")
@@ -70,10 +70,30 @@ func InitEscrow(issuerPath string, projIndex int, seedpwd string) error {
 	return nil
 }
 
-// DeleteIssuer deletes the keyfile
+// Deleteescrow deletes the keyfile
 // But this is not needed since once the account is frozen, an attacker who does
 // have access to the seed can not aim to achieve anything since the account is locked
-func DeleteEscrow(issuerPath string, projIndex int) error {
-	path := CreatePath(issuerPath, projIndex)
+func DeleteEscrow(escrowPath string, projIndex int) error {
+	path := CreatePath(escrowPath, projIndex)
 	return os.Remove(path)
+}
+
+func TransferFundsToEscrow(amount float64, projIndex int) error {
+	// we need to transfer funds that hte investors invested in the platform to the specific escrow
+	escrowPath := CreatePath(consts.EscrowDir, projIndex)
+	escrowPubkey, _, err := wallet.RetrieveSeed(escrowPath, consts.EscrowPwd)
+	if err != nil {
+		return errors.Wrap(err, "Unable to retrieve escrow seed")
+	}
+
+	// we have the wallet pubkey, transfer funds to the escrow now
+	_, txhash, err := assets.SendAsset(consts.Code, consts.StablecoinPublicKey, escrowPubkey,
+		utils.FtoS(amount), consts.PlatformSeed, consts.PlatformPublicKey, "escrow init")
+	if err != nil {
+		return errors.Wrap(err, "could not fund escrow, quitting!")
+	}
+
+	log.Println("tx hash for funding project escrow is: ", txhash)
+
+	return nil
 }

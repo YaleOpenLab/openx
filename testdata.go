@@ -32,6 +32,7 @@ func newSolarProject(index int, panelsize string, totalValue float64, location s
 	project.Stage = stage
 	project.PaybackPeriod = pbperiod
 	project.AuctionType = auctionType
+	project.InvestmentType = "munibond"
 	err := project.Save()
 	if err != nil {
 		return project, errors.New("Error inserting project into db")

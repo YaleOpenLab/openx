@@ -769,10 +769,6 @@ func TestDb(t *testing.T) {
 	if err == nil {
 		t.Fatal("Cant catch sendRecipientAssets error!")
 	}
-	err = dummy.updateProjectAfterInvestment("0", 1)
-	if err != nil {
-		t.Fatal(err)
-	}
 	err = dummy.sendRecipientNotification()
 	if err != nil {
 		t.Fatal(err)
