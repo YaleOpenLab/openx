@@ -349,11 +349,6 @@ func TestDb(t *testing.T) {
 		t.Fatalf("Not able to generate keys, quitting!")
 	}
 
-	_, err = user.GetSeed("blah")
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	err = DeleteKeyFromBucket(user.Index, UserBucket)
 	if err != nil {
 		t.Fatal(err)
