@@ -1,6 +1,7 @@
 package database
 
 import (
+	"fmt"
 	"github.com/pkg/errors"
 	"log"
 
@@ -64,6 +65,17 @@ type User struct {
 	// RecoveryShares are shares that you could hare out to a party and one could reconstruct the
 	// seed from 2 out of 3 parts. Based on Shamir's Secret Sharing Scheme.
 	PwdResetCode string
+
+	SecondaryWallet Wallet
+	// SecondaryWallet defines a higher level wallet which can be imagined to be similar to a savings account
+}
+
+// Wallet contains the stuff that we need for a wallet.
+// TODO: migrate the "normal" functions over to a wallet construction and we can have multiple wallets
+type Wallet struct {
+	EncryptedSeed []byte // the seedpwd for this would be the same as the one for the primary wallet
+	// since we don't want the user to remember like 10 passwords
+	PublicKey string
 }
 
 // NewUser creates a new user
@@ -261,7 +273,7 @@ func (a *User) GenKeys(seedpwd string) error {
 	var seed string
 	seed, a.PublicKey, err = xlm.GetKeyPair()
 	if err != nil {
-		return errors.Wrap(err, "error while generating publick and private key pair")
+		return errors.Wrap(err, "error while generating public and private key pair")
 	}
 	// don't store the seed in the database
 	a.EncryptedSeed, err = aes.Encrypt([]byte(seed), seedpwd)
@@ -274,15 +286,21 @@ func (a *User) GenKeys(seedpwd string) error {
 		return errors.Wrap(err, "error while storing recovery shares")
 	}
 
-	a.RecoveryShares = append(a.RecoveryShares, tmp...)
+	a.RecoveryShares = append(a.RecoveryShares, tmp...) // this is for the primary account
+
+	secSeed, secPubkey, err := xlm.GetKeyPair()
+	if err != nil {
+		return errors.Wrap(err, "could not generate secondary keypair")
+	}
+
+	a.SecondaryWallet.PublicKey = secPubkey
+	a.SecondaryWallet.EncryptedSeed, err = aes.Encrypt([]byte(secSeed), seedpwd)
+	if err != nil {
+		return errors.Wrap(err, "error while encrypting seed")
+	}
 
 	err = a.Save()
 	return err
-}
-
-// GetSeed gets the seed from the encrypted seed
-func (a *User) GetSeed(seedpwd string) (string, error) {
-	return wallet.DecryptSeed(a.EncryptedSeed, seedpwd)
 }
 
 // CheckUsernameCollision checks if a username is available to a new user who
@@ -447,4 +465,78 @@ func SearchWithEmailId(email string) (User, error) {
 		}
 	})
 	return foundUser, err
+}
+
+// MoveFundsFromSecondaryWallet moves funds from the secondary wallet to the primary wallet
+func MoveFundsFromSecondaryWallet(userIndex int, pwhash string, amount string, seedpwd string) error {
+	user, err := RetrieveUser(userIndex)
+	if err != nil {
+		return errors.Wrap(err, "could not retrieve user, quitting")
+	}
+
+	if user.Pwhash != pwhash {
+		return fmt.Errorf("pw hashes don't match, quitting!")
+	}
+	amountI, err := utils.StoFWithCheck(amount)
+	if err != nil {
+		return errors.Wrap(err, "amount not float, quitting!")
+	}
+	// unlock secondary account
+	secSeed, err := wallet.DecryptSeed(user.SecondaryWallet.EncryptedSeed, seedpwd)
+	if err != nil {
+		return errors.Wrap(err, "could not unlock priamry seed, quitting")
+	}
+
+	// get secondary balance
+	secFunds, err := xlm.GetNativeBalance(user.SecondaryWallet.PublicKey)
+	if err != nil {
+		return errors.Wrap(err, "could not get xlm balance of secondary account")
+	}
+
+	if amountI > utils.StoF(secFunds) {
+		return fmt.Errorf("amount to be transferred is greater than the funds available in the secondary account, quitting")
+	}
+
+	// send the tx over
+	_, txhash, err := xlm.SendXLM(user.PublicKey, amount, secSeed, "fund transfer to secondary")
+	if err != nil {
+		return errors.Wrap(err, "error while transferring funds to secondary account, quitting")
+	}
+
+	log.Println("transfer sec-prim tx hash: ", txhash)
+	return nil
+}
+
+// SweepSecondaryWallet sweeps fudns from the secondary account to the primary account
+func SweepSecondaryWallet(index int, pwhash string, seedpwd string) error {
+	// unlock secondary account
+
+	user, err := RetrieveUser(index)
+	if err != nil {
+		return errors.Wrap(err, "could not retrieve user, quitting")
+	}
+
+	if user.Pwhash != pwhash {
+		return fmt.Errorf("pw hashes don't match, quitting!")
+	}
+	secSeed, err := wallet.DecryptSeed(user.SecondaryWallet.EncryptedSeed, seedpwd)
+	if err != nil {
+		return errors.Wrap(err, "could not unlock priamry seed, quitting")
+	}
+
+	// get secondary balance
+	secFunds, err := xlm.GetNativeBalance(user.SecondaryWallet.PublicKey)
+	if err != nil {
+		return errors.Wrap(err, "could not get xlm balance of secondary account")
+	}
+
+	secFundsWithMinbal := utils.FtoS(utils.StoF(secFunds) - 5)
+	// send the tx over
+	_, txhash, err := xlm.SendXLM(user.PublicKey, secFundsWithMinbal, secSeed, "fund transfer to secondary")
+	if err != nil {
+		return errors.Wrap(err, "error while transferring funds to secondary account, quitting")
+	}
+
+	log.Println("transfer sec-prim tx hash: ", txhash)
+	return nil
 }
