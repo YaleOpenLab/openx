@@ -200,8 +200,12 @@ func SeedInvest(projIndex int, invIndex int, recpIndex int, invAmount string,
 		return fmt.Errorf("other investment models are not supported right now, quitting")
 	}
 
+	if project.SeedInvestmentCap < utils.StoF(invAmount) {
+		return fmt.Errorf("you can't invest more than what the seed investment cap permits you to, quitting")
+	}
+
 	err = model.MunibondInvest(consts.OpenSolarIssuerDir, invIndex, invSeed, invAmount, projIndex,
-		project.SeedAssetCode, project.TotalValue)
+		project.SeedAssetCode, project.TotalValue, project.SeedInvestmentFactor)
 	if err != nil {
 		return errors.Wrap(err, "error while investing")
 	}
@@ -234,7 +238,7 @@ func Invest(projIndex int, invIndex int, invAmount string, invSeed string) error
 	}
 	// call the model and invest in the particular project
 	err = model.MunibondInvest(consts.OpenSolarIssuerDir, invIndex, invSeed, invAmount, projIndex,
-		project.InvestorAssetCode, project.TotalValue)
+		project.InvestorAssetCode, project.TotalValue, 1)
 	if err != nil {
 		log.Println("Error while seed investing", err)
 		return errors.Wrap(err, "error while seed investing")
@@ -419,7 +423,7 @@ func sendRecipientAssets(projIndex int) error {
 	project.PaybackAssetCode = assets.AssetID(consts.PaybackAssetPrefix + metadata)
 
 	err = model.MunibondReceive(consts.OpenSolarIssuerDir, project.RecipientIndex, projIndex, project.DebtAssetCode,
-		project.PaybackAssetCode, project.Years, recpSeed, project.TotalValue, project.PaybackPeriod)
+		project.PaybackAssetCode, project.ETA, recpSeed, project.TotalValue, project.PaybackPeriod)
 	if err != nil {
 		return errors.Wrap(err, "error while receiving assets from issuer on recipient's end")
 	}
@@ -534,7 +538,7 @@ func DistributePayments(escrowSeed string, escrowPubkey string, projIndex int, a
 // MW: Why is this after payback?
 func (project Project) CalculatePayback(amount string) string {
 	amountF := utils.StoF(amount)
-	amountPB := (amountF / float64(project.TotalValue)) * float64(project.Years*12)
+	amountPB := (amountF / float64(project.TotalValue)) * float64(project.ETA*12)
 	amountPBString := utils.FtoS(amountPB)
 	return amountPBString
 }

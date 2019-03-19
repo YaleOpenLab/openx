@@ -225,7 +225,7 @@ func ProposeContractPrompt(contractor *solar.Entity) error {
 		return errors.New("Invalid contract index")
 	}
 	panelSize := rContract.PanelSize
-	location := rContract.Location
+	location := rContract.State
 	fmt.Println("ENTER THE COST OF PROJECT")
 	totalValue, err := scan.ScanForFloat()
 	if err != nil {

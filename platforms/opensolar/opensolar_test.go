@@ -200,14 +200,14 @@ func TestDb(t *testing.T) {
 	dummy.Index = 1
 	dummy.PanelSize = "100 1000 sq.ft homes each with their own private spaces for luxury"
 	dummy.TotalValue = 14000
-	dummy.Location = "India Basin, San Francisco"
+	dummy.State = "India Basin, San Francisco"
 	dummy.MoneyRaised = 0
 	dummy.Metadata = "India Basin is an upcoming creative project based in San Francisco that seeks to invite innovators from all around to participate"
 	dummy.InvestorAssetCode = ""
 	dummy.DebtAssetCode = ""
 	dummy.PaybackAssetCode = ""
 	dummy.DateInitiated = ""
-	dummy.Years = 3
+	dummy.ETA = 3
 	dummy.RecipientIndex = recp.U.Index
 	dummy.Contractor = contractor
 	dummy.Originator = newCE2
