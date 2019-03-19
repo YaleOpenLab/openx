@@ -197,7 +197,7 @@ func createOpensolarProject() {
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
-		x.Years, err = utils.StoICheck(r.URL.Query()["Years"][0])
+		x.ETA, err = utils.StoICheck(r.URL.Query()["Years"][0])
 		if err != nil {
 			log.Println("param passed not int, quitting!")
 			responseHandler(w, r, StatusBadRequest)
@@ -240,7 +240,7 @@ func createOpensolarProject() {
 
 		// store other params which don't require db calls
 		x.Originator = prepEntity
-		x.Location = r.URL.Query()["Location"][0]
+		x.State = r.URL.Query()["Location"][0]
 		x.PanelSize = r.URL.Query()["PanelSize"][0]
 		x.Inverter = r.URL.Query()["Inverter"][0]
 		x.ChargeRegulator = r.URL.Query()["ChargeRegulator"][0]

@@ -19,8 +19,9 @@ import (
 // to lock the account and prevent any further transactions from being authorized.
 // One can stil send fund to the frozen account but the account can not use them
 // this serves our purpose since we only want receipt of debt assets and want to freeze
-// issuance so that anybody who hacks us can not print more tokens
+// issuance so that anybody who hacks us can not print more tokens.
 
+// In financial terms, an escrow is a special purpose vehicle (kind of cool that we have SPV in finance)
 // CreatePath returns the path of a specific project
 func CreatePath(path string, projIndex int) string {
 	return path + utils.ItoS(projIndex) + ".key"
@@ -97,3 +98,5 @@ func TransferFundsToEscrow(amount float64, projIndex int) error {
 
 	return nil
 }
+
+// TODO: add escrow multisig here

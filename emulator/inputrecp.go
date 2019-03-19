@@ -143,7 +143,7 @@ func ParseInputRecp(input []string) error {
 
 		if !found {
 			log.Println("Asset not found within received projects list")
-			return fmt.Errorf("Asset not found within received projects list")
+			return fmt.Errorf("asset not found within received projects list")
 		}
 
 		status, err := Payback(projIndex, LocalSeedPwd, LocalRecipient.U.Username, LocalRecipient.U.Pwhash, assetName, amount)
@@ -229,7 +229,7 @@ func ParseInputRecp(input []string) error {
 
 			if !found {
 				log.Println("Asset not found within received projects list")
-				return fmt.Errorf("Asset not found within received projects list")
+				return fmt.Errorf("asset not found within received projects list")
 			}
 
 			limit, err := GetTrustLimit(LocalRecipient.U.Username, LocalRecipient.U.Pwhash, assetName)

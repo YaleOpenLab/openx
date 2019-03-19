@@ -37,8 +37,8 @@ func (contractor *Entity) Originate(panelSize string, totalValue float64, locati
 	pc.Index = len(indexCheck) + 1
 	pc.PanelSize = panelSize
 	pc.TotalValue = totalValue
-	pc.Location = location
-	pc.Years = years
+	pc.State = location
+	pc.ETA = years
 	pc.Metadata = metadata
 	pc.DateInitiated = utils.Timestamp()
 	iRecipient, err := database.RetrieveRecipient(recIndex)

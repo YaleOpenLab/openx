@@ -5,27 +5,27 @@ import (
 	"log"
 
 	database "github.com/YaleOpenLab/openx/database"
-	solar "github.com/YaleOpenLab/openx/platforms/opensolar"
+	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
 	opzones "github.com/YaleOpenLab/openx/platforms/ozones"
 	utils "github.com/YaleOpenLab/openx/utils"
 )
 
 func newSolarProject(index int, panelsize string, totalValue float64, location string, moneyRaised float64,
 	metadata string, invAssetCode string, debtAssetCode string, pbAssetCode string, years int, recpIndex int,
-	contractor solar.Entity, originator solar.Entity, stage int, pbperiod int, auctionType string) (solar.Project, error) {
+	contractor opensolar.Entity, originator opensolar.Entity, stage int, pbperiod int, auctionType string) (opensolar.Project, error) {
 
-	var project solar.Project
+	var project opensolar.Project
 	project.Index = index
 	project.PanelSize = panelsize
 	project.TotalValue = totalValue
-	project.Location = location
+	project.State = location
 	project.MoneyRaised = moneyRaised
 	project.Metadata = metadata
 	project.InvestorAssetCode = invAssetCode
 	project.DebtAssetCode = debtAssetCode
 	project.PaybackAssetCode = pbAssetCode
 	project.DateInitiated = utils.Timestamp()
-	project.Years = years
+	project.ETA = years
 	project.RecipientIndex = recpIndex
 	project.Contractor = contractor
 	project.Originator = originator
@@ -33,6 +33,56 @@ func newSolarProject(index int, panelsize string, totalValue float64, location s
 	project.PaybackPeriod = pbperiod
 	project.AuctionType = auctionType
 	project.InvestmentType = "munibond"
+
+	var x1 opensolar.TermsHelper
+	x1.Variable = "Security Type"
+	x1.Value = "Municipal Bond"
+	x1.RelevantParty = "PR DofEd"
+	x1.Note = "Promoted by PR governor's office"
+	x1.Status = "Demo"
+	x1.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var x2 opensolar.TermsHelper
+	x2.Variable = "PPA Tariff"
+	x2.Value = "0.24 ct/KWh"
+	x2.RelevantParty = "oracle X / PREPA"
+	x2.Note = "Variable anchored to local tariff"
+	x2.Status = "Signed"
+	x2.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var x3 opensolar.TermsHelper
+	x3.Variable = "Return (TEY)"
+	x3.Value = "3.1%"
+	x3.RelevantParty = "Broker Dealer"
+	x3.Note = "Variable tied to tariff"
+	x3.Status = "Signed"
+	x3.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var x4 opensolar.TermsHelper
+	x4.Variable = "Maturity"
+	x4.Value = "+/- 2025"
+	x4.RelevantParty = "Broker Dealer"
+	x4.Note = "Tax adjusted Yield"
+	x4.Status = "Signed"
+	x4.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var x5 opensolar.TermsHelper
+	x5.Variable = "Guarantee"
+	x5.Value = "50%"
+	x5.RelevantParty = "Foundation X"
+	x5.Note = "First-loss upon breach"
+	x5.Status = "Started"
+	x5.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var x6 opensolar.TermsHelper
+	x6.Variable = "Insurance"
+	x6.Value = "Premium"
+	x6.RelevantParty = "Allianz CS"
+	x6.Note = "Hurricane Coverage"
+	x6.Status = "Started"
+	x6.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	project.Terms = append(project.Terms, x1, x2, x3, x4, x5, x6)
 	err := project.Save()
 	if err != nil {
 		return project, errors.New("Error inserting project into db")
@@ -164,12 +214,12 @@ func InsertDummyData() error {
 		}
 	}
 
-	originator, err := solar.NewOriginator("samuel", "p", "x", "Samuel L. Jackson", "ABC Street, London", "I am an originator")
+	originator, err := opensolar.NewOriginator("samuel", "p", "x", "Samuel L. Jackson", "ABC Street, London", "I am an originator")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	contractor, err := solar.NewContractor("sam", "p", "x", "Samuel Jackson", "14 ABC Street London", "This is a competing contractor")
+	contractor, err := opensolar.NewContractor("sam", "p", "x", "Samuel Jackson", "14 ABC Street London", "This is a competing contractor")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -250,29 +300,29 @@ func InsertDummyData() error {
 		log.Fatal(err)
 	}
 
-	demoOrig, err := solar.NewOriginator("dci", "p", "x", "MIT DCI", "MIT Building E14-15", "The MIT Media Lab's Digital Currency Initiative")
+	demoOrig, err := opensolar.NewOriginator("dci", "p", "x", "MIT DCI", "MIT Building E14-15", "The MIT Media Lab's Digital Currency Initiative")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	demoCont, err := solar.NewContractor("mw", "p", "x", "Martin Wainstein", "254 Elm Street, New Haven, CT", "Martin Wainstein from the Yale OpenLab")
+	demoCont, err := opensolar.NewContractor("mw", "p", "x", "Martin Wainstein", "254 Elm Street, New Haven, CT", "Martin Wainstein from the Yale OpenLab")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	demoDevel, err := solar.NewDeveloper("gs", "p", "x", "Genmoji Solar", "Genmoji, San Juan, Puerto Rico", "Genmoji Solar")
+	demoDevel, err := opensolar.NewDeveloper("gs", "p", "x", "Genmoji Solar", "Genmoji, San Juan, Puerto Rico", "Genmoji Solar")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	demoGuar, err := solar.NewGuarantor("ml", "p", "x", "MIT Media Lab", "MIT Building E14-15", "The MIT Media Lab is an interdisciplinary lab with innovators from all around the globe")
+	demoGuar, err := opensolar.NewGuarantor("ml", "p", "x", "MIT Media Lab", "MIT Building E14-15", "The MIT Media Lab is an interdisciplinary lab with innovators from all around the globe")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	var demoProject solar.Project
+	var demoProject opensolar.Project
 
-	indexHelp, err := solar.RetrieveAllProjects()
+	indexHelp, err := opensolar.RetrieveAllProjects()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -280,9 +330,9 @@ func InsertDummyData() error {
 	demoProject.Index = len(indexHelp) + 1
 	demoProject.PanelSize = "10x 100W Komaes Solar Panels"
 	demoProject.TotalValue = 8000 + 2000
-	demoProject.Location = "S.U. Pasto School, Puerto Rico"
+	demoProject.State = "S.U. Pasto School, Puerto Rico"
 	demoProject.MoneyRaised = 10000
-	demoProject.Years = 5
+	demoProject.ETA = 5
 	demoProject.PaybackPeriod = 2
 	demoProject.InterestRate = 0.029
 	demoProject.Metadata = "This is a pilot initiative of the MIT-Yale effort to integrate solar platforms with IoT data and blockchain based payment systems to help develop community shelters in Puerto Rico"

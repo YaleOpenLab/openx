@@ -95,7 +95,7 @@ func SelectContractTime(arr []Project) (Project, error) {
 
 	a = arr[0]
 	for _, elem := range arr {
-		if elem.Years < a.Years {
+		if elem.ETA < a.ETA {
 			a = elem
 			continue
 		}

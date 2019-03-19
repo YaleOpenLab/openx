@@ -21,7 +21,7 @@ import (
 
 // MunibondInvest invests in a specific munibond
 func MunibondInvest(issuerPath string, invIndex int, invSeed string, invAmount string,
-	projIndex int, invAssetCode string, totalValue float64) error {
+	projIndex int, invAssetCode string, totalValue float64, seedInvestmentFactor float64) error {
 	// offer user to exchange xlm for stableusd and invest directly if the user does not have stableusd
 	// this should be a menu on the Frontend but here we do this automatically
 	var err error
@@ -60,7 +60,7 @@ func MunibondInvest(issuerPath string, invIndex int, invSeed string, invAmount s
 
 	log.Printf("Sent InvAsset %s to investor %s with txhash %s", InvestorAsset.Code, investor.U.PublicKey, invAssetTxHash)
 
-	investor.AmountInvested += utils.StoF(invAmount)
+	investor.AmountInvested += utils.StoF(invAmount) / seedInvestmentFactor
 	investor.InvestedSolarProjects = append(investor.InvestedSolarProjects, InvestorAsset.Code)
 	// keep note of who all invested in this asset (even though it should be easy
 	// to get that from the blockchain)

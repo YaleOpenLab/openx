@@ -48,7 +48,7 @@ func parseProject(r *http.Request) (platform.Project, error) {
 
 	prepProject.PanelSize = r.FormValue("PanelSize")
 	prepProject.TotalValue = utils.StoF(r.FormValue("TotalValue"))
-	prepProject.Location = r.FormValue("Location")
+	prepProject.State = r.FormValue("Location")
 	prepProject.Metadata = r.FormValue("Metadata")
 	prepProject.Stage = utils.StoI(r.FormValue("Stage"))
 	prepProject.MoneyRaised = 0
