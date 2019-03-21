@@ -62,6 +62,7 @@ func PrintInvestor(investor database.Investor) {
 	}
 	fmt.Println("         Your Local Assets are: ", investor.U.LocalAssets)
 	fmt.Println("          Your Recovery Shares are: ", investor.U.RecoveryShares)
+	fmt.Println("          Your Secondary Account: ", investor.U.SecondaryWallet)
 }
 
 // PrintUsers is a vanity prettyprint function

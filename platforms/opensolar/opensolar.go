@@ -136,6 +136,15 @@ type Project struct {
 	Contract3 string
 	Contract4 string
 	Contract5 string
+
+	DeveloperIndices []int
+	MainDeveloper Entity
+	MainOriginator Entity
+	BlendedCapitalInvestorIndex int
+	RecipientIndices []int
+	DebtInvestor1 string
+	DebtInvestor2 string
+	TaxEquityInvestor string
 }
 
 // Terms a terms and conditions struct. WIll be used as an array in the main project

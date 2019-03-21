@@ -366,5 +366,212 @@ func InsertDummyData() error {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	var omwp opensolar.Project
+	indexHelp, err = opensolar.RetrieveAllProjects()
+	if err != nil {
+		log.Fatal(err)
+	}
+	omwp.Index = len(indexHelp) + 1
+
+	nd1, err := opensolar.NewDeveloper("solardev", "p", "x", "First Solar", "First Solar, Earth", "First Solar")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	nd2, err := opensolar.NewDeveloper("Host", "p", "x", "Host", "Host", "Host")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	nd3, err := opensolar.NewDeveloper("Independent RFP Engineer", "p", "x", "Independent RFP Engineer", "Independent RFP Engineer", "Independent RFP Engineer")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	nd4, err := opensolar.NewDeveloper("Simple Service Provider", "p", "x", "Simple Service Provider", "Simple Service Provider", "Simple Service Provider")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	nd5, err := opensolar.NewDeveloper("Vendor", "p", "x", "Vendor", "Vendor", "Vendor")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	nd6, err := opensolar.NewDeveloper("Auditors", "p", "x", "Auditors", "Auditors", "Auditors")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	nd7, err := opensolar.NewGuarantor("Insurance Agent", "p", "x", "Insurance Agent", "Insurance Agent", "Insurance Agent")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	nd8, err := opensolar.NewDeveloper("Utility", "p", "x", "Utility", "Utility", "Utility")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	omwp.DeveloperIndices = append(omwp.DeveloperIndices, nd1.U.Index, nd2.U.Index, nd3.U.Index, nd4.U.Index, nd5.U.Index, nd6.U.Index, nd7.U.Index, nd8.U.Index)
+	omwp.MainDeveloper = nd1
+
+	g1, err := opensolar.NewGuarantor("Green Bank", "p", "x", "Green Bank", "Green Bank", "Green Bank")
+	if err != nil {
+		log.Fatal(err)
+	}
+	omwp.Guarantor = g1
+
+	i1, err := database.NewInvestor("Green Bank", "p", "x", "Green Bank")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	i2, err := database.NewInvestor("OZ Fund", "p", "x", "OZ Fund")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	i3, err := database.NewInvestor("Tax Equity Business", "p", "x", "Tax Equity Business")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	omwp.InvestorIndices = append(omwp.InvestorIndices, i1.U.Index, i2.U.Index, i3.U.Index)
+
+	r1, err := database.NewRecipient("city", "p", "x", "city")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	r2, err := database.NewRecipient("shelter", "p", "x", "shelter")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	omwp.RecipientIndices = append(omwp.RecipientIndices, r1.U.Index, r2.U.Index)
+
+	omwp.TotalValue = 2000000
+	omwp.MoneyRaised = 150000
+	omwp.ETA = 20
+	omwp.DebtInvestor1 = "OZ Fund"
+	omwp.DebtInvestor2 = "Green Bank"
+	omwp.TaxEquityInvestor = "Local Business"
+	omwp.State = "NH"
+	omwp.Country = "US"
+	omwp.InterestRate = 0.05
+	omwp.Tax = "Free for x years"
+	omwp.PanelSize = "1MW"
+	omwp.Batteries = "210 kWh 1x Tesla Powerpack"
+	omwp.Metadata = "Neighborhood 1MW solar array on a field near Lancaster Elementary High School. The project was originated by the head of the community organization who is also active in the parent teacher association (PTA). The city of Lancaster agrees to sell a 20 year lease of the land to the project if the school gets to own the solar array after the lease expires. The school is located in an opportunity zone"
+	omwp.BlendedCapitalInvestorIndex = i2.U.Index
+	omwp.Stage = 4
+
+	err = omwp.Save()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var tkwp opensolar.Project
+	indexHelp, err = opensolar.RetrieveAllProjects()
+	if err != nil {
+		log.Fatal(err)
+	}
+	tkwp.Index = len(indexHelp) + 1
+	tkwp.TotalValue = 30000
+	tkwp.Stage = 8
+	tkwp.MoneyRaised = 30000
+	tkwp.ETA = 7
+	tkwp.State = "CT"
+	tkwp.Country = "US"
+	tkwp.InterestRate = 0.05
+	tkwp.Tax = "Free for x years"
+	tkwp.PanelSize = "10KW"
+	tkwp.Metadata = "A residential solar array for a homeless shelter. The project was originated (“sparked”) by a member of the board of the homeless shelter who gets the shelter to purchase all the electricity at a discounted rate. The shelter chooses to lease the roof for free over the lifetime of the project. The originator knows a solar developer who sets up a project company"
+
+	i1, err = database.NewInvestor("insert_name1", "p", "x", "insert_name1")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	i2, err = database.NewInvestor("insert_name2", "p", "x", "insert_name2")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	i3, err = database.NewInvestor("insert_name3", "p", "x", "insert_name3")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	i4, err := database.NewInvestor("insert_name4", "p", "x", "insert_name4")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	i5, err := database.NewInvestor("insert_name5", "p", "x", "insert_name5")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	i6, err := database.NewInvestor("insert_name6", "p", "x", "insert_name6")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	nd1, err = opensolar.NewDeveloper("insert_name_dev", "p", "x", "insert_name_dev", "insert_name_dev", "insert_name_dev")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	nd2, err = opensolar.NewDeveloper("solardev", "p", "x", "First Solar", "First Solar, Earth", "First Solar")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	nd3, err = opensolar.NewDeveloper("Host", "p", "x", "Host", "Host", "Host")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	nd4, err = opensolar.NewGuarantor("Insurance Agent", "p", "x", "Insurance Agent", "Insurance Agent", "Insurance Agent")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	nd5, err = opensolar.NewDeveloper("Utility", "p", "x", "Utility", "Utility", "Utility")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	no1, err := opensolar.NewOriginator("insert_name_orig", "p", "x", "insert_name_orig", "insert_name_orig", "insert_name_orig")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	tkwp.Tax = "self sheltering"
+	tkwp.InvestorIndices = append(tkwp.InvestorIndices, i1.U.Index, i2.U.Index, i3.U.Index, i4.U.Index, i5.U.Index, i6.U.Index)
+	tkwp.DeveloperIndices = append(tkwp.DeveloperIndices, nd1.U.Index, nd2.U.Index, nd3.U.Index, nd4.U.Index, nd5.U.Index)
+	tkwp.Originator = no1
+	tkwp.InvestmentType = "reg cf"
+
+	r1, err = database.NewRecipient("shelter", "p", "x", "shelter")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	r2, err = database.NewRecipient("offtakershelter", "p", "x", "offtakershelter")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	tkwp.RecipientIndices = append(tkwp.RecipientIndices, r1.U.Index, r2.U.Index)
+
+	err = tkwp.Save()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	return nil
 }
