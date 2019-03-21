@@ -41,10 +41,13 @@ type Project struct {
 	DateLastPaid  int64 // int64 ie unix time since we need comparisons on this one
 
 	// params that help define the specifications of the installation
+	// MW: What does state really mean here? Is this the project name?
 	State           string  // the state in which the project has been installed in
 	Country         string  // the country in which the project has been installed in
 	InterestRate    float64 // the rate of return for investors
 	Tax             string  // the specifications of the tax system associated with this particular project
+	// TODO: I see we have 'Panel Size' which should just be the denominal value only (eg. 1000W), but there should also be a 'Panel technical description'
+	// This should talk about '10x 100W Komaes etc'
 	PanelSize       string  // size of the given panel, for diplsaying to the user who wants to bid stuff
 	Inverter        string
 	ChargeRegulator string
@@ -52,6 +55,7 @@ type Project struct {
 	CommBox         string
 	ACTransfer      string
 	SolarCombiner   string
+	//TODO: Batteries should also have a fixed nominal value of capacity, as well as one describing what setup it is.
 	Batteries       string
 	IoTHub          string
 	Metadata        string // other metadata which does not have an explicit name can be stored here. Used to derive assetIDs
