@@ -34,6 +34,7 @@ func newSolarProject(index int, panelsize string, totalValue float64, location s
 	project.AuctionType = auctionType
 	project.InvestmentType = "munibond"
 
+	// This is to populate the table of Terms and Conditions in the front end
 	var x1 opensolar.TermsHelper
 	x1.Variable = "Security Type"
 	x1.Value = "Municipal Bond"
@@ -151,6 +152,7 @@ func newConstructionBond(mdate string, stype string, intrate float64, rating str
 	return cBond, err
 }
 
+// ALL 5 PROJECT DATA WILL BE ADDED HERE FOR THE DEMO
 // InsertDummyData inserts sample data
 func InsertDummyData() error {
 	var err error
@@ -336,7 +338,7 @@ func InsertDummyData() error {
 	demoProject.Index = len(indexHelp) + 1
 	demoProject.PanelSize = "1000W" 
 	demoProject.TotalValue = 8000 + 2000
-	demoProject.State = "S.U. Pasto School, Aibonito"
+	demoProject.State = "Puerto Rico"
 	demoProject.MoneyRaised = 10000
 	demoProject.ETA = 5
 	demoProject.PaybackPeriod = 2	// In number of weeks in which payments are triggered
@@ -384,6 +386,8 @@ func InsertDummyData() error {
 	}
 	omwp.Index = len(indexHelp) + 1
 
+	/// This is where we onboard users that interact in the project mentioned immediately below
+	// User / Entity data is ['username' (unique name), 'password', 'seed password', 'name', 'address'(physical address), 'Description of the user')
 	nd1, err := opensolar.NewDeveloper("solardev", "p", "x", "First Solar", "First Solar, Earth", "First Solar")
 	if err != nil {
 		log.Fatal(err)
@@ -483,7 +487,7 @@ func InsertDummyData() error {
 		log.Fatal(err)
 	}
 
-	// TODO: Martin To Revise
+
 	// tkwp: Ten Kilowatt Project
 	// STAGE 8 - Connecticut Homeless Shelter
 	var tkwp opensolar.Project
@@ -502,6 +506,7 @@ func InsertDummyData() error {
 	//MW: The string doesn't like % to be included. Also Tax could be: 'TaxCredit' parameter of getting funds back, and 'TaxAmount' or 'TaxDebit' which is the percent of tax taken from the project revenue. Both can be specific % value, and also a string (eventually a drop down) describing the structure. 
 	tkwp.Tax = "0.3 Tax Credit"
 	tkwp.PanelSize = "15KW"
+	// MW: We should include here info for parameters of the inverter etc. 
 	tkwp.Metadata = "Residential solar array for a homeless shelter. The project was originated by a member of the board of the homeless shelter who gets the shelter to purchase all the electricity at a discounted rate. The shelter chooses to lease the roof for free over the lifetime of the project. The originator knows the solar developer who set up the project company"
 
 	i1, err = database.NewInvestor("Matthew Moroney", "p", "x", "Matthew Moroney")
@@ -589,3 +594,20 @@ func InsertDummyData() error {
 
 	return nil
 }
+
+
+omwp.TotalValue = 2000000
+	omwp.MoneyRaised = 150000
+	omwp.ETA = 20
+	omwp.DebtInvestor1 = "OZ Fund"
+	omwp.DebtInvestor2 = "Green Bank"
+	omwp.TaxEquityInvestor = "Lancaster Bank"
+	omwp.State = "NH"
+	omwp.Country = "USA"
+	omwp.InterestRate = 0.05
+	omwp.Tax = "Free for x years"
+	omwp.PanelSize = "1MW"
+	omwp.Batteries = "210 kWh 1x Tesla Powerpack"
+	omwp.Metadata = "Neighborhood 1MW solar array on the field next to Lancaster Elementary High School. The project was originated by the head of the community organization, Ben Southworth, who is also active in the parent teacher association (PTA). The city of Lancaster has agreed to give a 20 year lease of the land to the project if the school gets to own the solar array after the lease expires. The school is located in an opportunity zone"
+	omwp.BlendedCapitalInvestorIndex = i2.U.Index
+	omwp.Stage = 4
