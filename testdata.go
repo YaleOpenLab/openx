@@ -10,7 +10,721 @@ import (
 	utils "github.com/YaleOpenLab/openx/utils"
 )
 
-func newSolarProject(index int, panelsize string, totalValue float64, location string, moneyRaised float64,
+func createPuertoRicoProject() error {
+	// setup all the entities that will be involved with the project here
+	investor1, err := database.NewInvestor("OpenLab", "p", "x", "Yale OpenLab")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	recipient1, err := database.NewRecipient("SUpasto", "p", "x", "S.U. Pasto School")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	originator1, err := opensolar.NewOriginator("DCI", "p", "x", "MIT DCI", "MIT Building E14-15", "The MIT Media Lab's Digital Currency Initiative")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	contractor1, err := opensolar.NewContractor("MartinWainstein", "p", "x", "Martin Wainstein", "254 Elm Street, New Haven, CT", "Martin Wainstein from the Yale OpenLab")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	developer1, err := opensolar.NewDeveloper("gs", "p", "x", "Genmoji Solar", "Genmoji, San Juan, Puerto Rico", "Genmoji Solar")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	developer2, err := opensolar.NewDeveloper("nbly", "p", "x", "Neighborly Securities", "San Francisco, CA", "Broker Dealer")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	guarantor1, err := opensolar.NewGuarantor("mitml", "p", "x", "MIT Media Lab", "MIT Building E14-15", "The MIT Media Lab is an interdisciplinary lab with innovators from all around the globe")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var project opensolar.Project
+	indexHelp, err := opensolar.RetrieveAllProjects()
+	if err != nil {
+		log.Fatal(err)
+	}
+	project.Index = len(indexHelp) + 1
+	project.PanelSize = "1000W"
+	project.TotalValue = 8000 + 2000
+	project.State = "Puerto Rico"
+	project.MoneyRaised = 10000
+	project.ETA = 5
+	project.PaybackPeriod = 2 // In number of weeks in which payments are triggered
+	project.InterestRate = 0.029
+	project.Metadata = "This project is a pilot initiative from MIT MediaLab's DCI & the Yale Openlab at Tsai CITY, as to integrate the opensolar platforms with IoT data and blockchain based payment systems to help finance community energy in Puerto Rico"
+	project.Inverter = "Schneider Conext SW 230V 2024"
+	project.ChargeRegulator = "Schneider MPPT60"
+	project.ControlPanel = "Schneider XW SCP"
+	project.CommBox = "Schneider Conext Insight"
+	project.ACTransfer = "Eaton Manual throw switches between grid and solar+grid setups"
+	project.SolarCombiner = "MidNite"
+	project.Batteries = "Advance Autoparts Deep cycle 600A"
+	project.IoTHub = "Yale Open Powermeter w/ RaspberryPi3"
+	project.DateInitiated = "01/23/2018"
+	project.DateFunded = "06/19/2018"
+	project.BalLeft = 10000 // assume recipient has not paid anything back to us yet
+	project.Originator = originator1
+	project.Contractor = contractor1
+	project.DeveloperIndices = append(project.DeveloperIndices, developer1.U.Index, developer2.U.Index) // append the developer indiecs to the project so we can reference them later
+	project.Guarantor = guarantor1
+	project.ContractorFee = 2000
+	project.DeveloperFee = 6000
+	project.RecipientIndex = recipient1.U.Index
+	project.Stage = 7
+	project.AuctionType = "private"
+	project.StageData = append(project.StageData, "ipfshash") // TODO: replace this with the real ipfs hash for the demo
+	project.Reputation = 10000                                // fix this equal to total value
+	project.InvestorIndices = append(project.InvestorIndices, investor1.U.Index)
+	project.InvestmentType = "Municipal Bond"
+
+	// This is to populate the table of Terms and Conditions in the front end
+	var terms1 opensolar.TermsHelper
+	terms1.Variable = "Security Type"
+	terms1.Value = "Municipal Bond"
+	terms1.RelevantParty = "PR DofEd"
+	terms1.Note = "Promoted by PR governor's office"
+	terms1.Status = "Demo"
+	terms1.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var terms2 opensolar.TermsHelper
+	terms2.Variable = "PPA Tariff"
+	terms2.Value = "0.24 ct/KWh"
+	terms2.RelevantParty = "oracle X / PREPA"
+	terms2.Note = "Variable anchored to local tariff"
+	terms2.Status = "Signed"
+	terms2.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var terms3 opensolar.TermsHelper
+	terms3.Variable = "Return (TEY)"
+	terms3.Value = "3.1%"
+	terms3.RelevantParty = "Broker Dealer"
+	terms3.Note = "Variable tied to tariff"
+	terms3.Status = "Signed"
+	terms3.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var terms4 opensolar.TermsHelper
+	terms4.Variable = "Maturity"
+	terms4.Value = "+/- 2025"
+	terms4.RelevantParty = "Broker Dealer"
+	terms4.Note = "Tax adjusted Yield"
+	terms4.Status = "Signed"
+	terms4.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var terms5 opensolar.TermsHelper
+	terms5.Variable = "Guarantee"
+	terms5.Value = "50%"
+	terms5.RelevantParty = "Foundation X"
+	terms5.Note = "First-loss upon breach"
+	terms5.Status = "Started"
+	terms5.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var terms6 opensolar.TermsHelper
+	terms6.Variable = "Insurance"
+	terms6.Value = "Premium"
+	terms6.RelevantParty = "Allianz CS"
+	terms6.Note = "Hurricane Coverage"
+	terms6.Status = "Started"
+	terms6.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	project.Terms = append(project.Terms, terms1, terms2, terms3, terms4, terms5, terms6)
+
+	err = project.Save()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func createOneMegaWattProject() error {
+	// setup all the entities involved with the project here
+	investor1, err := database.NewInvestor("GreenBank", "p", "x", "NH Green Bank")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	investor2, err := database.NewInvestor("OZFunds", "p", "x", "OZ FundCo")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	investor3, err := database.NewInvestor("TaxEquity", "p", "x", "NH Tax Equity Business Ltd")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	recipient1, err := database.NewRecipient("LancasterHigh", "p", "x", "Lancaster Elementary School")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	recipient2, err := database.NewRecipient("LancasterT", "p", "x", "Town of Lancaste NH")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	developer1, err := opensolar.NewDeveloper("SolarDev", "p", "x", "First Solar", "Solar Rd, San Diego, California", "Main contractor for full solar development")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	developer2, err := opensolar.NewDeveloper("LancasterSolar", "p", "x", "Town of Lancaste NH", "Lancaster, New Hampshire", "Host")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	developer3, err := opensolar.NewDeveloper("LancasterRFP", "p", "x", "Lancaster Solar Engineer Solutions", "25 Lancaster Rd, New Hampshire", "Independent RFP Engineer")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	developer4, err := opensolar.NewDeveloper("Simple Service Provider", "p", "x", "Simple Service Provider", "Simple Service Provider", "Simple Service Provider")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	developer5, err := opensolar.NewDeveloper("VendorX", "p", "x", "Solar Racking Systems Inc", "34 Crack St, Boston", "Retail Vendor")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	developer6, err := opensolar.NewDeveloper("NEpool", "p", "x", "New England Pool Registered Auditor", "56 Hamden Ave, Stamford, CT", "REC Auditors for New England")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	developer7, err := opensolar.NewGuarantor("AllianzCS", "p", "x", "Allianz Climate Solutions", "34 5th, New York, NY", "Insurance Agent")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	developer8, err := opensolar.NewDeveloper("UIavangrid", "p", "x", "Avangrid Networks", "100 Marsh Hill Rd, New Haven, CT", "Utility")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	guarantor1, err := opensolar.NewGuarantor("GreenBank", "p", "x", "NH Green Bank", "67 Washington Rd, New Hampshire", "Impact-first escrow provider")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var project opensolar.Project
+	indexHelp, err := opensolar.RetrieveAllProjects()
+	if err != nil {
+		log.Fatal(err)
+	}
+	project.Index = len(indexHelp) + 1
+
+	/// This is where we onboard users that interact in the project mentioned immediately below
+	// User / Entity data is ['username' (unique name), 'password', 'seed password', 'name', 'address'(physical address), 'Description of the user')
+
+	project.DeveloperIndices = append(project.DeveloperIndices, developer1.U.Index, developer2.U.Index,
+		developer3.U.Index, developer4.U.Index, developer5.U.Index, developer6.U.Index, developer7.U.Index, developer8.U.Index)
+	project.MainDeveloper = developer1
+	project.Guarantor = guarantor1
+	project.InvestorIndices = append(project.InvestorIndices, investor1.U.Index, investor2.U.Index, investor3.U.Index)
+	project.RecipientIndices = append(project.RecipientIndices, recipient1.U.Index, recipient2.U.Index)
+	project.TotalValue = 2000000
+	project.MoneyRaised = 150000
+	project.ETA = 20
+	project.DebtInvestor1 = "OZFunds"
+	project.DebtInvestor2 = "GreenBank"
+	project.TaxEquityInvestor = "TaxEquity"
+	project.State = "NH"
+	project.Country = "USA"
+	project.InterestRate = 0.05
+	project.Tax = "Tax Free Opportunity Zone"
+	project.PanelSize = "1MW"
+	project.Batteries = "210 kWh 1x Tesla Powerpack"
+	project.Metadata = "Neighborhood 1MW solar array on the field next to Lancaster Elementary High School. The project was originated by the head of the community organization, Ben Southworth, who is also active in the parent teacher association (PTA). The city of Lancaster has agreed to give a 20 year lease of the land to the project if the school gets to own the solar array after the lease expires. The school is located in an opportunity zone"
+	project.BlendedCapitalInvestorIndex = investor2.U.Index
+	project.Stage = 4
+
+	// This is to populate the table of Terms and Conditions in the front end. TODO: change this inline with the FE
+	var terms1 opensolar.TermsHelper
+	terms1.Variable = "Security Type"
+	terms1.Value = "Municipal Bond"
+	terms1.RelevantParty = "PR DofEd"
+	terms1.Note = "Promoted by PR governor's office"
+	terms1.Status = "Demo"
+	terms1.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var terms2 opensolar.TermsHelper
+	terms2.Variable = "PPA Tariff"
+	terms2.Value = "0.24 ct/KWh"
+	terms2.RelevantParty = "oracle X / PREPA"
+	terms2.Note = "Variable anchored to local tariff"
+	terms2.Status = "Signed"
+	terms2.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var terms3 opensolar.TermsHelper
+	terms3.Variable = "Return (TEY)"
+	terms3.Value = "3.1%"
+	terms3.RelevantParty = "Broker Dealer"
+	terms3.Note = "Variable tied to tariff"
+	terms3.Status = "Signed"
+	terms3.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var terms4 opensolar.TermsHelper
+	terms4.Variable = "Maturity"
+	terms4.Value = "+/- 2025"
+	terms4.RelevantParty = "Broker Dealer"
+	terms4.Note = "Tax adjusted Yield"
+	terms4.Status = "Signed"
+	terms4.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var terms5 opensolar.TermsHelper
+	terms5.Variable = "Guarantee"
+	terms5.Value = "50%"
+	terms5.RelevantParty = "Foundation X"
+	terms5.Note = "First-loss upon breach"
+	terms5.Status = "Started"
+	terms5.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var terms6 opensolar.TermsHelper
+	terms6.Variable = "Insurance"
+	terms6.Value = "Premium"
+	terms6.RelevantParty = "Allianz CS"
+	terms6.Note = "Hurricane Coverage"
+	terms6.Status = "Started"
+	terms6.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	project.Terms = append(project.Terms, terms1, terms2, terms3, terms4, terms5, terms6)
+
+	err = project.Save()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return nil
+}
+
+func createTenKiloWattProject() error {
+
+	investor1, err := database.NewInvestor("MatthewMoroney", "p", "x", "Matthew Moroney")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	investor2, err := database.NewInvestor("FranzHochstrasser", "p", "x", "Franz Hochstrasser")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	investor3, err := database.NewInvestor("CTGreenBank", "p", "x", "Connecticut Green Bank")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	investor4, err := database.NewInvestor("YaleUniversity", "p", "x", "Yale University Community Fund")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	investor5, err := database.NewInvestor("JeromeGreen", "p", "x", "Jerome Green")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	investor6, err := database.NewInvestor("OpenSolarFund", "p", "x", "Open Solar Revolving Fund")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	recipient1, err := database.NewRecipient("Shelter1", "p", "x", "Shelter1 Community Solar")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	recipient2, err := database.NewRecipient("ColumbusHouse", "p", "x", "Columbus House Foundation")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	developer1, err := opensolar.NewDeveloper("YaleArchitecture", "p", "x", "Yale School of Architecture", "45 York St, New Haven, CT", "System and layout designer")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	developer2, err := opensolar.NewDeveloper("CTSolar", "p", "x", "Connecticut Solar", "45 Sun Street, Stamford, CT", "Solar system installer")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	developer3, err := opensolar.NewDeveloper("ColumbusHouse", "p", "x", "Columbus House", "21 Hagrid Ave, New Haven, CT", "Project Host")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// We have in these examples one user that is covering different roles. And this is something good for the demo eventually. The example is Raise Green (both originator and guarantor) and Avangrid (REC developer here, Utility in another project)
+	// How should we create these users so that they have these different entity properties?
+	developer4, err := opensolar.NewGuarantor("RGreenFund", "p", "x", "RaiseGreen Blend Fund", "21 orange st, New Haven, CT", "Impact-first blended capital provider")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	developer5, err := opensolar.NewDeveloper("Avangrid", "p", "x", "Avangrid RECs", "100 Marsh Hill Rd, New Haven, CT", "Certifier of RECs and provider of REC meter")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	originator1, err := opensolar.NewOriginator("RaiseGreen", "p", "x", "Raise Green", "21 orange st, New Haven, CT", "Project originator")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var project opensolar.Project
+	indexHelp, err := opensolar.RetrieveAllProjects()
+	if err != nil {
+		log.Fatal(err)
+	}
+	project.Index = len(indexHelp) + 1
+	project.TotalValue = 30000
+	project.Stage = 8
+	project.MoneyRaised = 30000
+	project.ETA = 0 // This project already flipped!
+	project.State = "CT"
+	project.Country = "US"
+	project.InterestRate = 0.05
+	//MW: The string doesn't like % to be included. Also Tax could be: 'TaxCredit' parameter of getting funds back, and 'TaxAmount' or 'TaxDebit' which is the percent of tax taken from the project revenue. Both can be specific % value, and also a string (eventually a drop down) describing the structure.
+	project.Tax = "0.3 Tax Credit"
+	project.PanelSize = "15KW"
+	// MW: Should we include here info for parameters of the inverter etc. ?
+	project.Metadata = "Residential solar array for a homeless shelter. The project was originated by a member of the board of the homeless shelter who gets the shelter to purchase all the electricity at a discounted rate. The shelter chooses to lease the roof for free over the lifetime of the project. The originator knows the solar developer who set up the project company"
+	project.Tax = "No benefits applied"
+	project.InvestorIndices = append(project.InvestorIndices, investor1.U.Index, investor2.U.Index, investor3.U.Index, investor4.U.Index, investor5.U.Index, investor6.U.Index)
+	project.DeveloperIndices = append(project.DeveloperIndices, developer1.U.Index, developer2.U.Index, developer3.U.Index, developer4.U.Index, developer5.U.Index)
+	project.Originator = originator1
+	project.InvestmentType = "Regulation Crowdfunding"
+	project.RecipientIndices = append(project.RecipientIndices, recipient1.U.Index, recipient2.U.Index)
+
+	// This is to populate the table of Terms and Conditions in the front end. TODO: change this inline with the FE
+	var terms1 opensolar.TermsHelper
+	terms1.Variable = "Security Type"
+	terms1.Value = "Municipal Bond"
+	terms1.RelevantParty = "PR DofEd"
+	terms1.Note = "Promoted by PR governor's office"
+	terms1.Status = "Demo"
+	terms1.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var terms2 opensolar.TermsHelper
+	terms2.Variable = "PPA Tariff"
+	terms2.Value = "0.24 ct/KWh"
+	terms2.RelevantParty = "oracle X / PREPA"
+	terms2.Note = "Variable anchored to local tariff"
+	terms2.Status = "Signed"
+	terms2.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var terms3 opensolar.TermsHelper
+	terms3.Variable = "Return (TEY)"
+	terms3.Value = "3.1%"
+	terms3.RelevantParty = "Broker Dealer"
+	terms3.Note = "Variable tied to tariff"
+	terms3.Status = "Signed"
+	terms3.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var terms4 opensolar.TermsHelper
+	terms4.Variable = "Maturity"
+	terms4.Value = "+/- 2025"
+	terms4.RelevantParty = "Broker Dealer"
+	terms4.Note = "Tax adjusted Yield"
+	terms4.Status = "Signed"
+	terms4.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var terms5 opensolar.TermsHelper
+	terms5.Variable = "Guarantee"
+	terms5.Value = "50%"
+	terms5.RelevantParty = "Foundation X"
+	terms5.Note = "First-loss upon breach"
+	terms5.Status = "Started"
+	terms5.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var terms6 opensolar.TermsHelper
+	terms6.Variable = "Insurance"
+	terms6.Value = "Premium"
+	terms6.RelevantParty = "Allianz CS"
+	terms6.Note = "Hurricane Coverage"
+	terms6.Status = "Started"
+	terms6.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	project.Terms = append(project.Terms, terms1, terms2, terms3, terms4, terms5, terms6)
+
+	err = project.Save()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return nil
+}
+
+func createTenMegaWattProject() error {
+	// create the required entities that we need over here
+	investor1, err := database.NewInvestor("emcoll", "p", "x", "Emerson Collective")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	investor2, err := database.NewInvestor("prqozfund", "p", "x", "Puerto Rico QOZ Fund")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	recipient1, err := database.NewRecipient("prgov", "p", "x", "PR Government")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	recipient2, err := database.NewRecipient("prschools", "p", "x", "Puerto Rico Solar Schools Limited")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	recipient3, err := database.NewRecipient("prdoe", "p", "x", "Puerto Rico Department of Education")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	originator1, err := opensolar.NewOriginator("yol1", "p", "x", "Yale Open Lab", "254 Elm St, New Haven, CT", "Project originator")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	developer1, err := opensolar.NewDeveloper("hst", "p", "x", "HST Solar", "25 Hewlett St, San Francisco, CA", "Preliminary finance and engineering assessment")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	developer2, err := opensolar.NewDeveloper("FemaRoofs", "p", "x", "FEMA Puerto Rico", "“45 Old Town Rd, Puerto Rico", "Civil engineering assessment of school roofs")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var project opensolar.Project
+
+	project.Name = "Puerto Rico Public School Bond 10"
+	project.PanelSize = "10MW"
+	project.State = "Puerto Rico"
+	project.Country = "USA"
+	project.Batteries = "900 kWh 350x Tesla PowerWalls"
+	project.Stage = 2
+	project.DateInitiated = "01/23/2019"
+	project.Metadata = "Transformation of 300 Puerto Rican public schools into solar powered emergency shelters. Each school will have around 30kW solar and 2kWh battery bank to cover critical loads including refrigeration of food and medicine, and an emergency telecommunication system with first responders. Backed by the Office of the Governor. 10 MW aggregate solar capacity. Nodes for community microgrids"
+	project.TotalValue = 19000000
+	project.MoneyRaised = 0
+	project.ETA = 8
+	project.PaybackPeriod = 4
+	project.InvestmentType = "munibond"
+	project.InvestorIndices = append(project.InvestorIndices, investor1.U.Index, investor2.U.Index)
+	project.RecipientIndices = append(project.RecipientIndices, recipient1.U.Index, recipient2.U.Index, recipient3.U.Index)
+	project.DeveloperIndices = append(project.DeveloperIndices, developer1.U.Index, developer2.U.Index)
+	project.Originator = originator1
+
+	// This is to populate the table of Terms and Conditions in the front end. TODO: change this inline with the FE
+	var terms1 opensolar.TermsHelper
+	terms1.Variable = "Security Type"
+	terms1.Value = "Municipal Bond"
+	terms1.RelevantParty = "PR DofEd"
+	terms1.Note = "Promoted by PR governor's office"
+	terms1.Status = "Demo"
+	terms1.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var terms2 opensolar.TermsHelper
+	terms2.Variable = "PPA Tariff"
+	terms2.Value = "0.24 ct/KWh"
+	terms2.RelevantParty = "oracle X / PREPA"
+	terms2.Note = "Variable anchored to local tariff"
+	terms2.Status = "Signed"
+	terms2.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var terms3 opensolar.TermsHelper
+	terms3.Variable = "Return (TEY)"
+	terms3.Value = "3.1%"
+	terms3.RelevantParty = "Broker Dealer"
+	terms3.Note = "Variable tied to tariff"
+	terms3.Status = "Signed"
+	terms3.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var terms4 opensolar.TermsHelper
+	terms4.Variable = "Maturity"
+	terms4.Value = "+/- 2025"
+	terms4.RelevantParty = "Broker Dealer"
+	terms4.Note = "Tax adjusted Yield"
+	terms4.Status = "Signed"
+	terms4.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var terms5 opensolar.TermsHelper
+	terms5.Variable = "Guarantee"
+	terms5.Value = "50%"
+	terms5.RelevantParty = "Foundation X"
+	terms5.Note = "First-loss upon breach"
+	terms5.Status = "Started"
+	terms5.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var terms6 opensolar.TermsHelper
+	terms6.Variable = "Insurance"
+	terms6.Value = "Premium"
+	terms6.RelevantParty = "Allianz CS"
+	terms6.Note = "Hurricane Coverage"
+	terms6.Status = "Started"
+	terms6.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	project.Terms = append(project.Terms, terms1, terms2, terms3, terms4, terms5, terms6)
+
+	err = project.Save()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return nil
+}
+
+func createOneHundredKiloWattProject() error {
+
+	investor1, err := database.NewInvestor("jjackson", "p", "x", "Jerome Jackson")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	investor2, err := database.NewInvestor("esare", "p", "x", "Eliah Sare")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	investor3, err := database.NewInvestor("yaleuf", "p", "x", "Yale University Fund")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	recipient1, err := database.NewRecipient("ubaduef", "p", "x", "Ubadu Energy Collective")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	recipient2, err := database.NewRecipient("sunshinegschool", "p", "x", "Sunshine Garden School")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	recipient3, err := database.NewRecipient("ubaduth", "p", "x", "Ubadu Town Hall")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	recipient4, err := database.NewRecipient("dwbrf", "p", "x", " Doctors without borders, Rwanda chapter")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	recipient5, err := database.NewRecipient("largerof", "p", "x", "Large Residential offtakers")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	originator1, err := opensolar.NewOriginator("DjiembeMbeba", "p", "x", "Djiembe Mbeba", "Ubadu village, Rwanda", "Project originator")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	developer1, err := opensolar.NewDeveloper("SolarPartners", "p", "x", "Solar Partners", "34 Hiete st, Somaliland", "MiniGrid game developer")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	developer2, err := opensolar.NewDeveloper("hst2", "p", "x", "HST Solar", "25 Hewlett St, San Francisco, CA", "Preliminary finance and engineering assessment")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var project opensolar.Project
+
+	project.Name = "Rwanda Community Microgrid"
+	project.PanelSize = "100kW"
+	project.State = "Khigali"
+	project.Country = "Rwanda"
+	project.Batteries = "25 kWh"
+	project.Stage = 1
+	project.DateInitiated = "03/25/2019"
+	project.Metadata = "The community of Ubadu, Rwanda has no access to electricity yet shows a growing local economy. This microgrid project, developed a collaboration with Yale and MIT, aims to serve 250 homes, including its only school, ‘Sunshine Garden,’ the town infirmary led by a team of doctors without borders, and the town hall. Community cooperative with international backing. 20% first loss fund secured. Currently doing engineering due diligence for development quotes"
+	project.TotalValue = 230000
+	project.SeedInvestmentCap = 5000
+	project.MoneyRaised = 1250
+	project.InterestRate = 0.023
+	project.ETA = 7
+	project.PaybackPeriod = 4
+	project.InvestmentType = "equity"
+	project.InvestorIndices = append(project.InvestorIndices, investor1.U.Index, investor2.U.Index, investor3.U.Index)
+	project.RecipientIndices = append(project.RecipientIndices, recipient1.U.Index, recipient2.U.Index, recipient3.U.Index,recipient4.U.Index,recipient5.U.Index)
+	project.DeveloperIndices = append(project.DeveloperIndices, developer1.U.Index, developer2.U.Index)
+	project.Originator = originator1
+
+	// This is to populate the table of Terms and Conditions in the front end. TODO: change this inline with the FE
+	var terms1 opensolar.TermsHelper
+	terms1.Variable = "Security Type"
+	terms1.Value = "Municipal Bond"
+	terms1.RelevantParty = "PR DofEd"
+	terms1.Note = "Promoted by PR governor's office"
+	terms1.Status = "Demo"
+	terms1.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var terms2 opensolar.TermsHelper
+	terms2.Variable = "PPA Tariff"
+	terms2.Value = "0.24 ct/KWh"
+	terms2.RelevantParty = "oracle X / PREPA"
+	terms2.Note = "Variable anchored to local tariff"
+	terms2.Status = "Signed"
+	terms2.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var terms3 opensolar.TermsHelper
+	terms3.Variable = "Return (TEY)"
+	terms3.Value = "3.1%"
+	terms3.RelevantParty = "Broker Dealer"
+	terms3.Note = "Variable tied to tariff"
+	terms3.Status = "Signed"
+	terms3.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var terms4 opensolar.TermsHelper
+	terms4.Variable = "Maturity"
+	terms4.Value = "+/- 2025"
+	terms4.RelevantParty = "Broker Dealer"
+	terms4.Note = "Tax adjusted Yield"
+	terms4.Status = "Signed"
+	terms4.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var terms5 opensolar.TermsHelper
+	terms5.Variable = "Guarantee"
+	terms5.Value = "50%"
+	terms5.RelevantParty = "Foundation X"
+	terms5.Note = "First-loss upon breach"
+	terms5.Status = "Started"
+	terms5.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var terms6 opensolar.TermsHelper
+	terms6.Variable = "Insurance"
+	terms6.Value = "Premium"
+	terms6.RelevantParty = "Allianz CS"
+	terms6.Note = "Hurricane Coverage"
+	terms6.Status = "Started"
+	terms6.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	project.Terms = append(project.Terms, terms1, terms2, terms3, terms4, terms5, terms6)
+
+	err = project.Save()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return nil
+}
+
+func testSolarProject(index int, panelsize string, totalValue float64, location string, moneyRaised float64,
 	metadata string, invAssetCode string, debtAssetCode string, pbAssetCode string, years int, recpIndex int,
 	contractor opensolar.Entity, originator opensolar.Entity, stage int, pbperiod int, auctionType string) (opensolar.Project, error) {
 
@@ -34,55 +748,6 @@ func newSolarProject(index int, panelsize string, totalValue float64, location s
 	project.AuctionType = auctionType
 	project.InvestmentType = "munibond"
 
-	var x1 opensolar.TermsHelper
-	x1.Variable = "Security Type"
-	x1.Value = "Municipal Bond"
-	x1.RelevantParty = "PR DofEd"
-	x1.Note = "Promoted by PR governor's office"
-	x1.Status = "Demo"
-	x1.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
-
-	var x2 opensolar.TermsHelper
-	x2.Variable = "PPA Tariff"
-	x2.Value = "0.24 ct/KWh"
-	x2.RelevantParty = "oracle X / PREPA"
-	x2.Note = "Variable anchored to local tariff"
-	x2.Status = "Signed"
-	x2.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
-
-	var x3 opensolar.TermsHelper
-	x3.Variable = "Return (TEY)"
-	x3.Value = "3.1%"
-	x3.RelevantParty = "Broker Dealer"
-	x3.Note = "Variable tied to tariff"
-	x3.Status = "Signed"
-	x3.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
-
-	var x4 opensolar.TermsHelper
-	x4.Variable = "Maturity"
-	x4.Value = "+/- 2025"
-	x4.RelevantParty = "Broker Dealer"
-	x4.Note = "Tax adjusted Yield"
-	x4.Status = "Signed"
-	x4.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
-
-	var x5 opensolar.TermsHelper
-	x5.Variable = "Guarantee"
-	x5.Value = "50%"
-	x5.RelevantParty = "Foundation X"
-	x5.Note = "First-loss upon breach"
-	x5.Status = "Started"
-	x5.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
-
-	var x6 opensolar.TermsHelper
-	x6.Variable = "Insurance"
-	x6.Value = "Premium"
-	x6.RelevantParty = "Allianz CS"
-	x6.Note = "Hurricane Coverage"
-	x6.Status = "Started"
-	x6.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
-
-	project.Terms = append(project.Terms, x1, x2, x3, x4, x5, x6)
 	err := project.Save()
 	if err != nil {
 		return project, errors.New("Error inserting project into db")
@@ -151,6 +816,7 @@ func newConstructionBond(mdate string, stype string, intrate float64, rating str
 	return cBond, err
 }
 
+// ALL 5 PROJECT DATA WILL BE ADDED HERE FOR THE DEMO
 // InsertDummyData inserts sample data
 func InsertDummyData() error {
 	var err error
@@ -260,7 +926,7 @@ func InsertDummyData() error {
 		log.Fatal(err)
 	}
 
-	_, err = newSolarProject(1, "100 1000 sq.ft homes each with their own private spaces for luxury", 14000, "India Basin, San Francisco",
+	_, err = testSolarProject(1, "100 1000 sq.ft homes each with their own private spaces for luxury", 14000, "India Basin, San Francisco",
 		0, "India Basin is an upcoming creative project based in San Francisco that seeks to invite innovators from all around to participate", "", "", "",
 		3, recp.U.Index, contractor, originator, 4, 2, "blind")
 
@@ -268,7 +934,7 @@ func InsertDummyData() error {
 		log.Fatal(err)
 	}
 
-	_, err = newSolarProject(2, "180 1200 sq.ft homes in a high rise building 0.1mi from Kendall Square", 30000, "Kendall Square, Boston",
+	_, err = testSolarProject(2, "180 1200 sq.ft homes in a high rise building 0.1mi from Kendall Square", 30000, "Kendall Square, Boston",
 		0, "Kendall Square is set in the heart of Cambridge and is a popular startup IT hub", "", "", "",
 		5, recp.U.Index, contractor, originator, 4, 2, "blind")
 
@@ -276,7 +942,7 @@ func InsertDummyData() error {
 		log.Fatal(err)
 	}
 
-	_, err = newSolarProject(3, "260 1500 sq.ft homes set in a medieval cathedral style construction", 40000, "Trafalgar Square, London",
+	_, err = testSolarProject(3, "260 1500 sq.ft homes set in a medieval cathedral style construction", 40000, "Trafalgar Square, London",
 		0, "Trafalgar Square is set in the heart of London's financial district, with big banks all over", "", "", "",
 		7, recp.U.Index, contractor, originator, 4, 2, "blind")
 
@@ -289,289 +955,29 @@ func InsertDummyData() error {
 		log.Fatal(err)
 	}
 
-	// MWTODO: get comments on various fields in this file
-	demoInv, err := database.NewInvestor("openlab", "p", "x", "Yale OpenLab")
+	// project: Puerto Rico Project
+	// STAGE 7 - Puerto Rico
+	err = createPuertoRicoProject()
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	demoRec, err := database.NewRecipient("supasto", "p", "x", "S.U. Pasto School")
+	// project: One Mega Watt Project
+	// STAGE 4 - New Hampshire
+	err = createOneMegaWattProject()
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	demoOrig, err := opensolar.NewOriginator("dci", "p", "x", "MIT DCI", "MIT Building E14-15", "The MIT Media Lab's Digital Currency Initiative")
+	// project: Ten Kilowatt Project
+	// STAGE 8 - Connecticut Homeless Shelter
+	err = createTenKiloWattProject()
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	demoCont, err := opensolar.NewContractor("mw", "p", "x", "Martin Wainstein", "254 Elm Street, New Haven, CT", "Martin Wainstein from the Yale OpenLab")
+	// project: Ten Mega Watt Project
+	// STAGE 2 - Puerto Rico Public School Bond
+	err = createTenMegaWattProject()
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	demoDevel, err := opensolar.NewDeveloper("gs", "p", "x", "Genmoji Solar", "Genmoji, San Juan, Puerto Rico", "Genmoji Solar")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	demoGuar, err := opensolar.NewGuarantor("ml", "p", "x", "MIT Media Lab", "MIT Building E14-15", "The MIT Media Lab is an interdisciplinary lab with innovators from all around the globe")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	var demoProject opensolar.Project
-
-	indexHelp, err := opensolar.RetrieveAllProjects()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	demoProject.Index = len(indexHelp) + 1
-	demoProject.PanelSize = "10x 100W Komaes Solar Panels"
-	demoProject.TotalValue = 8000 + 2000
-	demoProject.State = "S.U. Pasto School, Puerto Rico"
-	demoProject.MoneyRaised = 10000
-	demoProject.ETA = 5
-	demoProject.PaybackPeriod = 2
-	demoProject.InterestRate = 0.029
-	demoProject.Metadata = "This is a pilot initiative of the MIT-Yale effort to integrate solar platforms with IoT data and blockchain based payment systems to help develop community shelters in Puerto Rico"
-	demoProject.Inverter = "Schneider Conext SW 230V 2024"
-	demoProject.ChargeRegulator = "Schneider MPPT60"
-	demoProject.ControlPanel = "Schneider XW SCP"
-	demoProject.CommBox = "Schneider Conext Insight"
-	demoProject.ACTransfer = "Eaton Manual throw switches between grid and solar+grid setups"
-	demoProject.SolarCombiner = "MidNite"
-	demoProject.Batteries = "Advance Autoparts Deep cycle 600A"
-	demoProject.IoTHub = "Raspberry Pi 3"
-	demoProject.DateInitiated = "01/23/2018"
-	demoProject.DateFunded = "06/19/2018"
-	demoProject.BalLeft = 10000 // assume recipient has not paid anything back to us yet
-
-	demoProject.Originator = demoOrig
-	demoProject.Contractor = demoCont
-	demoProject.Developer = demoDevel
-	demoProject.Guarantor = demoGuar
-	demoProject.ContractorFee = 2000
-	demoProject.DeveloperFee = 6000
-	demoProject.RecipientIndex = demoRec.U.Index
-	demoProject.Stage = 6
-	demoProject.AuctionType = "private"
-	demoProject.StageData = append(demoProject.StageData, "ipfshash") // TODO: replace this with the real ipfs hash for the demo
-	demoProject.Reputation = 10000                                    // fix this equal to total value
-	demoProject.InvestorIndices = append(demoProject.InvestorIndices, demoInv.U.Index)
-	demoProject.InvestmentType = "Municipal Bond"
-
-	err = demoProject.Save()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	var omwp opensolar.Project
-	indexHelp, err = opensolar.RetrieveAllProjects()
-	if err != nil {
-		log.Fatal(err)
-	}
-	omwp.Index = len(indexHelp) + 1
-
-	nd1, err := opensolar.NewDeveloper("solardev", "p", "x", "First Solar", "First Solar, Earth", "First Solar")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	nd2, err := opensolar.NewDeveloper("Host", "p", "x", "Host", "Host", "Host")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	nd3, err := opensolar.NewDeveloper("Independent RFP Engineer", "p", "x", "Independent RFP Engineer", "Independent RFP Engineer", "Independent RFP Engineer")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	nd4, err := opensolar.NewDeveloper("Simple Service Provider", "p", "x", "Simple Service Provider", "Simple Service Provider", "Simple Service Provider")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	nd5, err := opensolar.NewDeveloper("Vendor", "p", "x", "Vendor", "Vendor", "Vendor")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	nd6, err := opensolar.NewDeveloper("Auditors", "p", "x", "Auditors", "Auditors", "Auditors")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	nd7, err := opensolar.NewGuarantor("Insurance Agent", "p", "x", "Insurance Agent", "Insurance Agent", "Insurance Agent")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	nd8, err := opensolar.NewDeveloper("Utility", "p", "x", "Utility", "Utility", "Utility")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	omwp.DeveloperIndices = append(omwp.DeveloperIndices, nd1.U.Index, nd2.U.Index, nd3.U.Index, nd4.U.Index, nd5.U.Index, nd6.U.Index, nd7.U.Index, nd8.U.Index)
-	omwp.MainDeveloper = nd1
-
-	g1, err := opensolar.NewGuarantor("Green Bank", "p", "x", "Green Bank", "Green Bank", "Green Bank")
-	if err != nil {
-		log.Fatal(err)
-	}
-	omwp.Guarantor = g1
-
-	i1, err := database.NewInvestor("Green Bank", "p", "x", "Green Bank")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	i2, err := database.NewInvestor("OZ Fund", "p", "x", "OZ Fund")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	i3, err := database.NewInvestor("Tax Equity Business", "p", "x", "Tax Equity Business")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	omwp.InvestorIndices = append(omwp.InvestorIndices, i1.U.Index, i2.U.Index, i3.U.Index)
-
-	r1, err := database.NewRecipient("city", "p", "x", "city")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	r2, err := database.NewRecipient("shelter", "p", "x", "shelter")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	omwp.RecipientIndices = append(omwp.RecipientIndices, r1.U.Index, r2.U.Index)
-
-	omwp.TotalValue = 2000000
-	omwp.MoneyRaised = 150000
-	omwp.ETA = 20
-	omwp.DebtInvestor1 = "OZ Fund"
-	omwp.DebtInvestor2 = "Green Bank"
-	omwp.TaxEquityInvestor = "Local Business"
-	omwp.State = "NH"
-	omwp.Country = "US"
-	omwp.InterestRate = 0.05
-	omwp.Tax = "Free for x years"
-	omwp.PanelSize = "1MW"
-	omwp.Batteries = "210 kWh 1x Tesla Powerpack"
-	omwp.Metadata = "Neighborhood 1MW solar array on a field near Lancaster Elementary High School. The project was originated by the head of the community organization who is also active in the parent teacher association (PTA). The city of Lancaster agrees to sell a 20 year lease of the land to the project if the school gets to own the solar array after the lease expires. The school is located in an opportunity zone"
-	omwp.BlendedCapitalInvestorIndex = i2.U.Index
-	omwp.Stage = 4
-
-	err = omwp.Save()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	var tkwp opensolar.Project
-	indexHelp, err = opensolar.RetrieveAllProjects()
-	if err != nil {
-		log.Fatal(err)
-	}
-	tkwp.Index = len(indexHelp) + 1
-	tkwp.TotalValue = 30000
-	tkwp.Stage = 8
-	tkwp.MoneyRaised = 30000
-	tkwp.ETA = 7
-	tkwp.State = "CT"
-	tkwp.Country = "US"
-	tkwp.InterestRate = 0.05
-	tkwp.Tax = "Free for x years"
-	tkwp.PanelSize = "10KW"
-	tkwp.Metadata = "A residential solar array for a homeless shelter. The project was originated (“sparked”) by a member of the board of the homeless shelter who gets the shelter to purchase all the electricity at a discounted rate. The shelter chooses to lease the roof for free over the lifetime of the project. The originator knows a solar developer who sets up a project company"
-
-	i1, err = database.NewInvestor("insert_name1", "p", "x", "insert_name1")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	i2, err = database.NewInvestor("insert_name2", "p", "x", "insert_name2")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	i3, err = database.NewInvestor("insert_name3", "p", "x", "insert_name3")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	i4, err := database.NewInvestor("insert_name4", "p", "x", "insert_name4")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	i5, err := database.NewInvestor("insert_name5", "p", "x", "insert_name5")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	i6, err := database.NewInvestor("insert_name6", "p", "x", "insert_name6")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	nd1, err = opensolar.NewDeveloper("insert_name_dev", "p", "x", "insert_name_dev", "insert_name_dev", "insert_name_dev")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	nd2, err = opensolar.NewDeveloper("solardev", "p", "x", "First Solar", "First Solar, Earth", "First Solar")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	nd3, err = opensolar.NewDeveloper("Host", "p", "x", "Host", "Host", "Host")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	nd4, err = opensolar.NewGuarantor("Insurance Agent", "p", "x", "Insurance Agent", "Insurance Agent", "Insurance Agent")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	nd5, err = opensolar.NewDeveloper("Utility", "p", "x", "Utility", "Utility", "Utility")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	no1, err := opensolar.NewOriginator("insert_name_orig", "p", "x", "insert_name_orig", "insert_name_orig", "insert_name_orig")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	tkwp.Tax = "self sheltering"
-	tkwp.InvestorIndices = append(tkwp.InvestorIndices, i1.U.Index, i2.U.Index, i3.U.Index, i4.U.Index, i5.U.Index, i6.U.Index)
-	tkwp.DeveloperIndices = append(tkwp.DeveloperIndices, nd1.U.Index, nd2.U.Index, nd3.U.Index, nd4.U.Index, nd5.U.Index)
-	tkwp.Originator = no1
-	tkwp.InvestmentType = "reg cf"
-
-	r1, err = database.NewRecipient("shelter", "p", "x", "shelter")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	r2, err = database.NewRecipient("offtakershelter", "p", "x", "offtakershelter")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	tkwp.RecipientIndices = append(tkwp.RecipientIndices, r1.U.Index, r2.U.Index)
-
-	err = tkwp.Save()
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	return nil
 }

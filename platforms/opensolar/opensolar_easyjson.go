@@ -520,6 +520,8 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(in *jlex
 		switch key {
 		case "Index":
 			out.Index = int(in.Int())
+		case "Name":
+			out.Name = string(in.String())
 		case "TotalValue":
 			out.TotalValue = float64(in.Float64())
 		case "MoneyRaised":
@@ -844,6 +846,64 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(in *jlex
 			out.Contract4 = string(in.String())
 		case "Contract5":
 			out.Contract5 = string(in.String())
+		case "DeveloperIndices":
+			if in.IsNull() {
+				in.Skip()
+				out.DeveloperIndices = nil
+			} else {
+				in.Delim('[')
+				if out.DeveloperIndices == nil {
+					if !in.IsDelim(']') {
+						out.DeveloperIndices = make([]int, 0, 8)
+					} else {
+						out.DeveloperIndices = []int{}
+					}
+				} else {
+					out.DeveloperIndices = (out.DeveloperIndices)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v12 int
+					v12 = int(in.Int())
+					out.DeveloperIndices = append(out.DeveloperIndices, v12)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
+		case "MainDeveloper":
+			(out.MainDeveloper).UnmarshalEasyJSON(in)
+		case "MainOriginator":
+			(out.MainOriginator).UnmarshalEasyJSON(in)
+		case "BlendedCapitalInvestorIndex":
+			out.BlendedCapitalInvestorIndex = int(in.Int())
+		case "RecipientIndices":
+			if in.IsNull() {
+				in.Skip()
+				out.RecipientIndices = nil
+			} else {
+				in.Delim('[')
+				if out.RecipientIndices == nil {
+					if !in.IsDelim(']') {
+						out.RecipientIndices = make([]int, 0, 8)
+					} else {
+						out.RecipientIndices = []int{}
+					}
+				} else {
+					out.RecipientIndices = (out.RecipientIndices)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v13 int
+					v13 = int(in.Int())
+					out.RecipientIndices = append(out.RecipientIndices, v13)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
+		case "DebtInvestor1":
+			out.DebtInvestor1 = string(in.String())
+		case "DebtInvestor2":
+			out.DebtInvestor2 = string(in.String())
+		case "TaxEquityInvestor":
+			out.TaxEquityInvestor = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -867,6 +927,16 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString(prefix)
 		}
 		out.Int(int(in.Index))
+	}
+	{
+		const prefix string = ",\"Name\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Name))
 	}
 	{
 		const prefix string = ",\"TotalValue\":"
@@ -1320,11 +1390,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v12, v13 := range in.InvestorIndices {
-				if v12 > 0 {
+			for v14, v15 := range in.InvestorIndices {
+				if v14 > 0 {
 					out.RawByte(',')
 				}
-				out.Int(int(v13))
+				out.Int(int(v15))
 			}
 			out.RawByte(']')
 		}
@@ -1341,11 +1411,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v14, v15 := range in.SeedInvestorIndices {
-				if v14 > 0 {
+			for v16, v17 := range in.SeedInvestorIndices {
+				if v16 > 0 {
 					out.RawByte(',')
 				}
-				out.Int(int(v15))
+				out.Int(int(v17))
 			}
 			out.RawByte(']')
 		}
@@ -1432,24 +1502,24 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v16, v17 := range in.StageChecklist {
-				if v16 > 0 {
+			for v18, v19 := range in.StageChecklist {
+				if v18 > 0 {
 					out.RawByte(',')
 				}
-				if v17 == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
+				if v19 == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
 					out.RawString(`null`)
 				} else {
 					out.RawByte('{')
-					v18First := true
-					for v18Name, v18Value := range v17 {
-						if v18First {
-							v18First = false
+					v20First := true
+					for v20Name, v20Value := range v19 {
+						if v20First {
+							v20First = false
 						} else {
 							out.RawByte(',')
 						}
-						out.String(string(v18Name))
+						out.String(string(v20Name))
 						out.RawByte(':')
-						out.Bool(bool(v18Value))
+						out.Bool(bool(v20Value))
 					}
 					out.RawByte('}')
 				}
@@ -1469,11 +1539,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v19, v20 := range in.StageData {
-				if v19 > 0 {
+			for v21, v22 := range in.StageData {
+				if v21 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v20))
+				out.String(string(v22))
 			}
 			out.RawByte(']')
 		}
@@ -1490,16 +1560,16 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v21First := true
-			for v21Name, v21Value := range in.InvestorMap {
-				if v21First {
-					v21First = false
+			v23First := true
+			for v23Name, v23Value := range in.InvestorMap {
+				if v23First {
+					v23First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v21Name))
+				out.String(string(v23Name))
 				out.RawByte(':')
-				out.Float64(float64(v21Value))
+				out.Float64(float64(v23Value))
 			}
 			out.RawByte('}')
 		}
@@ -1516,11 +1586,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v22, v23 := range in.Terms {
-				if v22 > 0 {
+			for v24, v25 := range in.Terms {
+				if v24 > 0 {
 					out.RawByte(',')
 				}
-				(v23).MarshalEasyJSON(out)
+				(v25).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -1587,11 +1657,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v24, v25 := range in.Pictures {
-				if v24 > 0 {
+			for v26, v27 := range in.Pictures {
+				if v26 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v25))
+				out.String(string(v27))
 			}
 			out.RawByte(']')
 		}
@@ -1775,6 +1845,108 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString(prefix)
 		}
 		out.String(string(in.Contract5))
+	}
+	{
+		const prefix string = ",\"DeveloperIndices\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		if in.DeveloperIndices == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+			out.RawString("null")
+		} else {
+			out.RawByte('[')
+			for v28, v29 := range in.DeveloperIndices {
+				if v28 > 0 {
+					out.RawByte(',')
+				}
+				out.Int(int(v29))
+			}
+			out.RawByte(']')
+		}
+	}
+	{
+		const prefix string = ",\"MainDeveloper\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		(in.MainDeveloper).MarshalEasyJSON(out)
+	}
+	{
+		const prefix string = ",\"MainOriginator\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		(in.MainOriginator).MarshalEasyJSON(out)
+	}
+	{
+		const prefix string = ",\"BlendedCapitalInvestorIndex\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Int(int(in.BlendedCapitalInvestorIndex))
+	}
+	{
+		const prefix string = ",\"RecipientIndices\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		if in.RecipientIndices == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+			out.RawString("null")
+		} else {
+			out.RawByte('[')
+			for v30, v31 := range in.RecipientIndices {
+				if v30 > 0 {
+					out.RawByte(',')
+				}
+				out.Int(int(v31))
+			}
+			out.RawByte(']')
+		}
+	}
+	{
+		const prefix string = ",\"DebtInvestor1\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.DebtInvestor1))
+	}
+	{
+		const prefix string = ",\"DebtInvestor2\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.DebtInvestor2))
+	}
+	{
+		const prefix string = ",\"TaxEquityInvestor\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.TaxEquityInvestor))
 	}
 	out.RawByte('}')
 }

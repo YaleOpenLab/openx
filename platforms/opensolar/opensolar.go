@@ -21,6 +21,7 @@ import (
 type Project struct {
 	Index int // an Index to keep quick track of how many projects exist
 
+	Name           string // the name of the project / the identifier by which its referred to
 	TotalValue     float64 // the total money that we need from investors
 	MoneyRaised    float64 // total money that has been raised until now
 	ETA            int     // the year in which the recipient is expected to repay the initial investment amount by
@@ -41,20 +42,24 @@ type Project struct {
 	DateLastPaid  int64 // int64 ie unix time since we need comparisons on this one
 
 	// params that help define the specifications of the installation
-	State           string  // the state in which the project has been installed in
-	Country         string  // the country in which the project has been installed in
-	InterestRate    float64 // the rate of return for investors
-	Tax             string  // the specifications of the tax system associated with this particular project
-	PanelSize       string  // size of the given panel, for diplsaying to the user who wants to bid stuff
+	// MW: What does state really mean here? Is this the project name?
+	State        string  // the state in which the project has been installed in
+	Country      string  // the country in which the project has been installed in
+	InterestRate float64 // the rate of return for investors
+	Tax          string  // the specifications of the tax system associated with this particular project
+	// TODO: I see we have 'Panel Size' which should just be the denominal value only (eg. 1000W), but there should also be a 'Panel technical description'
+	// This should talk about '10x 100W Komaes etc'
+	PanelSize       string // size of the given panel, for diplsaying to the user who wants to bid stuff
 	Inverter        string
 	ChargeRegulator string
 	ControlPanel    string
 	CommBox         string
 	ACTransfer      string
 	SolarCombiner   string
-	Batteries       string
-	IoTHub          string
-	Metadata        string // other metadata which does not have an explicit name can be stored here. Used to derive assetIDs
+	//TODO: Batteries should also have a fixed nominal value of capacity, as well as one describing what setup it is.
+	Batteries string
+	IoTHub    string
+	Metadata  string // other metadata which does not have an explicit name can be stored here. Used to derive assetIDs
 
 	// List of entities other than the contractor
 	Originator           Entity
@@ -137,14 +142,14 @@ type Project struct {
 	Contract4 string
 	Contract5 string
 
-	DeveloperIndices []int
-	MainDeveloper Entity
-	MainOriginator Entity
+	DeveloperIndices            []int
+	MainDeveloper               Entity
+	MainOriginator              Entity
 	BlendedCapitalInvestorIndex int
-	RecipientIndices []int
-	DebtInvestor1 string
-	DebtInvestor2 string
-	TaxEquityInvestor string
+	RecipientIndices            []int
+	DebtInvestor1               string
+	DebtInvestor2               string
+	TaxEquityInvestor           string
 }
 
 // Terms a terms and conditions struct. WIll be used as an array in the main project
