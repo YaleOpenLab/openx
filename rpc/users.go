@@ -144,7 +144,7 @@ func ValidateUser() {
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil {
 			log.Println("did not validate user", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, r, StatusUnauthorized)
 			return
 		}
 		// no we need to see whether this guy is an investor or a recipient.
@@ -165,7 +165,7 @@ func ValidateUser() {
 				if err != nil {
 					log.Println("did not validate entity", err)
 					// not an investor, recipient or entity, error
-					responseHandler(w, r, StatusBadRequest)
+					responseHandler(w, r, StatusUnauthorized)
 					return
 				} else {
 					entity = true
@@ -201,7 +201,7 @@ func getBalances() {
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil {
 			log.Println("did not validate user", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, r, StatusUnauthorized)
 			return
 		}
 
@@ -224,7 +224,7 @@ func getXLMBalance() {
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil {
 			log.Println("did not validate user", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, r, StatusUnauthorized)
 			return
 		}
 
@@ -245,7 +245,11 @@ func getAssetBalance() {
 		checkGet(w, r)
 		checkOrigin(w, r)
 		prepUser, err := UserValidateHelper(w, r)
-		if err != nil || r.URL.Query()["asset"] == nil {
+		if err != nil {
+			responseHandler(w, r, StatusUnauthorized)
+			return
+		}
+		if r.URL.Query()["asset"] == nil {
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -268,7 +272,11 @@ func getIpfsHash() {
 		checkGet(w, r)
 		checkOrigin(w, r)
 		_, err := UserValidateHelper(w, r)
-		if err != nil || r.URL.Query()["string"] == nil {
+		if err != nil {
+			responseHandler(w, r, StatusUnauthorized)
+			return
+		}
+		if r.URL.Query()["string"] == nil {
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -298,7 +306,11 @@ func authKyc() {
 		checkGet(w, r)
 		checkOrigin(w, r)
 		prepUser, err := UserValidateHelper(w, r)
-		if err != nil || r.URL.Query()["userIndex"] == nil {
+		if err != nil {
+			responseHandler(w, r, StatusUnauthorized)
+			return
+		}
+		if r.URL.Query()["userIndex"] == nil {
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -320,7 +332,11 @@ func sendXLM() {
 		checkGet(w, r)
 		checkOrigin(w, r)
 		prepUser, err := UserValidateHelper(w, r)
-		if err != nil || r.URL.Query()["destination"] == nil || r.URL.Query()["amount"] == nil ||
+		if err != nil {
+			responseHandler(w, r, StatusUnauthorized)
+			return
+		}
+		if r.URL.Query()["destination"] == nil || r.URL.Query()["amount"] == nil ||
 			r.URL.Query()["seedpwd"] == nil {
 			responseHandler(w, r, StatusBadRequest)
 			return
@@ -360,10 +376,9 @@ func notKycView() {
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil {
 			log.Println("did not validate user", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, r, StatusUnauthorized)
 			return
 		}
-
 		if !prepUser.Inspector {
 			responseHandler(w, r, StatusUnauthorized)
 			return
@@ -388,10 +403,9 @@ func kycView() {
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil {
 			log.Println("did not validate user", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, r, StatusUnauthorized)
 			return
 		}
-
 		if !prepUser.Inspector {
 			responseHandler(w, r, StatusUnauthorized)
 			return
@@ -416,7 +430,7 @@ func askForCoins() {
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil {
 			log.Println("did not validate user", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, r, StatusUnauthorized)
 			return
 		}
 
@@ -440,7 +454,7 @@ func trustAsset() {
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil {
 			log.Println("did not validate user", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, r, StatusUnauthorized)
 			return
 		}
 
@@ -477,7 +491,7 @@ func uploadFile() {
 		_, err := UserValidateHelper(w, r)
 		if err != nil {
 			log.Println("did not validate user", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, r, StatusUnauthorized)
 			return
 		}
 
@@ -538,7 +552,7 @@ func platformEmail() {
 		_, err := UserValidateHelper(w, r)
 		if err != nil {
 			log.Println("did not validate user", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, r, StatusUnauthorized)
 			return
 		}
 
@@ -553,7 +567,11 @@ func sendTellerShutdownEmail() {
 		checkGet(w, r)
 		checkOrigin(w, r)
 		prepUser, err := UserValidateHelper(w, r)
-		if err != nil || r.URL.Query()["projIndex"] == nil || r.URL.Query()["deviceId"] == nil ||
+		if err != nil {
+			responseHandler(w, r, StatusUnauthorized)
+			return
+		}
+		if r.URL.Query()["projIndex"] == nil || r.URL.Query()["deviceId"] == nil ||
 			r.URL.Query()["tx1"] == nil || r.URL.Query()["tx2"] == nil {
 			log.Println("did not validate user", err)
 			responseHandler(w, r, StatusBadRequest)
@@ -574,7 +592,11 @@ func sendTellerFailedPaybackEmail() {
 		checkGet(w, r)
 		checkOrigin(w, r)
 		prepUser, err := UserValidateHelper(w, r)
-		if err != nil || r.URL.Query()["projIndex"] == nil || r.URL.Query()["deviceId"] == nil {
+		if err != nil {
+			responseHandler(w, r, StatusUnauthorized)
+			return
+		}
+		if r.URL.Query()["projIndex"] == nil || r.URL.Query()["deviceId"] == nil {
 			log.Println("did not validate user", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
@@ -594,7 +616,7 @@ func tellerPing() {
 		_, err := UserValidateHelper(w, r)
 		if err != nil {
 			log.Println("did not validate user", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, r, StatusUnauthorized)
 			return
 		}
 
@@ -641,7 +663,11 @@ func increaseTrustLimit() {
 		checkGet(w, r)
 		checkOrigin(w, r)
 		prepUser, err := UserValidateHelper(w, r)
-		if err != nil || r.URL.Query()["trust"] == nil || r.URL.Query()["seedpwd"] == nil {
+		if err != nil {
+			responseHandler(w, r, StatusUnauthorized)
+			return
+		}
+		if r.URL.Query()["trust"] == nil || r.URL.Query()["seedpwd"] == nil {
 			log.Println("did not validate user", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
@@ -669,7 +695,11 @@ func addContractHash() {
 		checkOrigin(w, r)
 		var err error
 		_, err = UserValidateHelper(w, r)
-		if err != nil || r.URL.Query()["projIndex"] == nil {
+		if err != nil {
+			responseHandler(w, r, StatusUnauthorized)
+			return
+		}
+		if r.URL.Query()["projIndex"] == nil {
 			log.Println("couldn't validate investor", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
@@ -737,7 +767,11 @@ func sendSecrets() {
 		checkOrigin(w, r)
 
 		user, err := UserValidateHelper(w, r)
-		if err != nil || r.URL.Query()["email1"] == nil || r.URL.Query()["email2"] == nil || r.URL.Query()["email3"] == nil {
+		if err != nil {
+			responseHandler(w, r, StatusUnauthorized)
+			return
+		}
+		if r.URL.Query()["email1"] == nil || r.URL.Query()["email2"] == nil || r.URL.Query()["email3"] == nil {
 			log.Println("couldn't validate investor", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
@@ -776,7 +810,11 @@ func mergeSecrets() {
 		checkOrigin(w, r)
 
 		_, err := UserValidateHelper(w, r)
-		if err != nil || r.URL.Query()["secret1"] == nil || r.URL.Query()["secret2"] == nil {
+		if err != nil {
+			responseHandler(w, r, StatusUnauthorized)
+			return
+		}
+		if r.URL.Query()["secret1"] == nil || r.URL.Query()["secret2"] == nil {
 			log.Println("couldn't validate investor", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
@@ -807,7 +845,11 @@ func generateNewSecrets() {
 		checkOrigin(w, r)
 
 		user, err := UserValidateHelper(w, r)
-		if err != nil || r.URL.Query()["seedpwd"] == nil || r.URL.Query()["email1"] == nil ||
+		if err != nil {
+			responseHandler(w, r, StatusUnauthorized)
+			return
+		}
+		if r.URL.Query()["seedpwd"] == nil || r.URL.Query()["email1"] == nil ||
 			r.URL.Query()["email2"] == nil || r.URL.Query()["email3"] == nil {
 			log.Println("couldn't validate investor", err)
 			responseHandler(w, r, StatusBadRequest)
@@ -950,7 +992,11 @@ func sweepFunds() {
 		checkOrigin(w, r)
 
 		prepUser, err := UserValidateHelper(w, r)
-		if err != nil || r.URL.Query()["seedpwd"] == nil || r.URL.Query()["destination"] == nil {
+		if err != nil {
+			responseHandler(w, r, StatusUnauthorized)
+			return
+		}
+		if r.URL.Query()["seedpwd"] == nil || r.URL.Query()["destination"] == nil {
 			log.Println("did not validate user", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
@@ -1020,7 +1066,11 @@ func sweepAsset() {
 		checkOrigin(w, r)
 
 		prepUser, err := UserValidateHelper(w, r)
-		if err != nil || r.URL.Query()["seedpwd"] == nil || r.URL.Query()["destination"] == nil ||
+		if err != nil {
+			responseHandler(w, r, StatusUnauthorized)
+			return
+		}
+		if r.URL.Query()["seedpwd"] == nil || r.URL.Query()["destination"] == nil ||
 			r.URL.Query()["assetName"] == nil || r.URL.Query()["issuerPubkey"] == nil {
 			log.Println("did not validate user", err)
 			responseHandler(w, r, StatusBadRequest)
