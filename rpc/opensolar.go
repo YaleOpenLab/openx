@@ -142,12 +142,14 @@ func getProjectsAtIndex() {
 		if r.URL.Query()["index"] == nil {
 			log.Println("NO index passed, not returning anything!")
 			responseHandler(w, r, StatusBadRequest)
+			return
 		}
 
 		index, err := utils.StoICheck(r.URL.Query()["index"][0])
 		if err != nil {
 			log.Println("Passed index not an integer, quitting!")
 			responseHandler(w, r, StatusBadRequest)
+			return
 		}
 
 		if index > 9 || index < 0 {

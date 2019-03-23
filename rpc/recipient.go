@@ -63,6 +63,7 @@ func registerRecipient() {
 		if r.URL.Query()["name"] == nil || r.URL.Query()["username"] == nil || r.URL.Query()["pwd"] == nil || r.URL.Query()["seedpwd"] == nil {
 			log.Println("missing basic set of params that can be used ot validate a user")
 			responseHandler(w, r, StatusBadRequest)
+			return
 		}
 
 		name := r.URL.Query()["name"][0]
@@ -74,6 +75,7 @@ func registerRecipient() {
 		if err != nil {
 			log.Println(err)
 			responseHandler(w, r, StatusInternalServerError)
+			return
 		}
 
 		MarshalSend(w, r, user)
