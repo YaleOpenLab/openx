@@ -116,6 +116,7 @@ func registerUser() {
 		if r.URL.Query()["name"] == nil || r.URL.Query()["username"] == nil || r.URL.Query()["pwd"] == nil || r.URL.Query()["seedpwd"] == nil {
 			log.Println("missing basic set of params that can be used ot validate a user")
 			responseHandler(w, r, StatusBadRequest)
+			return
 		}
 
 		name := r.URL.Query()["name"][0]
@@ -127,6 +128,7 @@ func registerUser() {
 		if err != nil {
 			log.Println(err)
 			responseHandler(w, r, StatusInternalServerError)
+			return
 		}
 
 		MarshalSend(w, r, user)
@@ -164,6 +166,7 @@ func ValidateUser() {
 					log.Println("did not validate entity", err)
 					// not an investor, recipient or entity, error
 					responseHandler(w, r, StatusBadRequest)
+					return
 				} else {
 					entity = true
 				}
@@ -652,6 +655,7 @@ func increaseTrustLimit() {
 		if err != nil {
 			log.Println(err)
 			responseHandler(w, r, StatusInternalServerError)
+			return
 		}
 
 		responseHandler(w, r, StatusOK)
@@ -814,12 +818,14 @@ func generateNewSecrets() {
 		if err != nil {
 			log.Println(err)
 			responseHandler(w, r, StatusBadRequest)
+			return
 		}
 
 		seed, err := wallet.DecryptSeed(user.EncryptedSeed, seedpwd)
 		if err != nil {
 			log.Println(err)
 			responseHandler(w, r, StatusBadRequest)
+			return
 		}
 		// user has validated his seed and identity. Generate new shares and send them out
 		shares, err := recovery.Create(2, 3, seed)
@@ -866,6 +872,7 @@ func generateResetPwdCode() {
 		_, err = ValidateSeedPwd(w, r, rUser.EncryptedSeed, rUser.PublicKey)
 		if err != nil {
 			responseHandler(w, r, StatusBadRequest)
+			return
 		}
 		// now we can verify that this is rellay the user. Now we need to cgenerate a verification code
 		// and send it over to the user.
@@ -913,6 +920,7 @@ func resetPassword() {
 		_, err = ValidateSeedPwd(w, r, rUser.EncryptedSeed, rUser.PublicKey)
 		if err != nil {
 			responseHandler(w, r, StatusBadRequest)
+			return
 		}
 
 		if vCode != rUser.PwdResetCode || vCode == "INVALID" {

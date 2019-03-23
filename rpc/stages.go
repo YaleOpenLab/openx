@@ -39,12 +39,14 @@ func returnSpecificStage() {
 		if r.URL.Query()["index"] == nil {
 			log.Println("User did not pass index to retrieve stage for, quitting!")
 			responseHandler(w, r, StatusBadRequest)
+			return
 		}
 
 		index, err := utils.StoICheck(r.URL.Query()["index"][0])
 		if err != nil {
 			log.Println("Passed index not an integer, quitting!")
 			responseHandler(w, r, StatusBadRequest)
+			return
 		}
 
 		var x opensolar.Stage
