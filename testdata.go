@@ -349,7 +349,7 @@ func createTenKiloWattProject() error {
 		log.Fatal(err)
 	}
 
-	developer1, err := opensolar.NewDeveloper("YaleArchitecture", "p", "x", "Yale School of Architecture", "45 York St, New Haven, CT", "Sistem and layout designer")
+	developer1, err := opensolar.NewDeveloper("YaleArchitecture", "p", "x", "Yale School of Architecture", "45 York St, New Haven, CT", "System and layout designer")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -405,6 +405,265 @@ func createTenKiloWattProject() error {
 	project.Originator = originator1
 	project.InvestmentType = "Regulation Crowdfunding"
 	project.RecipientIndices = append(project.RecipientIndices, recipient1.U.Index, recipient2.U.Index)
+
+	// This is to populate the table of Terms and Conditions in the front end. TODO: change this inline with the FE
+	var terms1 opensolar.TermsHelper
+	terms1.Variable = "Security Type"
+	terms1.Value = "Municipal Bond"
+	terms1.RelevantParty = "PR DofEd"
+	terms1.Note = "Promoted by PR governor's office"
+	terms1.Status = "Demo"
+	terms1.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var terms2 opensolar.TermsHelper
+	terms2.Variable = "PPA Tariff"
+	terms2.Value = "0.24 ct/KWh"
+	terms2.RelevantParty = "oracle X / PREPA"
+	terms2.Note = "Variable anchored to local tariff"
+	terms2.Status = "Signed"
+	terms2.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var terms3 opensolar.TermsHelper
+	terms3.Variable = "Return (TEY)"
+	terms3.Value = "3.1%"
+	terms3.RelevantParty = "Broker Dealer"
+	terms3.Note = "Variable tied to tariff"
+	terms3.Status = "Signed"
+	terms3.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var terms4 opensolar.TermsHelper
+	terms4.Variable = "Maturity"
+	terms4.Value = "+/- 2025"
+	terms4.RelevantParty = "Broker Dealer"
+	terms4.Note = "Tax adjusted Yield"
+	terms4.Status = "Signed"
+	terms4.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var terms5 opensolar.TermsHelper
+	terms5.Variable = "Guarantee"
+	terms5.Value = "50%"
+	terms5.RelevantParty = "Foundation X"
+	terms5.Note = "First-loss upon breach"
+	terms5.Status = "Started"
+	terms5.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var terms6 opensolar.TermsHelper
+	terms6.Variable = "Insurance"
+	terms6.Value = "Premium"
+	terms6.RelevantParty = "Allianz CS"
+	terms6.Note = "Hurricane Coverage"
+	terms6.Status = "Started"
+	terms6.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	project.Terms = append(project.Terms, terms1, terms2, terms3, terms4, terms5, terms6)
+
+	err = project.Save()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return nil
+}
+
+func createTenMegaWattProject() error {
+	// create the required entities that we need over here
+	investor1, err := database.NewInvestor("emcoll", "p", "x", "Emerson Collective")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	investor2, err := database.NewInvestor("prqozfund", "p", "x", "Puerto Rico QOZ Fund")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	recipient1, err := database.NewRecipient("prgov", "p", "x", "PR Government")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	recipient2, err := database.NewRecipient("prschools", "p", "x", "Puerto Rico Solar Schools Limited")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	recipient3, err := database.NewRecipient("prdoe", "p", "x", "Puerto Rico Department of Education")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	originator1, err := opensolar.NewOriginator("yol1", "p", "x", "Yale Open Lab", "254 Elm St, New Haven, CT", "Project originator")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	developer1, err := opensolar.NewDeveloper("hst", "p", "x", "HST Solar", "25 Hewlett St, San Francisco, CA", "Preliminary finance and engineering assessment")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	developer2, err := opensolar.NewDeveloper("FemaRoofs", "p", "x", "FEMA Puerto Rico", "“45 Old Town Rd, Puerto Rico", "Civil engineering assessment of school roofs")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var project opensolar.Project
+
+	project.Name = "Puerto Rico Public School Bond 10"
+	project.PanelSize = "10MW"
+	project.State = "Puerto Rico"
+	project.Country = "USA"
+	project.Batteries = "900 kWh 350x Tesla PowerWalls"
+	project.Stage = 2
+	project.DateInitiated = "01/23/2019"
+	project.Metadata = "Transformation of 300 Puerto Rican public schools into solar powered emergency shelters. Each school will have around 30kW solar and 2kWh battery bank to cover critical loads including refrigeration of food and medicine, and an emergency telecommunication system with first responders. Backed by the Office of the Governor. 10 MW aggregate solar capacity. Nodes for community microgrids"
+	project.TotalValue = 19000000
+	project.MoneyRaised = 0
+	project.ETA = 8
+	project.PaybackPeriod = 4
+	project.InvestmentType = "munibond"
+	project.InvestorIndices = append(project.InvestorIndices, investor1.U.Index, investor2.U.Index)
+	project.RecipientIndices = append(project.RecipientIndices, recipient1.U.Index, recipient2.U.Index, recipient3.U.Index)
+	project.DeveloperIndices = append(project.DeveloperIndices, developer1.U.Index, developer2.U.Index)
+	project.Originator = originator1
+
+	// This is to populate the table of Terms and Conditions in the front end. TODO: change this inline with the FE
+	var terms1 opensolar.TermsHelper
+	terms1.Variable = "Security Type"
+	terms1.Value = "Municipal Bond"
+	terms1.RelevantParty = "PR DofEd"
+	terms1.Note = "Promoted by PR governor's office"
+	terms1.Status = "Demo"
+	terms1.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var terms2 opensolar.TermsHelper
+	terms2.Variable = "PPA Tariff"
+	terms2.Value = "0.24 ct/KWh"
+	terms2.RelevantParty = "oracle X / PREPA"
+	terms2.Note = "Variable anchored to local tariff"
+	terms2.Status = "Signed"
+	terms2.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var terms3 opensolar.TermsHelper
+	terms3.Variable = "Return (TEY)"
+	terms3.Value = "3.1%"
+	terms3.RelevantParty = "Broker Dealer"
+	terms3.Note = "Variable tied to tariff"
+	terms3.Status = "Signed"
+	terms3.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var terms4 opensolar.TermsHelper
+	terms4.Variable = "Maturity"
+	terms4.Value = "+/- 2025"
+	terms4.RelevantParty = "Broker Dealer"
+	terms4.Note = "Tax adjusted Yield"
+	terms4.Status = "Signed"
+	terms4.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var terms5 opensolar.TermsHelper
+	terms5.Variable = "Guarantee"
+	terms5.Value = "50%"
+	terms5.RelevantParty = "Foundation X"
+	terms5.Note = "First-loss upon breach"
+	terms5.Status = "Started"
+	terms5.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	var terms6 opensolar.TermsHelper
+	terms6.Variable = "Insurance"
+	terms6.Value = "Premium"
+	terms6.RelevantParty = "Allianz CS"
+	terms6.Note = "Hurricane Coverage"
+	terms6.Status = "Started"
+	terms6.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+
+	project.Terms = append(project.Terms, terms1, terms2, terms3, terms4, terms5, terms6)
+
+	err = project.Save()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return nil
+}
+
+func createOneHundredKiloWattProject() error {
+
+	investor1, err := database.NewInvestor("jjackson", "p", "x", "Jerome Jackson")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	investor2, err := database.NewInvestor("esare", "p", "x", "Eliah Sare")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	investor3, err := database.NewInvestor("yaleuf", "p", "x", "Yale University Fund")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	recipient1, err := database.NewRecipient("ubaduef", "p", "x", "Ubadu Energy Collective")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	recipient2, err := database.NewRecipient("sunshinegschool", "p", "x", "Sunshine Garden School")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	recipient3, err := database.NewRecipient("ubaduth", "p", "x", "Ubadu Town Hall")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	recipient4, err := database.NewRecipient("dwbrf", "p", "x", " Doctors without borders, Rwanda chapter")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	recipient5, err := database.NewRecipient("largerof", "p", "x", "Large Residential offtakers")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	originator1, err := opensolar.NewOriginator("DjiembeMbeba", "p", "x", "Djiembe Mbeba", "Ubadu village, Rwanda", "Project originator")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	developer1, err := opensolar.NewDeveloper("SolarPartners", "p", "x", "Solar Partners", "34 Hiete st, Somaliland", "MiniGrid game developer")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	developer2, err := opensolar.NewDeveloper("hst2", "p", "x", "HST Solar", "25 Hewlett St, San Francisco, CA", "Preliminary finance and engineering assessment")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var project opensolar.Project
+
+	project.Name = "Rwanda Community Microgrid"
+	project.PanelSize = "100kW"
+	project.State = "Khigali"
+	project.Country = "Rwanda"
+	project.Batteries = "25 kWh"
+	project.Stage = 1
+	project.DateInitiated = "03/25/2019"
+	project.Metadata = "The community of Ubadu, Rwanda has no access to electricity yet shows a growing local economy. This microgrid project, developed a collaboration with Yale and MIT, aims to serve 250 homes, including its only school, ‘Sunshine Garden,’ the town infirmary led by a team of doctors without borders, and the town hall. Community cooperative with international backing. 20% first loss fund secured. Currently doing engineering due diligence for development quotes"
+	project.TotalValue = 230000
+	project.SeedInvestmentCap = 5000
+	project.MoneyRaised = 1250
+	project.InterestRate = 0.023
+	project.ETA = 7
+	project.PaybackPeriod = 4
+	project.InvestmentType = "equity"
+	project.InvestorIndices = append(project.InvestorIndices, investor1.U.Index, investor2.U.Index, investor3.U.Index)
+	project.RecipientIndices = append(project.RecipientIndices, recipient1.U.Index, recipient2.U.Index, recipient3.U.Index,recipient4.U.Index,recipient5.U.Index)
+	project.DeveloperIndices = append(project.DeveloperIndices, developer1.U.Index, developer2.U.Index)
+	project.Originator = originator1
 
 	// This is to populate the table of Terms and Conditions in the front end. TODO: change this inline with the FE
 	var terms1 opensolar.TermsHelper
@@ -711,6 +970,12 @@ func InsertDummyData() error {
 	// project: Ten Kilowatt Project
 	// STAGE 8 - Connecticut Homeless Shelter
 	err = createTenKiloWattProject()
+	if err != nil {
+		log.Fatal(err)
+	}
+	// project: Ten Mega Watt Project
+	// STAGE 2 - Puerto Rico Public School Bond
+	err = createTenMegaWattProject()
 	if err != nil {
 		log.Fatal(err)
 	}
