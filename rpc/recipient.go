@@ -152,7 +152,11 @@ func payback() {
 		checkOrigin(w, r)
 		// this is a get request to make things easier for the teller
 		prepRecipient, err := RecpValidateHelper(w, r)
-		if err != nil || r.URL.Query()["assetName"] == nil || r.URL.Query()["amount"] == nil ||
+		if err != nil {
+			responseHandler(w, r, StatusUnauthorized)
+			return
+		}
+		if r.URL.Query()["assetName"] == nil || r.URL.Query()["amount"] == nil ||
 			r.URL.Query()["seedpwd"] == nil || r.URL.Query()["projIndex"] == nil {
 			responseHandler(w, r, StatusBadRequest)
 			return
@@ -209,7 +213,11 @@ func storeDeviceId() {
 		checkGet(w, r)
 		checkOrigin(w, r)
 		prepRecipient, err := RecpValidateHelper(w, r)
-		if err != nil || r.URL.Query()["deviceid"] == nil {
+		if err != nil {
+			responseHandler(w, r, StatusUnauthorized)
+			return
+		}
+		if r.URL.Query()["deviceid"] == nil {
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -234,7 +242,11 @@ func storeStartTime() {
 		checkOrigin(w, r)
 		// first validate the recipient or anyone would be able to set device ids
 		prepRecipient, err := RecpValidateHelper(w, r)
-		if err != nil || r.URL.Query()["start"] == nil {
+		if err != nil {
+			responseHandler(w, r, StatusUnauthorized)
+			return
+		}
+		if r.URL.Query()["start"] == nil {
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -257,7 +269,11 @@ func storeDeviceLocation() {
 		checkOrigin(w, r)
 		// first validate the recipient or anyone would be able to set device ids
 		prepRecipient, err := RecpValidateHelper(w, r)
-		if err != nil || r.URL.Query()["location"] == nil {
+		if err != nil {
+			responseHandler(w, r, StatusUnauthorized)
+			return
+		}
+		if r.URL.Query()["location"] == nil {
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -279,7 +295,11 @@ func changeReputationRecp() {
 		checkGet(w, r)
 		checkOrigin(w, r)
 		recipient, err := RecpValidateHelper(w, r)
-		if err != nil || r.URL.Query()["reputation"] == nil {
+		if err != nil {
+			responseHandler(w, r, StatusUnauthorized)
+			return
+		}
+		if r.URL.Query()["reputation"] == nil {
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -308,7 +328,7 @@ func chooseBlindAuction() {
 		recipient, err := RecpValidateHelper(w, r)
 		if err != nil {
 			log.Println("did not validate recipient", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, r, StatusUnauthorized)
 			return
 		}
 
@@ -346,7 +366,7 @@ func chooseVickreyAuction() {
 		recipient, err := RecpValidateHelper(w, r)
 		if err != nil {
 			log.Println("did not validate recipient", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, r, StatusUnauthorized)
 			return
 		}
 
@@ -385,7 +405,7 @@ func chooseTimeAuction() {
 		recipient, err := RecpValidateHelper(w, r)
 		if err != nil {
 			log.Println("did not validate recipient", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, r, StatusUnauthorized)
 			return
 		}
 
@@ -423,7 +443,11 @@ func unlockOpenSolar() {
 		checkGet(w, r)
 		checkOrigin(w, r)
 		recipient, err := RecpValidateHelper(w, r)
-		if err != nil || r.URL.Query()["seedpwd"] == nil {
+		if err != nil {
+			responseHandler(w, r, StatusUnauthorized)
+			return
+		}
+		if r.URL.Query()["seedpwd"] == nil {
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -453,7 +477,11 @@ func addEmail() {
 		checkGet(w, r)
 		checkOrigin(w, r)
 		recipient, err := RecpValidateHelper(w, r)
-		if err != nil || r.URL.Query()["email"] == nil {
+		if err != nil {
+			responseHandler(w, r, StatusUnauthorized)
+			return
+		}
+		if r.URL.Query()["email"] == nil {
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -477,7 +505,11 @@ func finalizeProject() {
 		checkGet(w, r)
 		checkOrigin(w, r)
 		_, err := RecpValidateHelper(w, r)
-		if err != nil || r.URL.Query()["projIndex"] == nil {
+		if err != nil {
+			responseHandler(w, r, StatusUnauthorized)
+			return
+		}
+		if r.URL.Query()["projIndex"] == nil {
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -507,7 +539,11 @@ func originateProject() {
 		checkGet(w, r)
 		checkOrigin(w, r)
 		recipient, err := RecpValidateHelper(w, r)
-		if err != nil || r.URL.Query()["projIndex"] == nil {
+		if err != nil {
+			responseHandler(w, r, StatusUnauthorized)
+			return
+		}
+		if r.URL.Query()["projIndex"] == nil {
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -530,7 +566,11 @@ func calculateTrustLimit() {
 		checkGet(w, r)
 		checkOrigin(w, r)
 		recipient, err := RecpValidateHelper(w, r)
-		if err != nil || r.URL.Query()["assetName"] == nil {
+		if err != nil {
+			responseHandler(w, r, StatusUnauthorized)
+			return
+		}
+		if r.URL.Query()["assetName"] == nil {
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -554,7 +594,11 @@ func unlockCBond() {
 		checkGet(w, r)
 		checkOrigin(w, r)
 		recipient, err := RecpValidateHelper(w, r)
-		if err != nil || r.URL.Query()["seedpwd"] == nil {
+		if err != nil {
+			responseHandler(w, r, StatusUnauthorized)
+			return
+		}
+		if r.URL.Query()["seedpwd"] == nil {
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -586,7 +630,11 @@ func storeStateHash() {
 		checkOrigin(w, r)
 		// first validate the recipient or anyone would be able to set device ids
 		prepRecipient, err := RecpValidateHelper(w, r)
-		if err != nil || r.URL.Query()["hash"] == nil {
+		if err != nil {
+			responseHandler(w, r, StatusUnauthorized)
+			return
+		}
+		if r.URL.Query()["hash"] == nil {
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}

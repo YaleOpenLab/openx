@@ -143,7 +143,11 @@ func invest() {
 		// 5. Login pwhash (for the investor)
 
 		investor, err := InvValidateHelper(w, r)
-		if err != nil || r.URL.Query()["seedpwd"] == nil || r.URL.Query()["projIndex"] == nil ||
+		if err != nil {
+			responseHandler(w, r, StatusUnauthorized)
+			return
+		}
+		if r.URL.Query()["seedpwd"] == nil || r.URL.Query()["projIndex"] == nil ||
 			r.URL.Query()["amount"] == nil { // sha 512 length
 			responseHandler(w, r, StatusBadRequest)
 			return
@@ -211,7 +215,11 @@ func InvValidateHelper(w http.ResponseWriter, r *http.Request) (database.Investo
 func changeReputationInv() {
 	http.HandleFunc("/investor/reputation", func(w http.ResponseWriter, r *http.Request) {
 		investor, err := InvValidateHelper(w, r)
-		if err != nil || r.URL.Query()["reputation"] == nil {
+		if err != nil {
+			responseHandler(w, r, StatusUnauthorized)
+			return
+		}
+		if r.URL.Query()["reputation"] == nil {
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -235,7 +243,11 @@ func changeReputationInv() {
 func voteTowardsProject() {
 	http.HandleFunc("/investor/vote", func(w http.ResponseWriter, r *http.Request) {
 		investor, err := InvValidateHelper(w, r)
-		if err != nil || r.URL.Query()["votes"] == nil || r.URL.Query()["projIndex"] == nil {
+		if err != nil {
+			responseHandler(w, r, StatusUnauthorized)
+			return
+		}
+		if r.URL.Query()["votes"] == nil || r.URL.Query()["projIndex"] == nil {
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -259,7 +271,11 @@ func addLocalAssetInv() {
 	http.HandleFunc("/investor/localasset", func(w http.ResponseWriter, r *http.Request) {
 
 		prepInvestor, err := InvValidateHelper(w, r)
-		if err != nil || r.URL.Query()["assetName"] == nil {
+		if err != nil {
+			responseHandler(w, r, StatusUnauthorized)
+			return
+		}
+		if r.URL.Query()["assetName"] == nil {
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -281,7 +297,11 @@ func addLocalAssetInv() {
 func invAssetInv() {
 	http.HandleFunc("/investor/sendlocalasset", func(w http.ResponseWriter, r *http.Request) {
 		prepInvestor, err := InvValidateHelper(w, r)
-		if err != nil || r.URL.Query()["assetName"] == nil || r.URL.Query()["seedpwd"] == nil ||
+		if err != nil {
+			responseHandler(w, r, StatusUnauthorized)
+			return
+		}
+		if r.URL.Query()["assetName"] == nil || r.URL.Query()["seedpwd"] == nil ||
 			r.URL.Query()["destination"] == nil || r.URL.Query()["amount"] == nil {
 			responseHandler(w, r, StatusBadRequest)
 			return
@@ -326,7 +346,11 @@ func invAssetInv() {
 func sendEmail() {
 	http.HandleFunc("/investor/sendemail", func(w http.ResponseWriter, r *http.Request) {
 		prepInvestor, err := InvValidateHelper(w, r)
-		if err != nil || r.URL.Query()["message"] == nil || r.URL.Query()["to"] == nil {
+		if err != nil {
+			responseHandler(w, r, StatusUnauthorized)
+			return
+		}
+		if r.URL.Query()["message"] == nil || r.URL.Query()["to"] == nil {
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -352,7 +376,11 @@ func investInConstructionBond() {
 		var err error
 
 		prepInvestor, err := InvValidateHelper(w, r)
-		if err != nil || r.URL.Query()["amount"] == nil || r.URL.Query()["projIndex"] == nil || r.URL.Query()["seedpwd"] == nil {
+		if err != nil {
+			responseHandler(w, r, StatusUnauthorized)
+			return
+		}
+		if r.URL.Query()["amount"] == nil || r.URL.Query()["projIndex"] == nil || r.URL.Query()["seedpwd"] == nil {
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -385,7 +413,11 @@ func investInLivingUnitCoop() {
 		var err error
 
 		prepInvestor, err := InvValidateHelper(w, r)
-		if err != nil || r.URL.Query()["amount"] == nil || r.URL.Query()["projIndex"] == nil || r.URL.Query()["seedpwd"] == nil {
+		if err != nil {
+			responseHandler(w, r, StatusUnauthorized)
+			return
+		}
+		if r.URL.Query()["amount"] == nil || r.URL.Query()["projIndex"] == nil || r.URL.Query()["seedpwd"] == nil {
 			log.Println("couldn't validate investor", err)
 			responseHandler(w, r, StatusBadRequest)
 			return

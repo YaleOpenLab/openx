@@ -49,7 +49,7 @@ func validateEntity() {
 		prepEntity, err := EntityValidateHelper(w, r)
 		if err != nil {
 			log.Println("Error while validating entity", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, r, StatusUnauthorized)
 			return
 		}
 		MarshalSend(w, r, prepEntity)
@@ -63,7 +63,7 @@ func getStage0Contracts() {
 		prepEntity, err := EntityValidateHelper(w, r)
 		if err != nil {
 			log.Println("Error while validating entity", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, r, StatusUnauthorized)
 			return
 		}
 
@@ -84,7 +84,7 @@ func getStage1Contracts() {
 		prepEntity, err := EntityValidateHelper(w, r)
 		if err != nil {
 			log.Println("Error while validating entity", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, r, StatusUnauthorized)
 			return
 		}
 
@@ -105,7 +105,7 @@ func getStage2Contracts() {
 		prepEntity, err := EntityValidateHelper(w, r)
 		if err != nil {
 			log.Println("Error while validating entity", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, r, StatusUnauthorized)
 			return
 		}
 
@@ -126,7 +126,11 @@ func addCollateral() {
 	http.HandleFunc("/entity/addcollateral", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
 		prepEntity, err := EntityValidateHelper(w, r)
-		if err != nil || r.URL.Query()["amount"] == nil || r.URL.Query()["collateral"] == nil {
+		if err != nil {
+			responseHandler(w, r, StatusUnauthorized)
+			return
+		}
+		if r.URL.Query()["amount"] == nil || r.URL.Query()["collateral"] == nil {
 			log.Println("Error while validating entity", err)
 			responseHandler(w, r, StatusBadRequest)
 			return
@@ -163,7 +167,7 @@ func createOpensolarProject() {
 		prepEntity, err := EntityValidateHelper(w, r)
 		if err != nil {
 			log.Println("Error while validating entity", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, r, StatusUnauthorized)
 			return
 		}
 
@@ -283,7 +287,7 @@ func proposeOpensolarProject() {
 		prepEntity, err := EntityValidateHelper(w, r)
 		if err != nil {
 			log.Println("Error while validating entity", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, r, StatusUnauthorized)
 			return
 		}
 
@@ -337,7 +341,7 @@ func createOpzonesCBond() {
 		_, err := EntityValidateHelper(w, r)
 		if err != nil {
 			log.Println("Error while validating entity", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, r, StatusUnauthorized)
 			return
 		}
 
@@ -413,7 +417,7 @@ func createOpzonesLuCoop() {
 		_, err := EntityValidateHelper(w, r)
 		if err != nil {
 			log.Println("Error while validating entity", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, r, StatusUnauthorized)
 			return
 		}
 
