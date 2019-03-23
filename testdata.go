@@ -293,24 +293,24 @@ func InsertDummyData() error {
 		log.Fatal(err)
 	}
 
-	// MWTODO: get comments on various fields in this file
-	// MW: Please explain the "p" and "x" and "shortname" uses
-	demoInv, err := database.NewInvestor("openlab", "p", "x", "Yale OpenLab")
+	
+	// User struct: "username" "password" "seed" "Name" / Extension for Entitities: "address" "description"
+	demoInv, err := database.NewInvestor("OpenLab", "p", "x", "Yale OpenLab")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	demoRec, err := database.NewRecipient("supasto", "p", "x", "S.U. Pasto School")
+	demoRec, err := database.NewRecipient("SUpasto", "p", "x", "S.U. Pasto School")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	demoOrig, err := opensolar.NewOriginator("dci", "p", "x", "MIT DCI", "MIT Building E14-15", "The MIT Media Lab's Digital Currency Initiative")
+	demoOrig, err := opensolar.NewOriginator("DCI", "p", "x", "MIT DCI", "MIT Building E14-15", "The MIT Media Lab's Digital Currency Initiative")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	demoCont, err := opensolar.NewContractor("mw", "p", "x", "Martin Wainstein", "254 Elm Street, New Haven, CT", "Martin Wainstein from the Yale OpenLab")
+	demoCont, err := opensolar.NewContractor("MartinWainstein", "p", "x", "Martin Wainstein", "254 Elm Street, New Haven, CT", "Martin Wainstein from the Yale OpenLab")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -320,7 +320,12 @@ func InsertDummyData() error {
 		log.Fatal(err)
 	}
 
-	demoGuar, err := opensolar.NewGuarantor("ml", "p", "x", "MIT Media Lab", "MIT Building E14-15", "The MIT Media Lab is an interdisciplinary lab with innovators from all around the globe")
+	demoDevel, err := opensolar.NewDeveloper("Neighbor", "p", "x", "Neighborly Securities", "San Francisco, CA", "Broker Dealer")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	demoGuar, err := opensolar.NewGuarantor("MITML", "p", "x", "MIT Media Lab", "MIT Building E14-15", "The MIT Media Lab is an interdisciplinary lab with innovators from all around the globe")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -343,7 +348,7 @@ func InsertDummyData() error {
 	demoProject.ETA = 5
 	demoProject.PaybackPeriod = 2	// In number of weeks in which payments are triggered
 	demoProject.InterestRate = 0.029
-	demoProject.Metadata = "This is a pilot initiative of the MIT-Yale effort to integrate solar platforms with IoT data and blockchain based payment systems to help develop community shelters in Puerto Rico"
+	demoProject.Metadata = "This project is a pilot initiative from MIT MediaLab's DCI & the Yale Openlab at Tsai CITY, as to integrate the opensolar platforms with IoT data and blockchain based payment systems to help finance community energy in Puerto Rico"
 	demoProject.Inverter = "Schneider Conext SW 230V 2024"
 	demoProject.ChargeRegulator = "Schneider MPPT60"
 	demoProject.ControlPanel = "Schneider XW SCP"
@@ -356,7 +361,7 @@ func InsertDummyData() error {
 	demoProject.DateFunded = "06/19/2018"
 	demoProject.BalLeft = 10000 // assume recipient has not paid anything back to us yet
 
-	// MW: Who are these originators and contractors? Can we give names to them?
+	
 	demoProject.Originator = demoOrig
 	demoProject.Contractor = demoCont
 	demoProject.Developer = demoDevel
@@ -371,12 +376,12 @@ func InsertDummyData() error {
 	demoProject.InvestorIndices = append(demoProject.InvestorIndices, demoInv.U.Index)
 	demoProject.InvestmentType = "Municipal Bond"
 
+
 	err = demoProject.Save()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// TODO: Martin To Revise
 	// omwp: One Mega Watt Project
 	// STAGE 4 - New Hampshire
 	var omwp opensolar.Project
@@ -388,17 +393,17 @@ func InsertDummyData() error {
 
 	/// This is where we onboard users that interact in the project mentioned immediately below
 	// User / Entity data is ['username' (unique name), 'password', 'seed password', 'name', 'address'(physical address), 'Description of the user')
-	nd1, err := opensolar.NewDeveloper("solardev", "p", "x", "First Solar", "First Solar, Earth", "First Solar")
+	nd1, err := opensolar.NewDeveloper("SolarDev", "p", "x", "First Solar", "Solar Rd, San Diego, California", "Main contractor for full solar development")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	nd2, err := opensolar.NewDeveloper("Host", "p", "x", "Lancaster Town", "Host", "Host")
+	nd2, err := opensolar.NewDeveloper("LancasterSolar", "p", "x", "Town of Lancaste NH", "Lancaster, New Hampshire", "Host")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	nd3, err := opensolar.NewDeveloper("Lancaster Solar Engineer Solutions", "p", "x", "Independent RFP Engineer", "Independent RFP Engineer", "Independent RFP Engineer")
+	nd3, err := opensolar.NewDeveloper("LancasterRFP", "p", "x", "Lancaster Solar Engineer Solutions", "25 Lancaster Rd, New Hampshire", "Independent RFP Engineer")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -408,22 +413,22 @@ func InsertDummyData() error {
 		log.Fatal(err)
 	}
 
-	nd5, err := opensolar.NewDeveloper("Vendor", "p", "x", "Vendor", "Vendor", "Vendor")
+	nd5, err := opensolar.NewDeveloper("VendorX", "p", "x", "Solar Racking Systems Inc", "34 Crack St, Boston", "Retail Vendor")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	nd6, err := opensolar.NewDeveloper("Auditors", "p", "x", "Auditors", "Auditors", "Auditors")
+	nd6, err := opensolar.NewDeveloper("NEpool", "p", "x", "New England Pool Registered Auditor", "56 Hamden Ave, Stamford, CT", "REC Auditors for New England")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	nd7, err := opensolar.NewGuarantor("Insurance Agent", "p", "x", "Insurance Agent", "Insurance Agent", "Insurance Agent")
+	nd7, err := opensolar.NewGuarantor("AllianzCS", "p", "x", "Allianz Climate Solutions", "34 5th, New York, NY", "Insurance Agent")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	nd8, err := opensolar.NewDeveloper("Utility", "p", "x", "Utility", "Utility", "Utility")
+	nd8, err := opensolar.NewDeveloper("UIavangrid", "p", "x", "Avangrid Networks", "100 Marsh Hill Rd, New Haven, CT", "Utility")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -431,35 +436,35 @@ func InsertDummyData() error {
 	omwp.DeveloperIndices = append(omwp.DeveloperIndices, nd1.U.Index, nd2.U.Index, nd3.U.Index, nd4.U.Index, nd5.U.Index, nd6.U.Index, nd7.U.Index, nd8.U.Index)
 	omwp.MainDeveloper = nd1
 
-	g1, err := opensolar.NewGuarantor("Green Bank", "p", "x", "Green Bank", "Green Bank", "Green Bank")
+	g1, err := opensolar.NewGuarantor("GreenBank", "p", "x", "NH Green Bank", "67 Washington Rd, New Hampshire", "Impact-first escrow provider")
 	if err != nil {
 		log.Fatal(err)
 	}
 	omwp.Guarantor = g1
 
-	i1, err := database.NewInvestor("Green Bank", "p", "x", "Green Bank")
+	i1, err := database.NewInvestor("GreenBank", "p", "x", "NH Green Bank")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	i2, err := database.NewInvestor("OZ Fund", "p", "x", "OZ Fund")
+	i2, err := database.NewInvestor("OZFunds", "p", "x", "OZ FundCo")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	i3, err := database.NewInvestor("Tax Equity Business", "p", "x", "Tax Equity Business")
+	i3, err := database.NewInvestor("TaxEquity", "p", "x", "NH Tax Equity Business Ltd")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	omwp.InvestorIndices = append(omwp.InvestorIndices, i1.U.Index, i2.U.Index, i3.U.Index)
 
-	r1, err := database.NewRecipient("city", "p", "x", "city")
+	r1, err := database.NewRecipient("LancasterHigh", "p", "x", "Lancaster Elementary School")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	r2, err := database.NewRecipient("shelter", "p", "x", "shelter")
+	r2, err := database.NewRecipient("LancasterT", "p", "x", "Town of Lancaste NH")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -469,13 +474,13 @@ func InsertDummyData() error {
 	omwp.TotalValue = 2000000
 	omwp.MoneyRaised = 150000
 	omwp.ETA = 20
-	omwp.DebtInvestor1 = "OZ Fund"
-	omwp.DebtInvestor2 = "Green Bank"
-	omwp.TaxEquityInvestor = "Lancaster Bank"
+	omwp.DebtInvestor1 = "OZFunds"
+	omwp.DebtInvestor2 = "GreenBank"
+	omwp.TaxEquityInvestor = "TaxEquity"
 	omwp.State = "NH"
 	omwp.Country = "USA"
 	omwp.InterestRate = 0.05
-	omwp.Tax = "Free for x years"
+	omwp.Tax = "Tax Free Opportunity Zone"
 	omwp.PanelSize = "1MW"
 	omwp.Batteries = "210 kWh 1x Tesla Powerpack"
 	omwp.Metadata = "Neighborhood 1MW solar array on the field next to Lancaster Elementary High School. The project was originated by the head of the community organization, Ben Southworth, who is also active in the parent teacher association (PTA). The city of Lancaster has agreed to give a 20 year lease of the land to the project if the school gets to own the solar array after the lease expires. The school is located in an opportunity zone"
@@ -499,88 +504,89 @@ func InsertDummyData() error {
 	tkwp.TotalValue = 30000
 	tkwp.Stage = 8
 	tkwp.MoneyRaised = 30000
-	tkwp.ETA = 7
+	tkwp.ETA = 0	// This project already flipped!
 	tkwp.State = "CT"
 	tkwp.Country = "US"
 	tkwp.InterestRate = 0.05
 	//MW: The string doesn't like % to be included. Also Tax could be: 'TaxCredit' parameter of getting funds back, and 'TaxAmount' or 'TaxDebit' which is the percent of tax taken from the project revenue. Both can be specific % value, and also a string (eventually a drop down) describing the structure. 
 	tkwp.Tax = "0.3 Tax Credit"
 	tkwp.PanelSize = "15KW"
-	// MW: We should include here info for parameters of the inverter etc. 
+	// MW: Should we include here info for parameters of the inverter etc. ?
 	tkwp.Metadata = "Residential solar array for a homeless shelter. The project was originated by a member of the board of the homeless shelter who gets the shelter to purchase all the electricity at a discounted rate. The shelter chooses to lease the roof for free over the lifetime of the project. The originator knows the solar developer who set up the project company"
 
-	i1, err = database.NewInvestor("Matthew Moroney", "p", "x", "Matthew Moroney")
+	i1, err = database.NewInvestor("MatthewMoroney", "p", "x", "Matthew Moroney")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	i2, err = database.NewInvestor("Franz Hochstrasser", "p", "x", "Franz Hochstrasser")
+	i2, err = database.NewInvestor("FranzHochstrasser", "p", "x", "Franz Hochstrasser")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	i3, err = database.NewInvestor("Connecticut Green Bank", "p", "x", "Connecticut Green Bank")
+	i3, err = database.NewInvestor("CTGreenBank", "p", "x", "Connecticut Green Bank")
+	if err != nil {
+		log.Fatal(err)
+	}
+	i4, err := database.NewInvestor("YaleUniversity", "p", "x", "Yale University Community Fund")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	i4, err := database.NewInvestor("Yale University Community Fund", "p", "x", "Yale University Community Fund")
+	i5, err := database.NewInvestor("JeromeGreen", "p", "x", "Jerome Green")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	i5, err := database.NewInvestor("Jerome Green", "p", "x", "Jerome Green")
+	i6, err := database.NewInvestor("OpenSolarFund", "p", "x", "Open Solar Revolving Fund")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	i6, err := database.NewInvestor("Open Solar Revolving Fund", "p", "x", "Open Solar Revolving Fund")
+	nd1, err = opensolar.NewDeveloper("YaleArchitecture", "p", "x", "Yale School of Architecture", "45 York St, New Haven, CT", "Sistem and layout designer")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	nd1, err = opensolar.NewDeveloper("Yale Architecture", "p", "x", "Yale Architecture", "Yale Architecture", "Yale Architecture")
+	nd2, err = opensolar.NewDeveloper("CTSolar", "p", "x", "Connecticut Solar", "45 Sun Street, Stamford, CT", "Solar system installer")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	nd2, err = opensolar.NewDeveloper("CT Solar", "p", "x", "CT Solar", "CT Solar, CT", "CT Solar")
+	nd3, err = opensolar.NewDeveloper("ColumbusHouse", "p", "x", "Columbus House", "21 Hagrid Ave, New Haven, CT", "Project Host")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	nd3, err = opensolar.NewDeveloper("Host", "p", "x", "Columbus House", "Columbus House", "Columbus House")
+	// We have in these examples one user that is covering different roles. And this is something good for the demo eventually. The example is Raise Green (both originator and guarantor) and Avangrid (REC developer here, Utility in another project)
+	// How should we create these users so that they have these different entity properties?
+	nd4, err = opensolar.NewGuarantor("RGreenFund", "p", "x", "RaiseGreen Blend Fund", "21 orange st, New Haven, CT", "Impact-first blended capital provider")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	nd4, err = opensolar.NewGuarantor("RGreen Blend Fund", "p", "x", "RGreen Blend Fund", "RGreen Blend Fund", "RGreen Blend Fund")
+	nd5, err = opensolar.NewDeveloper("Avangrid", "p", "x", "Avangrid RECs", "100 Marsh Hill Rd, New Haven, CT", "Certifier of RECs and provider of REC meter")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	nd5, err = opensolar.NewDeveloper("Avangrid RECs", "p", "x", "Avangrid RECs", "Avangrid RECs", "Avangrid RECs")
+	no1, err := opensolar.NewOriginator("RaiseGreen", "p", "x", "Raise Green", "21 orange st, New Haven, CT", "Project originator")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	no1, err := opensolar.NewOriginator("Raise Green", "p", "x", "Raise Green", "Raise Green", "Raise Green")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	tkwp.Tax = "self sheltering"
+	tkwp.Tax = "No benefits applied"
 	tkwp.InvestorIndices = append(tkwp.InvestorIndices, i1.U.Index, i2.U.Index, i3.U.Index, i4.U.Index, i5.U.Index, i6.U.Index)
 	tkwp.DeveloperIndices = append(tkwp.DeveloperIndices, nd1.U.Index, nd2.U.Index, nd3.U.Index, nd4.U.Index, nd5.U.Index)
 	tkwp.Originator = no1
 	tkwp.InvestmentType = "Regulation Crowdfunding"
 
-	r1, err = database.NewRecipient("Shelter1 Community Solar", "p", "x", "Shelter1 Community Solar")
+	r1, err = database.NewRecipient("Shelter1", "p", "x", "Shelter1 Community Solar")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	r2, err = database.NewRecipient("Columbus House", "p", "x", "Columbus House")
+	r2, err = database.NewRecipient("ColumbusHouse", "p", "x", "Columbus House Foundation")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -595,7 +601,7 @@ func InsertDummyData() error {
 	return nil
 }
 
-
+// MW: I think this part below is repeated
 omwp.TotalValue = 2000000
 	omwp.MoneyRaised = 150000
 	omwp.ETA = 20
@@ -611,3 +617,5 @@ omwp.TotalValue = 2000000
 	omwp.Metadata = "Neighborhood 1MW solar array on the field next to Lancaster Elementary High School. The project was originated by the head of the community organization, Ben Southworth, who is also active in the parent teacher association (PTA). The city of Lancaster has agreed to give a 20 year lease of the land to the project if the school gets to own the solar array after the lease expires. The school is located in an opportunity zone"
 	omwp.BlendedCapitalInvestorIndex = i2.U.Index
 	omwp.Stage = 4
+
+
