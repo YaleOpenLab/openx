@@ -10,6 +10,97 @@ import (
 	utils "github.com/YaleOpenLab/openx/utils"
 )
 
+/*
+TEMPLATE FOR A FRONTEND TEST PROJECT
+project.Index = //                     int     // an Index to keep track of how many projects exist
+project.Name = //                      string  // the name of the project / the identifier by which its referred to
+project.State = //                     string  // the state in which the project has been installed in
+project.Country = //                   string  // the country in which the project has been installed in
+project.TotalValue = //                float64 // the total money that we need from investors
+project.PanelSize = //                 string  // size of the given panel, for diplsaying to the user who wants to bid stuff
+project.PanelTechnicalDescription = // string  // This should talk about '10x 100W Komaes etc'
+project.Inverter = //                  string  // the inverter of the installed project
+project.ChargeRegulator = //           string  // the charge regulator of the installed project
+project.ControlPanel = //              string  // the control panel of the installed project
+project.CommBox = //                   string  // the comm box of the installed project
+project.ACTransfer = //                string  // the AC transfer of the installed project
+project.SolarCombiner = //             string  // the solar combiner of the installed project
+project.Batteries = //                 string  // the batteries of the installed project. TODO: Batteries should also have a fixed nominal value of capacity, as well as one describing what setup it is.
+project.IoTHub = //                    string  // the IoT Hub installed as part of the project
+project.Metadata = //                  string  // other metadata which does not have an explicit name can be stored here. Used to derive assetIDs
+
+// Define parameters related to finance
+project.MoneyRaised = //          float64 // total money that has been raised until now
+project.EstimatedAcquisition = // int     // the year in which the recipient is expected to repay the initial investment amount by
+project.BalLeft = //              float64 // denotes the balance left to pay by the party, percentage raised is not stored in the database since that can be calculated
+project.InterestRate = //         float64 // the rate of return for investors
+project.Tax = //                  string  // the specifications of the tax system associated with this particular project
+
+// Define dates of creation and funding
+project.DateInitiated = // string // date the project was created on the platform
+project.DateFunded = //    string // date that the project completed the stage 4-5 migration
+project.DateLastPaid = //  int64  // int64 ie unix time since we need comparisons on this one
+
+// Define technical paramters
+project.AuctionType = //          string  // the type of the auction in question. Default is blind auction unless explicitly mentioned
+project.InvestmentType = //       string  // the type of investment - equity crowdfunding, municipal bond, normal crowdfunding, etc defined in models
+project.PaybackPeriod = //        int     // the frequency in number of weeks that the recipient has to pay the platform.
+project.Stage = //                int     // the stage at which the contract is at, float due to potential support of 0.5 state changes in the future
+project.SeedInvestmentFactor = // float64 // the factor that a seed investor's investment is multiplied by in case he does invest at the seed stage
+project.SeedInvestmentCap = //    float64 // the max amount that a seed investor can put in a project when it is in its seed stages
+project.ProposedInvetmentCap = // float64 // the max amount that an investor can invest in when the project is in its proposed stage (stage 2)
+project.SelfFund = //             float64 // the amount that a beneficiary / recipient puts in a project wihtout asking from other investors. This is not included as a seed investment because this would mean the recipient pays his own investment back in the project
+
+// Describe issuer of security and the broker dealer
+SecurityIssuer string // the issuer of the security
+BrokerDealer   string // the broker dealer associated with the project
+
+// Define the various entities that are associated with a specific project
+project.RecipientIndex = //              int       // The index of the project's recipient
+project.OriginatorIndex = //             int       // the originator of the project
+project.GuarantorIndex = //              int       // the person guaranteeing the specific project in question
+project.ContractorIndex = //             int       // the person with the proposed contract
+project.MainDeveloperIndex = //          int       // the main developer of the project
+project.BlendedCapitalInvestorIndex = // int       // the index of the blended capital investor
+project.InvestorIndices = //             []int     // The various investors who have invested in the project
+project.SeedInvestorIndices = //         []int     // Investors who took part before the contract was at stage 3
+project.RecipientIndices = //            []int     // the indices of the recipient family (offtakers, beneficiaries, etc)
+project.DeveloperIndices = //            []int     // the indices of the developers involved in the project`
+project.ContractorFee = //               float64   // fee paid to the contractor from the total fee of the project
+project.OriginatorFee = //               float64   // fee paid to the originator included in the total value of the project
+project.DeveloperFee = //                []float64 // the fees charged by the developers
+project.DebtInvestor1 = //               string    // debt investor index, if any
+project.DebtInvestor2 = //               string    // debt investor index, if any
+project.TaxEquityInvestor = //           string    // tax equity investor if any
+
+// Define things that will be displayed on the frontend
+project.Terms = //                    []TermsHelper        // the terms of the project
+project.InvestmentMetrics = //        InvestmentHelper     // investment metrics that might be useful to an investor
+project.FinancialMetrics = //         FinancialHelper      // financial metrics that might be useful to an investor
+project.ProjectSizeMetric = //        ProjectSizeHelper    // a metric which shows the size of the project
+project.SustainabilityMetric = //     SustainabilityHelper // a metric which shows the sustainability index of the project
+project.AutoReloadInterval = //       float64              // the interval in which the user's funds reach zero
+project.ResilienceRating = //         float64              // resilience of the project
+project.ActionsRequired = //          string               // the action(s) required by the user
+project.Bullet1 = //                  string               // bullet points to be displayed on the project summary page
+project.Bullet2 = //                  string               // bullet points to be displayed on the project summary page
+project.Bullet3 = //                  string               // bullet points to be displayed on the project summary page
+project.LegalProjectOverviewHash = // string               // hash to be displayed on the project details page
+project.LegalPPAHash = //             string               // hash to be displayed on the project details page
+project.LegalRECAgreementHash = //    string               // hash to be displayed on the project details page
+project.GuarantorAgreementHash = //   string               // hash to be displayed on the project details page
+project.ContractorAgreementHash = //  string               // hash to be displayed on the project details page
+project.StakeholderAgreementHash = // string               // hash to be displayed on the project details page
+project.CommunityEnergyHash = //      string               // hash to be displayed on the project details page
+project.FinancialReportingHash = //   string               // hash to be displayed on the project details page
+project.Contract1 = //                string               // contracts which will be linked to on the project details page
+project.Contract2 = //                string               // contracts which will be linked to on the project details page
+project.Contract3 = //                string               // contracts which will be linked to on the project details page
+project.Contract4 = //                string               // contracts which will be linked to on the project details page
+project.Contract5 = //                string               // contracts which will be linked to on the project details page
+
+// follow this by the terms and conditions of the specific project
+*/
 func createPuertoRicoProject() error {
 	// setup all the entities that will be involved with the project here
 	investor1, err := database.NewInvestor("OpenLab", "p", "x", "Yale OpenLab")
@@ -52,39 +143,6 @@ func createPuertoRicoProject() error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	project.Index = len(indexHelp) + 1
-	project.PanelSize = "1000W"
-	project.TotalValue = 8000 + 2000
-	project.State = "Puerto Rico"
-	project.MoneyRaised = 10000
-	project.EstimatedAcquisition = 5
-	project.PaybackPeriod = 2 // In number of weeks in which payments are triggered
-	project.InterestRate = 0.029
-	project.Metadata = "This project is a pilot initiative from MIT MediaLab's DCI & the Yale Openlab at Tsai CITY, as to integrate the opensolar platforms with IoT data and blockchain based payment systems to help finance community energy in Puerto Rico"
-	project.Inverter = "Schneider Conext SW 230V 2024"
-	project.ChargeRegulator = "Schneider MPPT60"
-	project.ControlPanel = "Schneider XW SCP"
-	project.CommBox = "Schneider Conext Insight"
-	project.ACTransfer = "Eaton Manual throw switches between grid and solar+grid setups"
-	project.SolarCombiner = "MidNite"
-	project.Batteries = "Advance Autoparts Deep cycle 600A"
-	project.IoTHub = "Yale Open Powermeter w/ RaspberryPi3"
-	project.DateInitiated = "01/23/2018"
-	project.DateFunded = "06/19/2018"
-	project.BalLeft = 10000 // assume recipient has not paid anything back to us yet
-	project.OriginatorIndex = originator1.U.Index
-	project.ContractorIndex = contractor1.U.Index
-	project.DeveloperIndices = append(project.DeveloperIndices, developer1.U.Index, developer2.U.Index) // append the developer indiecs to the project so we can reference them later
-	project.GuarantorIndex = guarantor1.U.Index
-	project.ContractorFee = 2000
-	project.DeveloperFee = append(project.DeveloperFee, 6000)
-	project.RecipientIndex = recipient1.U.Index
-	project.Stage = 7
-	project.AuctionType = "private"
-	project.StageData = append(project.StageData, "ipfshash") // TODO: replace this with the real ipfs hash for the demo
-	project.Reputation = 10000                                // fix this equal to total value
-	project.InvestorIndices = append(project.InvestorIndices, investor1.U.Index)
-	project.InvestmentType = "Municipal Bond"
 
 	// This is to populate the table of Terms and Conditions in the front end
 	var terms1 opensolar.TermsHelper
@@ -135,7 +193,116 @@ func createPuertoRicoProject() error {
 	terms6.Status = "Started"
 	terms6.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
 
+	var investmentHelper opensolar.InvestmentHelper
+	var financialHelper opensolar.FinancialHelper
+	var projectSizeHelper opensolar.ProjectSizeHelper
+	var sustainabilityHelper opensolar.SustainabilityHelper
+
+	investmentHelper.Capex = ""
+	investmentHelper.Hardware = -1
+	investmentHelper.FirstLossEscrow = ""
+	investmentHelper.CertificationCosts = ""
+
+	financialHelper.Return = -1
+	financialHelper.Insurance = ""
+	financialHelper.Tariff = ""
+	financialHelper.Maturity = ""
+
+	projectSizeHelper.PVSolar = ""
+	projectSizeHelper.Storage = ""
+	projectSizeHelper.Critical = -1
+	projectSizeHelper.InverterCapacity = ""
+
+	sustainabilityHelper.CarbonDrawdown = ""
+	sustainabilityHelper.CommunityValue = ""
+	sustainabilityHelper.LCA = ""
+
+	project.Index = len(indexHelp) + 1
+	project.Name = "Puerto Rico Pilot Project"
+	project.State = "Puerto Rico"
+	project.Country = "US"
+	project.TotalValue = 10000
+	project.PanelSize = "1kW"
+	project.PanelTechnicalDescription = "10x 100W Komaes"
+	project.Inverter = "Schneider Conext SW 230V 2024"
+	project.ChargeRegulator = "Schneider MPPT60"
+	project.ControlPanel = "Schneider XW SCP"
+	project.CommBox = "Schneider Conext Insight"
+	project.ACTransfer = "Eaton Manual throw switches between grid and solar+grid setups"
+	project.SolarCombiner = "MidNite"
+	project.Batteries = "Advance Autoparts Deep cycle 600A"
+	project.IoTHub = "Yale Open Powermeter w/ RaspberryPi3"
+	project.Metadata = "This project is a pilot initiative from MIT MediaLab's DCI & the Yale Openlab at Tsai CITY, as to integrate the opensolar platforms with IoT data and blockchain based payment systems to help finance community energy in Puerto Rico"
+
+	// Define parameters related to finance
+	project.MoneyRaised = 10000
+	project.EstimatedAcquisition = 5
+	project.BalLeft = 10000
+	project.InterestRate = 0.029
+	project.Tax = "Insert tax scheme here"
+
+	// Define dates of creation and funding
+	project.DateInitiated = "01/23/2018"
+	project.DateFunded = "06/19/2018"
+	project.DateLastPaid = -1
+
+	// Define technical paramters
+	project.AuctionType = "private"
+	project.InvestmentType = "munibond"
+	project.PaybackPeriod = 4
+	project.Stage = 7
+	project.SeedInvestmentFactor = 1.1
+	project.SeedInvestmentCap = 500
+	project.ProposedInvetmentCap = 15000
+	project.SelfFund = 0
+
+	// Describe issuer of security and the broker dealer
+	project.SecurityIssuer = "Neighborly Securities"
+	project.BrokerDealer = "Broker Dealer"
+
+	// Define the various entities that are associated with a specific project
+	project.RecipientIndex = recipient1.U.Index
+	project.OriginatorIndex = originator1.U.Index
+	project.GuarantorIndex = guarantor1.U.Index
+	project.ContractorIndex = contractor1.U.Index
+	project.MainDeveloperIndex = developer1.U.Index
+	project.BlendedCapitalInvestorIndex = -1
+	project.InvestorIndices = append(project.InvestorIndices, investor1.U.Index)
+	project.SeedInvestorIndices = nil
+	project.RecipientIndices = append(project.RecipientIndices, recipient1.U.Index)
+	project.DeveloperIndices = append(project.DeveloperIndices, developer1.U.Index, developer2.U.Index)
+	project.ContractorFee = 2000
+	project.OriginatorFee = 0
+	project.DeveloperFee = append(project.DeveloperFee, 6000)
+	project.DebtInvestor1 = ""
+	project.DebtInvestor2 = ""
+	project.TaxEquityInvestor = ""
+
+	// Define things that will be displayed on the frontend
 	project.Terms = append(project.Terms, terms1, terms2, terms3, terms4, terms5, terms6)
+	project.InvestmentMetrics = investmentHelper
+	project.FinancialMetrics = financialHelper
+	project.ProjectSizeMetric = projectSizeHelper
+	project.SustainabilityMetric = sustainabilityHelper
+	project.AutoReloadInterval = -1
+	project.ResilienceRating = -1
+	project.ActionsRequired = ""
+	project.Bullet1 = ""
+	project.Bullet2 = ""
+	project.Bullet3 = ""
+	project.LegalProjectOverviewHash = ""
+	project.LegalPPAHash = ""
+	project.LegalRECAgreementHash = ""
+	project.GuarantorAgreementHash = ""
+	project.ContractorAgreementHash = ""
+	project.StakeholderAgreementHash = ""
+	project.CommunityEnergyHash = ""
+	project.FinancialReportingHash = ""
+	project.Contract1 = ""
+	project.Contract2 = ""
+	project.Contract3 = ""
+	project.Contract4 = ""
+	project.Contract5 = ""
 
 	err = project.Save()
 	if err != nil {
@@ -168,6 +335,16 @@ func createOneMegaWattProject() error {
 	}
 
 	recipient2, err := database.NewRecipient("LancasterT", "p", "x", "Town of Lancaste NH")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	originator1, err := opensolar.NewOriginator("testorig", "p", "x", "testorig", "testorig", "testorig")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	contractor1, err := opensolar.NewContractor("testcont", "p", "x", "testcont", "testcont", "testcont")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -222,32 +399,6 @@ func createOneMegaWattProject() error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	project.Index = len(indexHelp) + 1
-
-	/// This is where we onboard users that interact in the project mentioned immediately below
-	// User / Entity data is ['username' (unique name), 'password', 'seed password', 'name', 'address'(physical address), 'Description of the user')
-
-	project.DeveloperIndices = append(project.DeveloperIndices, developer1.U.Index, developer2.U.Index,
-		developer3.U.Index, developer4.U.Index, developer5.U.Index, developer6.U.Index, developer7.U.Index, developer8.U.Index)
-	project.MainDeveloperIndex = developer1.U.Index
-	project.GuarantorIndex = guarantor1.U.Index
-	project.InvestorIndices = append(project.InvestorIndices, investor1.U.Index, investor2.U.Index, investor3.U.Index)
-	project.RecipientIndices = append(project.RecipientIndices, recipient1.U.Index, recipient2.U.Index)
-	project.TotalValue = 2000000
-	project.MoneyRaised = 150000
-	project.EstimatedAcquisition = 20
-	project.DebtInvestor1 = "OZFunds"
-	project.DebtInvestor2 = "GreenBank"
-	project.TaxEquityInvestor = "TaxEquity"
-	project.State = "NH"
-	project.Country = "USA"
-	project.InterestRate = 0.05
-	project.Tax = "Tax Free Opportunity Zone"
-	project.PanelSize = "1MW"
-	project.Batteries = "210 kWh 1x Tesla Powerpack"
-	project.Metadata = "Neighborhood 1MW solar array on the field next to Lancaster Elementary High School. The project was originated by the head of the community organization, Ben Southworth, who is also active in the parent teacher association (PTA). The city of Lancaster has agreed to give a 20 year lease of the land to the project if the school gets to own the solar array after the lease expires. The school is located in an opportunity zone"
-	project.BlendedCapitalInvestorIndex = investor2.U.Index
-	project.Stage = 4
 
 	// This is to populate the table of Terms and Conditions in the front end. TODO: change this inline with the FE
 	var terms1 opensolar.TermsHelper
@@ -298,7 +449,116 @@ func createOneMegaWattProject() error {
 	terms6.Status = "Started"
 	terms6.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
 
+	var investmentHelper opensolar.InvestmentHelper
+	var financialHelper opensolar.FinancialHelper
+	var projectSizeHelper opensolar.ProjectSizeHelper
+	var sustainabilityHelper opensolar.SustainabilityHelper
+
+	investmentHelper.Capex = ""
+	investmentHelper.Hardware = -1
+	investmentHelper.FirstLossEscrow = ""
+	investmentHelper.CertificationCosts = ""
+
+	financialHelper.Return = -1
+	financialHelper.Insurance = ""
+	financialHelper.Tariff = ""
+	financialHelper.Maturity = ""
+
+	projectSizeHelper.PVSolar = ""
+	projectSizeHelper.Storage = ""
+	projectSizeHelper.Critical = -1
+	projectSizeHelper.InverterCapacity = ""
+
+	sustainabilityHelper.CarbonDrawdown = ""
+	sustainabilityHelper.CommunityValue = ""
+	sustainabilityHelper.LCA = ""
+
+	project.Index = len(indexHelp) + 1
+	project.Name = "Lancaster Solar Project"
+	project.State = "NH"
+	project.Country = "US"
+	project.TotalValue = 2000000
+	project.PanelSize = "1MW"
+	project.PanelTechnicalDescription = ""
+	project.Inverter = ""
+	project.ChargeRegulator = ""
+	project.ControlPanel = ""
+	project.CommBox = ""
+	project.ACTransfer = ""
+	project.SolarCombiner = ""
+	project.Batteries = "210 kWh 1x Tesla Powerpack"
+	project.IoTHub = ""
+	project.Metadata = "Neighborhood 1MW solar array on the field next to Lancaster Elementary High School. The project was originated by the head of the community organization, Ben Southworth, who is also active in the parent teacher association (PTA). The city of Lancaster has agreed to give a 20 year lease of the land to the project if the school gets to own the solar array after the lease expires. The school is located in an opportunity zone"
+
+	// Define parameters related to finance
+	project.MoneyRaised = 150000
+	project.EstimatedAcquisition = 20
+	project.BalLeft = -1
+	project.InterestRate = 0.05
+	project.Tax = "Tax free Opportunity Zone"
+
+	// Define dates of creation and funding
+	project.DateInitiated = ""
+	project.DateFunded = ""
+	project.DateLastPaid = -1
+
+	// Define technical paramters
+	project.AuctionType = "blind"
+	project.InvestmentType = "equity"
+	project.PaybackPeriod = 4
+	project.Stage = 4
+	project.SeedInvestmentFactor = 1.1
+	project.SeedInvestmentCap = 500
+	project.ProposedInvetmentCap = 15000
+	project.SelfFund = 0
+
+	// Describe issuer of security and the broker dealer
+	project.SecurityIssuer = "Neighborly Securities"
+	project.BrokerDealer = "Broker Dealer"
+
+	// Define the various entities that are associated with a specific project
+	project.RecipientIndex = recipient1.U.Index
+	project.OriginatorIndex = originator1.U.Index
+	project.GuarantorIndex = guarantor1.U.Index
+	project.ContractorIndex = contractor1.U.Index
+	project.MainDeveloperIndex = developer1.U.Index
+	project.BlendedCapitalInvestorIndex = investor2.U.Index
+	project.InvestorIndices = append(project.InvestorIndices, investor1.U.Index, investor3.U.Index)
+	project.SeedInvestorIndices = nil
+	project.RecipientIndices = append(project.RecipientIndices, recipient1.U.Index, recipient2.U.Index)
+	project.DeveloperIndices = append(project.DeveloperIndices, developer1.U.Index, developer2.U.Index, developer3.U.Index, developer4.U.Index, developer5.U.Index, developer6.U.Index, developer7.U.Index, developer8.U.Index)
+	project.ContractorFee = 2000
+	project.OriginatorFee = 0
+	project.DeveloperFee = append(project.DeveloperFee, 6000)
+	project.DebtInvestor1 = "OZFunds"
+	project.DebtInvestor2 = "GreenBank"
+	project.TaxEquityInvestor = "TaxEquity"
+
+	// Define things that will be displayed on the frontend
 	project.Terms = append(project.Terms, terms1, terms2, terms3, terms4, terms5, terms6)
+	project.InvestmentMetrics = investmentHelper
+	project.FinancialMetrics = financialHelper
+	project.ProjectSizeMetric = projectSizeHelper
+	project.SustainabilityMetric = sustainabilityHelper
+	project.AutoReloadInterval = -1
+	project.ResilienceRating = -1
+	project.ActionsRequired = ""
+	project.Bullet1 = ""
+	project.Bullet2 = ""
+	project.Bullet3 = ""
+	project.LegalProjectOverviewHash = ""
+	project.LegalPPAHash = ""
+	project.LegalRECAgreementHash = ""
+	project.GuarantorAgreementHash = ""
+	project.ContractorAgreementHash = ""
+	project.StakeholderAgreementHash = ""
+	project.CommunityEnergyHash = ""
+	project.FinancialReportingHash = ""
+	project.Contract1 = ""
+	project.Contract2 = ""
+	project.Contract3 = ""
+	project.Contract4 = ""
+	project.Contract5 = ""
 
 	err = project.Save()
 	if err != nil {
@@ -381,30 +641,44 @@ func createTenKiloWattProject() error {
 		log.Fatal(err)
 	}
 
+	contractor1, err := opensolar.NewContractor("testcont", "p", "x", "testcont", "testcont", "testcont")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	guarantor1, err := opensolar.NewGuarantor("testguarantor", "p", "x", "testguarantor", "testguarantor", "testguarantor")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	var project opensolar.Project
 	indexHelp, err := opensolar.RetrieveAllProjects()
 	if err != nil {
 		log.Fatal(err)
 	}
-	project.Index = len(indexHelp) + 1
-	project.TotalValue = 30000
-	project.Stage = 8
-	project.MoneyRaised = 30000
-	project.EstimatedAcquisition = 0 // This project already flipped!
-	project.State = "CT"
-	project.Country = "US"
-	project.InterestRate = 0.05
-	//MW: The string doesn't like % to be included. Also Tax could be: 'TaxCredit' parameter of getting funds back, and 'TaxAmount' or 'TaxDebit' which is the percent of tax taken from the project revenue. Both can be specific % value, and also a string (eventually a drop down) describing the structure.
-	project.Tax = "0.3 Tax Credit"
-	project.PanelSize = "15KW"
-	// MW: Should we include here info for parameters of the inverter etc. ?
-	project.Metadata = "Residential solar array for a homeless shelter. The project was originated by a member of the board of the homeless shelter who gets the shelter to purchase all the electricity at a discounted rate. The shelter chooses to lease the roof for free over the lifetime of the project. The originator knows the solar developer who set up the project company"
-	project.Tax = "No benefits applied"
-	project.InvestorIndices = append(project.InvestorIndices, investor1.U.Index, investor2.U.Index, investor3.U.Index, investor4.U.Index, investor5.U.Index, investor6.U.Index)
-	project.DeveloperIndices = append(project.DeveloperIndices, developer1.U.Index, developer2.U.Index, developer3.U.Index, developer4.U.Index, developer5.U.Index)
-	project.OriginatorIndex = originator1.U.Index
-	project.InvestmentType = "Regulation Crowdfunding"
-	project.RecipientIndices = append(project.RecipientIndices, recipient1.U.Index, recipient2.U.Index)
+	var investmentHelper opensolar.InvestmentHelper
+	var financialHelper opensolar.FinancialHelper
+	var projectSizeHelper opensolar.ProjectSizeHelper
+	var sustainabilityHelper opensolar.SustainabilityHelper
+
+	investmentHelper.Capex = ""
+	investmentHelper.Hardware = -1
+	investmentHelper.FirstLossEscrow = ""
+	investmentHelper.CertificationCosts = ""
+
+	financialHelper.Return = -1
+	financialHelper.Insurance = ""
+	financialHelper.Tariff = ""
+	financialHelper.Maturity = ""
+
+	projectSizeHelper.PVSolar = ""
+	projectSizeHelper.Storage = ""
+	projectSizeHelper.Critical = -1
+	projectSizeHelper.InverterCapacity = ""
+
+	sustainabilityHelper.CarbonDrawdown = ""
+	sustainabilityHelper.CommunityValue = ""
+	sustainabilityHelper.LCA = ""
 
 	// This is to populate the table of Terms and Conditions in the front end. TODO: change this inline with the FE
 	var terms1 opensolar.TermsHelper
@@ -455,7 +729,92 @@ func createTenKiloWattProject() error {
 	terms6.Status = "Started"
 	terms6.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
 
+	project.Index = len(indexHelp) + 1
+	project.Name = "Homeless Shelter Construction"
+	project.State = "Puerto Rico"
+	project.Country = "US"
+	project.TotalValue = 30000
+	project.PanelSize = "15kW"
+	project.PanelTechnicalDescription = ""
+	project.Inverter = ""
+	project.ChargeRegulator = ""
+	project.ControlPanel = ""
+	project.CommBox = ""
+	project.ACTransfer = ""
+	project.SolarCombiner = ""
+	project.Batteries = ""
+	project.IoTHub = ""
+	project.Metadata = "Residential solar array for a homeless shelter. The project was originated by a member of the board of the homeless shelter who gets the shelter to purchase all the electricity at a discounted rate. The shelter chooses to lease the roof for free over the lifetime of the project. The originator knows the solar developer who set up the project company"
+
+	// Define parameters related to finance
+	project.MoneyRaised = 30000
+	project.EstimatedAcquisition = 0 // this project already flipped ownership
+	project.BalLeft = 0
+	project.InterestRate = 0.05
+	project.Tax = "0.3 Tax Credit"
+
+	// Define dates of creation and funding
+	project.DateInitiated = ""
+	project.DateFunded = ""
+	project.DateLastPaid = -1
+
+	// Define technical paramters
+	project.AuctionType = "blind"
+	project.InvestmentType = "regcf"
+	project.PaybackPeriod = 4
+	project.Stage = 8
+	project.SeedInvestmentFactor = 1.1
+	project.SeedInvestmentCap = 500
+	project.ProposedInvetmentCap = 15000
+	project.SelfFund = 0
+
+	// Describe issuer of security and the broker dealer
+	project.SecurityIssuer = ""
+	project.BrokerDealer = ""
+
+	// Define the various entities that are associated with a specific project
+	project.RecipientIndex = recipient1.U.Index
+	project.OriginatorIndex = originator1.U.Index
+	project.GuarantorIndex = guarantor1.U.Index
+	project.ContractorIndex = contractor1.U.Index
+	project.MainDeveloperIndex = developer1.U.Index
+	project.BlendedCapitalInvestorIndex = -1
+	project.InvestorIndices = append(project.InvestorIndices, investor1.U.Index, investor2.U.Index, investor3.U.Index, investor4.U.Index, investor5.U.Index, investor6.U.Index)
+	project.SeedInvestorIndices = nil
+	project.RecipientIndices = append(project.RecipientIndices, recipient1.U.Index, recipient2.U.Index)
+	project.DeveloperIndices = append(project.DeveloperIndices, developer1.U.Index, developer2.U.Index, developer3.U.Index, developer4.U.Index, developer5.U.Index)
+	project.ContractorFee = 0
+	project.OriginatorFee = 0
+	project.DeveloperFee = append(project.DeveloperFee, 0)
+	project.DebtInvestor1 = ""
+	project.DebtInvestor2 = ""
+	project.TaxEquityInvestor = ""
+
+	// Define things that will be displayed on the frontend
 	project.Terms = append(project.Terms, terms1, terms2, terms3, terms4, terms5, terms6)
+	project.InvestmentMetrics = investmentHelper
+	project.FinancialMetrics = financialHelper
+	project.ProjectSizeMetric = projectSizeHelper
+	project.SustainabilityMetric = sustainabilityHelper
+	project.AutoReloadInterval = -1
+	project.ResilienceRating = -1
+	project.ActionsRequired = ""
+	project.Bullet1 = ""
+	project.Bullet2 = ""
+	project.Bullet3 = ""
+	project.LegalProjectOverviewHash = ""
+	project.LegalPPAHash = ""
+	project.LegalRECAgreementHash = ""
+	project.GuarantorAgreementHash = ""
+	project.ContractorAgreementHash = ""
+	project.StakeholderAgreementHash = ""
+	project.CommunityEnergyHash = ""
+	project.FinancialReportingHash = ""
+	project.Contract1 = ""
+	project.Contract2 = ""
+	project.Contract3 = ""
+	project.Contract4 = ""
+	project.Contract5 = ""
 
 	err = project.Save()
 	if err != nil {
@@ -507,25 +866,21 @@ func createTenMegaWattProject() error {
 		log.Fatal(err)
 	}
 
-	var project opensolar.Project
+	contractor1, err := opensolar.NewContractor("testcont", "p", "x", "testcont", "testcont", "testcont")
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	project.Name = "Puerto Rico Public School Bond 10"
-	project.PanelSize = "10MW"
-	project.State = "Puerto Rico"
-	project.Country = "USA"
-	project.Batteries = "900 kWh 350x Tesla PowerWalls"
-	project.Stage = 2
-	project.DateInitiated = "01/23/2019"
-	project.Metadata = "Transformation of 300 Puerto Rican public schools into solar powered emergency shelters. Each school will have around 30kW solar and 2kWh battery bank to cover critical loads including refrigeration of food and medicine, and an emergency telecommunication system with first responders. Backed by the Office of the Governor. 10 MW aggregate solar capacity. Nodes for community microgrids"
-	project.TotalValue = 19000000
-	project.MoneyRaised = 0
-	project.EstimatedAcquisition = 8
-	project.PaybackPeriod = 4
-	project.InvestmentType = "munibond"
-	project.InvestorIndices = append(project.InvestorIndices, investor1.U.Index, investor2.U.Index)
-	project.RecipientIndices = append(project.RecipientIndices, recipient1.U.Index, recipient2.U.Index, recipient3.U.Index)
-	project.DeveloperIndices = append(project.DeveloperIndices, developer1.U.Index, developer2.U.Index)
-	project.OriginatorIndex = originator1.U.Index
+	guarantor1, err := opensolar.NewGuarantor("testguarantor", "p", "x", "testguarantor", "testguarantor", "testguarantor")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var project opensolar.Project
+	indexHelp, err := opensolar.RetrieveAllProjects()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// This is to populate the table of Terms and Conditions in the front end. TODO: change this inline with the FE
 	var terms1 opensolar.TermsHelper
@@ -576,7 +931,116 @@ func createTenMegaWattProject() error {
 	terms6.Status = "Started"
 	terms6.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
 
+	var investmentHelper opensolar.InvestmentHelper
+	var financialHelper opensolar.FinancialHelper
+	var projectSizeHelper opensolar.ProjectSizeHelper
+	var sustainabilityHelper opensolar.SustainabilityHelper
+
+	investmentHelper.Capex = ""
+	investmentHelper.Hardware = -1
+	investmentHelper.FirstLossEscrow = ""
+	investmentHelper.CertificationCosts = ""
+
+	financialHelper.Return = -1
+	financialHelper.Insurance = ""
+	financialHelper.Tariff = ""
+	financialHelper.Maturity = ""
+
+	projectSizeHelper.PVSolar = ""
+	projectSizeHelper.Storage = ""
+	projectSizeHelper.Critical = -1
+	projectSizeHelper.InverterCapacity = ""
+
+	sustainabilityHelper.CarbonDrawdown = ""
+	sustainabilityHelper.CommunityValue = ""
+	sustainabilityHelper.LCA = ""
+
+	project.Index = len(indexHelp) + 1
+	project.Name = "Puerto Rico Public School Bond 10"
+	project.State = "Puerto Rico"
+	project.Country = "US"
+	project.TotalValue = 19000000
+	project.PanelSize = "10MW"
+	project.PanelTechnicalDescription = ""
+	project.Inverter = ""
+	project.ChargeRegulator = ""
+	project.ControlPanel = ""
+	project.CommBox = ""
+	project.ACTransfer = ""
+	project.SolarCombiner = ""
+	project.Batteries = ""
+	project.IoTHub = ""
+	project.Metadata = "Transformation of 300 Puerto Rican public schools into solar powered emergency shelters. Each school will have around 30kW solar and 2kWh battery bank to cover critical loads including refrigeration of food and medicine, and an emergency telecommunication system with first responders. Backed by the Office of the Governor. 10 MW aggregate solar capacity. Nodes for community microgrids"
+
+	// Define parameters related to finance
+	project.MoneyRaised = 0
+	project.EstimatedAcquisition = 8
+	project.BalLeft = -1
+	project.InterestRate = 0.029
+	project.Tax = ""
+
+	// Define dates of creation and funding
+	project.DateInitiated = "01/23/2019"
+	project.DateFunded = ""
+	project.DateLastPaid = -1
+
+	// Define technical paramters
+	project.AuctionType = "private"
+	project.InvestmentType = "munibond"
+	project.PaybackPeriod = 4
+	project.Stage = 2
+	project.SeedInvestmentFactor = 1.1
+	project.SeedInvestmentCap = 500
+	project.ProposedInvetmentCap = 15000
+	project.SelfFund = 0
+
+	// Describe issuer of security and the broker dealer
+	project.SecurityIssuer = "Neighborly Securities"
+	project.BrokerDealer = "Broker Dealer"
+
+	// Define the various entities that are associated with a specific project
+	project.RecipientIndex = recipient1.U.Index
+	project.OriginatorIndex = originator1.U.Index
+	project.GuarantorIndex = guarantor1.U.Index
+	project.ContractorIndex = contractor1.U.Index
+	project.MainDeveloperIndex = developer1.U.Index
+	project.BlendedCapitalInvestorIndex = -1
+	project.InvestorIndices = append(project.InvestorIndices, investor1.U.Index, investor2.U.Index)
+	project.SeedInvestorIndices = nil
+	project.RecipientIndices = append(project.RecipientIndices, recipient1.U.Index, recipient2.U.Index, recipient3.U.Index)
+	project.DeveloperIndices = append(project.DeveloperIndices, developer1.U.Index, developer2.U.Index)
+	project.ContractorFee = 2000
+	project.OriginatorFee = 0
+	project.DeveloperFee = append(project.DeveloperFee, 6000)
+	project.DebtInvestor1 = ""
+	project.DebtInvestor2 = ""
+	project.TaxEquityInvestor = ""
+
+	// Define things that will be displayed on the frontend
 	project.Terms = append(project.Terms, terms1, terms2, terms3, terms4, terms5, terms6)
+	project.InvestmentMetrics = investmentHelper
+	project.FinancialMetrics = financialHelper
+	project.ProjectSizeMetric = projectSizeHelper
+	project.SustainabilityMetric = sustainabilityHelper
+	project.AutoReloadInterval = -1
+	project.ResilienceRating = -1
+	project.ActionsRequired = ""
+	project.Bullet1 = ""
+	project.Bullet2 = ""
+	project.Bullet3 = ""
+	project.LegalProjectOverviewHash = ""
+	project.LegalPPAHash = ""
+	project.LegalRECAgreementHash = ""
+	project.GuarantorAgreementHash = ""
+	project.ContractorAgreementHash = ""
+	project.StakeholderAgreementHash = ""
+	project.CommunityEnergyHash = ""
+	project.FinancialReportingHash = ""
+	project.Contract1 = ""
+	project.Contract2 = ""
+	project.Contract3 = ""
+	project.Contract4 = ""
+	project.Contract5 = ""
 
 	err = project.Save()
 	if err != nil {
@@ -644,26 +1108,10 @@ func createOneHundredKiloWattProject() error {
 	}
 
 	var project opensolar.Project
-
-	project.Name = "Rwanda Community Microgrid"
-	project.PanelSize = "100kW"
-	project.State = "Khigali"
-	project.Country = "Rwanda"
-	project.Batteries = "25 kWh"
-	project.Stage = 1
-	project.DateInitiated = "03/25/2019"
-	project.Metadata = "The community of Ubadu, Rwanda has no access to electricity yet shows a growing local economy. This microgrid project, developed a collaboration with Yale and MIT, aims to serve 250 homes, including its only school, ‘Sunshine Garden,’ the town infirmary led by a team of doctors without borders, and the town hall. Community cooperative with international backing. 20% first loss fund secured. Currently doing engineering due diligence for development quotes"
-	project.TotalValue = 230000
-	project.SeedInvestmentCap = 5000
-	project.MoneyRaised = 1250
-	project.InterestRate = 0.023
-	project.EstimatedAcquisition = 7
-	project.PaybackPeriod = 4
-	project.InvestmentType = "equity"
-	project.InvestorIndices = append(project.InvestorIndices, investor1.U.Index, investor2.U.Index, investor3.U.Index)
-	project.RecipientIndices = append(project.RecipientIndices, recipient1.U.Index, recipient2.U.Index, recipient3.U.Index, recipient4.U.Index, recipient5.U.Index)
-	project.DeveloperIndices = append(project.DeveloperIndices, developer1.U.Index, developer2.U.Index)
-	project.OriginatorIndex = originator1.U.Index
+	indexHelp, err := opensolar.RetrieveAllProjects()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// This is to populate the table of Terms and Conditions in the front end. TODO: change this inline with the FE
 	var terms1 opensolar.TermsHelper
@@ -714,6 +1162,50 @@ func createOneHundredKiloWattProject() error {
 	terms6.Status = "Started"
 	terms6.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
 
+	var investmentHelper opensolar.InvestmentHelper
+	var financialHelper opensolar.FinancialHelper
+	var projectSizeHelper opensolar.ProjectSizeHelper
+	var sustainabilityHelper opensolar.SustainabilityHelper
+
+	investmentHelper.Capex = ""
+	investmentHelper.Hardware = -1
+	investmentHelper.FirstLossEscrow = ""
+	investmentHelper.CertificationCosts = ""
+
+	financialHelper.Return = -1
+	financialHelper.Insurance = ""
+	financialHelper.Tariff = ""
+	financialHelper.Maturity = ""
+
+	projectSizeHelper.PVSolar = ""
+	projectSizeHelper.Storage = ""
+	projectSizeHelper.Critical = -1
+	projectSizeHelper.InverterCapacity = ""
+
+	sustainabilityHelper.CarbonDrawdown = ""
+	sustainabilityHelper.CommunityValue = ""
+	sustainabilityHelper.LCA = ""
+
+	project.Index = len(indexHelp) + 1
+	project.Name = "Rwanda Community Microgrid"
+	project.PanelSize = "100kW"
+	project.State = "Khigali"
+	project.Country = "Rwanda"
+	project.Batteries = "25 kWh"
+	project.Stage = 1
+	project.DateInitiated = "03/25/2019"
+	project.Metadata = "The community of Ubadu, Rwanda has no access to electricity yet shows a growing local economy. This microgrid project, developed a collaboration with Yale and MIT, aims to serve 250 homes, including its only school, ‘Sunshine Garden,’ the town infirmary led by a team of doctors without borders, and the town hall. Community cooperative with international backing. 20% first loss fund secured. Currently doing engineering due diligence for development quotes"
+	project.TotalValue = 230000
+	project.SeedInvestmentCap = 5000
+	project.MoneyRaised = 1250
+	project.InterestRate = 0.023
+	project.EstimatedAcquisition = 7
+	project.PaybackPeriod = 4
+	project.InvestmentType = "equity"
+	project.InvestorIndices = append(project.InvestorIndices, investor1.U.Index, investor2.U.Index, investor3.U.Index)
+	project.RecipientIndices = append(project.RecipientIndices, recipient1.U.Index, recipient2.U.Index, recipient3.U.Index, recipient4.U.Index, recipient5.U.Index)
+	project.DeveloperIndices = append(project.DeveloperIndices, developer1.U.Index, developer2.U.Index)
+	project.OriginatorIndex = originator1.U.Index
 	project.Terms = append(project.Terms, terms1, terms2, terms3, terms4, terms5, terms6)
 
 	err = project.Save()

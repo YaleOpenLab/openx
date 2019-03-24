@@ -252,8 +252,8 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar2(in *jlex
 		switch key {
 		case "CarbonDrawdown":
 			out.CarbonDrawdown = string(in.String())
-		case "CommnunityValue":
-			out.CommnunityValue = string(in.String())
+		case "CommunityValue":
+			out.CommunityValue = string(in.String())
 		case "LCA":
 			out.LCA = string(in.String())
 		default:
@@ -281,14 +281,14 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar2(out *jwr
 		out.String(string(in.CarbonDrawdown))
 	}
 	{
-		const prefix string = ",\"CommnunityValue\":"
+		const prefix string = ",\"CommunityValue\":"
 		if first {
 			first = false
 			out.RawString(prefix[1:])
 		} else {
 			out.RawString(prefix)
 		}
-		out.String(string(in.CommnunityValue))
+		out.String(string(in.CommunityValue))
 	}
 	{
 		const prefix string = ",\"LCA\":"
