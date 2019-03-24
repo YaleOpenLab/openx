@@ -661,7 +661,7 @@ func createOneHundredKiloWattProject() error {
 	project.PaybackPeriod = 4
 	project.InvestmentType = "equity"
 	project.InvestorIndices = append(project.InvestorIndices, investor1.U.Index, investor2.U.Index, investor3.U.Index)
-	project.RecipientIndices = append(project.RecipientIndices, recipient1.U.Index, recipient2.U.Index, recipient3.U.Index,recipient4.U.Index,recipient5.U.Index)
+	project.RecipientIndices = append(project.RecipientIndices, recipient1.U.Index, recipient2.U.Index, recipient3.U.Index, recipient4.U.Index, recipient5.U.Index)
 	project.DeveloperIndices = append(project.DeveloperIndices, developer1.U.Index, developer2.U.Index)
 	project.Originator = originator1
 

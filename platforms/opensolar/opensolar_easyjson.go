@@ -904,6 +904,28 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(in *jlex
 			out.DebtInvestor2 = string(in.String())
 		case "TaxEquityInvestor":
 			out.TaxEquityInvestor = string(in.String())
+		case "AmountOwed":
+			out.AmountOwed = float64(in.Float64())
+		case "WaterfallMap":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				in.Delim('{')
+				if !in.IsDelim('}') {
+					out.WaterfallMap = make(map[string]float64)
+				} else {
+					out.WaterfallMap = nil
+				}
+				for !in.IsDelim('}') {
+					key := string(in.String())
+					in.WantColon()
+					var v14 float64
+					v14 = float64(in.Float64())
+					(out.WaterfallMap)[key] = v14
+					in.WantComma()
+				}
+				in.Delim('}')
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -1390,11 +1412,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v14, v15 := range in.InvestorIndices {
-				if v14 > 0 {
+			for v15, v16 := range in.InvestorIndices {
+				if v15 > 0 {
 					out.RawByte(',')
 				}
-				out.Int(int(v15))
+				out.Int(int(v16))
 			}
 			out.RawByte(']')
 		}
@@ -1411,11 +1433,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v16, v17 := range in.SeedInvestorIndices {
-				if v16 > 0 {
+			for v17, v18 := range in.SeedInvestorIndices {
+				if v17 > 0 {
 					out.RawByte(',')
 				}
-				out.Int(int(v17))
+				out.Int(int(v18))
 			}
 			out.RawByte(']')
 		}
@@ -1502,24 +1524,24 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v18, v19 := range in.StageChecklist {
-				if v18 > 0 {
+			for v19, v20 := range in.StageChecklist {
+				if v19 > 0 {
 					out.RawByte(',')
 				}
-				if v19 == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
+				if v20 == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
 					out.RawString(`null`)
 				} else {
 					out.RawByte('{')
-					v20First := true
-					for v20Name, v20Value := range v19 {
-						if v20First {
-							v20First = false
+					v21First := true
+					for v21Name, v21Value := range v20 {
+						if v21First {
+							v21First = false
 						} else {
 							out.RawByte(',')
 						}
-						out.String(string(v20Name))
+						out.String(string(v21Name))
 						out.RawByte(':')
-						out.Bool(bool(v20Value))
+						out.Bool(bool(v21Value))
 					}
 					out.RawByte('}')
 				}
@@ -1539,11 +1561,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v21, v22 := range in.StageData {
-				if v21 > 0 {
+			for v22, v23 := range in.StageData {
+				if v22 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v22))
+				out.String(string(v23))
 			}
 			out.RawByte(']')
 		}
@@ -1560,16 +1582,16 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v23First := true
-			for v23Name, v23Value := range in.InvestorMap {
-				if v23First {
-					v23First = false
+			v24First := true
+			for v24Name, v24Value := range in.InvestorMap {
+				if v24First {
+					v24First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v23Name))
+				out.String(string(v24Name))
 				out.RawByte(':')
-				out.Float64(float64(v23Value))
+				out.Float64(float64(v24Value))
 			}
 			out.RawByte('}')
 		}
@@ -1586,11 +1608,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v24, v25 := range in.Terms {
-				if v24 > 0 {
+			for v25, v26 := range in.Terms {
+				if v25 > 0 {
 					out.RawByte(',')
 				}
-				(v25).MarshalEasyJSON(out)
+				(v26).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -1657,11 +1679,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v26, v27 := range in.Pictures {
-				if v26 > 0 {
+			for v27, v28 := range in.Pictures {
+				if v27 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v27))
+				out.String(string(v28))
 			}
 			out.RawByte(']')
 		}
@@ -1858,11 +1880,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v28, v29 := range in.DeveloperIndices {
-				if v28 > 0 {
+			for v29, v30 := range in.DeveloperIndices {
+				if v29 > 0 {
 					out.RawByte(',')
 				}
-				out.Int(int(v29))
+				out.Int(int(v30))
 			}
 			out.RawByte(']')
 		}
@@ -1909,11 +1931,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v30, v31 := range in.RecipientIndices {
-				if v30 > 0 {
+			for v31, v32 := range in.RecipientIndices {
+				if v31 > 0 {
 					out.RawByte(',')
 				}
-				out.Int(int(v31))
+				out.Int(int(v32))
 			}
 			out.RawByte(']')
 		}
@@ -1947,6 +1969,42 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString(prefix)
 		}
 		out.String(string(in.TaxEquityInvestor))
+	}
+	{
+		const prefix string = ",\"AmountOwed\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Float64(float64(in.AmountOwed))
+	}
+	{
+		const prefix string = ",\"WaterfallMap\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		if in.WaterfallMap == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
+			out.RawString(`null`)
+		} else {
+			out.RawByte('{')
+			v33First := true
+			for v33Name, v33Value := range in.WaterfallMap {
+				if v33First {
+					v33First = false
+				} else {
+					out.RawByte(',')
+				}
+				out.String(string(v33Name))
+				out.RawByte(':')
+				out.Float64(float64(v33Value))
+			}
+			out.RawByte('}')
+		}
 	}
 	out.RawByte('}')
 }
