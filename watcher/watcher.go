@@ -31,9 +31,9 @@ func main() {
 	deviceId := viper.Get("deviceId").(string)       // the device id associated with the IoT hub
 
 	body := "https://api.particle.io/v1/devices/" + deviceId + "/ping"
-	payload := strings.NewReader("access_token=" + accessToken)
 
 	for {
+		payload := strings.NewReader("access_token=" + accessToken)
 		data, err := rpc.PutRequest(body, payload)
 		if err != nil {
 			log.Println("did not receive success response", err)
@@ -57,7 +57,7 @@ func main() {
 				return
 			}
 		}
-		time.Sleep(2 * time.Hour) // check every hour whether the IoT Hub is up or not
+		time.Sleep(2 * 24 * time.Hour) // check every hour whether the IoT Hub is up or not
 	}
 }
 
