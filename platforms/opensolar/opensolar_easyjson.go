@@ -741,6 +741,8 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(in *jlex
 			out.AmountOwed = float64(in.Float64())
 		case "Reputation":
 			out.Reputation = float64(in.Float64())
+		case "OwnershipShift":
+			out.OwnershipShift = float64(in.Float64())
 		case "StageData":
 			if in.IsNull() {
 				in.Skip()
@@ -1572,6 +1574,16 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString(prefix)
 		}
 		out.Float64(float64(in.Reputation))
+	}
+	{
+		const prefix string = ",\"OwnershipShift\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Float64(float64(in.OwnershipShift))
 	}
 	{
 		const prefix string = ",\"StageData\":"

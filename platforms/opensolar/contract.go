@@ -480,22 +480,32 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 		return fmt.Errorf("other investment models are not supported right now, quitting")
 	}
 
-	err = model.MunibondPayback(consts.OpenSolarIssuerDir, escrowPath, recpIndex, amount, recipientSeed, projIndex, assetName, project.InvestorIndices)
+	pct, err := model.MunibondPayback(consts.OpenSolarIssuerDir, escrowPath, recpIndex, amount,
+		recipientSeed, projIndex, assetName, project.InvestorIndices, project.TotalValue)
 	if err != nil {
 		return errors.Wrap(err, "Error while paying back the issuer")
 	}
 
 	// MW: Ownership of asset could shift as payments happen, or flip at the end.
 	// Also, wouldnt it make sense to make the 'Ownership Flip or Handoff' as a separate function? Since this will have to trigger changes in a registry?
-	project.BalLeft -= utils.StoF(amount)    // can directly change this since we've checked for it in the MunibondPayback call
-	project.AmountOwed -= utils.StoF(amount) // subtract the amount owed so we can track progress of payments in the monitorPaybacks loop
+	project.BalLeft -= (1 - pct) * utils.StoF(amount) // the balance left should be the percenteage paid towards the asset, which is the monthly bill. THe re st goes into  ownership
+	project.AmountOwed -= utils.StoF(amount)          // subtract the amount owed so we can track progress of payments in the monitorPaybacks loop
+	project.OwnershipShift += pct
 	project.DateLastPaid = utils.Unix()
+
 	if project.BalLeft == 0 {
-		log.Println("YOU HAVE PAID OFF THIS ASSET, TRANSFERRING OWNERSHIP OF ASSET TO YOU")
-		project.Stage = 9 // stage 9 is the disposal stage, we don't wait for stage 9 to complete and hence leave it as is, just deleting the account and stuff associated with the project
-		// we should call neighborly or some other partner here to transfer assets using the bond they provide us with
-		// the nice part here is that the recipient can not pay off more than what is
-		// invested because the trustline will not allow such an incident to happen
+		log.Println("YOU HAVE PAID OFF THIS ASSET's LOAN, TRANSFERRING FUTURE PAYMENTS AS OWNERSHIP ASSETS OWNERSHIP OF ASSET TO YOU")
+		project.Stage = 9
+		// ownership shift is complete, so future payemnts will be made towards what's
+	}
+
+	if project.OwnershipShift == 1 {
+		// the recipient has paid off the asset completely. TODO: we need to transfer some sort
+		// of document to the person identifying that they now own the project
+		log.Println("You now own the asset completely, there is no need to pay money in the future towards this particular project")
+		project.Stage = 8 // TODO: review where this stage transition should ideally occur
+		project.BalLeft = 0
+		project.AmountOwed = 0
 	}
 
 	err = project.Save()
@@ -513,7 +523,7 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 		return errors.Wrap(err, "error while distributing payments")
 	}
 
-	return err
+	return nil
 }
 
 func DistributePayments(escrowSeed string, escrowPubkey string, projIndex int, amount int) error {

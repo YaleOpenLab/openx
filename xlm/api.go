@@ -21,36 +21,6 @@ var TestNetClient = &clients.Client{
 	HTTP: http.DefaultClient,
 }
 
-// multiple write header calls - need to correct this
-// but the stellar horizon api is up, so that's nice to have and we can optimize it for what we need
-/*
-type Ledger struct {
-    Links struct {
-        Self         hal.Link `json:"self"`
-        Transactions hal.Link `json:"transactions"`
-        Operations   hal.Link `json:"operations"`
-        Payments     hal.Link `json:"payments"`
-        Effects      hal.Link `json:"effects"`
-    }   `json:"_links"`
-    ID               string    `json:"id"`
-    PT               string    `json:"paging_token"`
-    Hash             string    `json:"hash"`
-    PrevHash         string    `json:"prev_hash,omitempty"`
-    Sequence         int32     `json:"sequence"`
-    TransactionCount int32     `json:"transaction_count"`
-    OperationCount   int32     `json:"operation_count"`
-    ClosedAt         time.Time `json:"closed_at"`
-    TotalCoins       string    `json:"total_coins"`
-    FeePool          string    `json:"fee_pool"`
-    BaseFee          int32     `json:"base_fee_in_stroops"`
-    BaseReserve      int32     `json:"base_reserve_in_stroops"`
-    MaxTxSetSize     int32     `json:"max_tx_set_size"`
-    ProtocolVersion  int32     `json:"protocol_version"`
-    HeaderXDR        string    `json:"header_xdr"`
-}
-
-*/
-
 // GetLedgerData gets the latest data from the ledger
 func GetLedgerData(blockNumber string) ([]byte, error) {
 	var err error
