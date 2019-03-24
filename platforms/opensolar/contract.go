@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"log"
+	"math"
 	"time"
 
 	assets "github.com/YaleOpenLab/openx/assets"
@@ -12,6 +13,7 @@ import (
 	issuer "github.com/YaleOpenLab/openx/issuer"
 	model "github.com/YaleOpenLab/openx/models/munibond"
 	notif "github.com/YaleOpenLab/openx/notif"
+	oracle "github.com/YaleOpenLab/openx/oracle"
 	utils "github.com/YaleOpenLab/openx/utils"
 	wallet "github.com/YaleOpenLab/openx/wallet"
 	xlm "github.com/YaleOpenLab/openx/xlm"
@@ -481,7 +483,8 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 
 	// MW: Ownership of asset could shift as payments happen, or flip at the end.
 	// Also, wouldnt it make sense to make the 'Ownership Flip or Handoff' as a separate function? Since this will have to trigger changes in a registry?
-	project.BalLeft -= utils.StoF(amount) // can directly change this since we've checked for it in the MunibondPayback call
+	project.BalLeft -= utils.StoF(amount)    // can directly change this since we've checked for it in the MunibondPayback call
+	project.AmountOwed -= utils.StoF(amount) // subtract the amount owed so we can track progress of payments in the monitorPaybacks loop
 	project.DateLastPaid = utils.Unix()
 	if project.BalLeft == 0 {
 		log.Println("YOU HAVE PAID OFF THIS ASSET, TRANSFERRING OWNERSHIP OF ASSET TO YOU")
@@ -535,7 +538,6 @@ func DistributePayments(escrowSeed string, escrowPubkey string, projIndex int, a
 
 // CalculatePayback calculates the amount of payback assets that must be issued in relation
 // to the total amount invested in the project
-// MW: Why is this after payback?
 func (project Project) CalculatePayback(amount string) string {
 	amountF := utils.StoF(amount)
 	amountPB := (amountF / float64(project.TotalValue)) * float64(project.ETA*12)
@@ -551,12 +553,14 @@ func monitorPaybacks(recpIndex int, projIndex int) {
 		project, err := RetrieveProject(projIndex)
 		if err != nil {
 			log.Println("Couldn't retrieve project")
+			time.Sleep(time.Duration(consts.OneWeekInSecond))
 			continue
 		}
 
 		recipient, err := database.RetrieveRecipient(recpIndex)
 		if err != nil {
 			log.Println("Couldn't retrieve recipient")
+			time.Sleep(time.Duration(consts.OneWeekInSecond))
 			continue
 		}
 
@@ -569,7 +573,11 @@ func monitorPaybacks(recpIndex int, projIndex int) {
 			period = 1 // for the test suite
 		}
 		factor := timeElapsed / period
-
+		// TODO: improve this to something more robust
+		project.AmountOwed += math.Round(float64(factor)) * oracle.MonthlyBillInFloat() // add the amount owed only if the time elapsed is more than one payback period
+		if err != nil {
+			log.Println(err)
+		}
 		// Reputation adjustments based on payback history:
 		if factor <= 1 {
 			// don't do anything since the user has been paying back regularly
@@ -578,6 +586,7 @@ func monitorPaybacks(recpIndex int, projIndex int) {
 		} else if factor > NormalThreshold && factor < AlertThreshold {
 			// person has not paid back for one-two consecutive period, send gentle reminder
 			notif.SendNicePaybackAlertEmail(projIndex, recipient.U.Email)
+			time.Sleep(time.Duration(consts.OneWeekInSecond))
 		} else if factor >= SternAlertThreshold && factor < DisconnectionThreshold {
 			// person has not paid back for four consecutive cycles, send reminder
 			notif.SendSternPaybackAlertEmail(projIndex, recipient.U.Email)
@@ -594,7 +603,7 @@ func monitorPaybacks(recpIndex int, projIndex int) {
 				}
 			}
 			notif.SendSternPaybackAlertEmailG(projIndex, project.Guarantor.U.Email)
-			// send an email out to the guarantor
+			time.Sleep(time.Duration(consts.OneWeekInSecond))
 		} else if factor >= DisconnectionThreshold {
 			// send a disconnection notice to the recipient and let them know we have redirected
 			// power towards the grid. Also maybe email ourselves in this case so that we can
@@ -606,16 +615,32 @@ func monitorPaybacks(recpIndex int, projIndex int) {
 				investor, err := database.RetrieveInvestor(i)
 				if err != nil {
 					log.Println(err)
+					time.Sleep(time.Duration(consts.OneWeekInSecond))
 					continue
 				}
 				if investor.U.Notification {
 					notif.SendDisconnectionEmailI(projIndex, investor.U.Email)
 				}
 			}
+			// we have sent out emails to investors, send an email to the guarantor and cover first losses of investors
 			notif.SendDisconnectionEmailG(projIndex, project.Guarantor.U.Email)
-			// send an email out to the guarantor
+			err = CoverFirstLoss(project.Index, project.Guarantor.U.Index, utils.FtoS(project.AmountOwed))
+			if err != nil {
+				log.Println(err)
+				time.Sleep(time.Duration(consts.OneWeekInSecond))
+				continue
+			}
 		}
 
 		time.Sleep(time.Duration(consts.OneWeekInSecond)) // poll every week to check progress on payments
 	}
+}
+
+func addWaterfallAccount(projIndex int, pubkey string, amount float64) error {
+	project, err := RetrieveProject(projIndex)
+	if err != nil {
+		return errors.Wrap(err, "could not retrieve project, quitting")
+	}
+	project.WaterfallMap[pubkey] = amount
+	return project.Save()
 }

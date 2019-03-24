@@ -163,6 +163,10 @@ func easyjson3e8ab7adDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar(in *jlexe
 				}
 				in.Delim(']')
 			}
+		case "FirstLossGuarantee":
+			out.FirstLossGuarantee = string(in.String())
+		case "FirstLossGuaranteeAmt":
+			out.FirstLossGuaranteeAmt = float64(in.Float64())
 		default:
 			in.SkipRecursive()
 		}
@@ -341,6 +345,26 @@ func easyjson3e8ab7adEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar(out *jwri
 			}
 			out.RawByte(']')
 		}
+	}
+	{
+		const prefix string = ",\"FirstLossGuarantee\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.FirstLossGuarantee))
+	}
+	{
+		const prefix string = ",\"FirstLossGuaranteeAmt\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Float64(float64(in.FirstLossGuaranteeAmt))
 	}
 	out.RawByte('}')
 }

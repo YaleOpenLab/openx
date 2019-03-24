@@ -73,8 +73,14 @@ type Entity struct {
 	// regarding a particular contract.
 	CollateralData []string
 	// the specific thing(s) which the contractor wants to hold as collateral described
-	// as a string (for eg, if a cash bond worht 5000 USD is held as collaterlal,
+	// as a string (for eg, if a cash bond worth 5000 USD is held as collateral,
 	// collateral would be set to 5000 USD and CollateralData would be "Cash Bond")
+	FirstLossGuarantee string
+	// FirstLossGuarantee is the seedpwd of the guarantor's account. This will be used
+	// only when the recipient defaults and we need to cover losses of investors
+	FirstLossGuaranteeAmt float64
+	// FirstLossGuaranteeAmt is the amoutn that the guarantor is expected to cover in the case
+	// of first loss
 }
 
 // Save stores the entity in the database

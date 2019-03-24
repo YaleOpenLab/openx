@@ -21,7 +21,7 @@ import (
 type Project struct {
 	Index int // an Index to keep quick track of how many projects exist
 
-	Name           string // the name of the project / the identifier by which its referred to
+	Name           string  // the name of the project / the identifier by which its referred to
 	TotalValue     float64 // the total money that we need from investors
 	MoneyRaised    float64 // total money that has been raised until now
 	ETA            int     // the year in which the recipient is expected to repay the initial investment amount by
@@ -150,6 +150,9 @@ type Project struct {
 	DebtInvestor1               string
 	DebtInvestor2               string
 	TaxEquityInvestor           string
+
+	AmountOwed   float64            // the amoutn owed to investors as a cumulative sum. Used in case of a breach
+	WaterfallMap map[string]float64 // publickey:amount map ni order to pay multiple accounts. A bit ugly, but should work fine. Make map before using
 }
 
 // Terms a terms and conditions struct. WIll be used as an array in the main project
