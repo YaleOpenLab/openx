@@ -57,7 +57,7 @@ func createPuertoRicoProject() error {
 	project.TotalValue = 8000 + 2000
 	project.State = "Puerto Rico"
 	project.MoneyRaised = 10000
-	project.ETA = 5
+	project.EstimatedAcquisition = 5
 	project.PaybackPeriod = 2 // In number of weeks in which payments are triggered
 	project.InterestRate = 0.029
 	project.Metadata = "This project is a pilot initiative from MIT MediaLab's DCI & the Yale Openlab at Tsai CITY, as to integrate the opensolar platforms with IoT data and blockchain based payment systems to help finance community energy in Puerto Rico"
@@ -72,12 +72,12 @@ func createPuertoRicoProject() error {
 	project.DateInitiated = "01/23/2018"
 	project.DateFunded = "06/19/2018"
 	project.BalLeft = 10000 // assume recipient has not paid anything back to us yet
-	project.Originator = originator1
-	project.Contractor = contractor1
+	project.OriginatorIndex = originator1.U.Index
+	project.ContractorIndex = contractor1.U.Index
 	project.DeveloperIndices = append(project.DeveloperIndices, developer1.U.Index, developer2.U.Index) // append the developer indiecs to the project so we can reference them later
-	project.Guarantor = guarantor1
+	project.GuarantorIndex = guarantor1.U.Index
 	project.ContractorFee = 2000
-	project.DeveloperFee = 6000
+	project.DeveloperFee = append(project.DeveloperFee, 6000)
 	project.RecipientIndex = recipient1.U.Index
 	project.Stage = 7
 	project.AuctionType = "private"
@@ -229,13 +229,13 @@ func createOneMegaWattProject() error {
 
 	project.DeveloperIndices = append(project.DeveloperIndices, developer1.U.Index, developer2.U.Index,
 		developer3.U.Index, developer4.U.Index, developer5.U.Index, developer6.U.Index, developer7.U.Index, developer8.U.Index)
-	project.MainDeveloper = developer1
-	project.Guarantor = guarantor1
+	project.MainDeveloperIndex = developer1.U.Index
+	project.GuarantorIndex = guarantor1.U.Index
 	project.InvestorIndices = append(project.InvestorIndices, investor1.U.Index, investor2.U.Index, investor3.U.Index)
 	project.RecipientIndices = append(project.RecipientIndices, recipient1.U.Index, recipient2.U.Index)
 	project.TotalValue = 2000000
 	project.MoneyRaised = 150000
-	project.ETA = 20
+	project.EstimatedAcquisition = 20
 	project.DebtInvestor1 = "OZFunds"
 	project.DebtInvestor2 = "GreenBank"
 	project.TaxEquityInvestor = "TaxEquity"
@@ -390,7 +390,7 @@ func createTenKiloWattProject() error {
 	project.TotalValue = 30000
 	project.Stage = 8
 	project.MoneyRaised = 30000
-	project.ETA = 0 // This project already flipped!
+	project.EstimatedAcquisition = 0 // This project already flipped!
 	project.State = "CT"
 	project.Country = "US"
 	project.InterestRate = 0.05
@@ -402,7 +402,7 @@ func createTenKiloWattProject() error {
 	project.Tax = "No benefits applied"
 	project.InvestorIndices = append(project.InvestorIndices, investor1.U.Index, investor2.U.Index, investor3.U.Index, investor4.U.Index, investor5.U.Index, investor6.U.Index)
 	project.DeveloperIndices = append(project.DeveloperIndices, developer1.U.Index, developer2.U.Index, developer3.U.Index, developer4.U.Index, developer5.U.Index)
-	project.Originator = originator1
+	project.OriginatorIndex = originator1.U.Index
 	project.InvestmentType = "Regulation Crowdfunding"
 	project.RecipientIndices = append(project.RecipientIndices, recipient1.U.Index, recipient2.U.Index)
 
@@ -519,13 +519,13 @@ func createTenMegaWattProject() error {
 	project.Metadata = "Transformation of 300 Puerto Rican public schools into solar powered emergency shelters. Each school will have around 30kW solar and 2kWh battery bank to cover critical loads including refrigeration of food and medicine, and an emergency telecommunication system with first responders. Backed by the Office of the Governor. 10 MW aggregate solar capacity. Nodes for community microgrids"
 	project.TotalValue = 19000000
 	project.MoneyRaised = 0
-	project.ETA = 8
+	project.EstimatedAcquisition = 8
 	project.PaybackPeriod = 4
 	project.InvestmentType = "munibond"
 	project.InvestorIndices = append(project.InvestorIndices, investor1.U.Index, investor2.U.Index)
 	project.RecipientIndices = append(project.RecipientIndices, recipient1.U.Index, recipient2.U.Index, recipient3.U.Index)
 	project.DeveloperIndices = append(project.DeveloperIndices, developer1.U.Index, developer2.U.Index)
-	project.Originator = originator1
+	project.OriginatorIndex = originator1.U.Index
 
 	// This is to populate the table of Terms and Conditions in the front end. TODO: change this inline with the FE
 	var terms1 opensolar.TermsHelper
@@ -657,13 +657,13 @@ func createOneHundredKiloWattProject() error {
 	project.SeedInvestmentCap = 5000
 	project.MoneyRaised = 1250
 	project.InterestRate = 0.023
-	project.ETA = 7
+	project.EstimatedAcquisition = 7
 	project.PaybackPeriod = 4
 	project.InvestmentType = "equity"
 	project.InvestorIndices = append(project.InvestorIndices, investor1.U.Index, investor2.U.Index, investor3.U.Index)
 	project.RecipientIndices = append(project.RecipientIndices, recipient1.U.Index, recipient2.U.Index, recipient3.U.Index, recipient4.U.Index, recipient5.U.Index)
 	project.DeveloperIndices = append(project.DeveloperIndices, developer1.U.Index, developer2.U.Index)
-	project.Originator = originator1
+	project.OriginatorIndex = originator1.U.Index
 
 	// This is to populate the table of Terms and Conditions in the front end. TODO: change this inline with the FE
 	var terms1 opensolar.TermsHelper
@@ -739,10 +739,10 @@ func testSolarProject(index int, panelsize string, totalValue float64, location 
 	project.DebtAssetCode = debtAssetCode
 	project.PaybackAssetCode = pbAssetCode
 	project.DateInitiated = utils.Timestamp()
-	project.ETA = years
+	project.EstimatedAcquisition = years
 	project.RecipientIndex = recpIndex
-	project.Contractor = contractor
-	project.Originator = originator
+	project.ContractorIndex = contractor.U.Index
+	project.OriginatorIndex = originator.U.Index
 	project.Stage = stage
 	project.PaybackPeriod = pbperiod
 	project.AuctionType = auctionType

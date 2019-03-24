@@ -128,7 +128,7 @@ func RetrieveContractorProjects(stage int, index int) ([]Project, error) {
 			if err != nil {
 				return errors.Wrap(err, "couldn't marshal json")
 			}
-			if rProject.Stage == stage && rProject.Contractor.U.Index == index {
+			if rProject.Stage == stage && rProject.ContractorIndex == index {
 				arr = append(arr, rProject)
 			}
 		}
@@ -159,7 +159,7 @@ func RetrieveOriginatorProjects(stage int, index int) ([]Project, error) {
 			if err != nil {
 				return errors.Wrap(err, "couldn't marshal json")
 			}
-			if rProject.Stage == stage && rProject.Originator.U.Index == index {
+			if rProject.Stage == stage && rProject.OriginatorIndex == index {
 				arr = append(arr, rProject)
 			}
 		}

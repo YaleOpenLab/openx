@@ -201,7 +201,7 @@ func createOpensolarProject() {
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
-		x.ETA, err = utils.StoICheck(r.URL.Query()["Years"][0])
+		x.EstimatedAcquisition, err = utils.StoICheck(r.URL.Query()["Years"][0])
 		if err != nil {
 			log.Println("param passed not int, quitting!")
 			responseHandler(w, r, StatusBadRequest)
@@ -243,7 +243,7 @@ func createOpensolarProject() {
 		}
 
 		// store other params which don't require db calls
-		x.Originator = prepEntity
+		x.OriginatorIndex = prepEntity.U.Index
 		x.State = r.URL.Query()["Location"][0]
 		x.PanelSize = r.URL.Query()["PanelSize"][0]
 		x.Inverter = r.URL.Query()["Inverter"][0]
@@ -319,7 +319,7 @@ func proposeOpensolarProject() {
 		// what parameters a contractor can ideally change
 		x.TotalValue += fee
 		x.OriginatorFee = fee
-		x.Originator = prepEntity
+		x.OriginatorIndex = prepEntity.U.Index
 		x.Stage = 2 // set proposed contract stage
 
 		err = x.Save()

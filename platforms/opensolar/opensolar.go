@@ -19,140 +19,108 @@ import (
 
 // Project defines the project struct
 type Project struct {
-	Index int // an Index to keep quick track of how many projects exist
+	// Describe the project
+	Index                     int     // an Index to keep track of how many projects exist
+	Name                      string  // the name of the project / the identifier by which its referred to
+	State                     string  // the state in which the project has been installed in
+	Country                   string  // the country in which the project has been installed in
+	TotalValue                float64 // the total money that we need from investors
+	PanelSize                 string  // size of the given panel, for diplsaying to the user who wants to bid stuff
+	PanelTechnicalDescription string  // This should talk about '10x 100W Komaes etc'
+	Inverter                  string  // the inverter of the installed project
+	ChargeRegulator           string  // the charge regulator of the installed project
+	ControlPanel              string  // the control panel of the installed project
+	CommBox                   string  // the comm box of the installed project
+	ACTransfer                string  // the AC transfer of the installed project
+	SolarCombiner             string  // the solar combiner of the installed project
+	Batteries                 string  // the batteries of the installed project. TODO: Batteries should also have a fixed nominal value of capacity, as well as one describing what setup it is.
+	IoTHub                    string  // the IoT Hub installed as part of the project
+	Metadata                  string  // other metadata which does not have an explicit name can be stored here. Used to derive assetIDs
 
-	Name           string  // the name of the project / the identifier by which its referred to
-	TotalValue     float64 // the total money that we need from investors
-	MoneyRaised    float64 // total money that has been raised until now
-	ETA            int     // the year in which the recipient is expected to repay the initial investment amount by
-	BalLeft        float64 // denotes the balance left to pay by the party, percentage raised is not stored in the database since that can be calculated
-	Votes          int     // the number of votes towards a proposed contract by investors
-	SecurityIssuer string  // the issuer of the security
-	BrokerDealer   string  // the broker dealer associated with the project
+	// Define parameters related to finance
+	MoneyRaised          float64 // total money that has been raised until now
+	EstimatedAcquisition int     // the year in which the recipient is expected to repay the initial investment amount by
+	BalLeft              float64 // denotes the balance left to pay by the party, percentage raised is not stored in the database since that can be calculated
+	InterestRate         float64 // the rate of return for investors
+	Tax                  string  // the specifications of the tax system associated with this particular project
 
-	// different assets associated with the platform
-	InvestorAssetCode string
-	DebtAssetCode     string
-	PaybackAssetCode  string
-	SeedAssetCode     string
+	// Define dates of creation and funding
+	DateInitiated string // date the project was created on the platform
+	DateFunded    string // date that the project completed the stage 4-5 migration
+	DateLastPaid  int64  // int64 ie unix time since we need comparisons on this one
 
-	// dates on which the project was initiated, funded an last paid towards
-	DateInitiated string
-	DateFunded    string
-	DateLastPaid  int64 // int64 ie unix time since we need comparisons on this one
-
-	// params that help define the specifications of the installation
-	// MW: What does state really mean here? Is this the project name?
-	State        string  // the state in which the project has been installed in
-	Country      string  // the country in which the project has been installed in
-	InterestRate float64 // the rate of return for investors
-	Tax          string  // the specifications of the tax system associated with this particular project
-	// TODO: I see we have 'Panel Size' which should just be the denominal value only (eg. 1000W), but there should also be a 'Panel technical description'
-	// This should talk about '10x 100W Komaes etc'
-	PanelSize       string // size of the given panel, for diplsaying to the user who wants to bid stuff
-	Inverter        string
-	ChargeRegulator string
-	ControlPanel    string
-	CommBox         string
-	ACTransfer      string
-	SolarCombiner   string
-	//TODO: Batteries should also have a fixed nominal value of capacity, as well as one describing what setup it is.
-	Batteries string
-	IoTHub    string
-	Metadata  string // other metadata which does not have an explicit name can be stored here. Used to derive assetIDs
-
-	// List of entities other than the contractor
-	Originator           Entity
-	OriginatorFee        float64 // fee paid to the originator included in the total value of the project
-	Developer            Entity  // the developer who is responsible for installing the solar panels and the IoT hubs
-	Guarantor            Entity  // the person guaranteeing the specific project in question
+	// Define technical paramters
+	AuctionType          string  // the type of the auction in question. Default is blind auction unless explicitly mentioned
+	InvestmentType       string  // the type of investment - equity crowdfunding, municipal bond, normal crowdfunding, etc defined in models
+	PaybackPeriod        int     // the frequency in number of weeks that the recipient has to pay the platform.
+	Stage                int     // the stage at which the contract is at, float due to potential support of 0.5 state changes in the future
+	InvestorAssetCode    string  // the code of the asset given to investors on investment in the project
+	DebtAssetCode        string  // the code of the asset given to recipients on receiving a project
+	PaybackAssetCode     string  // the code of the asset given to recipients on receiving a project
+	SeedAssetCode        string  // the code of the asset given to seed investors on seed investment in the project
 	SeedInvestmentFactor float64 // the factor that a seed investor's investment is multiplied by in case he does invest at the seed stage
 	SeedInvestmentCap    float64 // the max amount that a seed investor can put in a project when it is in its seed stages
 	ProposedInvetmentCap float64 // the max amount that an investor can invest in when the project is in its proposed stage (stage 2)
 	SelfFund             float64 // the amount that a beneficiary / recipient puts in a project wihtout asking from other investors. This is not included as a seed investment because this would mean the recipient pays his own investment back in the project
 
-	// List of contractor entities
-	Contractor             Entity  // the person with the proposed contract
-	ContractorFee          float64 // fee paid to the contractor from the total fee of the project
-	SecondaryContractor    Entity  // this is the secondary contractor involved in the project
-	SecondaryContractorFee float64 // the fee to be paid towards the secondary contractor
-	TertiaryContractor     Entity  // tertiary contractor if any can be added to the system
-	TertiaryContractorFee  float64 // the fee to be paid towards the tertiary contractor
-	DeveloperFee           float64 // the fee charged by the developer
+	// Describe issuer of security and the broker dealer
+	SecurityIssuer string // the issuer of the security
+	BrokerDealer   string // the broker dealer associated with the project
 
-	RecipientIndex      int   // The index of the project's recipient
-	InvestorIndices     []int // The various investors who have invested in the project
-	SeedInvestorIndices []int // Investors who took part before the contract was at stage 3
+	// Define the various entities that are associated with a specific project
+	RecipientIndex              int       // The index of the project's recipient
+	OriginatorIndex             int       // the originator of the project
+	GuarantorIndex              int       // the person guaranteeing the specific project in question
+	ContractorIndex             int       // the person with the proposed contract
+	MainDeveloperIndex          int       // the main developer of the project
+	BlendedCapitalInvestorIndex int       // the index of the blended capital investor
+	InvestorIndices             []int     // The various investors who have invested in the project
+	SeedInvestorIndices         []int     // Investors who took part before the contract was at stage 3
+	RecipientIndices            []int     // the indices of the recipient family (offtakers, beneficiaries, etc)
+	DeveloperIndices            []int     // the indices of the developers involved in the project`
+	ContractorFee               float64   // fee paid to the contractor from the total fee of the project
+	OriginatorFee               float64   // fee paid to the originator included in the total value of the project
+	DeveloperFee                []float64 // the fees charged by the developers
+	DebtInvestor1               string    // debt investor index, if any
+	DebtInvestor2               string    // debt investor index, if any
+	TaxEquityInvestor           string    // tax equity investor if any
 
-	Stage       int    // the stage at which the contract is at, float due to potential support of 0.5 state changes in the future
-	AuctionType string // the type of the auction in question. Default is blind auction unless explicitly mentioned
+	// Define parameters that will not be defined directly but will be used for the backend flow
+	Lock           bool               // lock investment in order to wait for recipient's confirmation
+	LockPwd        string             // the recipient's seedpwd. Will be set to null as soon as we use it.
+	Votes          int                // the number of votes towards a proposed contract by investors
+	AmountOwed     float64            // the amoutn owed to investors as a cumulative sum. Used in case of a breach
+	Reputation     float64            // the positive reputation associated with a given project
+	StageData      []string           // the data associated with stage migrations
+	StageChecklist []map[string]bool  // the checklist that has to be completed before moving on to the next stage
+	InvestorMap    map[string]float64 // publicKey: percentage donation
+	WaterfallMap   map[string]float64 // publickey:amount map ni order to pay multiple accounts. A bit ugly, but should work fine. Make map before using
 
-	Reputation float64 // the positive reputation associated with a given project
-	Lock       bool    // lock investment in order to wait for recipient's confirmation
-	LockPwd    string  // the recipient's seedpwd. Will be set to null as soon as we use it.
-
-	InvestmentType string // the type of investment - equity crowdfunding, municipal bond, normal crowdfunding, etc defined in models
-
-	PaybackPeriod int // the frequency in number of weeks that the recipient has to pay the platform.
-	// this has to be set to atleast a week since the payback monitoring thread runs every week. Ideally, we could
-	// provide users with a predefined list of payback periods periods
-
-	// List of checklists that the user can go and check in the past whether they have been fulfilled or not
-	// this is a string-strign map since I can add any arbitrary data that I want to without checking for stuff.
-	// this is of length 9 since there are nine stages defined for the opensolar platform
-	StageChecklist []map[string]bool
-
-	// List of data associated with each checkpoint in order for someone who comes in later to verify
-	// that we indeed have the right project. THe various hashes and stuff are stored here instead of
-	// having separate fields for each contract
-	StageData   []string
-	InvestorMap map[string]float64 // publicKey: percentage donation
-
-	Terms              []TermsHelper // the terms of the project
-	AutoReloadInterval float64       // the interval in which the user's funds reach zero
-	ActionsRequired    string        // the action(s) required by the user
-
-	// these are bullet points that would be displayed along with project decription on the main screen
-	Bullet1 string
-	Bullet2 string
-	Bullet3 string
-
-	Pictures []string // an array of the pictures in base64 that are stored on the backend
-	// TOOD: see if we can handle this in a simpler way
-
-	ResilienceRating     float64
-	InvestmentMetrics    InvestmentHelper
-	FinancialMetrics     FinancialHelper
-	ProjectSizeMetric    ProjectSizeHelper
-	SustainabilityMetric SustainabilityHelper
-
-	LegalProjectOverviewHash string
-	LegalPPAHash             string
-	LegalRECAgreementHash    string
-	GuarantorAgreementHash   string
-	ContractorAgreementHash  string
-	StakeholderAgreementHash string
-	CommunityEnergyHash      string
-	FinancialReportingHash   string
-
-	// list of smart contracts that we must link to on the project page
-	Contract1 string
-	Contract2 string
-	Contract3 string
-	Contract4 string
-	Contract5 string
-
-	DeveloperIndices            []int
-	MainDeveloper               Entity
-	MainOriginator              Entity
-	BlendedCapitalInvestorIndex int
-	RecipientIndices            []int
-	DebtInvestor1               string
-	DebtInvestor2               string
-	TaxEquityInvestor           string
-
-	AmountOwed   float64            // the amoutn owed to investors as a cumulative sum. Used in case of a breach
-	WaterfallMap map[string]float64 // publickey:amount map ni order to pay multiple accounts. A bit ugly, but should work fine. Make map before using
+	// Define things that will be displayed on the frontend
+	Terms                    []TermsHelper        // the terms of the project
+	InvestmentMetrics        InvestmentHelper     // investment metrics that might be useful to an investor
+	FinancialMetrics         FinancialHelper      // financial metrics that might be useful to an investor
+	ProjectSizeMetric        ProjectSizeHelper    // a metric which shows the size of the project
+	SustainabilityMetric     SustainabilityHelper // a metric which shows the sustainability index of the project
+	AutoReloadInterval       float64              // the interval in which the user's funds reach zero
+	ResilienceRating         float64              // resilience of the project
+	ActionsRequired          string               // the action(s) required by the user
+	Bullet1                  string               // bullet points to be displayed on the project summary page
+	Bullet2                  string               // bullet points to be displayed on the project summary page
+	Bullet3                  string               // bullet points to be displayed on the project summary page
+	LegalProjectOverviewHash string               // hash to be displayed on the project details page
+	LegalPPAHash             string               // hash to be displayed on the project details page
+	LegalRECAgreementHash    string               // hash to be displayed on the project details page
+	GuarantorAgreementHash   string               // hash to be displayed on the project details page
+	ContractorAgreementHash  string               // hash to be displayed on the project details page
+	StakeholderAgreementHash string               // hash to be displayed on the project details page
+	CommunityEnergyHash      string               // hash to be displayed on the project details page
+	FinancialReportingHash   string               // hash to be displayed on the project details page
+	Contract1                string               // contracts which will be linked to on the project details page
+	Contract2                string               // contracts which will be linked to on the project details page
+	Contract3                string               // contracts which will be linked to on the project details page
+	Contract4                string               // contracts which will be linked to on the project details page
+	Contract5                string               // contracts which will be linked to on the project details page
 }
 
 // Terms a terms and conditions struct. WIll be used as an array in the main project

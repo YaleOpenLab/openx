@@ -26,13 +26,18 @@ func (a *Project) SetStage(number int) error {
 			log.Println("Error while saving project", err)
 			return err
 		}
-		err = RepOriginatedProject(a.Originator.U.Index, a.Index) // modify originator reputation now that the final price is fixed
+		err = RepOriginatedProject(a.OriginatorIndex, a.Index) // modify originator reputation now that the final price is fixed
 		if err != nil {
 			log.Println("Error while increasing reputation", err)
 			return err
 		}
 	case 5:
-		err := a.Contractor.U.IncreaseReputation(a.TotalValue * ContractorWeight) // modify contractor Reputation now that a project has been installed
+		contractor, err := RetrieveEntity(a.ContractorIndex)
+		if err != nil {
+			log.Println("error while retrieving entity from db, quitting")
+			return err
+		}
+		err = contractor.U.IncreaseReputation(a.TotalValue * ContractorWeight) // modify contractor Reputation now that a project has been installed
 		if err != nil {
 			log.Println("Couldn't increase contractor reputation", err)
 			return err

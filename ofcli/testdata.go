@@ -25,10 +25,10 @@ func newSolarProject(index int, panelsize string, totalValue float64, location s
 	project.DebtAssetCode = debtAssetCode
 	project.PaybackAssetCode = pbAssetCode
 	project.DateInitiated = utils.Timestamp()
-	project.ETA = years
+	project.EstimatedAcquisition = years
 	project.RecipientIndex = recpIndex
-	project.Contractor = contractor
-	project.Originator = originator
+	project.ContractorIndex = contractor.U.Index
+	project.OriginatorIndex = originator.U.Index
 	project.Stage = stage
 	project.PaybackPeriod = pbperiod
 	project.AuctionType = auctionType
@@ -281,7 +281,7 @@ func InsertDummyData() error {
 	demoProject.TotalValue = 8000 + 2000
 	demoProject.State = "S.U. Pasto School, Puerto Rico"
 	demoProject.MoneyRaised = 10000
-	demoProject.ETA = 5
+	demoProject.EstimatedAcquisition = 5
 	demoProject.PaybackPeriod = 2
 	demoProject.InterestRate = 0.029
 	demoProject.Metadata = "This is a pilot initiative of the MIT-Yale effort to integrate solar platforms with IoT data and blockchain based payment systems to help develop community shelters in Puerto Rico"
@@ -297,12 +297,12 @@ func InsertDummyData() error {
 	demoProject.DateFunded = "06/19/2018"
 	demoProject.BalLeft = 10000 // assume recipient has not paid anything back to us yet
 
-	demoProject.Originator = demoOrig
-	demoProject.Contractor = demoCont
-	demoProject.Developer = demoDevel
-	demoProject.Guarantor = demoGuar
+	demoProject.OriginatorIndex = demoOrig.U.Index
+	demoProject.ContractorIndex = demoCont.U.Index
+	demoProject.DeveloperIndices = append(demoProject.DeveloperIndices, demoDevel.U.Index)
+	demoProject.GuarantorIndex = demoGuar.U.Index
 	demoProject.ContractorFee = 2000
-	demoProject.DeveloperFee = 6000
+	demoProject.DeveloperFee = append(demoProject.DeveloperFee, 6000)
 	demoProject.RecipientIndex = demoRec.U.Index
 	demoProject.Stage = 6
 	demoProject.AuctionType = "private"
