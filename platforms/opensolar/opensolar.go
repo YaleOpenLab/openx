@@ -91,6 +91,7 @@ type Project struct {
 	Votes          int                // the number of votes towards a proposed contract by investors
 	AmountOwed     float64            // the amoutn owed to investors as a cumulative sum. Used in case of a breach
 	Reputation     float64            // the positive reputation associated with a given project
+	OwnershipShift float64            // the percentage of the project that the recipient now owns
 	StageData      []string           // the data associated with stage migrations
 	StageChecklist []map[string]bool  // the checklist that has to be completed before moving on to the next stage
 	InvestorMap    map[string]float64 // publicKey: percentage donation

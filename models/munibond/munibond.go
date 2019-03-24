@@ -174,62 +174,62 @@ func sendPaymentNotif(recpIndex int, projIndex int, paybackPeriod int, email str
 // MunibondPayback is used by the recipient to pay the platform back. Here, we pay the
 // project escrow instead of the platform since it would be responsible for redistribution of funds
 func MunibondPayback(issuerPath string, escrowPath string, recpIndex int, amount string, recipientSeed string, projIndex int,
-	assetName string, projectInvestors []int) error {
+	assetName string, projectInvestors []int, totalValue float64) (float64, error) {
 
 	recipient, err := database.RetrieveRecipient(recpIndex)
 	if err != nil {
-		return errors.Wrap(err, "Error while retrieving recipient from database")
+		return -1, errors.Wrap(err, "Error while retrieving recipient from database")
 	}
 
 	issuerPubkey, _, err := wallet.RetrieveSeed(issuer.CreatePath(issuerPath, projIndex), consts.IssuerSeedPwd)
 	if err != nil {
-		return errors.Wrap(err, "Unable to retrieve issuer seed")
+		return -1, errors.Wrap(err, "Unable to retrieve issuer seed")
 	}
 
 	escrowPubkey, _, err := wallet.RetrieveSeed(escrowPath, consts.EscrowPwd)
 	if err != nil {
-		return errors.Wrap(err, "Unable to retrieve issuer seed")
+		return -1, errors.Wrap(err, "Unable to retrieve issuer seed")
 	}
 
 	err = stablecoin.OfferExchange(recipient.U.PublicKey, recipientSeed, amount)
 	if err != nil {
-		return errors.Wrap(err, "Unable to offer xlm to STABLEUSD exchange for investor")
+		return -1, errors.Wrap(err, "Unable to offer xlm to STABLEUSD exchange for investor")
 	}
 
 	StableBalance, err := xlm.GetAssetBalance(recipient.U.PublicKey, "STABLEUSD")
 	if err != nil || (utils.StoF(StableBalance) < utils.StoF(amount)) {
-		return errors.Wrap(err, "You do not have the required stablecoin balance, please refill")
+		return -1, errors.Wrap(err, "You do not have the required stablecoin balance, please refill")
 	}
 
 	log.Println("ESCROW PUBKEY: ", escrowPubkey)
 	_, stableUSDHash, err := assets.SendAsset(consts.Code, consts.StableCoinAddress, escrowPubkey, amount, recipientSeed, recipient.U.PublicKey, "Opensolar payback: "+utils.ItoS(projIndex))
 	if err != nil {
 		log.Println("ESCROW PUBKEY: ", escrowPubkey)
-		return errors.Wrap(err, "Error while sending STABLEUSD back")
+		return -1, errors.Wrap(err, "Error while sending STABLEUSD back")
 	}
 	log.Printf("Paid %s back to platform in stableUSD, txhash %s ", amount, stableUSDHash)
 
 	_, debtPaybackHash, err := assets.SendAssetToIssuer(assetName, issuerPubkey, amount, recipientSeed, recipient.U.PublicKey)
 	if err != nil {
-		return errors.Wrap(err, "Error while sending debt asset back")
+		return -1, errors.Wrap(err, "Error while sending debt asset back")
 	}
 	log.Printf("Paid %s back to platform in DebtAsset, txhash %s ", amount, debtPaybackHash)
 
 	newBalanceS, err := xlm.GetAssetBalance(recipient.U.PublicKey, assetName)
 	if err != nil {
-		return errors.Wrap(err, "API error while fetching balance")
+		return -1, errors.Wrap(err, "API error while fetching balance")
 	}
 	newBalance := utils.StoF(newBalanceS)
 
 	DEBAssetBalance, err := xlm.GetAssetBalance(recipient.U.PublicKey, assetName)
 	if err != nil {
-		return errors.Wrap(err, "Recipient does not have the debt asset?")
+		return -1, errors.Wrap(err, "Recipient does not have the debt asset?")
 	}
 	debtBalance := utils.StoF(DEBAssetBalance)
 
 	monthlyBill := oracle.MonthlyBill()
 	if err != nil {
-		return errors.Wrap(err, "Unable to fetch oracle price, exiting")
+		return -1, errors.Wrap(err, "Unable to fetch oracle price, exiting")
 	}
 
 	log.Println("Retrieved average price from oracle: ", monthlyBill)
@@ -239,14 +239,13 @@ func MunibondPayback(issuerPath string, escrowPath string, recpIndex int, amount
 	//log.Println("Old Balance: ", DEBAssetBalanceFloat, " New Balance: ", newBalanceFloat, " Paid: ", paidAmount, " Bill Amount: ", mBillFloat)
 	// right now, we accept whatever amount the recipient chooses to payback. If we choose to enforce
 	// strict payback, we should check this first and then exchange STABLEUSD and DebtAssets
+	ownershipAmt := utils.StoF(amount) - mBillFloat
 	if paidAmount < mBillFloat {
-		log.Println("Amount paid is less than amount required, please make sure to cover next time")
-	} else if paidAmount > mBillFloat {
-		log.Println("You've chosen to pay more than what is required for this month")
-	} else {
-		log.Println("You've paid exactly what is required for this month")
+		// amount paid is less than the monthly bill, quit
+		return -1, fmt.Errorf("Amount paid from existing balance is less than amount required, please make sure to cover next time")
 	}
 
+	ownershipPct := ownershipAmt / totalValue
 	if recipient.U.Notification {
 		notif.SendPaybackNotifToRecipient(projIndex, recipient.U.Email, stableUSDHash, debtPaybackHash)
 	}
@@ -262,7 +261,7 @@ func MunibondPayback(issuerPath string, escrowPath string, recpIndex int, amount
 		}
 	}
 
-	return nil
+	return ownershipPct, nil
 }
 
 // SendUSDToPlatform is used to send usd back to the platform
