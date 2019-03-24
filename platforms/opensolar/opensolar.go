@@ -157,7 +157,7 @@ type ProjectSizeHelper struct {
 
 type SustainabilityHelper struct {
 	CarbonDrawdown  string
-	CommnunityValue string
+	CommunityValue string
 	LCA             string
 }
 
