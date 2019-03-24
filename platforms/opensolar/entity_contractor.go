@@ -35,7 +35,7 @@ func (contractor *Entity) Propose(panelSize string, totalValue float64, location
 	pc.PanelSize = panelSize
 	pc.TotalValue = totalValue
 	pc.State = location
-	pc.ETA = years
+	pc.EstimatedAcquisition = years
 	pc.Metadata = metadata
 	pc.DateInitiated = utils.Timestamp()
 	iRecipient, err := database.RetrieveRecipient(recIndex)
@@ -45,7 +45,7 @@ func (contractor *Entity) Propose(panelSize string, totalValue float64, location
 	pc.RecipientIndex = iRecipient.U.Index
 	pc.Stage = 2 // 2 since we need to filter this out while retrieving the propsoed contracts
 	pc.AuctionType = auctionType
-	pc.Contractor = *contractor
+	pc.ContractorIndex = contractor.U.Index
 	err = pc.Save()
 	return pc, err
 }

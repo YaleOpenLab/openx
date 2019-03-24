@@ -39,7 +39,7 @@ func CoverFirstLoss(projIndex int, entityIndex int, amount string) error {
 	}
 
 	// we now have the entity and the project under question
-	if project.Guarantor.U.Index != entity.U.Index {
+	if project.GuarantorIndex != entity.U.Index {
 		return fmt.Errorf("guarantor index does not match with entity's index in database")
 	}
 

@@ -207,10 +207,10 @@ func TestDb(t *testing.T) {
 	dummy.DebtAssetCode = ""
 	dummy.PaybackAssetCode = ""
 	dummy.DateInitiated = ""
-	dummy.ETA = 3
+	dummy.EstimatedAcquisition = 3
 	dummy.RecipientIndex = recp.U.Index
-	dummy.Contractor = contractor
-	dummy.Originator = newCE2
+	dummy.ContractorIndex = contractor.U.Index
+	dummy.OriginatorIndex = newCE2.U.Index
 	dummy.Stage = 3
 	err = dummy.Save()
 	if err != nil {
@@ -397,7 +397,7 @@ func TestDb(t *testing.T) {
 	}
 	testProject = dummy
 	testProject.Index = len(indexCheck) + 1
-	testProject.Originator = newCE2
+	testProject.OriginatorIndex = newCE2.U.Index
 	err = testProject.Save()
 	if err != nil {
 		t.Fatal(err)

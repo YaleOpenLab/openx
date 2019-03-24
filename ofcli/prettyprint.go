@@ -23,15 +23,13 @@ func PrintProject(project solar.Project) {
 	fmt.Println("          Location: ", project.State)
 	fmt.Println("          Money Raised: ", project.MoneyRaised)
 	fmt.Println("          Metadata: ", project.Metadata)
-	fmt.Println("          Years: ", project.ETA)
+	fmt.Println("          Years: ", project.EstimatedAcquisition)
 	fmt.Println("          Auction Type: ", project.AuctionType)
-	fmt.Println("          PROJECT ORIGINATOR: ")
-	PrintEntity(project.Originator)
+	fmt.Println("          PROJECT ORIGINATOR: ", project.OriginatorIndex)
 	fmt.Println("          PROJECT STAGE: ", project.Stage)
 	fmt.Println("          RECIPIENT: ", project.RecipientIndex)
 	if project.Stage >= 2 {
-		fmt.Println("          PROJECT CONTRACTOR: ")
-		PrintEntity(project.Contractor)
+		fmt.Println("          PROJECT CONTRACTOR: ", project.ContractorIndex)
 		fmt.Println("          Votes: ", project.Votes)
 	}
 	if project.Stage >= 3 {

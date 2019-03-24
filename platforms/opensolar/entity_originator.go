@@ -38,7 +38,7 @@ func (contractor *Entity) Originate(panelSize string, totalValue float64, locati
 	pc.PanelSize = panelSize
 	pc.TotalValue = totalValue
 	pc.State = location
-	pc.ETA = years
+	pc.EstimatedAcquisition = years
 	pc.Metadata = metadata
 	pc.DateInitiated = utils.Timestamp()
 	iRecipient, err := database.RetrieveRecipient(recIndex)
@@ -48,7 +48,7 @@ func (contractor *Entity) Originate(panelSize string, totalValue float64, locati
 	pc.RecipientIndex = iRecipient.U.Index
 	pc.Stage = 0 // 0 since we need to filter this out while retrieving the propsoed contracts
 	pc.AuctionType = auctionType
-	pc.Originator = *contractor
+	pc.OriginatorIndex = contractor.U.Index
 	pc.Reputation = totalValue // reputation is equal to the total value of the project
 	// instead of storing in this proposedcontracts slice, store it as a project, but not a contract and retrieve by stage
 	err = pc.Save()

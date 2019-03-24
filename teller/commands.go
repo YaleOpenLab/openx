@@ -95,7 +95,7 @@ func ParseInput(input []string) {
 			fmt.Println("          Location: ", LocalProject.State)
 			fmt.Println("          Money Raised: ", LocalProject.MoneyRaised)
 			fmt.Println("          Metadata: ", LocalProject.Metadata)
-			fmt.Println("          Years: ", LocalProject.ETA)
+			fmt.Println("          Years: ", LocalProject.EstimatedAcquisition)
 			fmt.Println("          Auction Type: ", LocalProject.AuctionType)
 			fmt.Println("          Debt Asset Code: ", LocalProject.DebtAssetCode)
 			fmt.Println("          Payback Asset Code: ", LocalProject.PaybackAssetCode)

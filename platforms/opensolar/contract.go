@@ -58,7 +58,11 @@ func VerifyBeforeAuthorizing(projIndex int) bool {
 		return false
 	}
 	// TODO: In the future, this would involve the kyc operator to check the originator's credentials
-	fmt.Printf("ORIGINATOR'S NAME IS: %s and PROJECT's METADATA IS: %s", project.Originator.U.Name, project.Metadata)
+	originator, err := RetrieveEntity(project.OriginatorIndex)
+	if err != nil {
+		return false
+	}
+	fmt.Printf("ORIGINATOR'S NAME IS: %s and PROJECT's METADATA IS: %s", originator.U.Name, project.Metadata)
 	return true
 }
 
@@ -87,7 +91,7 @@ func RecipientAuthorize(projIndex int, recpIndex int) error {
 		return errors.Wrap(err, "Error while setting origin project")
 	}
 
-	err = RepOriginatedProject(project.Originator.U.Index, project.Index)
+	err = RepOriginatedProject(project.OriginatorIndex, project.Index)
 	if err != nil {
 		return errors.Wrap(err, "error while increasing reputation of originator")
 	}
@@ -425,7 +429,7 @@ func sendRecipientAssets(projIndex int) error {
 	project.PaybackAssetCode = assets.AssetID(consts.PaybackAssetPrefix + metadata)
 
 	err = model.MunibondReceive(consts.OpenSolarIssuerDir, project.RecipientIndex, projIndex, project.DebtAssetCode,
-		project.PaybackAssetCode, project.ETA, recpSeed, project.TotalValue, project.PaybackPeriod)
+		project.PaybackAssetCode, project.EstimatedAcquisition, recpSeed, project.TotalValue, project.PaybackPeriod)
 	if err != nil {
 		return errors.Wrap(err, "error while receiving assets from issuer on recipient's end")
 	}
@@ -540,7 +544,7 @@ func DistributePayments(escrowSeed string, escrowPubkey string, projIndex int, a
 // to the total amount invested in the project
 func (project Project) CalculatePayback(amount string) string {
 	amountF := utils.StoF(amount)
-	amountPB := (amountF / float64(project.TotalValue)) * float64(project.ETA*12)
+	amountPB := (amountF / float64(project.TotalValue)) * float64(project.EstimatedAcquisition*12)
 	amountPBString := utils.FtoS(amountPB)
 	return amountPBString
 }
@@ -553,17 +557,20 @@ func monitorPaybacks(recpIndex int, projIndex int) {
 		project, err := RetrieveProject(projIndex)
 		if err != nil {
 			log.Println("Couldn't retrieve project")
-			time.Sleep(time.Duration(consts.OneWeekInSecond))
 			continue
 		}
 
 		recipient, err := database.RetrieveRecipient(recpIndex)
 		if err != nil {
 			log.Println("Couldn't retrieve recipient")
-			time.Sleep(time.Duration(consts.OneWeekInSecond))
 			continue
 		}
 
+		guarantor, err := RetrieveEntity(project.GuarantorIndex)
+		if err != nil {
+			log.Println("couldn't retrieve gurantor")
+			continue
+		}
 		// this will be our payback period and we need to check if the user pays us back
 
 		nowTime := utils.Unix()
@@ -602,7 +609,7 @@ func monitorPaybacks(recpIndex int, projIndex int) {
 					notif.SendSternPaybackAlertEmailI(projIndex, investor.U.Email)
 				}
 			}
-			notif.SendSternPaybackAlertEmailG(projIndex, project.Guarantor.U.Email)
+			notif.SendSternPaybackAlertEmailG(projIndex, guarantor.U.Email)
 			time.Sleep(time.Duration(consts.OneWeekInSecond))
 		} else if factor >= DisconnectionThreshold {
 			// send a disconnection notice to the recipient and let them know we have redirected
@@ -623,8 +630,8 @@ func monitorPaybacks(recpIndex int, projIndex int) {
 				}
 			}
 			// we have sent out emails to investors, send an email to the guarantor and cover first losses of investors
-			notif.SendDisconnectionEmailG(projIndex, project.Guarantor.U.Email)
-			err = CoverFirstLoss(project.Index, project.Guarantor.U.Index, utils.FtoS(project.AmountOwed))
+			notif.SendDisconnectionEmailG(projIndex, guarantor.U.Email)
+			err = CoverFirstLoss(project.Index, guarantor.U.Index, utils.FtoS(project.AmountOwed))
 			if err != nil {
 				log.Println(err)
 				time.Sleep(time.Duration(consts.OneWeekInSecond))
