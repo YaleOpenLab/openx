@@ -98,30 +98,49 @@ type Project struct {
 	WaterfallMap   map[string]float64 // publickey:amount map ni order to pay multiple accounts. A bit ugly, but should work fine. Make map before using
 
 	// Define things that will be displayed on the frontend
-	Terms                    []TermsHelper        // the terms of the project
-	InvestmentMetrics        InvestmentHelper     // investment metrics that might be useful to an investor
-	FinancialMetrics         FinancialHelper      // financial metrics that might be useful to an investor
-	ProjectSizeMetric        ProjectSizeHelper    // a metric which shows the size of the project
-	SustainabilityMetric     SustainabilityHelper // a metric which shows the sustainability index of the project
-	AutoReloadInterval       float64              // the interval in which the user's funds reach zero
-	ResilienceRating         float64              // resilience of the project
-	ActionsRequired          string               // the action(s) required by the user
-	Bullet1                  string               // bullet points to be displayed on the project summary page
-	Bullet2                  string               // bullet points to be displayed on the project summary page
-	Bullet3                  string               // bullet points to be displayed on the project summary page
-	LegalProjectOverviewHash string               // hash to be displayed on the project details page
-	LegalPPAHash             string               // hash to be displayed on the project details page
-	LegalRECAgreementHash    string               // hash to be displayed on the project details page
-	GuarantorAgreementHash   string               // hash to be displayed on the project details page
-	ContractorAgreementHash  string               // hash to be displayed on the project details page
-	StakeholderAgreementHash string               // hash to be displayed on the project details page
-	CommunityEnergyHash      string               // hash to be displayed on the project details page
-	FinancialReportingHash   string               // hash to be displayed on the project details page
-	Contract1                string               // contracts which will be linked to on the project details page
-	Contract2                string               // contracts which will be linked to on the project details page
-	Contract3                string               // contracts which will be linked to on the project details page
-	Contract4                string               // contracts which will be linked to on the project details page
-	Contract5                string               // contracts which will be linked to on the project details page
+	Terms                    []TermsHelper               // the terms of the project
+	ExecutiveSummary         ExecutiveSummaryHelper      // the bigger struct that holds all the executive summary metrics
+	AutoReloadInterval       float64                     // the interval in which the user's funds reach zero
+	ResilienceRating         float64                     // resilience of the project
+	ActionsRequired          string                      // the action(s) required by the user
+	Bullet1                  string                      // bullet points to be displayed on the project summary page
+	Bullet2                  string                      // bullet points to be displayed on the project summary page
+	Bullet3                  string                      // bullet points to be displayed on the project summary page
+	LegalProjectOverviewHash string                      // hash to be displayed on the project details page
+	LegalPPAHash             string                      // hash to be displayed on the project details page
+	LegalRECAgreementHash    string                      // hash to be displayed on the project details page
+	GuarantorAgreementHash   string                      // hash to be displayed on the project details page
+	ContractorAgreementHash  string                      // hash to be displayed on the project details page
+	StakeholderAgreementHash string                      // hash to be displayed on the project details page
+	CommunityEnergyHash      string                      // hash to be displayed on the project details page
+	FinancialReportingHash   string                      // hash to be displayed on the project details page
+	Contract1                string                      // contracts which will be linked to on the project details page
+	Contract2                string                      // contracts which will be linked to on the project details page
+	Contract3                string                      // contracts which will be linked to on the project details page
+	Contract4                string                      // contracts which will be linked to on the project details page
+	Contract5                string                      // contracts which will be linked to on the project details page
+	CommunityEngagement      []CommunityEngagementHelper // the section labelled "Community Engagement" on the frontend
+	Architecture             ArchitectureHelper          // the section labeled "Architecture/Project Design"
+	Context string // the section titled "Context"
+	SummaryImage string // the url to the image linked in the summary
+}
+
+type ArchitectureHelper struct {
+	SpaceLayoutImage   string
+	SolarOutputImage   string
+	SolarArray         string
+	DailyAvgGeneration string
+	System             string
+	InverterSize       string
+	DesignDescription  string
+}
+
+type CommunityEngagementHelper struct {
+	Width    int
+	Title    string
+	ImageURL string
+	Content  string
+	Link     string
 }
 
 // Terms a terms and conditions struct. WIll be used as an array in the main project
@@ -132,6 +151,13 @@ type TermsHelper struct {
 	Note          string
 	Status        string
 	SupportDoc    string
+}
+
+type ExecutiveSummaryHelper struct {
+	Investment            InvestmentHelper
+	Financials            FinancialHelper
+	ProjectSize           ProjectSizeHelper
+	SustainabilityMetrics SustainabilityHelper
 }
 
 type InvestmentHelper struct {
@@ -156,9 +182,9 @@ type ProjectSizeHelper struct {
 }
 
 type SustainabilityHelper struct {
-	CarbonDrawdown  string
+	CarbonDrawdown string
 	CommunityValue string
-	LCA             string
+	LCA            string
 }
 
 //easyjson:json

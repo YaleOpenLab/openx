@@ -193,29 +193,50 @@ func createPuertoRicoProject() error {
 	terms6.Status = "Started"
 	terms6.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
 
-	var investmentHelper opensolar.InvestmentHelper
-	var financialHelper opensolar.FinancialHelper
-	var projectSizeHelper opensolar.ProjectSizeHelper
-	var sustainabilityHelper opensolar.SustainabilityHelper
+	var esHelper opensolar.ExecutiveSummaryHelper
 
-	investmentHelper.Capex = "5000"
-	investmentHelper.Hardware = 60
-	investmentHelper.FirstLossEscrow = "30%"
-	investmentHelper.CertificationCosts = "N/A"
+	esHelper.Investment.Capex = "5000"
+	esHelper.Investment.Hardware = 60
+	esHelper.Investment.FirstLossEscrow = "30%"
+	esHelper.Investment.CertificationCosts = "N/A"
 
-	financialHelper.Return = 3.1
-	financialHelper.Insurance = "Premium"
-	financialHelper.Tariff = "0.24 ct/kWh"
-	financialHelper.Maturity = "2028 variable"
+	esHelper.Financials.Return = 3.1
+	esHelper.Financials.Insurance = "Premium"
+	esHelper.Financials.Tariff = "0.24 ct/kWh"
+	esHelper.Financials.Maturity = "2028 variable"
 
-	projectSizeHelper.PVSolar = "1 kW"
-	projectSizeHelper.Storage = "200 Wh"
-	projectSizeHelper.Critical = 2
-	projectSizeHelper.InverterCapacity = "2.5 kW"
+	esHelper.ProjectSize.PVSolar = "1 kW"
+	esHelper.ProjectSize.Storage = "200 Wh"
+	esHelper.ProjectSize.Critical = 2
+	esHelper.ProjectSize.InverterCapacity = "2.5 kW"
 
-	sustainabilityHelper.CarbonDrawdown = "0.1 t/kWh"
-	sustainabilityHelper.CommunityValue = "5/7"
-	sustainabilityHelper.LCA = "N/A"
+	esHelper.SustainabilityMetrics.CarbonDrawdown = "0.1 t/kWh"
+	esHelper.SustainabilityMetrics.CommunityValue = "5/7"
+	esHelper.SustainabilityMetrics.LCA = "N/A"
+
+	var communityblock1 opensolar.CommunityEngagementHelper
+	communityblock1.Title = "Consultation"
+	communityblock1.ImageURL = ""
+	communityblock1.Content = ""
+	communityblock1.Link = ""
+
+	var communityblock2 opensolar.CommunityEngagementHelper
+	communityblock2.Title = "Participation"
+	communityblock2.ImageURL = ""
+	communityblock2.Content = ""
+	communityblock2.Link = ""
+
+	var communityblock3 opensolar.CommunityEngagementHelper
+	communityblock3.Title = "Outreach"
+	communityblock3.ImageURL = ""
+	communityblock3.Content = ""
+	communityblock3.Link = ""
+
+	var communityblock4 opensolar.CommunityEngagementHelper
+	communityblock4.Title = "Governance"
+	communityblock4.ImageURL = ""
+	communityblock4.Content = ""
+	communityblock4.Link = ""
 
 	project.Index = len(indexHelp) + 1
 	project.Name = "Puerto Rico Pilot Project"
@@ -280,10 +301,7 @@ func createPuertoRicoProject() error {
 
 	// Define things that will be displayed on the frontend
 	project.Terms = append(project.Terms, terms1, terms2, terms3, terms4, terms5, terms6)
-	project.InvestmentMetrics = investmentHelper
-	project.FinancialMetrics = financialHelper
-	project.ProjectSizeMetric = projectSizeHelper
-	project.SustainabilityMetric = sustainabilityHelper
+	project.ExecutiveSummary = esHelper
 	project.AutoReloadInterval = -1
 	project.ResilienceRating = 0.8
 	project.ActionsRequired = ""
@@ -303,6 +321,15 @@ func createPuertoRicoProject() error {
 	project.Contract3 = ""
 	project.Contract4 = ""
 	project.Contract5 = ""
+	project.CommunityEngagement = append(project.CommunityEngagement, communityblock1, communityblock2, communityblock3, communityblock4)
+	project.Architecture.SolarOutputImage = ""
+	project.Architecture.SolarArray = "10x 100 W"
+	project.Architecture.DailyAvgGeneration = "4000 kWh"
+	project.Architecture.System = "600A Deep Cycle"
+	project.Architecture.InverterSize = "2024W 230V"
+	project.Architecture.DesignDescription = ""
+	project.Context = ""
+	project.SummaryImage= ""
 
 	err = project.Save()
 	if err != nil {
@@ -334,7 +361,7 @@ func createOneMegaWattProject() error {
 		log.Fatal(err)
 	}
 
-	recipient2, err := database.NewRecipient("LancasterT", "p", "x", "Town of Lancaste NH")
+	recipient2, err := database.NewRecipient("LancasterT", "p", "x", "Town of Lancaster NH")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -449,29 +476,33 @@ func createOneMegaWattProject() error {
 	terms6.Status = "Signed"
 	terms6.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
 
-	var investmentHelper opensolar.InvestmentHelper
-	var financialHelper opensolar.FinancialHelper
-	var projectSizeHelper opensolar.ProjectSizeHelper
-	var sustainabilityHelper opensolar.SustainabilityHelper
+	var esHelper opensolar.ExecutiveSummaryHelper
 
-	investmentHelper.Capex = "2000000"
-	investmentHelper.Hardware = 62
-	investmentHelper.FirstLossEscrow = "50000"
-	investmentHelper.CertificationCosts = ""
+	esHelper.Investment.Capex = "2000000"
+	esHelper.Investment.Hardware = 62
+	esHelper.Investment.FirstLossEscrow = "50000"
+	esHelper.Investment.CertificationCosts = ""
 
-	financialHelper.Return = 4.8
-	financialHelper.Insurance = "Premium"
-	financialHelper.Tariff = "0.18 ct/kWh"
-	financialHelper.Maturity = ""
+	esHelper.Financials.Return = 4.8
+	esHelper.Financials.Insurance = "Premium"
+	esHelper.Financials.Tariff = "0.18 ct/kWh"
+	esHelper.Financials.Maturity = ""
 
-	projectSizeHelper.PVSolar = "1MW"
-	projectSizeHelper.Storage = "210kWh"
-	projectSizeHelper.Critical = -1
-	projectSizeHelper.InverterCapacity = "1.25MW"
+	esHelper.ProjectSize.PVSolar = "1MW"
+	esHelper.ProjectSize.Storage = "210kWh"
+	esHelper.ProjectSize.Critical = -1
+	esHelper.ProjectSize.InverterCapacity = "1.25MW"
 
-	sustainabilityHelper.CarbonDrawdown = "0.1 t/kWh"
-	sustainabilityHelper.CommunityValue = "6/7"
-	sustainabilityHelper.LCA = "7/7"
+	esHelper.SustainabilityMetrics.CarbonDrawdown = "0.1 t/kWh"
+	esHelper.SustainabilityMetrics.CommunityValue = "6/7"
+	esHelper.SustainabilityMetrics.LCA = "7/7"
+
+	var communityblock1 opensolar.CommunityEngagementHelper
+	communityblock1.Width = 12
+	communityblock1.Title = "Climate Education, Awareness & Governance"
+	communityblock1.ImageURL = ""
+	communityblock1.Content = ""
+	communityblock1.Link = ""
 
 	project.Index = len(indexHelp) + 1
 	project.Name = "Lancaster Mutual Solar"
@@ -536,16 +567,13 @@ func createOneMegaWattProject() error {
 
 	// Define things that will be displayed on the frontend
 	project.Terms = append(project.Terms, terms1, terms2, terms3, terms4, terms5, terms6)
-	project.InvestmentMetrics = investmentHelper
-	project.FinancialMetrics = financialHelper
-	project.ProjectSizeMetric = projectSizeHelper
-	project.SustainabilityMetric = sustainabilityHelper
+	project.ExecutiveSummary = esHelper
 	project.AutoReloadInterval = -1
 	project.ResilienceRating = 0.8
 	project.ActionsRequired = ""
-	project.Bullet1 = ""
-	project.Bullet2 = ""
-	project.Bullet3 = ""
+	project.Bullet1 = "Eligible for Opportunity Zone Investments"
+	project.Bullet2 = "Community owned mutual funds as bond issuer"
+	project.Bullet3 = "1 MW grid with full offtake agreements"
 	project.LegalProjectOverviewHash = ""
 	project.LegalPPAHash = ""
 	project.LegalRECAgreementHash = ""
@@ -559,6 +587,15 @@ func createOneMegaWattProject() error {
 	project.Contract3 = ""
 	project.Contract4 = ""
 	project.Contract5 = ""
+	project.CommunityEngagement = append(project.CommunityEngagement, communityblock1)
+	project.Architecture.SolarOutputImage = ""
+	project.Architecture.SolarArray = "1000 kW"
+	project.Architecture.DailyAvgGeneration = "4000 kWh"
+	project.Architecture.System = "Battery + Grid"
+	project.Architecture.InverterSize = "1.25MW"
+	project.Architecture.DesignDescription = ""
+	project.Context = ""
+	project.SummaryImage= ""
 
 	err = project.Save()
 	if err != nil {
@@ -656,29 +693,34 @@ func createTenKiloWattProject() error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	var investmentHelper opensolar.InvestmentHelper
-	var financialHelper opensolar.FinancialHelper
-	var projectSizeHelper opensolar.ProjectSizeHelper
-	var sustainabilityHelper opensolar.SustainabilityHelper
 
-	investmentHelper.Capex = "30000"
-	investmentHelper.Hardware = 3
-	investmentHelper.FirstLossEscrow = "N/A"
-	investmentHelper.CertificationCosts = "N/A"
+	var esHelper opensolar.ExecutiveSummaryHelper
 
-	financialHelper.Return = -1
-	financialHelper.Insurance = "Basic"
-	financialHelper.Tariff = "0.12 ct/kWh"
-	financialHelper.Maturity = "2019"
+	esHelper.Investment.Capex = "30000"
+	esHelper.Investment.Hardware = 3
+	esHelper.Investment.FirstLossEscrow = "N/A"
+	esHelper.Investment.CertificationCosts = "N/A"
 
-	projectSizeHelper.PVSolar = "10 kW"
-	projectSizeHelper.Storage = "N/A Grid Tied"
-	projectSizeHelper.Critical = 100
-	projectSizeHelper.InverterCapacity = "15 kW"
+	esHelper.Financials.Return = -1
+	esHelper.Financials.Insurance = "Basic"
+	esHelper.Financials.Tariff = "0.12 ct/kWh"
+	esHelper.Financials.Maturity = "2019"
 
-	sustainabilityHelper.CarbonDrawdown = "0.1 t/kWh"
-	sustainabilityHelper.CommunityValue = "7/7"
-	sustainabilityHelper.LCA = ""
+	esHelper.ProjectSize.PVSolar = "10 kW"
+	esHelper.ProjectSize.Storage = "N/A Grid Tied"
+	esHelper.ProjectSize.Critical = 100
+	esHelper.ProjectSize.InverterCapacity = "15 kW"
+
+	esHelper.SustainabilityMetrics.CarbonDrawdown = "0.1 t/kWh"
+	esHelper.SustainabilityMetrics.CommunityValue = "7/7"
+	esHelper.SustainabilityMetrics.LCA = ""
+
+	var communityblock1 opensolar.CommunityEngagementHelper
+	communityblock1.Width = 12
+	communityblock1.Title = "Consultation"
+	communityblock1.ImageURL = ""
+	communityblock1.Content = ""
+	communityblock1.Link = ""
 
 	// This is to populate the table of Terms and Conditions in the front end. TODO: change this inline with the FE
 	var terms1 opensolar.TermsHelper
@@ -792,16 +834,13 @@ func createTenKiloWattProject() error {
 
 	// Define things that will be displayed on the frontend
 	project.Terms = append(project.Terms, terms1, terms2, terms3, terms4, terms5, terms6)
-	project.InvestmentMetrics = investmentHelper
-	project.FinancialMetrics = financialHelper
-	project.ProjectSizeMetric = projectSizeHelper
-	project.SustainabilityMetric = sustainabilityHelper
+	project.ExecutiveSummary = esHelper
 	project.AutoReloadInterval = -1
 	project.ResilienceRating = 0.6
 	project.ActionsRequired = ""
-	project.Bullet1 = ""
-	project.Bullet2 = ""
-	project.Bullet3 = ""
+	project.Bullet1 = "Community owned solar in homeless shelter"
+	project.Bullet2 = "Siginificantly alleviates financial pressure due to high CT power cost"
+	project.Bullet3 = "Grid-tied with REC offtaking"
 	project.LegalProjectOverviewHash = ""
 	project.LegalPPAHash = ""
 	project.LegalRECAgreementHash = ""
@@ -815,6 +854,15 @@ func createTenKiloWattProject() error {
 	project.Contract3 = ""
 	project.Contract4 = ""
 	project.Contract5 = ""
+	project.CommunityEngagement = append(project.CommunityEngagement, communityblock1)
+	project.Architecture.SolarOutputImage = ""
+	project.Architecture.SolarArray = "50 x 200W"
+	project.Architecture.DailyAvgGeneration = "20000 Wh"
+	project.Architecture.System = "Grid Tied"
+	project.Architecture.InverterSize = "15 kW"
+	project.Architecture.DesignDescription = ""
+	project.Context = ""
+	project.SummaryImage= ""
 
 	err = project.Save()
 	if err != nil {
@@ -931,29 +979,54 @@ func createTenMegaWattProject() error {
 	terms6.Status = "Started"
 	terms6.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
 
-	var investmentHelper opensolar.InvestmentHelper
-	var financialHelper opensolar.FinancialHelper
-	var projectSizeHelper opensolar.ProjectSizeHelper
-	var sustainabilityHelper opensolar.SustainabilityHelper
+	var esHelper opensolar.ExecutiveSummaryHelper
 
-	investmentHelper.Capex = "19000000"
-	investmentHelper.Hardware = 70
-	investmentHelper.FirstLossEscrow = "15%"
-	investmentHelper.CertificationCosts = ""
+	esHelper.Investment.Capex = "19000000"
+	esHelper.Investment.Hardware = 70
+	esHelper.Investment.FirstLossEscrow = "15%"
+	esHelper.Investment.CertificationCosts = ""
 
-	financialHelper.Return = 2.5
-	financialHelper.Insurance = "Basic Force Majeur"
-	financialHelper.Tariff = "0.24 ct/kWh"
-	financialHelper.Maturity = "2028"
+	esHelper.Financials.Return = 2.5
+	esHelper.Financials.Insurance = "Basic Force Majeur"
+	esHelper.Financials.Tariff = "0.24 ct/kWh"
+	esHelper.Financials.Maturity = "2028"
 
-	projectSizeHelper.PVSolar = "300 x 30kW"
-	projectSizeHelper.Storage = "350 x 2.5 kWh"
-	projectSizeHelper.Critical = 20
-	projectSizeHelper.InverterCapacity = "300 x 35 kW"
+	esHelper.ProjectSize.PVSolar = "300 x 30kW"
+	esHelper.ProjectSize.Storage = "350 x 2.5 kWh"
+	esHelper.ProjectSize.Critical = 20
+	esHelper.ProjectSize.InverterCapacity = "300 x 35 kW"
 
-	sustainabilityHelper.CarbonDrawdown = "0.1t/kWh"
-	sustainabilityHelper.CommunityValue = "6/7"
-	sustainabilityHelper.LCA = "N/A"
+	esHelper.SustainabilityMetrics.CarbonDrawdown = "0.1t/kWh"
+	esHelper.SustainabilityMetrics.CommunityValue = "6/7"
+	esHelper.SustainabilityMetrics.LCA = "N/A"
+
+	var communityblock1 opensolar.CommunityEngagementHelper
+	communityblock1.Width = 3
+	communityblock1.Title = "Consultation"
+	communityblock1.ImageURL = ""
+	communityblock1.Content = ""
+	communityblock1.Link = ""
+
+	var communityblock2 opensolar.CommunityEngagementHelper
+	communityblock2.Width = 3
+	communityblock2.Title = "Participation"
+	communityblock2.ImageURL = ""
+	communityblock2.Content = ""
+	communityblock2.Link = ""
+
+	var communityblock3 opensolar.CommunityEngagementHelper
+	communityblock3.Width = 3
+	communityblock3.Title = "Outreach"
+	communityblock3.ImageURL = ""
+	communityblock3.Content = ""
+	communityblock3.Link = ""
+
+	var communityblock4 opensolar.CommunityEngagementHelper
+	communityblock4.Width = 3
+	communityblock4.Title = "Governance"
+	communityblock4.ImageURL = ""
+	communityblock4.Content = ""
+	communityblock4.Link = ""
 
 	project.Index = len(indexHelp) + 1
 	project.Name = "Puerto Rico Public School Bond 10"
@@ -1018,10 +1091,7 @@ func createTenMegaWattProject() error {
 
 	// Define things that will be displayed on the frontend
 	project.Terms = append(project.Terms, terms1, terms2, terms3, terms4, terms5, terms6)
-	project.InvestmentMetrics = investmentHelper
-	project.FinancialMetrics = financialHelper
-	project.ProjectSizeMetric = projectSizeHelper
-	project.SustainabilityMetric = sustainabilityHelper
+	project.ExecutiveSummary = esHelper
 	project.AutoReloadInterval = -1
 	project.ResilienceRating = 0.75
 	project.ActionsRequired = ""
@@ -1041,6 +1111,15 @@ func createTenMegaWattProject() error {
 	project.Contract3 = ""
 	project.Contract4 = ""
 	project.Contract5 = ""
+	project.CommunityEngagement = append(project.CommunityEngagement, communityblock1, communityblock2, communityblock3, communityblock4)
+	project.Architecture.SolarOutputImage = ""
+	project.Architecture.SolarArray = "300 x 30kW"
+	project.Architecture.DailyAvgGeneration = "400 MWh"
+	project.Architecture.System = "350 Tesla Powerwells"
+	project.Architecture.InverterSize = "300 x 35 kW"
+	project.Architecture.DesignDescription = ""
+	project.Context = ""
+	project.SummaryImage= ""
 
 	err = project.Save()
 	if err != nil {

@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	database "github.com/YaleOpenLab/openx/database"
+	utils "github.com/YaleOpenLab/openx/utils"
 )
 
 // SnInvestor defines a sanitized investor
@@ -39,6 +40,7 @@ func setupPublicRoutes() {
 	getTopReputationPublic()
 	getInvTopReputationPublic()
 	getRecpTopReputationPublic()
+	getUserInfo()
 }
 
 // public contains all the RPC routes that we explicitly intend to make public. Other
@@ -190,5 +192,35 @@ func getInvTopReputationPublic() {
 		}
 		sInvestors := sanitizeAllInvestors(allInvs)
 		MarshalSend(w, r, sInvestors)
+	})
+}
+
+func getUserInfo() {
+	http.HandleFunc("/public/user", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
+
+		if r.URL.Query()["index"] == nil {
+			log.Println("no index retrieved, quitting!")
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+
+		index, err := utils.StoICheck(r.URL.Query()["index"][0])
+		if err != nil {
+			log.Println(err)
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+
+		user, err := database.RetrieveUser(index)
+		if err != nil {
+			log.Println(err)
+			responseHandler(w, r, StatusInternalServerError)
+			return
+		}
+
+		sUser := sanitizeUser(user)
+		MarshalSend(w, r, sUser)
 	})
 }
