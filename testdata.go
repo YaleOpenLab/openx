@@ -851,7 +851,7 @@ func createTenMegaWattProject() error {
 		log.Fatal(err)
 	}
 
-	originator1, err := opensolar.NewOriginator("yol1", "p", "x", "Yale Open Lab", "254 Elm St, New Haven, CT", "Project originator")
+	originator1, err := opensolar.NewOriginator("MartinWainstein1", "p", "x", "Martin Wainstein", "254 Elm Street, New Haven, CT", "Martin Wainstein from the Yale OpenLab")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -887,38 +887,38 @@ func createTenMegaWattProject() error {
 	terms1.Variable = "Security Type"
 	terms1.Value = "Municipal Bond"
 	terms1.RelevantParty = "PR DofEd"
-	terms1.Note = "Promoted by PR governor's office"
-	terms1.Status = "Demo"
+	terms1.Note = "Not yet issued. See informal Agreements"
+	terms1.Status = "Open"
 	terms1.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
 
 	var terms2 opensolar.TermsHelper
 	terms2.Variable = "PPA Tariff"
 	terms2.Value = "0.24 ct/KWh"
-	terms2.RelevantParty = "oracle X / PREPA"
-	terms2.Note = "Variable anchored to local tariff"
-	terms2.Status = "Signed"
+	terms2.RelevantParty = "Oracle X / PREPA"
+	terms2.Note = "Not signed. Expected as variable tariff"
+	terms2.Status = "Open"
 	terms2.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
 
 	var terms3 opensolar.TermsHelper
 	terms3.Variable = "Return (TEY)"
-	terms3.Value = "3.1%"
-	terms3.RelevantParty = "Broker Dealer"
-	terms3.Note = "Variable tied to tariff"
-	terms3.Status = "Signed"
+	terms3.Value = "3.5%"
+	terms3.RelevantParty = "See Broker Dealer"
+	terms3.Note = "Tax equivalent yield with capital gains"
+	terms3.Status = "Open"
 	terms3.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
 
 	var terms4 opensolar.TermsHelper
 	terms4.Variable = "Maturity"
 	terms4.Value = "+/- 2025"
 	terms4.RelevantParty = "Broker Dealer"
-	terms4.Note = "Tax adjusted Yield"
-	terms4.Status = "Signed"
+	terms4.Note = "Variable tied to tariff"
+	terms4.Status = "Open"
 	terms4.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
 
 	var terms5 opensolar.TermsHelper
 	terms5.Variable = "Guarantee"
-	terms5.Value = "50%"
-	terms5.RelevantParty = "Foundation X"
+	terms5.Value = "15%"
+	terms5.RelevantParty = "FEMA"
 	terms5.Note = "First-loss upon breach"
 	terms5.Status = "Started"
 	terms5.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
@@ -936,24 +936,24 @@ func createTenMegaWattProject() error {
 	var projectSizeHelper opensolar.ProjectSizeHelper
 	var sustainabilityHelper opensolar.SustainabilityHelper
 
-	investmentHelper.Capex = "5000"
-	investmentHelper.Hardware = 60
-	investmentHelper.FirstLossEscrow = "30%"
+	investmentHelper.Capex = "19000000"
+	investmentHelper.Hardware = 70
+	investmentHelper.FirstLossEscrow = "15%"
 	investmentHelper.CertificationCosts = ""
 
-	financialHelper.Return = 3.1
-	financialHelper.Insurance = "Premium"
-	financialHelper.Tariff = "0.24"
+	financialHelper.Return = 2.5
+	financialHelper.Insurance = "Basic Force Majeur"
+	financialHelper.Tariff = "0.24 ct/kWh"
 	financialHelper.Maturity = "2028"
 
-	projectSizeHelper.PVSolar = "1kW"
-	projectSizeHelper.Storage = "200Wh"
-	projectSizeHelper.Critical = 2
-	projectSizeHelper.InverterCapacity = "2.5kW"
+	projectSizeHelper.PVSolar = "300 x 30kW"
+	projectSizeHelper.Storage = "350 x 2.5 kWh"
+	projectSizeHelper.Critical = 20
+	projectSizeHelper.InverterCapacity = "300 x 35 kW"
 
 	sustainabilityHelper.CarbonDrawdown = "0.1t/kWh"
-	sustainabilityHelper.CommunityValue = "5/7"
-	sustainabilityHelper.LCA = ""
+	sustainabilityHelper.CommunityValue = "6/7"
+	sustainabilityHelper.LCA = "N/A"
 
 	project.Index = len(indexHelp) + 1
 	project.Name = "Puerto Rico Public School Bond 10"
@@ -968,7 +968,7 @@ func createTenMegaWattProject() error {
 	project.CommBox = ""
 	project.ACTransfer = ""
 	project.SolarCombiner = ""
-	project.Batteries = ""
+	project.Batteries = "900 Ah"
 	project.IoTHub = ""
 	project.Metadata = "Transformation of 300 Puerto Rican public schools into solar powered emergency shelters. Each school will have around 30kW solar and 2kWh battery bank to cover critical loads including refrigeration of food and medicine, and an emergency telecommunication system with first responders. Backed by the Office of the Governor. 10 MW aggregate solar capacity. Nodes for community microgrids"
 
@@ -1023,11 +1023,11 @@ func createTenMegaWattProject() error {
 	project.ProjectSizeMetric = projectSizeHelper
 	project.SustainabilityMetric = sustainabilityHelper
 	project.AutoReloadInterval = -1
-	project.ResilienceRating = 0.8
+	project.ResilienceRating = 0.75
 	project.ActionsRequired = ""
-	project.Bullet1 = ""
-	project.Bullet2 = ""
-	project.Bullet3 = ""
+	project.Bullet1 = "Backed by the Governor's office"
+	project.Bullet2 = "Critical Loads covered (telecom and refrigeration)"
+	project.Bullet3 = "Certification of social impact"
 	project.LegalProjectOverviewHash = ""
 	project.LegalPPAHash = ""
 	project.LegalRECAgreementHash = ""
