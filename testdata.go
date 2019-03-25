@@ -324,7 +324,7 @@ func createOneMegaWattProject() error {
 		log.Fatal(err)
 	}
 
-	investor3, err := database.NewInvestor("TaxEquity", "p", "x", "NH Tax Equity Business Ltd")
+	investor3, err := database.NewInvestor("TaxEquity", "p", "x", "Lancaster Lumber Mill Coop")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -404,7 +404,7 @@ func createOneMegaWattProject() error {
 	var terms1 opensolar.TermsHelper
 	terms1.Variable = "Security Type"
 	terms1.Value = "Equity Notes"
-	terms1.RelevantParty = "Lancaster Mutual Co"
+	terms1.RelevantParty = "Lancaster Mutual Solar"
 	terms1.Note = "Co-owned by the town of Lancaster"
 	terms1.Status = "Issued"
 	terms1.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
@@ -474,7 +474,7 @@ func createOneMegaWattProject() error {
 	sustainabilityHelper.LCA = "7/7"
 
 	project.Index = len(indexHelp) + 1
-	project.Name = "Lancaster Solar Project"
+	project.Name = "Lancaster Mutual Solar"
 	project.State = "NH"
 	project.Country = "US"
 	project.TotalValue = 2000000
@@ -491,7 +491,7 @@ func createOneMegaWattProject() error {
 	project.Metadata = "Neighborhood 1MW solar array on the field next to Lancaster Elementary High School. The project was originated by the head of the community organization, Ben Southworth, who is also active in the parent teacher association (PTA). The city of Lancaster has agreed to give a 20 year lease of the land to the project if the school gets to own the solar array after the lease expires. The school is located in an opportunity zone"
 
 	// Define parameters related to finance
-	project.MoneyRaised = 150000
+	project.MoneyRaised = 1500000
 	project.EstimatedAcquisition = 20
 	project.BalLeft = -1
 	project.InterestRate = 0.05
@@ -513,8 +513,8 @@ func createOneMegaWattProject() error {
 	project.SelfFund = 0
 
 	// Describe issuer of security and the broker dealer
-	project.SecurityIssuer = "Neighborly Securities"
-	project.BrokerDealer = "Broker Dealer"
+	project.SecurityIssuer = "Lancaster Mutual Fund"
+	project.BrokerDealer = "Neighborly Securities"
 
 	// Define the various entities that are associated with a specific project
 	project.RecipientIndex = recipient1.U.Index
