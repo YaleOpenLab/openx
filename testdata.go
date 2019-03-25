@@ -334,7 +334,7 @@ func createOneMegaWattProject() error {
 		log.Fatal(err)
 	}
 
-	recipient2, err := database.NewRecipient("LancasterT", "p", "x", "Town of Lancaste NH")
+	recipient2, err := database.NewRecipient("LancasterT", "p", "x", "Town of Lancaster NH")
 	if err != nil {
 		log.Fatal(err)
 	}
