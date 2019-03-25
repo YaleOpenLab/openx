@@ -198,24 +198,24 @@ func createPuertoRicoProject() error {
 	var projectSizeHelper opensolar.ProjectSizeHelper
 	var sustainabilityHelper opensolar.SustainabilityHelper
 
-	investmentHelper.Capex = ""
-	investmentHelper.Hardware = -1
-	investmentHelper.FirstLossEscrow = ""
-	investmentHelper.CertificationCosts = ""
+	investmentHelper.Capex = "5000"
+	investmentHelper.Hardware = 60
+	investmentHelper.FirstLossEscrow = "30%"
+	investmentHelper.CertificationCosts = "N/A"
 
-	financialHelper.Return = -1
-	financialHelper.Insurance = ""
-	financialHelper.Tariff = ""
-	financialHelper.Maturity = ""
+	financialHelper.Return = 3.1
+	financialHelper.Insurance = "Premium"
+	financialHelper.Tariff = "0.24 ct/kWh"
+	financialHelper.Maturity = "2028 variable"
 
-	projectSizeHelper.PVSolar = ""
-	projectSizeHelper.Storage = ""
-	projectSizeHelper.Critical = -1
-	projectSizeHelper.InverterCapacity = ""
+	projectSizeHelper.PVSolar = "1 kW"
+	projectSizeHelper.Storage = "200 Wh"
+	projectSizeHelper.Critical = 2
+	projectSizeHelper.InverterCapacity = "2.5 kW"
 
-	sustainabilityHelper.CarbonDrawdown = ""
-	sustainabilityHelper.CommunityValue = ""
-	sustainabilityHelper.LCA = ""
+	sustainabilityHelper.CarbonDrawdown = "0.1 t/kWh"
+	sustainabilityHelper.CommunityValue = "5/7"
+	sustainabilityHelper.LCA = "N/A"
 
 	project.Index = len(indexHelp) + 1
 	project.Name = "Puerto Rico Pilot Project"
@@ -285,11 +285,11 @@ func createPuertoRicoProject() error {
 	project.ProjectSizeMetric = projectSizeHelper
 	project.SustainabilityMetric = sustainabilityHelper
 	project.AutoReloadInterval = -1
-	project.ResilienceRating = -1
+	project.ResilienceRating = 0.8
 	project.ActionsRequired = ""
-	project.Bullet1 = ""
-	project.Bullet2 = ""
-	project.Bullet3 = ""
+	project.Bullet1 = "Research proejct on smart financing"
+	project.Bullet2 = "Critical loads to the Admin Building"
+	project.Bullet3 = "Grid-tied and storage"
 	project.LegalProjectOverviewHash = ""
 	project.LegalPPAHash = ""
 	project.LegalRECAgreementHash = ""
@@ -403,50 +403,50 @@ func createOneMegaWattProject() error {
 	// This is to populate the table of Terms and Conditions in the front end. TODO: change this inline with the FE
 	var terms1 opensolar.TermsHelper
 	terms1.Variable = "Security Type"
-	terms1.Value = "Municipal Bond"
-	terms1.RelevantParty = "PR DofEd"
-	terms1.Note = "Promoted by PR governor's office"
-	terms1.Status = "Demo"
+	terms1.Value = "Equity Notes"
+	terms1.RelevantParty = "Lancaster Mutual Co"
+	terms1.Note = "Co-owned by the town of Lancaster"
+	terms1.Status = "Issued"
 	terms1.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
 
 	var terms2 opensolar.TermsHelper
-	terms2.Variable = "PPA Tariff"
-	terms2.Value = "0.24 ct/KWh"
-	terms2.RelevantParty = "oracle X / PREPA"
-	terms2.Note = "Variable anchored to local tariff"
+	terms2.Variable = "PPA Avg. Tariff"
+	terms2.Value = "0.18 ct/KWh"
+	terms2.RelevantParty = "Multiple Parties"
+	terms2.Note = "Local schools ans business offtaking"
 	terms2.Status = "Signed"
 	terms2.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
 
 	var terms3 opensolar.TermsHelper
 	terms3.Variable = "Return (TEY)"
-	terms3.Value = "3.1%"
+	terms3.Value = "4.8%"
 	terms3.RelevantParty = "Broker Dealer"
-	terms3.Note = "Variable tied to tariff"
-	terms3.Status = "Signed"
+	terms3.Note = "Tax equivalent yield, with capital gains"
+	terms3.Status = "Approv"
 	terms3.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
 
 	var terms4 opensolar.TermsHelper
 	terms4.Variable = "Maturity"
-	terms4.Value = "+/- 2025"
+	terms4.Value = "2026"
 	terms4.RelevantParty = "Broker Dealer"
-	terms4.Note = "Tax adjusted Yield"
+	terms4.Note = "By convertible notes"
 	terms4.Status = "Signed"
 	terms4.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
 
 	var terms5 opensolar.TermsHelper
 	terms5.Variable = "Guarantee"
-	terms5.Value = "50%"
-	terms5.RelevantParty = "Foundation X"
-	terms5.Note = "First-loss upon breach"
-	terms5.Status = "Started"
+	terms5.Value = "50000"
+	terms5.RelevantParty = "NH Green Bank"
+	terms5.Note = "First-loss escrow upon breach"
+	terms5.Status = "Signed"
 	terms5.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
 
 	var terms6 opensolar.TermsHelper
 	terms6.Variable = "Insurance"
 	terms6.Value = "Premium"
-	terms6.RelevantParty = "Allianz CS"
-	terms6.Note = "Hurricane Coverage"
-	terms6.Status = "Started"
+	terms6.RelevantParty = "Allstate"
+	terms6.Note = "Force Majeur"
+	terms6.Status = "Signed"
 	terms6.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
 
 	var investmentHelper opensolar.InvestmentHelper
@@ -454,24 +454,24 @@ func createOneMegaWattProject() error {
 	var projectSizeHelper opensolar.ProjectSizeHelper
 	var sustainabilityHelper opensolar.SustainabilityHelper
 
-	investmentHelper.Capex = ""
-	investmentHelper.Hardware = -1
-	investmentHelper.FirstLossEscrow = ""
+	investmentHelper.Capex = "2000000"
+	investmentHelper.Hardware = 62
+	investmentHelper.FirstLossEscrow = "50000"
 	investmentHelper.CertificationCosts = ""
 
-	financialHelper.Return = -1
-	financialHelper.Insurance = ""
-	financialHelper.Tariff = ""
+	financialHelper.Return = 4.8
+	financialHelper.Insurance = "Premium"
+	financialHelper.Tariff = "0.18 ct/kWh"
 	financialHelper.Maturity = ""
 
-	projectSizeHelper.PVSolar = ""
-	projectSizeHelper.Storage = ""
+	projectSizeHelper.PVSolar = "1MW"
+	projectSizeHelper.Storage = "210kWh"
 	projectSizeHelper.Critical = -1
-	projectSizeHelper.InverterCapacity = ""
+	projectSizeHelper.InverterCapacity = "1.25MW"
 
-	sustainabilityHelper.CarbonDrawdown = ""
-	sustainabilityHelper.CommunityValue = ""
-	sustainabilityHelper.LCA = ""
+	sustainabilityHelper.CarbonDrawdown = "0.1 t/kWh"
+	sustainabilityHelper.CommunityValue = "6/7"
+	sustainabilityHelper.LCA = "7/7"
 
 	project.Index = len(indexHelp) + 1
 	project.Name = "Lancaster Solar Project"
@@ -541,7 +541,7 @@ func createOneMegaWattProject() error {
 	project.ProjectSizeMetric = projectSizeHelper
 	project.SustainabilityMetric = sustainabilityHelper
 	project.AutoReloadInterval = -1
-	project.ResilienceRating = -1
+	project.ResilienceRating = 0.8
 	project.ActionsRequired = ""
 	project.Bullet1 = ""
 	project.Bullet2 = ""
@@ -661,72 +661,72 @@ func createTenKiloWattProject() error {
 	var projectSizeHelper opensolar.ProjectSizeHelper
 	var sustainabilityHelper opensolar.SustainabilityHelper
 
-	investmentHelper.Capex = ""
-	investmentHelper.Hardware = -1
-	investmentHelper.FirstLossEscrow = ""
-	investmentHelper.CertificationCosts = ""
+	investmentHelper.Capex = "30000"
+	investmentHelper.Hardware = 3
+	investmentHelper.FirstLossEscrow = "N/A"
+	investmentHelper.CertificationCosts = "N/A"
 
 	financialHelper.Return = -1
-	financialHelper.Insurance = ""
-	financialHelper.Tariff = ""
-	financialHelper.Maturity = ""
+	financialHelper.Insurance = "Basic"
+	financialHelper.Tariff = "0.12 ct/kWh"
+	financialHelper.Maturity = "2019"
 
-	projectSizeHelper.PVSolar = ""
-	projectSizeHelper.Storage = ""
-	projectSizeHelper.Critical = -1
-	projectSizeHelper.InverterCapacity = ""
+	projectSizeHelper.PVSolar = "10 kW"
+	projectSizeHelper.Storage = "N/A Grid Tied"
+	projectSizeHelper.Critical = 100
+	projectSizeHelper.InverterCapacity = "15 kW"
 
-	sustainabilityHelper.CarbonDrawdown = ""
-	sustainabilityHelper.CommunityValue = ""
+	sustainabilityHelper.CarbonDrawdown = "0.1 t/kWh"
+	sustainabilityHelper.CommunityValue = "7/7"
 	sustainabilityHelper.LCA = ""
 
 	// This is to populate the table of Terms and Conditions in the front end. TODO: change this inline with the FE
 	var terms1 opensolar.TermsHelper
 	terms1.Variable = "Security Type"
-	terms1.Value = "Municipal Bond"
-	terms1.RelevantParty = "PR DofEd"
-	terms1.Note = "Promoted by PR governor's office"
-	terms1.Status = "Demo"
+	terms1.Value = "Reg CF"
+	terms1.RelevantParty = "NH Community Solar"
+	terms1.Note = "Special Purpose Vehicle"
+	terms1.Status = "Flipped"
 	terms1.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
 
 	var terms2 opensolar.TermsHelper
 	terms2.Variable = "PPA Tariff"
-	terms2.Value = "0.24 ct/KWh"
-	terms2.RelevantParty = "oracle X / PREPA"
-	terms2.Note = "Variable anchored to local tariff"
+	terms2.Value = "0.12 ct/KWh"
+	terms2.RelevantParty = "NH Homeless Shelter"
+	terms2.Note = "Fixed PPA determined by offtaker"
 	terms2.Status = "Signed"
 	terms2.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
 
 	var terms3 opensolar.TermsHelper
-	terms3.Variable = "Return (TEY)"
-	terms3.Value = "3.1%"
-	terms3.RelevantParty = "Broker Dealer"
-	terms3.Note = "Variable tied to tariff"
-	terms3.Status = "Signed"
+	terms3.Variable = "Return"
+	terms3.Value = "130%"
+	terms3.RelevantParty = "Equity Value"
+	terms3.Note = "Growth in value. No tax incentives"
+	terms3.Status = "Open"
 	terms3.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
 
 	var terms4 opensolar.TermsHelper
-	terms4.Variable = "Maturity"
-	terms4.Value = "+/- 2025"
-	terms4.RelevantParty = "Broker Dealer"
-	terms4.Note = "Tax adjusted Yield"
-	terms4.Status = "Signed"
+	terms4.Variable = "Ownership Flip"
+	terms4.Value = "2019"
+	terms4.RelevantParty = "Convertible Note"
+	terms4.Note = "Crowd investors sell stock"
+	terms4.Status = "Flipped"
 	terms4.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
 
 	var terms5 opensolar.TermsHelper
 	terms5.Variable = "Guarantee"
-	terms5.Value = "50%"
-	terms5.RelevantParty = "Foundation X"
-	terms5.Note = "First-loss upon breach"
-	terms5.Status = "Started"
+	terms5.Value = "N/A"
+	terms5.RelevantParty = "N/A"
+	terms5.Note = "No guarantees of breach"
+	terms5.Status = "None"
 	terms5.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
 
 	var terms6 opensolar.TermsHelper
 	terms6.Variable = "Insurance"
-	terms6.Value = "Premium"
-	terms6.RelevantParty = "Allianz CS"
-	terms6.Note = "Hurricane Coverage"
-	terms6.Status = "Started"
+	terms6.Value = "Basic"
+	terms6.RelevantParty = "CT Insurers"
+	terms6.Note = "Force Majeur"
+	terms6.Status = "Signed"
 	terms6.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
 
 	project.Index = len(indexHelp) + 1
@@ -797,7 +797,7 @@ func createTenKiloWattProject() error {
 	project.ProjectSizeMetric = projectSizeHelper
 	project.SustainabilityMetric = sustainabilityHelper
 	project.AutoReloadInterval = -1
-	project.ResilienceRating = -1
+	project.ResilienceRating = 0.6
 	project.ActionsRequired = ""
 	project.Bullet1 = ""
 	project.Bullet2 = ""
@@ -936,23 +936,23 @@ func createTenMegaWattProject() error {
 	var projectSizeHelper opensolar.ProjectSizeHelper
 	var sustainabilityHelper opensolar.SustainabilityHelper
 
-	investmentHelper.Capex = ""
-	investmentHelper.Hardware = -1
-	investmentHelper.FirstLossEscrow = ""
+	investmentHelper.Capex = "5000"
+	investmentHelper.Hardware = 60
+	investmentHelper.FirstLossEscrow = "30%"
 	investmentHelper.CertificationCosts = ""
 
-	financialHelper.Return = -1
-	financialHelper.Insurance = ""
-	financialHelper.Tariff = ""
-	financialHelper.Maturity = ""
+	financialHelper.Return = 3.1
+	financialHelper.Insurance = "Premium"
+	financialHelper.Tariff = "0.24"
+	financialHelper.Maturity = "2028"
 
-	projectSizeHelper.PVSolar = ""
-	projectSizeHelper.Storage = ""
-	projectSizeHelper.Critical = -1
-	projectSizeHelper.InverterCapacity = ""
+	projectSizeHelper.PVSolar = "1kW"
+	projectSizeHelper.Storage = "200Wh"
+	projectSizeHelper.Critical = 2
+	projectSizeHelper.InverterCapacity = "2.5kW"
 
-	sustainabilityHelper.CarbonDrawdown = ""
-	sustainabilityHelper.CommunityValue = ""
+	sustainabilityHelper.CarbonDrawdown = "0.1t/kWh"
+	sustainabilityHelper.CommunityValue = "5/7"
 	sustainabilityHelper.LCA = ""
 
 	project.Index = len(indexHelp) + 1
@@ -1023,7 +1023,7 @@ func createTenMegaWattProject() error {
 	project.ProjectSizeMetric = projectSizeHelper
 	project.SustainabilityMetric = sustainabilityHelper
 	project.AutoReloadInterval = -1
-	project.ResilienceRating = -1
+	project.ResilienceRating = 0.8
 	project.ActionsRequired = ""
 	project.Bullet1 = ""
 	project.Bullet2 = ""
