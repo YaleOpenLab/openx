@@ -13,3 +13,4 @@ staticcheck
 watcher/watcher
 misspell
 multisig/multisig
+logger
