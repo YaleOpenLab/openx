@@ -114,7 +114,7 @@ func registerUser() {
 
 		// to register, we need the name, username and pwhash
 		if r.URL.Query()["name"] == nil || r.URL.Query()["username"] == nil || r.URL.Query()["pwd"] == nil || r.URL.Query()["seedpwd"] == nil {
-			log.Println("missing basic set of params that can be used ot validate a user")
+			log.Println("missing basic set of params that can be used to validate a user")
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -164,8 +164,8 @@ func ValidateUser() {
 				prepEntity, err = opensolar.ValidateEntity(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
 				if err != nil {
 					log.Println("did not validate entity", err)
-					// not an investor, recipient or entity, error
-					responseHandler(w, r, StatusUnauthorized)
+					// not an investor, recipient or entity, must be a normal user
+					MarshalSend(w, r, prepUser)
 					return
 				} else {
 					entity = true
