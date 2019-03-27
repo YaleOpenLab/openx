@@ -186,7 +186,7 @@ func MunibondPayback(issuerPath string, escrowPath string, recpIndex int, amount
 		return -1, errors.Wrap(err, "Unable to retrieve issuer seed")
 	}
 
-	escrowPubkey, _, err := wallet.RetrieveSeed(escrowPath, consts.EscrowPwd)
+	escrowPubkey, err := wallet.RetrieveEscrowPubkey(escrowPath, consts.EscrowPwd)
 	if err != nil {
 		return -1, errors.Wrap(err, "Unable to retrieve issuer seed")
 	}

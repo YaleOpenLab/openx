@@ -282,17 +282,6 @@ func (project *Project) updateProjectAfterInvestment(invAmount string, invIndex 
 			return errors.Wrap(err, "error while sending notifications to recipient")
 		}
 
-		err = InitEscrow(consts.EscrowDir, project.Index, consts.EscrowPwd)
-		if err != nil {
-			return errors.Wrap(err, "error while initializing issuer")
-		}
-
-		err = TransferFundsToEscrow(project.TotalValue, project.Index)
-		if err != nil {
-			log.Println(err)
-			return errors.Wrap(err, "could not transfer funds to the escrow, quitting!")
-		}
-
 		go sendRecipientAssets(project.Index)
 	}
 
@@ -420,6 +409,17 @@ func sendRecipientAssets(projIndex int) error {
 	recpSeed, err := wallet.DecryptSeed(recipient.U.EncryptedSeed, project.LockPwd)
 	if err != nil {
 		return errors.Wrap(err, "couldn't decrypt seed")
+	}
+
+	err = InitEscrow(consts.EscrowDir, project.Index, consts.EscrowPwd, recipient.U.PublicKey, recpSeed)
+	if err != nil {
+		return errors.Wrap(err, "error while initializing issuer")
+	}
+
+	err = TransferFundsToEscrow(project.TotalValue, project.Index)
+	if err != nil {
+		log.Println(err)
+		return errors.Wrap(err, "could not transfer funds to the escrow, quitting!")
 	}
 
 	project.LockPwd = "" // set lockpwd to nil immediately after retrieving seed
@@ -561,7 +561,6 @@ func (project Project) CalculatePayback(amount string) string {
 
 // monitorPaybacks monitors whether the user is paying back regularly towards the given project
 // thread has to be isolated since if this fails, we stop tracking paybacks by the recipient.
-// TODO: Add first loss guarantor here
 func monitorPaybacks(recpIndex int, projIndex int) {
 	for {
 		project, err := RetrieveProject(projIndex)

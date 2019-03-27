@@ -6,6 +6,7 @@ import (
 
 	assets "github.com/YaleOpenLab/openx/assets"
 	consts "github.com/YaleOpenLab/openx/consts"
+	multisig "github.com/YaleOpenLab/openx/multisig"
 	utils "github.com/YaleOpenLab/openx/utils"
 	wallet "github.com/YaleOpenLab/openx/wallet"
 	xlm "github.com/YaleOpenLab/openx/xlm"
@@ -36,16 +37,22 @@ func CreateFile(escrowPath string, projIndex int) string {
 }
 
 // InitEscrow creates a new keypair and stores it in a file
-func InitEscrow(escrowPath string, projIndex int, seedpwd string) error {
+func InitEscrow(escrowPath string, projIndex int, seedpwd string, recpPubkey string, mySeed string) error {
 	// init a new pk and seed pair
-	seed, pubkey, err := xlm.GetKeyPair()
+	// TODO: replace with the escrow here
+	pubkey, err := initMultisigEscrow(recpPubkey)
 	if err != nil {
-		return errors.Wrap(err, "Error while generating keypair")
+		return errors.Wrap(err, "error while initalizing multisig escrow, quitting!")
 	}
+
+	// define two seeds that are needed for signing transactions from the escrow
+	seed1 := consts.PlatformSeed
+	seed2 := mySeed
+
 	// store this seed in home/projects/projIndex.hex
 	// we need a password for encrypting the seed
 	path := CreateFile(escrowPath, projIndex)
-	err = wallet.StoreSeed(seed, seedpwd, path)
+	err = wallet.StoreSeed(recpPubkey, seedpwd, path) // store the recipient's pubkey encrypted with a blob. TODO: we're doing this for privacy reasons (a person accessing the server can not see whose escrow this is)
 	if err != nil {
 		return errors.Wrap(err, "Error while storing seed")
 	}
@@ -55,16 +62,15 @@ func InitEscrow(escrowPath string, projIndex int, seedpwd string) error {
 		return errors.Wrap(err, "Error while sending xlm to create account")
 	}
 	log.Printf("Txhash for setting up Project escrow for project %d is %s", projIndex, txhash)
-	_, txhash, err = xlm.SetAuthImmutable(seed)
-	if err != nil {
-		return errors.Wrap(err, "Error while setting auth immutable on account")
-	}
-	log.Printf("Txhash for setting Auth Immutable on project %d is %s", projIndex, txhash)
 
-	// create a trustline with the stablecoin
-	txhash, err = assets.TrustAsset(consts.Code, consts.StablecoinPublicKey, "10000000000", pubkey, seed)
+	err = multisig.AuthImmutable2of2(pubkey, seed1, seed2)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "could not set auth immutable on account, quitting!")
+	}
+
+	multisig.TrustAssetTx(consts.Code, consts.StablecoinPublicKey, "10000000000", pubkey, seed1, seed2)
+	if err != nil {
+		return errors.Wrap(err, "could not trust stablecoin, quitting!")
 	}
 
 	log.Println("TRUST HASH FOR ESCROW TRUSTING STABLECOIN: ", txhash)
@@ -99,4 +105,11 @@ func TransferFundsToEscrow(amount float64, projIndex int) error {
 	return nil
 }
 
-// TODO: add escrow multisig here
+// InitMultisigEscrow initializes a multisig escrow with one signer as the recipient and the other as the platform
+func initMultisigEscrow(pubkey1 string) (string, error) {
+	// recpPubkey is the public key of the recipient
+	// the seed of the escrow is needed to init the first tx that will change options
+	pubkey2 := consts.PlatformPublicKey
+	// we now have the two public keys that are needed to authorize this transaction. Construct a 2of2 multisig
+	return multisig.New2of2(pubkey1, pubkey2)
+}

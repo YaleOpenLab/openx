@@ -49,6 +49,16 @@ func RetrieveSeed(path string, password string) (string, string, error) {
 	return keyp.Address(), seed, errors.Wrap(err, "could not parse seed to get keypair")
 }
 
+func RetrieveEscrowPubkey(path string, password string) (string, error) {
+	var pubkey string
+	data, err := aes.DecryptFile(path, password)
+	if err != nil {
+		return pubkey, errors.Wrap(err, "could not decrypt file")
+	}
+	pubkey = string(data)
+	return pubkey, nil
+}
+
 // RetrieveAndStorePubkey restores the publicKey when passed a seed and stores the
 // seed in an encrypted format in the specified path
 func RetrieveAndStorePubkey(seed string, path string, password string) (string, error) {

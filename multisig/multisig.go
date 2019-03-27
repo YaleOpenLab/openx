@@ -32,7 +32,7 @@ var TestNetClient = &clients.Client{
 }
 
 // AddSigner is used to add a signer to the account with Public Key pubkey
-func AddSigner(seed string, pubkey string, cosignerPubkey string) error {
+func addSigner(seed string, pubkey string, cosignerPubkey string) error {
 	memo := "addsigner"
 	amount := "1" // some token amount, this can be any number though (even larger than the number of xlm in  xistence)
 
@@ -63,7 +63,7 @@ func AddSigner(seed string, pubkey string, cosignerPubkey string) error {
 }
 
 // when the number of tx's reaches x-1, call the threshold tx to set thresholds
-func ConstructThresholdTx(seed string, pubkey string, cosignerPubkey string, y int) error {
+func constructThresholdTx(seed string, pubkey string, cosignerPubkey string, y int) error {
 	memo := "sealthreshold"
 	amount := "1" // some token amount, this can be any number though (even larger than the number of xlm in  xistence)
 	x := uint32(y)
@@ -116,13 +116,13 @@ func Newxofy(x int, y int, signers ...string) (string, error) {
 	}
 
 	for i := 0; i < y-1; i++ {
-		err = AddSigner(tempSeed, pubkey, signers[i])
+		err = addSigner(tempSeed, pubkey, signers[i])
 		if err != nil {
 			return pubkey, errors.Wrap(err, "error whole adding signer to tx")
 		}
 	}
 	// we've reached x-1 = 1 signers, call threshold tx with the x-1'th signer
-	err = ConstructThresholdTx(tempSeed, pubkey, signers[y-1], x)
+	err = constructThresholdTx(tempSeed, pubkey, signers[y-1], x)
 	if err != nil {
 		return pubkey, errors.Wrap(err, "error while constructing threshold tx")
 	}
@@ -179,7 +179,73 @@ func Tx2of2(pubkey1 string, destination string, signer1 string, signer2 string) 
 	return nil
 }
 
-// Convert2of2 converts the accoutn wiht pubeky myPubkey to a 2of2 multisig account
+// AuthImmutable2of2 sets the auth immutable flag on a multisig account
+func AuthImmutable2of2(pubkey1 string, signer1 string, signer2 string) error {
+	tx, err := build.Transaction(
+		build.SourceAccount{pubkey1},
+		build.AutoSequence{TestNetClient},
+		build.Network{network.TestNetworkPassphrase},
+		build.MemoText{"Set Auth Immutable"},
+		build.SetOptions(
+			build.SetAuthImmutable(),
+		),
+	)
+
+	if err != nil {
+		return errors.Wrap(err, "error while building tx")
+	}
+
+	txe, err := tx.Sign(signer1, signer2) // sign using party 2's seed
+	if err != nil {
+		return errors.Wrap(err, "second party couldn't sign tx")
+	}
+
+	txeB64, err := txe.Base64()
+	if err != nil {
+		return errors.Wrap(err, "error while converting tx to base64")
+	}
+
+	resp, err := TestNetClient.SubmitTransaction(txeB64)
+	if err != nil {
+		return errors.Wrap(err, "error while submitting tx")
+	}
+
+	log.Printf("Two party multisig tx: %s, sequence: %d\n", resp.Hash, resp.Ledger)
+	return nil
+}
+
+
+func TrustAssetTx(assetCode string, assetIssuer string, limit string, pubkey string, signer1 string, signer2 string) error {
+	tx, err := build.Transaction(
+		build.SourceAccount{pubkey},
+		build.AutoSequence{SequenceProvider: xlm.TestNetClient},
+		build.TestNetwork,
+		build.Trust(assetCode, assetIssuer, build.Limit(limit)),
+	)
+
+	if err != nil {
+		return errors.Wrap(err, "error while building tx")
+	}
+
+	txe, err := tx.Sign(signer1, signer2) // sign using party 2's seed
+	if err != nil {
+		return errors.Wrap(err, "second party couldn't sign tx")
+	}
+
+	txeB64, err := txe.Base64()
+	if err != nil {
+		return errors.Wrap(err, "error while converting tx to base64")
+	}
+
+	resp, err := TestNetClient.SubmitTransaction(txeB64)
+	if err != nil {
+		return errors.Wrap(err, "error while submitting tx")
+	}
+
+	log.Printf("Two party multisig tx: %s, sequence: %d\n", resp.Hash, resp.Ledger)
+	return nil
+}
+// Convert2of2 converts the account with pubkey myPubkey to a 2of2 multisig account
 func Convert2of2(myPubkey string, mySeed string, cosignerPubkey string) error {
 	// don't check if the account exists or not, hopefully it does
 	memo := "testsign"
