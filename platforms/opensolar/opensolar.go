@@ -156,10 +156,10 @@ type TermsHelper struct {
 }
 
 type ExecutiveSummaryHelper struct {
-	Investment            InvestmentHelper
-	Financials            FinancialHelper
-	ProjectSize           ProjectSizeHelper
-	SustainabilityMetrics SustainabilityHelper
+	Investment            map[string]string
+	Financials            map[string]string
+	ProjectSize           map[string]string
+	SustainabilityMetrics map[string]string
 }
 
 type InvestmentHelper struct {

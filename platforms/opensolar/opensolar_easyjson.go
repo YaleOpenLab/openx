@@ -592,6 +592,8 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(in *jlex
 			out.SelfFund = float64(in.Float64())
 		case "EscrowPubkey":
 			out.EscrowPubkey = string(in.String())
+		case "EscrowLock":
+			out.EscrowLock = bool(in.Bool())
 		case "SecurityIssuer":
 			out.SecurityIssuer = string(in.String())
 		case "BrokerDealer":
@@ -1324,6 +1326,16 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString(prefix)
 		}
 		out.String(string(in.EscrowPubkey))
+	}
+	{
+		const prefix string = ",\"EscrowLock\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Bool(bool(in.EscrowLock))
 	}
 	{
 		const prefix string = ",\"SecurityIssuer\":"
@@ -2262,13 +2274,85 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar8(in *jlex
 		}
 		switch key {
 		case "Investment":
-			(out.Investment).UnmarshalEasyJSON(in)
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				in.Delim('{')
+				if !in.IsDelim('}') {
+					out.Investment = make(map[string]string)
+				} else {
+					out.Investment = nil
+				}
+				for !in.IsDelim('}') {
+					key := string(in.String())
+					in.WantColon()
+					var v37 string
+					v37 = string(in.String())
+					(out.Investment)[key] = v37
+					in.WantComma()
+				}
+				in.Delim('}')
+			}
 		case "Financials":
-			(out.Financials).UnmarshalEasyJSON(in)
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				in.Delim('{')
+				if !in.IsDelim('}') {
+					out.Financials = make(map[string]string)
+				} else {
+					out.Financials = nil
+				}
+				for !in.IsDelim('}') {
+					key := string(in.String())
+					in.WantColon()
+					var v38 string
+					v38 = string(in.String())
+					(out.Financials)[key] = v38
+					in.WantComma()
+				}
+				in.Delim('}')
+			}
 		case "ProjectSize":
-			(out.ProjectSize).UnmarshalEasyJSON(in)
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				in.Delim('{')
+				if !in.IsDelim('}') {
+					out.ProjectSize = make(map[string]string)
+				} else {
+					out.ProjectSize = nil
+				}
+				for !in.IsDelim('}') {
+					key := string(in.String())
+					in.WantColon()
+					var v39 string
+					v39 = string(in.String())
+					(out.ProjectSize)[key] = v39
+					in.WantComma()
+				}
+				in.Delim('}')
+			}
 		case "SustainabilityMetrics":
-			(out.SustainabilityMetrics).UnmarshalEasyJSON(in)
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				in.Delim('{')
+				if !in.IsDelim('}') {
+					out.SustainabilityMetrics = make(map[string]string)
+				} else {
+					out.SustainabilityMetrics = nil
+				}
+				for !in.IsDelim('}') {
+					key := string(in.String())
+					in.WantColon()
+					var v40 string
+					v40 = string(in.String())
+					(out.SustainabilityMetrics)[key] = v40
+					in.WantComma()
+				}
+				in.Delim('}')
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -2291,7 +2375,23 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar8(out *jwr
 		} else {
 			out.RawString(prefix)
 		}
-		(in.Investment).MarshalEasyJSON(out)
+		if in.Investment == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
+			out.RawString(`null`)
+		} else {
+			out.RawByte('{')
+			v41First := true
+			for v41Name, v41Value := range in.Investment {
+				if v41First {
+					v41First = false
+				} else {
+					out.RawByte(',')
+				}
+				out.String(string(v41Name))
+				out.RawByte(':')
+				out.String(string(v41Value))
+			}
+			out.RawByte('}')
+		}
 	}
 	{
 		const prefix string = ",\"Financials\":"
@@ -2301,7 +2401,23 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar8(out *jwr
 		} else {
 			out.RawString(prefix)
 		}
-		(in.Financials).MarshalEasyJSON(out)
+		if in.Financials == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
+			out.RawString(`null`)
+		} else {
+			out.RawByte('{')
+			v42First := true
+			for v42Name, v42Value := range in.Financials {
+				if v42First {
+					v42First = false
+				} else {
+					out.RawByte(',')
+				}
+				out.String(string(v42Name))
+				out.RawByte(':')
+				out.String(string(v42Value))
+			}
+			out.RawByte('}')
+		}
 	}
 	{
 		const prefix string = ",\"ProjectSize\":"
@@ -2311,7 +2427,23 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar8(out *jwr
 		} else {
 			out.RawString(prefix)
 		}
-		(in.ProjectSize).MarshalEasyJSON(out)
+		if in.ProjectSize == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
+			out.RawString(`null`)
+		} else {
+			out.RawByte('{')
+			v43First := true
+			for v43Name, v43Value := range in.ProjectSize {
+				if v43First {
+					v43First = false
+				} else {
+					out.RawByte(',')
+				}
+				out.String(string(v43Name))
+				out.RawByte(':')
+				out.String(string(v43Value))
+			}
+			out.RawByte('}')
+		}
 	}
 	{
 		const prefix string = ",\"SustainabilityMetrics\":"
@@ -2321,7 +2453,23 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar8(out *jwr
 		} else {
 			out.RawString(prefix)
 		}
-		(in.SustainabilityMetrics).MarshalEasyJSON(out)
+		if in.SustainabilityMetrics == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
+			out.RawString(`null`)
+		} else {
+			out.RawByte('{')
+			v44First := true
+			for v44Name, v44Value := range in.SustainabilityMetrics {
+				if v44First {
+					v44First = false
+				} else {
+					out.RawByte(',')
+				}
+				out.String(string(v44Name))
+				out.RawByte(':')
+				out.String(string(v44Value))
+			}
+			out.RawByte('}')
+		}
 	}
 	out.RawByte('}')
 }
