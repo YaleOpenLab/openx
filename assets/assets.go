@@ -57,8 +57,7 @@ import (
 func AssetID(inputString string) string {
 	// so the assetID right now is a hash of the asset name, concatenated investor public keys and nonces
 	x := utils.SHA3hash(inputString)
-	return "YOL" + x[64:73] // max length of an asset in stellar is 12 (YOL: Yale Open Lab)
-	// TODO: What about OXA: OpenX Asset?
+	return "OXA" + x[64:73] // max length of an asset in stellar is 12 (OXA: OpenX Asset)
 }
 
 // CreateAsset creates a new asset belonging to the public key referenced above

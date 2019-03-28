@@ -62,6 +62,8 @@ type Project struct {
 	SeedInvestmentCap    float64 // the max amount that a seed investor can put in a project when it is in its seed stages
 	ProposedInvetmentCap float64 // the max amount that an investor can invest in when the project is in its proposed stage (stage 2)
 	SelfFund             float64 // the amount that a beneficiary / recipient puts in a project wihtout asking from other investors. This is not included as a seed investment because this would mean the recipient pays his own investment back in the project
+	EscrowPubkey         string  // the publickey of the escrow we setup after project investment
+	EscrowLock           bool    // used to lock the escrow in case someting goes wrong
 
 	// Describe issuer of security and the broker dealer
 	SecurityIssuer string // the issuer of the security
@@ -121,8 +123,8 @@ type Project struct {
 	Contract5                string                      // contracts which will be linked to on the project details page
 	CommunityEngagement      []CommunityEngagementHelper // the section labelled "Community Engagement" on the frontend
 	Architecture             ArchitectureHelper          // the section labeled "Architecture/Project Design"
-	Context string // the section titled "Context"
-	SummaryImage string // the url to the image linked in the summary
+	Context                  string                      // the section titled "Context"
+	SummaryImage             string                      // the url to the image linked in the summary
 }
 
 type ArchitectureHelper struct {
