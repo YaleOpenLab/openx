@@ -3,6 +3,7 @@ package stablecoin
 import (
 	"github.com/pkg/errors"
 	"log"
+	"time"
 
 	assets "github.com/YaleOpenLab/openx/assets"
 	consts "github.com/YaleOpenLab/openx/consts"
@@ -86,12 +87,12 @@ func OfferExchange(publicKey string, seed string, invAmount string) error {
 		exchangeRate := oracle.ExchangeXLMforUSD("1")
 		// 1 xlm can fetch exchangeRate USD, how much xlm does diff USD need?
 		amountToExchange := diff / exchangeRate
-
 		err = Exchange(publicKey, seed, utils.FtoS(amountToExchange))
 		if err != nil {
 			return errors.New("Unable to exchange XLM for USD and automate payment. Please get more STABLEUSD to fulfil the payment")
 		}
 	}
 
+	time.Sleep(5 * time.Second) // 5 seconds for issuing stalbeusd to the person who's requested for it
 	return nil
 }
