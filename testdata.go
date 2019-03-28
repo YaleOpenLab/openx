@@ -82,9 +82,9 @@ project.SustainabilityMetric = //     SustainabilityHelper // a metric which sho
 project.AutoReloadInterval = //       float64              // the interval in which the user's funds reach zero
 project.ResilienceRating = //         float64              // resilience of the project
 project.ActionsRequired = //          string               // the action(s) required by the user
-project.Bullet1 = //                  string               // bullet points to be displayed on the project summary page
-project.Bullet2 = //                  string               // bullet points to be displayed on the project summary page
-project.Bullet3 = //                  string               // bullet points to be displayed on the project summary page
+project.Bullets.Bullet1 = //                  string               // bullet points to be displayed on the project summary page
+project.Bullets.Bullet2 = //                  string               // bullet points to be displayed on the project summary page
+project.Bullets.Bullet3 = //                  string               // bullet points to be displayed on the project summary page
 project.LegalProjectOverviewHash = // string               // hash to be displayed on the project details page
 project.LegalPPAHash = //             string               // hash to be displayed on the project details page
 project.LegalRECAgreementHash = //    string               // hash to be displayed on the project details page
@@ -195,24 +195,29 @@ func createPuertoRicoProject() error {
 
 	var esHelper opensolar.ExecutiveSummaryHelper
 
-	esHelper.Investment.Capex = "5000"
-	esHelper.Investment.Hardware = 60
-	esHelper.Investment.FirstLossEscrow = "30%"
-	esHelper.Investment.CertificationCosts = "N/A"
+	esHelper.Investment = make(map[string]string)
+	esHelper.Financials = make(map[string]string)
+	esHelper.ProjectSize = make(map[string]string)
+	esHelper.SustainabilityMetrics = make(map[string]string)
 
-	esHelper.Financials.Return = 3.1
-	esHelper.Financials.Insurance = "Premium"
-	esHelper.Financials.Tariff = "0.24 ct/kWh"
-	esHelper.Financials.Maturity = "2028 variable"
+	esHelper.Investment["Capex"] = "5000"
+	esHelper.Investment["Hardware"] = "60"
+	esHelper.Investment["First-Loss-Escrow"] = "30%"
+	esHelper.Investment["Certification Costs"] = "N/A"
 
-	esHelper.ProjectSize.PVSolar = "1 kW"
-	esHelper.ProjectSize.Storage = "200 Wh"
-	esHelper.ProjectSize.Critical = 2
-	esHelper.ProjectSize.InverterCapacity = "2.5 kW"
+	esHelper.Financials["Return (TEY)"] = "3.1"
+	esHelper.Financials["Insurance"] = "Premium"
+	esHelper.Financials["Tariff (Variable)"] = "0.24 ct/kWh"
+	esHelper.Financials["Maturity (Variable)"] = "2028"
 
-	esHelper.SustainabilityMetrics.CarbonDrawdown = "0.1 t/kWh"
-	esHelper.SustainabilityMetrics.CommunityValue = "5/7"
-	esHelper.SustainabilityMetrics.LCA = "N/A"
+	esHelper.ProjectSize["PV Solar"] = "1 kW"
+	esHelper.ProjectSize["Storage"] = "200 Wh"
+	esHelper.ProjectSize["% Critical"] = "2"
+	esHelper.ProjectSize["Inverter Capacity"] = "2.5 kW"
+
+	esHelper.SustainabilityMetrics["Carbon Drawdown"] = "0.1 t/kWh"
+	esHelper.SustainabilityMetrics["Community Value"] = "5/7"
+	esHelper.SustainabilityMetrics["LCA"] = "N/A"
 
 	var communityblock1 opensolar.CommunityEngagementHelper
 	communityblock1.Title = "Consultation"
@@ -253,6 +258,7 @@ func createPuertoRicoProject() error {
 	project.SolarCombiner = "MidNite"
 	project.Batteries = "Advance Autoparts Deep cycle 600A"
 	project.IoTHub = "Yale Open Powermeter w/ RaspberryPi3"
+	project.Rating = "N/A"
 	project.Metadata = "This project is a pilot initiative from MIT MediaLab's DCI & the Yale Openlab at Tsai CITY, as to integrate the opensolar platforms with IoT data and blockchain based payment systems to help finance community energy in Puerto Rico"
 
 	// Define parameters related to finance
@@ -305,22 +311,12 @@ func createPuertoRicoProject() error {
 	project.AutoReloadInterval = -1
 	project.ResilienceRating = 0.8
 	project.ActionsRequired = ""
-	project.Bullet1 = "Research proejct on smart financing"
-	project.Bullet2 = "Critical loads to the Admin Building"
-	project.Bullet3 = "Grid-tied and storage"
-	project.LegalProjectOverviewHash = ""
-	project.LegalPPAHash = ""
-	project.LegalRECAgreementHash = ""
-	project.GuarantorAgreementHash = ""
-	project.ContractorAgreementHash = ""
-	project.StakeholderAgreementHash = ""
-	project.CommunityEnergyHash = ""
-	project.FinancialReportingHash = ""
-	project.Contract1 = ""
-	project.Contract2 = ""
-	project.Contract3 = ""
-	project.Contract4 = ""
-	project.Contract5 = ""
+	project.Bullets.Bullet1 = "Research proejct on smart financing"
+	project.Bullets.Bullet2 = "Critical loads to the Admin Building"
+	project.Bullets.Bullet3 = "Grid-tied and storage"
+	var hashHelper opensolar.HashHelper
+	project.Hashes = hashHelper
+	project.ContractList = nil
 	project.CommunityEngagement = append(project.CommunityEngagement, communityblock1, communityblock2, communityblock3, communityblock4)
 	project.Architecture.SolarOutputImage = ""
 	project.Architecture.SolarArray = "10x 100 W"
@@ -329,7 +325,15 @@ func createPuertoRicoProject() error {
 	project.Architecture.InverterSize = "2024W 230V"
 	project.Architecture.DesignDescription = ""
 	project.Context = ""
-	project.SummaryImage= ""
+	project.SummaryImage = ""
+	project.ExplorePageSummary.Solar = project.PanelSize
+	project.ExplorePageSummary.Storage = esHelper.ProjectSize["Storage"]
+	project.ExplorePageSummary.Tariff = esHelper.Financials["Tariff (Variable)"]
+	project.ExplorePageSummary.Stage = project.Stage
+	project.ExplorePageSummary.Return = esHelper.Financials["Return (TEY)"]
+	project.ExplorePageSummary.Rating = project.Rating
+	project.ExplorePageSummary.Tax = "N/A"
+	project.ExplorePageSummary.ETA = project.EstimatedAcquisition
 
 	err = project.Save()
 	if err != nil {
@@ -478,24 +482,29 @@ func createOneMegaWattProject() error {
 
 	var esHelper opensolar.ExecutiveSummaryHelper
 
-	esHelper.Investment.Capex = "2000000"
-	esHelper.Investment.Hardware = 62
-	esHelper.Investment.FirstLossEscrow = "50000"
-	esHelper.Investment.CertificationCosts = ""
+	esHelper.Investment = make(map[string]string)
+	esHelper.Financials = make(map[string]string)
+	esHelper.ProjectSize = make(map[string]string)
+	esHelper.SustainabilityMetrics = make(map[string]string)
 
-	esHelper.Financials.Return = 4.8
-	esHelper.Financials.Insurance = "Premium"
-	esHelper.Financials.Tariff = "0.18 ct/kWh"
-	esHelper.Financials.Maturity = ""
+	esHelper.Investment["Capex"] = "2000000"
+	esHelper.Investment["Hardware Ratio"] = "62"
+	esHelper.Investment["First-Loss-Escrow"] = "50000"
+	esHelper.Investment["Maturity(Fixed)"] = "2029"
 
-	esHelper.ProjectSize.PVSolar = "1MW"
-	esHelper.ProjectSize.Storage = "210kWh"
-	esHelper.ProjectSize.Critical = -1
-	esHelper.ProjectSize.InverterCapacity = "1.25MW"
+	esHelper.Financials["Return (TEY)"] = "4.8"
+	esHelper.Financials["Insurance"] = "Premium"
+	esHelper.Financials["Tariff (Variable)"] = "0.18 ct/kWh"
+	esHelper.Financials["REC Value"] = "$154"
 
-	esHelper.SustainabilityMetrics.CarbonDrawdown = "0.1 t/kWh"
-	esHelper.SustainabilityMetrics.CommunityValue = "6/7"
-	esHelper.SustainabilityMetrics.LCA = "7/7"
+	esHelper.ProjectSize["PV Solar"] = "1 MW"
+	esHelper.ProjectSize["Storage"] = "210kWh"
+	esHelper.ProjectSize["Array Style"] = "Land & Roof"
+	esHelper.ProjectSize["Inverter Capacity"] = "1.25 MW"
+
+	esHelper.SustainabilityMetrics["Carbon Drawdown"] = "0.1 t/kWh"
+	esHelper.SustainabilityMetrics["Community Value"] = "6/7"
+	esHelper.SustainabilityMetrics["LCA"] = "7/7"
 
 	var communityblock1 opensolar.CommunityEngagementHelper
 	communityblock1.Width = 12
@@ -519,6 +528,7 @@ func createOneMegaWattProject() error {
 	project.SolarCombiner = ""
 	project.Batteries = "210 kWh 1x Tesla Powerpack"
 	project.IoTHub = ""
+	project.Rating = "AAA"
 	project.Metadata = "Neighborhood 1MW solar array on the field next to Lancaster Elementary High School. The project was originated by the head of the community organization, Ben Southworth, who is also active in the parent teacher association (PTA). The city of Lancaster has agreed to give a 20 year lease of the land to the project if the school gets to own the solar array after the lease expires. The school is located in an opportunity zone"
 
 	// Define parameters related to finance
@@ -571,22 +581,12 @@ func createOneMegaWattProject() error {
 	project.AutoReloadInterval = -1
 	project.ResilienceRating = 0.8
 	project.ActionsRequired = ""
-	project.Bullet1 = "Eligible for Opportunity Zone Investments"
-	project.Bullet2 = "Community owned mutual funds as bond issuer"
-	project.Bullet3 = "1 MW grid with full offtake agreements"
-	project.LegalProjectOverviewHash = ""
-	project.LegalPPAHash = ""
-	project.LegalRECAgreementHash = ""
-	project.GuarantorAgreementHash = ""
-	project.ContractorAgreementHash = ""
-	project.StakeholderAgreementHash = ""
-	project.CommunityEnergyHash = ""
-	project.FinancialReportingHash = ""
-	project.Contract1 = ""
-	project.Contract2 = ""
-	project.Contract3 = ""
-	project.Contract4 = ""
-	project.Contract5 = ""
+	project.Bullets.Bullet1 = "Eligible for Opportunity Zone Investments"
+	project.Bullets.Bullet2 = "Community owned mutual funds as bond issuer"
+	project.Bullets.Bullet3 = "1 MW grid with full offtake agreements"
+	var hashHelper opensolar.HashHelper
+	project.Hashes = hashHelper
+	project.ContractList = nil
 	project.CommunityEngagement = append(project.CommunityEngagement, communityblock1)
 	project.Architecture.SolarOutputImage = ""
 	project.Architecture.SolarArray = "1000 kW"
@@ -595,7 +595,15 @@ func createOneMegaWattProject() error {
 	project.Architecture.InverterSize = "1.25MW"
 	project.Architecture.DesignDescription = ""
 	project.Context = ""
-	project.SummaryImage= ""
+	project.SummaryImage = ""
+	project.ExplorePageSummary.Solar = project.PanelSize
+	project.ExplorePageSummary.Storage = esHelper.ProjectSize["Storage"]
+	project.ExplorePageSummary.Tariff = esHelper.Financials["Tariff (Variable)"]
+	project.ExplorePageSummary.Stage = project.Stage
+	project.ExplorePageSummary.Return = esHelper.Financials["Return (TEY)"]
+	project.ExplorePageSummary.Rating = project.Rating
+	project.ExplorePageSummary.Tax = "N/A"
+	project.ExplorePageSummary.ETA = project.EstimatedAcquisition
 
 	err = project.Save()
 	if err != nil {
@@ -696,24 +704,29 @@ func createTenKiloWattProject() error {
 
 	var esHelper opensolar.ExecutiveSummaryHelper
 
-	esHelper.Investment.Capex = "30000"
-	esHelper.Investment.Hardware = 3
-	esHelper.Investment.FirstLossEscrow = "N/A"
-	esHelper.Investment.CertificationCosts = "N/A"
+	esHelper.Investment = make(map[string]string)
+	esHelper.Financials = make(map[string]string)
+	esHelper.ProjectSize = make(map[string]string)
+	esHelper.SustainabilityMetrics = make(map[string]string)
 
-	esHelper.Financials.Return = -1
-	esHelper.Financials.Insurance = "Basic"
-	esHelper.Financials.Tariff = "0.12 ct/kWh"
-	esHelper.Financials.Maturity = "2019"
+	esHelper.Investment["Capex"] = "30000"
+	esHelper.Investment["Hardware"] = "$3 Non Voting"
+	esHelper.Investment["Raise Type"] = "Reg CF"
+	esHelper.Investment["Certification"] = "N/A"
 
-	esHelper.ProjectSize.PVSolar = "10 kW"
-	esHelper.ProjectSize.Storage = "N/A Grid Tied"
-	esHelper.ProjectSize.Critical = 100
-	esHelper.ProjectSize.InverterCapacity = "15 kW"
+	esHelper.Financials["Equity Value"] = "130%"
+	esHelper.Financials["Insurance"] = "Basic"
+	esHelper.Financials["Tariff (Fixed)"] = "0.12 ct/kWh"
+	esHelper.Financials["Maturity (Fixed)"] = "2019"
 
-	esHelper.SustainabilityMetrics.CarbonDrawdown = "0.1 t/kWh"
-	esHelper.SustainabilityMetrics.CommunityValue = "7/7"
-	esHelper.SustainabilityMetrics.LCA = ""
+	esHelper.ProjectSize["PV Solar"] = "10 kW"
+	esHelper.ProjectSize["Storage"] = "N/A Grid Tied"
+	esHelper.ProjectSize["% Critical"] = "100"
+	esHelper.ProjectSize["Inverter Capacity"] = "15 kW"
+
+	esHelper.SustainabilityMetrics["Carbon Drawdown"] = "0.1 t/kWh"
+	esHelper.SustainabilityMetrics["Community Value"] = "7/7"
+	esHelper.SustainabilityMetrics["LCA"] = ""
 
 	var communityblock1 opensolar.CommunityEngagementHelper
 	communityblock1.Width = 12
@@ -772,8 +785,8 @@ func createTenKiloWattProject() error {
 	terms6.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
 
 	project.Index = len(indexHelp) + 1
-	project.Name = "Homeless Shelter Construction"
-	project.State = "Puerto Rico"
+	project.Name = "New Haven Shelter Solar 2"
+	project.State = "CT"
 	project.Country = "US"
 	project.TotalValue = 30000
 	project.PanelSize = "15kW"
@@ -786,6 +799,7 @@ func createTenKiloWattProject() error {
 	project.SolarCombiner = ""
 	project.Batteries = ""
 	project.IoTHub = ""
+	project.Rating = "Premium"
 	project.Metadata = "Residential solar array for a homeless shelter. The project was originated by a member of the board of the homeless shelter who gets the shelter to purchase all the electricity at a discounted rate. The shelter chooses to lease the roof for free over the lifetime of the project. The originator knows the solar developer who set up the project company"
 
 	// Define parameters related to finance
@@ -838,22 +852,12 @@ func createTenKiloWattProject() error {
 	project.AutoReloadInterval = -1
 	project.ResilienceRating = 0.6
 	project.ActionsRequired = ""
-	project.Bullet1 = "Community owned solar in homeless shelter"
-	project.Bullet2 = "Siginificantly alleviates financial pressure due to high CT power cost"
-	project.Bullet3 = "Grid-tied with REC offtaking"
-	project.LegalProjectOverviewHash = ""
-	project.LegalPPAHash = ""
-	project.LegalRECAgreementHash = ""
-	project.GuarantorAgreementHash = ""
-	project.ContractorAgreementHash = ""
-	project.StakeholderAgreementHash = ""
-	project.CommunityEnergyHash = ""
-	project.FinancialReportingHash = ""
-	project.Contract1 = ""
-	project.Contract2 = ""
-	project.Contract3 = ""
-	project.Contract4 = ""
-	project.Contract5 = ""
+	project.Bullets.Bullet1 = "Community owned solar in homeless shelter"
+	project.Bullets.Bullet2 = "Siginificantly alleviates financial pressure due to high CT power cost"
+	project.Bullets.Bullet3 = "Grid-tied with REC offtaking"
+	var hashHelper opensolar.HashHelper
+	project.Hashes = hashHelper
+	project.ContractList = nil
 	project.CommunityEngagement = append(project.CommunityEngagement, communityblock1)
 	project.Architecture.SolarOutputImage = ""
 	project.Architecture.SolarArray = "50 x 200W"
@@ -862,7 +866,15 @@ func createTenKiloWattProject() error {
 	project.Architecture.InverterSize = "15 kW"
 	project.Architecture.DesignDescription = ""
 	project.Context = ""
-	project.SummaryImage= ""
+	project.SummaryImage = ""
+	project.ExplorePageSummary.Solar = project.PanelSize
+	project.ExplorePageSummary.Storage = esHelper.ProjectSize["Storage"]
+	project.ExplorePageSummary.Tariff = esHelper.Financials["Tariff (Fixed)"]
+	project.ExplorePageSummary.Stage = project.Stage
+	project.ExplorePageSummary.Return = esHelper.Financials["Return (TEY)"]
+	project.ExplorePageSummary.Rating = project.Rating
+	project.ExplorePageSummary.Tax = "N/A"
+	project.ExplorePageSummary.ETA = project.EstimatedAcquisition
 
 	err = project.Save()
 	if err != nil {
@@ -981,24 +993,29 @@ func createTenMegaWattProject() error {
 
 	var esHelper opensolar.ExecutiveSummaryHelper
 
-	esHelper.Investment.Capex = "19000000"
-	esHelper.Investment.Hardware = 70
-	esHelper.Investment.FirstLossEscrow = "15%"
-	esHelper.Investment.CertificationCosts = ""
+	esHelper.Investment = make(map[string]string)
+	esHelper.Financials = make(map[string]string)
+	esHelper.ProjectSize = make(map[string]string)
+	esHelper.SustainabilityMetrics = make(map[string]string)
 
-	esHelper.Financials.Return = 2.5
-	esHelper.Financials.Insurance = "Basic Force Majeur"
-	esHelper.Financials.Tariff = "0.24 ct/kWh"
-	esHelper.Financials.Maturity = "2028"
+	esHelper.Investment["Capex"] = "19000000"
+	esHelper.Investment["Hardware"] = "70"
+	esHelper.Investment["First-Loss-Escrow"] = "15%"
+	esHelper.Investment["Maturity"] = ""
 
-	esHelper.ProjectSize.PVSolar = "300 x 30kW"
-	esHelper.ProjectSize.Storage = "350 x 2.5 kWh"
-	esHelper.ProjectSize.Critical = 20
-	esHelper.ProjectSize.InverterCapacity = "300 x 35 kW"
+	esHelper.Financials["Expected Return (Non TEY)"] = "2.5%"
+	esHelper.Financials["Insurance"] = "Basic Force Majeur"
+	esHelper.Financials["Tariff (Variable)"] = "0.24 ct/kWh"
+	esHelper.Financials["REC Value"] = "$234/MWh"
 
-	esHelper.SustainabilityMetrics.CarbonDrawdown = "0.1t/kWh"
-	esHelper.SustainabilityMetrics.CommunityValue = "6/7"
-	esHelper.SustainabilityMetrics.LCA = "N/A"
+	esHelper.ProjectSize["PV Solar"] = "300 x 30kW"
+	esHelper.ProjectSize["Storage"] = "350 x 2.5 kWh"
+	esHelper.ProjectSize["% Critical"] = "20"
+	esHelper.ProjectSize["Inverter Capacity"] = "300 x 35 kW"
+
+	esHelper.SustainabilityMetrics["Carbon Drawdown"] = "0.1t/kWh"
+	esHelper.SustainabilityMetrics["Community Value"] = "6/7"
+	esHelper.SustainabilityMetrics["LCA"] = "N/A"
 
 	var communityblock1 opensolar.CommunityEngagementHelper
 	communityblock1.Width = 3
@@ -1043,6 +1060,7 @@ func createTenMegaWattProject() error {
 	project.SolarCombiner = ""
 	project.Batteries = "900 Ah"
 	project.IoTHub = ""
+	project.Rating = "AA+"
 	project.Metadata = "Transformation of 300 Puerto Rican public schools into solar powered emergency shelters. Each school will have around 30kW solar and 2kWh battery bank to cover critical loads including refrigeration of food and medicine, and an emergency telecommunication system with first responders. Backed by the Office of the Governor. 10 MW aggregate solar capacity. Nodes for community microgrids"
 
 	// Define parameters related to finance
@@ -1095,22 +1113,12 @@ func createTenMegaWattProject() error {
 	project.AutoReloadInterval = -1
 	project.ResilienceRating = 0.75
 	project.ActionsRequired = ""
-	project.Bullet1 = "Backed by the Governor's office"
-	project.Bullet2 = "Critical Loads covered (telecom and refrigeration)"
-	project.Bullet3 = "Certification of social impact"
-	project.LegalProjectOverviewHash = ""
-	project.LegalPPAHash = ""
-	project.LegalRECAgreementHash = ""
-	project.GuarantorAgreementHash = ""
-	project.ContractorAgreementHash = ""
-	project.StakeholderAgreementHash = ""
-	project.CommunityEnergyHash = ""
-	project.FinancialReportingHash = ""
-	project.Contract1 = ""
-	project.Contract2 = ""
-	project.Contract3 = ""
-	project.Contract4 = ""
-	project.Contract5 = ""
+	project.Bullets.Bullet1 = "Backed by the Governor's office"
+	project.Bullets.Bullet2 = "Critical Loads covered (telecom and refrigeration)"
+	project.Bullets.Bullet3 = "Certification of social impact"
+	var hashHelper opensolar.HashHelper
+	project.Hashes = hashHelper
+	project.ContractList = nil
 	project.CommunityEngagement = append(project.CommunityEngagement, communityblock1, communityblock2, communityblock3, communityblock4)
 	project.Architecture.SolarOutputImage = ""
 	project.Architecture.SolarArray = "300 x 30kW"
@@ -1119,7 +1127,15 @@ func createTenMegaWattProject() error {
 	project.Architecture.InverterSize = "300 x 35 kW"
 	project.Architecture.DesignDescription = ""
 	project.Context = ""
-	project.SummaryImage= ""
+	project.SummaryImage = ""
+	project.ExplorePageSummary.Solar = project.PanelSize
+	project.ExplorePageSummary.Storage = esHelper.ProjectSize["Storage"]
+	project.ExplorePageSummary.Tariff = esHelper.Financials["Tariff (Variable)"]
+	project.ExplorePageSummary.Stage = project.Stage
+	project.ExplorePageSummary.Return = esHelper.Financials["Expected Return (Non TEY)"]
+	project.ExplorePageSummary.Rating = project.Rating
+	project.ExplorePageSummary.Tax = "N/A"
+	project.ExplorePageSummary.ETA = project.EstimatedAcquisition
 
 	err = project.Save()
 	if err != nil {
@@ -1192,100 +1208,195 @@ func createOneHundredKiloWattProject() error {
 		log.Fatal(err)
 	}
 
-	// This is to populate the table of Terms and Conditions in the front end. TODO: change this inline with the FE
+	// This is to populate the table of Terms and Conditions in the front end
 	var terms1 opensolar.TermsHelper
 	terms1.Variable = "Security Type"
-	terms1.Value = "Municipal Bond"
-	terms1.RelevantParty = "PR DofEd"
-	terms1.Note = "Promoted by PR governor's office"
-	terms1.Status = "Demo"
+	terms1.Value = "Equity Crowdfunding"
+	terms1.RelevantParty = "Ubadu Collective"
+	terms1.Note = "Coop is not incorporated yet"
+	terms1.Status = "Open"
 	terms1.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
 
 	var terms2 opensolar.TermsHelper
 	terms2.Variable = "PPA Tariff"
-	terms2.Value = "0.24 ct/KWh"
-	terms2.RelevantParty = "oracle X / PREPA"
-	terms2.Note = "Variable anchored to local tariff"
-	terms2.Status = "Signed"
+	terms2.Value = "0.12 ct/KWh"
+	terms2.RelevantParty = "Ubadu Collective"
+	terms2.Note = "Average PPA, from tiered offtakers"
+	terms2.Status = "Open"
 	terms2.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
 
 	var terms3 opensolar.TermsHelper
-	terms3.Variable = "Return (TEY)"
-	terms3.Value = "3.1%"
-	terms3.RelevantParty = "Broker Dealer"
-	terms3.Note = "Variable tied to tariff"
-	terms3.Status = "Signed"
+	terms3.Variable = "Exp. Return"
+	terms3.Value = "2.3%"
+	terms3.RelevantParty = "Equity Value"
+	terms3.Note = "Growth value. No tax incentives"
+	terms3.Status = "Open"
 	terms3.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
 
 	var terms4 opensolar.TermsHelper
-	terms4.Variable = "Maturity"
-	terms4.Value = "+/- 2025"
-	terms4.RelevantParty = "Broker Dealer"
-	terms4.Note = "Tax adjusted Yield"
-	terms4.Status = "Signed"
+	terms4.Variable = "Ownership Flip"
+	terms4.Value = "2027"
+	terms4.RelevantParty = "By convertible notes"
+	terms4.Note = "Crowd investors sell stock"
+	terms4.Status = "Open"
 	terms4.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
 
 	var terms5 opensolar.TermsHelper
 	terms5.Variable = "Guarantee"
-	terms5.Value = "50%"
-	terms5.RelevantParty = "Foundation X"
-	terms5.Note = "First-loss upon breach"
-	terms5.Status = "Started"
+	terms5.Value = "20%"
+	terms5.RelevantParty = "Africa Fund"
+	terms5.Note = "Agreed but pending"
+	terms5.Status = "Open"
 	terms5.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
 
 	var terms6 opensolar.TermsHelper
 	terms6.Variable = "Insurance"
-	terms6.Value = "Premium"
-	terms6.RelevantParty = "Allianz CS"
-	terms6.Note = "Hurricane Coverage"
-	terms6.Status = "Started"
+	terms6.Value = "N/A"
+	terms6.RelevantParty = "N/A"
+	terms6.Note = "Defining insurance parties"
+	terms6.Status = "Open"
 	terms6.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
 
-	var investmentHelper opensolar.InvestmentHelper
-	var financialHelper opensolar.FinancialHelper
-	var projectSizeHelper opensolar.ProjectSizeHelper
-	var sustainabilityHelper opensolar.SustainabilityHelper
+	var esHelper opensolar.ExecutiveSummaryHelper
 
-	investmentHelper.Capex = ""
-	investmentHelper.Hardware = -1
-	investmentHelper.FirstLossEscrow = ""
-	investmentHelper.CertificationCosts = ""
+	esHelper.Investment = make(map[string]string)
+	esHelper.Financials = make(map[string]string)
+	esHelper.ProjectSize = make(map[string]string)
+	esHelper.SustainabilityMetrics = make(map[string]string)
 
-	financialHelper.Return = -1
-	financialHelper.Insurance = ""
-	financialHelper.Tariff = ""
-	financialHelper.Maturity = ""
+	esHelper.Investment["Capex"] = "230000"
+	esHelper.Investment["Hardware"] = "75"
+	esHelper.Investment["FirstLossEscrow"] = "Equity w/Notes" // cahnge this to raise type
+	esHelper.Investment["CertificationCosts"] = "2028"        // change to maturity
 
-	projectSizeHelper.PVSolar = ""
-	projectSizeHelper.Storage = ""
-	projectSizeHelper.Critical = -1
-	projectSizeHelper.InverterCapacity = ""
+	esHelper.Financials["Return"] = "2.3%"
+	esHelper.Financials["First-Loss Escrow"] = "20%"
+	esHelper.Financials["Tariff"] = "0.24 ct/kWh"
+	esHelper.Financials["REC Value"] = "In Proces"
 
-	sustainabilityHelper.CarbonDrawdown = ""
-	sustainabilityHelper.CommunityValue = ""
-	sustainabilityHelper.LCA = ""
+	esHelper.ProjectSize["PVSolar"] = "4 x 25 kW"
+	esHelper.ProjectSize["Storage"] = "25 kWh"
+	esHelper.ProjectSize["Critical"] = "100"
+	esHelper.ProjectSize["InverterCapacity"] = "4 x 30 kW"
+
+	esHelper.SustainabilityMetrics["CarbonDrawdown"] = "N/A"
+	esHelper.SustainabilityMetrics["CommunityValue"] = "7/7"
+	esHelper.SustainabilityMetrics["LCA"] = "N/A"
+
+	var communityblock1 opensolar.CommunityEngagementHelper
+	communityblock1.Title = "Consultation"
+	communityblock1.ImageURL = ""
+	communityblock1.Content = ""
+	communityblock1.Link = ""
+
+	var communityblock2 opensolar.CommunityEngagementHelper
+	communityblock2.Title = "Participation"
+	communityblock2.ImageURL = ""
+	communityblock2.Content = ""
+	communityblock2.Link = ""
+
+	var communityblock3 opensolar.CommunityEngagementHelper
+	communityblock3.Title = "Outreach"
+	communityblock3.ImageURL = ""
+	communityblock3.Content = ""
+	communityblock3.Link = ""
+
+	var communityblock4 opensolar.CommunityEngagementHelper
+	communityblock4.Title = "Governance"
+	communityblock4.ImageURL = ""
+	communityblock4.Content = ""
+	communityblock4.Link = ""
 
 	project.Index = len(indexHelp) + 1
-	project.Name = "Rwanda Community Microgrid"
-	project.PanelSize = "100kW"
-	project.State = "Khigali"
+	project.Name = "Ubadu Village Microgrid, Rwanda"
+	project.State = "Kigali"
 	project.Country = "Rwanda"
-	project.Batteries = "25 kWh"
-	project.Stage = 1
-	project.DateInitiated = "03/25/2019"
-	project.Metadata = "The community of Ubadu, Rwanda has no access to electricity yet shows a growing local economy. This microgrid project, developed a collaboration with Yale and MIT, aims to serve 250 homes, including its only school, ‘Sunshine Garden,’ the town infirmary led by a team of doctors without borders, and the town hall. Community cooperative with international backing. 20% first loss fund secured. Currently doing engineering due diligence for development quotes"
-	project.TotalValue = 230000
-	project.SeedInvestmentCap = 5000
-	project.MoneyRaised = 1250
-	project.InterestRate = 0.023
-	project.EstimatedAcquisition = 7
+	project.TotalValue = 10000
+	project.PanelSize = "1kW"
+	project.PanelTechnicalDescription = ""
+	project.Inverter = ""
+	project.ChargeRegulator = ""
+	project.ControlPanel = ""
+	project.CommBox = ""
+	project.ACTransfer = ""
+	project.SolarCombiner = ""
+	project.Batteries = ""
+	project.IoTHub = "Yale Open Powermeter w/ RaspberryPi3"
+	project.Rating = "N/A"
+	project.Metadata = "The community of Ubadu, Rwanda has no access to grid electricity yet shows a  growing local economy. This microgrid project, will serve 250 homes, a school, an infirmary and the town hall"
+
+	// Define parameters related to finance
+	project.MoneyRaised = 0
+	project.EstimatedAcquisition = 5
+	project.BalLeft = 10000
+	project.InterestRate = 0.029
+	project.Tax = "Insert tax scheme here"
+
+	// Define dates of creation and funding
+	project.DateInitiated = ""
+	project.DateFunded = ""
+	project.DateLastPaid = -1
+
+	// Define technical paramters
+	project.AuctionType = "blind"
+	project.InvestmentType = "Equity Crowdfunding"
 	project.PaybackPeriod = 4
-	project.InvestmentType = "equity"
+	project.Stage = 7
+	project.SeedInvestmentFactor = 1.1
+	project.SeedInvestmentCap = 500
+	project.ProposedInvetmentCap = 15000
+	project.SelfFund = 0
+
+	// Describe issuer of security and the broker dealer
+	project.SecurityIssuer = ""
+	project.BrokerDealer = ""
+
+	// Define the various entities that are associated with a specific project
+	project.RecipientIndex = recipient1.U.Index
+	project.OriginatorIndex = originator1.U.Index
+	// project.GuarantorIndex = guarantor1.U.Index
+	// project.ContractorIndex = contractor1.U.Index
+	project.MainDeveloperIndex = developer1.U.Index
+	project.BlendedCapitalInvestorIndex = -1
 	project.InvestorIndices = append(project.InvestorIndices, investor1.U.Index, investor2.U.Index, investor3.U.Index)
+	project.SeedInvestorIndices = nil
 	project.RecipientIndices = append(project.RecipientIndices, recipient1.U.Index, recipient2.U.Index, recipient3.U.Index, recipient4.U.Index, recipient5.U.Index)
 	project.DeveloperIndices = append(project.DeveloperIndices, developer1.U.Index, developer2.U.Index)
-	project.OriginatorIndex = originator1.U.Index
+	project.ContractorFee = 2000
+	project.OriginatorFee = 0
+	project.DeveloperFee = append(project.DeveloperFee, 6000)
+	project.DebtInvestor1 = ""
+	project.DebtInvestor2 = ""
+	project.TaxEquityInvestor = ""
+	// Define things that will be displayed on the frontend
 	project.Terms = append(project.Terms, terms1, terms2, terms3, terms4, terms5, terms6)
+	project.ExecutiveSummary = esHelper
+	project.AutoReloadInterval = -1
+	project.ResilienceRating = 0.8
+	project.ActionsRequired = ""
+	project.Bullets.Bullet1 = "Community owned cooperative mircrogrid"
+	project.Bullets.Bullet2 = "Transactive energy capability"
+	project.Bullets.Bullet3 = "Certified high social impact"
+	var hashHelper opensolar.HashHelper
+	project.Hashes = hashHelper
+	project.ContractList = nil
+	project.CommunityEngagement = append(project.CommunityEngagement, communityblock1, communityblock2, communityblock3, communityblock4)
+	project.Architecture.SolarOutputImage = ""
+	project.Architecture.SolarArray = "10x 100 W"
+	project.Architecture.DailyAvgGeneration = "4000 kWh"
+	project.Architecture.System = "600A Deep Cycle"
+	project.Architecture.InverterSize = "2024W 230V"
+	project.Architecture.DesignDescription = ""
+	project.Context = ""
+	project.SummaryImage = ""
+	project.ExplorePageSummary.Solar = project.PanelSize
+	project.ExplorePageSummary.Storage = esHelper.ProjectSize["Storage"]
+	project.ExplorePageSummary.Tariff = esHelper.Financials["Tariff"]
+	project.ExplorePageSummary.Stage = project.Stage
+	project.ExplorePageSummary.Return = esHelper.Financials["Return"]
+	project.ExplorePageSummary.Rating = project.Rating
+	project.ExplorePageSummary.Tax = "N/A"
+	project.ExplorePageSummary.ETA = project.EstimatedAcquisition
 
 	err = project.Save()
 	if err != nil {

@@ -548,6 +548,8 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(in *jlex
 			out.Batteries = string(in.String())
 		case "IoTHub":
 			out.IoTHub = string(in.String())
+		case "Rating":
+			out.Rating = string(in.String())
 		case "Metadata":
 			out.Metadata = string(in.String())
 		case "MoneyRaised":
@@ -592,6 +594,8 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(in *jlex
 			out.SelfFund = float64(in.Float64())
 		case "EscrowPubkey":
 			out.EscrowPubkey = string(in.String())
+		case "EscrowLock":
+			out.EscrowLock = bool(in.Bool())
 		case "SecurityIssuer":
 			out.SecurityIssuer = string(in.String())
 		case "BrokerDealer":
@@ -880,38 +884,39 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(in *jlex
 			out.ResilienceRating = float64(in.Float64())
 		case "ActionsRequired":
 			out.ActionsRequired = string(in.String())
-		case "Bullet1":
-			out.Bullet1 = string(in.String())
-		case "Bullet2":
-			out.Bullet2 = string(in.String())
-		case "Bullet3":
-			out.Bullet3 = string(in.String())
-		case "LegalProjectOverviewHash":
-			out.LegalProjectOverviewHash = string(in.String())
-		case "LegalPPAHash":
-			out.LegalPPAHash = string(in.String())
-		case "LegalRECAgreementHash":
-			out.LegalRECAgreementHash = string(in.String())
-		case "GuarantorAgreementHash":
-			out.GuarantorAgreementHash = string(in.String())
-		case "ContractorAgreementHash":
-			out.ContractorAgreementHash = string(in.String())
-		case "StakeholderAgreementHash":
-			out.StakeholderAgreementHash = string(in.String())
-		case "CommunityEnergyHash":
-			out.CommunityEnergyHash = string(in.String())
-		case "FinancialReportingHash":
-			out.FinancialReportingHash = string(in.String())
-		case "Contract1":
-			out.Contract1 = string(in.String())
-		case "Contract2":
-			out.Contract2 = string(in.String())
-		case "Contract3":
-			out.Contract3 = string(in.String())
-		case "Contract4":
-			out.Contract4 = string(in.String())
-		case "Contract5":
-			out.Contract5 = string(in.String())
+		case "Bullets":
+			(out.Bullets).UnmarshalEasyJSON(in)
+		case "Hashes":
+			(out.Hashes).UnmarshalEasyJSON(in)
+		case "ContractList":
+			if in.IsNull() {
+				in.Skip()
+				out.ContractList = nil
+			} else {
+				in.Delim('[')
+				if out.ContractList == nil {
+					if !in.IsDelim(']') {
+						out.ContractList = make([]string, 0, 4)
+					} else {
+						out.ContractList = []string{}
+					}
+				} else {
+					out.ContractList = (out.ContractList)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v15 string
+					v15 = string(in.String())
+					out.ContractList = append(out.ContractList, v15)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
+		case "Architecture":
+			(out.Architecture).UnmarshalEasyJSON(in)
+		case "Context":
+			out.Context = string(in.String())
+		case "SummaryImage":
+			out.SummaryImage = string(in.String())
 		case "CommunityEngagement":
 			if in.IsNull() {
 				in.Skip()
@@ -928,19 +933,15 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(in *jlex
 					out.CommunityEngagement = (out.CommunityEngagement)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v15 CommunityEngagementHelper
-					(v15).UnmarshalEasyJSON(in)
-					out.CommunityEngagement = append(out.CommunityEngagement, v15)
+					var v16 CommunityEngagementHelper
+					(v16).UnmarshalEasyJSON(in)
+					out.CommunityEngagement = append(out.CommunityEngagement, v16)
 					in.WantComma()
 				}
 				in.Delim(']')
 			}
-		case "Architecture":
-			(out.Architecture).UnmarshalEasyJSON(in)
-		case "Context":
-			out.Context = string(in.String())
-		case "SummaryImage":
-			out.SummaryImage = string(in.String())
+		case "ExplorePageSummary":
+			(out.ExplorePageSummary).UnmarshalEasyJSON(in)
 		default:
 			in.SkipRecursive()
 		}
@@ -1104,6 +1105,16 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString(prefix)
 		}
 		out.String(string(in.IoTHub))
+	}
+	{
+		const prefix string = ",\"Rating\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Rating))
 	}
 	{
 		const prefix string = ",\"Metadata\":"
@@ -1326,6 +1337,16 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 		out.String(string(in.EscrowPubkey))
 	}
 	{
+		const prefix string = ",\"EscrowLock\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Bool(bool(in.EscrowLock))
+	}
+	{
 		const prefix string = ",\"SecurityIssuer\":"
 		if first {
 			first = false
@@ -1417,11 +1438,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v16, v17 := range in.InvestorIndices {
-				if v16 > 0 {
+			for v17, v18 := range in.InvestorIndices {
+				if v17 > 0 {
 					out.RawByte(',')
 				}
-				out.Int(int(v17))
+				out.Int(int(v18))
 			}
 			out.RawByte(']')
 		}
@@ -1438,11 +1459,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v18, v19 := range in.SeedInvestorIndices {
-				if v18 > 0 {
+			for v19, v20 := range in.SeedInvestorIndices {
+				if v19 > 0 {
 					out.RawByte(',')
 				}
-				out.Int(int(v19))
+				out.Int(int(v20))
 			}
 			out.RawByte(']')
 		}
@@ -1459,11 +1480,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v20, v21 := range in.RecipientIndices {
-				if v20 > 0 {
+			for v21, v22 := range in.RecipientIndices {
+				if v21 > 0 {
 					out.RawByte(',')
 				}
-				out.Int(int(v21))
+				out.Int(int(v22))
 			}
 			out.RawByte(']')
 		}
@@ -1480,11 +1501,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v22, v23 := range in.DeveloperIndices {
-				if v22 > 0 {
+			for v23, v24 := range in.DeveloperIndices {
+				if v23 > 0 {
 					out.RawByte(',')
 				}
-				out.Int(int(v23))
+				out.Int(int(v24))
 			}
 			out.RawByte(']')
 		}
@@ -1521,11 +1542,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v24, v25 := range in.DeveloperFee {
-				if v24 > 0 {
+			for v25, v26 := range in.DeveloperFee {
+				if v25 > 0 {
 					out.RawByte(',')
 				}
-				out.Float64(float64(v25))
+				out.Float64(float64(v26))
 			}
 			out.RawByte(']')
 		}
@@ -1632,11 +1653,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v26, v27 := range in.StageData {
-				if v26 > 0 {
+			for v27, v28 := range in.StageData {
+				if v27 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v27))
+				out.String(string(v28))
 			}
 			out.RawByte(']')
 		}
@@ -1653,24 +1674,24 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v28, v29 := range in.StageChecklist {
-				if v28 > 0 {
+			for v29, v30 := range in.StageChecklist {
+				if v29 > 0 {
 					out.RawByte(',')
 				}
-				if v29 == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
+				if v30 == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
 					out.RawString(`null`)
 				} else {
 					out.RawByte('{')
-					v30First := true
-					for v30Name, v30Value := range v29 {
-						if v30First {
-							v30First = false
+					v31First := true
+					for v31Name, v31Value := range v30 {
+						if v31First {
+							v31First = false
 						} else {
 							out.RawByte(',')
 						}
-						out.String(string(v30Name))
+						out.String(string(v31Name))
 						out.RawByte(':')
-						out.Bool(bool(v30Value))
+						out.Bool(bool(v31Value))
 					}
 					out.RawByte('}')
 				}
@@ -1690,16 +1711,16 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v31First := true
-			for v31Name, v31Value := range in.InvestorMap {
-				if v31First {
-					v31First = false
+			v32First := true
+			for v32Name, v32Value := range in.InvestorMap {
+				if v32First {
+					v32First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v31Name))
+				out.String(string(v32Name))
 				out.RawByte(':')
-				out.Float64(float64(v31Value))
+				out.Float64(float64(v32Value))
 			}
 			out.RawByte('}')
 		}
@@ -1716,16 +1737,16 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v32First := true
-			for v32Name, v32Value := range in.WaterfallMap {
-				if v32First {
-					v32First = false
+			v33First := true
+			for v33Name, v33Value := range in.WaterfallMap {
+				if v33First {
+					v33First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v32Name))
+				out.String(string(v33Name))
 				out.RawByte(':')
-				out.Float64(float64(v32Value))
+				out.Float64(float64(v33Value))
 			}
 			out.RawByte('}')
 		}
@@ -1742,11 +1763,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v33, v34 := range in.Terms {
-				if v33 > 0 {
+			for v34, v35 := range in.Terms {
+				if v34 > 0 {
 					out.RawByte(',')
 				}
-				(v34).MarshalEasyJSON(out)
+				(v35).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -1792,182 +1813,42 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 		out.String(string(in.ActionsRequired))
 	}
 	{
-		const prefix string = ",\"Bullet1\":"
+		const prefix string = ",\"Bullets\":"
 		if first {
 			first = false
 			out.RawString(prefix[1:])
 		} else {
 			out.RawString(prefix)
 		}
-		out.String(string(in.Bullet1))
+		(in.Bullets).MarshalEasyJSON(out)
 	}
 	{
-		const prefix string = ",\"Bullet2\":"
+		const prefix string = ",\"Hashes\":"
 		if first {
 			first = false
 			out.RawString(prefix[1:])
 		} else {
 			out.RawString(prefix)
 		}
-		out.String(string(in.Bullet2))
+		(in.Hashes).MarshalEasyJSON(out)
 	}
 	{
-		const prefix string = ",\"Bullet3\":"
+		const prefix string = ",\"ContractList\":"
 		if first {
 			first = false
 			out.RawString(prefix[1:])
 		} else {
 			out.RawString(prefix)
 		}
-		out.String(string(in.Bullet3))
-	}
-	{
-		const prefix string = ",\"LegalProjectOverviewHash\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.LegalProjectOverviewHash))
-	}
-	{
-		const prefix string = ",\"LegalPPAHash\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.LegalPPAHash))
-	}
-	{
-		const prefix string = ",\"LegalRECAgreementHash\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.LegalRECAgreementHash))
-	}
-	{
-		const prefix string = ",\"GuarantorAgreementHash\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.GuarantorAgreementHash))
-	}
-	{
-		const prefix string = ",\"ContractorAgreementHash\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.ContractorAgreementHash))
-	}
-	{
-		const prefix string = ",\"StakeholderAgreementHash\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.StakeholderAgreementHash))
-	}
-	{
-		const prefix string = ",\"CommunityEnergyHash\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.CommunityEnergyHash))
-	}
-	{
-		const prefix string = ",\"FinancialReportingHash\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.FinancialReportingHash))
-	}
-	{
-		const prefix string = ",\"Contract1\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.Contract1))
-	}
-	{
-		const prefix string = ",\"Contract2\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.Contract2))
-	}
-	{
-		const prefix string = ",\"Contract3\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.Contract3))
-	}
-	{
-		const prefix string = ",\"Contract4\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.Contract4))
-	}
-	{
-		const prefix string = ",\"Contract5\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.Contract5))
-	}
-	{
-		const prefix string = ",\"CommunityEngagement\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		if in.CommunityEngagement == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+		if in.ContractList == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v35, v36 := range in.CommunityEngagement {
-				if v35 > 0 {
+			for v36, v37 := range in.ContractList {
+				if v36 > 0 {
 					out.RawByte(',')
 				}
-				(v36).MarshalEasyJSON(out)
+				out.String(string(v37))
 			}
 			out.RawByte(']')
 		}
@@ -2001,6 +1882,37 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString(prefix)
 		}
 		out.String(string(in.SummaryImage))
+	}
+	{
+		const prefix string = ",\"CommunityEngagement\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		if in.CommunityEngagement == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+			out.RawString("null")
+		} else {
+			out.RawByte('[')
+			for v38, v39 := range in.CommunityEngagement {
+				if v38 > 0 {
+					out.RawByte(',')
+				}
+				(v39).MarshalEasyJSON(out)
+			}
+			out.RawByte(']')
+		}
+	}
+	{
+		const prefix string = ",\"ExplorePageSummary\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		(in.ExplorePageSummary).MarshalEasyJSON(out)
 	}
 	out.RawByte('}')
 }
@@ -2135,7 +2047,162 @@ func (v *InvestmentHelper) UnmarshalJSON(data []byte) error {
 func (v *InvestmentHelper) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar6(l, v)
 }
-func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar7(in *jlexer.Lexer, out *FinancialHelper) {
+func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar7(in *jlexer.Lexer, out *HashHelper) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeString()
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "LegalProjectOverviewHash":
+			out.LegalProjectOverviewHash = string(in.String())
+		case "LegalPPAHash":
+			out.LegalPPAHash = string(in.String())
+		case "LegalRECAgreementHash":
+			out.LegalRECAgreementHash = string(in.String())
+		case "GuarantorAgreementHash":
+			out.GuarantorAgreementHash = string(in.String())
+		case "ContractorAgreementHash":
+			out.ContractorAgreementHash = string(in.String())
+		case "StakeholderAgreementHash":
+			out.StakeholderAgreementHash = string(in.String())
+		case "CommunityEnergyHash":
+			out.CommunityEnergyHash = string(in.String())
+		case "FinancialReportingHash":
+			out.FinancialReportingHash = string(in.String())
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar7(out *jwriter.Writer, in HashHelper) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	{
+		const prefix string = ",\"LegalProjectOverviewHash\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.LegalProjectOverviewHash))
+	}
+	{
+		const prefix string = ",\"LegalPPAHash\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.LegalPPAHash))
+	}
+	{
+		const prefix string = ",\"LegalRECAgreementHash\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.LegalRECAgreementHash))
+	}
+	{
+		const prefix string = ",\"GuarantorAgreementHash\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.GuarantorAgreementHash))
+	}
+	{
+		const prefix string = ",\"ContractorAgreementHash\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.ContractorAgreementHash))
+	}
+	{
+		const prefix string = ",\"StakeholderAgreementHash\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.StakeholderAgreementHash))
+	}
+	{
+		const prefix string = ",\"CommunityEnergyHash\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.CommunityEnergyHash))
+	}
+	{
+		const prefix string = ",\"FinancialReportingHash\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.FinancialReportingHash))
+	}
+	out.RawByte('}')
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v HashHelper) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar7(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v HashHelper) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar7(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *HashHelper) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar7(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *HashHelper) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar7(l, v)
+}
+func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar8(in *jlexer.Lexer, out *FinancialHelper) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -2172,7 +2239,7 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar7(in *jlex
 		in.Consumed()
 	}
 }
-func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar7(out *jwriter.Writer, in FinancialHelper) {
+func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar8(out *jwriter.Writer, in FinancialHelper) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -2222,27 +2289,182 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar7(out *jwr
 // MarshalJSON supports json.Marshaler interface
 func (v FinancialHelper) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar7(&w, v)
+	easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar8(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v FinancialHelper) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar7(w, v)
+	easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar8(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *FinancialHelper) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar7(&r, v)
+	easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar8(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *FinancialHelper) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar7(l, v)
+	easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar8(l, v)
 }
-func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar8(in *jlexer.Lexer, out *ExecutiveSummaryHelper) {
+func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar9(in *jlexer.Lexer, out *ExplorePageSummaryHelper) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeString()
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "Solar":
+			out.Solar = string(in.String())
+		case "Storage":
+			out.Storage = string(in.String())
+		case "Tariff":
+			out.Tariff = string(in.String())
+		case "Stage":
+			out.Stage = int(in.Int())
+		case "Return":
+			out.Return = string(in.String())
+		case "Rating":
+			out.Rating = string(in.String())
+		case "Tax":
+			out.Tax = string(in.String())
+		case "ETA":
+			out.ETA = int(in.Int())
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar9(out *jwriter.Writer, in ExplorePageSummaryHelper) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	{
+		const prefix string = ",\"Solar\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Solar))
+	}
+	{
+		const prefix string = ",\"Storage\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Storage))
+	}
+	{
+		const prefix string = ",\"Tariff\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Tariff))
+	}
+	{
+		const prefix string = ",\"Stage\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Int(int(in.Stage))
+	}
+	{
+		const prefix string = ",\"Return\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Return))
+	}
+	{
+		const prefix string = ",\"Rating\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Rating))
+	}
+	{
+		const prefix string = ",\"Tax\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Tax))
+	}
+	{
+		const prefix string = ",\"ETA\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Int(int(in.ETA))
+	}
+	out.RawByte('}')
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v ExplorePageSummaryHelper) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar9(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v ExplorePageSummaryHelper) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar9(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *ExplorePageSummaryHelper) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar9(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *ExplorePageSummaryHelper) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar9(l, v)
+}
+func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar10(in *jlexer.Lexer, out *ExecutiveSummaryHelper) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -2262,13 +2484,85 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar8(in *jlex
 		}
 		switch key {
 		case "Investment":
-			(out.Investment).UnmarshalEasyJSON(in)
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				in.Delim('{')
+				if !in.IsDelim('}') {
+					out.Investment = make(map[string]string)
+				} else {
+					out.Investment = nil
+				}
+				for !in.IsDelim('}') {
+					key := string(in.String())
+					in.WantColon()
+					var v40 string
+					v40 = string(in.String())
+					(out.Investment)[key] = v40
+					in.WantComma()
+				}
+				in.Delim('}')
+			}
 		case "Financials":
-			(out.Financials).UnmarshalEasyJSON(in)
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				in.Delim('{')
+				if !in.IsDelim('}') {
+					out.Financials = make(map[string]string)
+				} else {
+					out.Financials = nil
+				}
+				for !in.IsDelim('}') {
+					key := string(in.String())
+					in.WantColon()
+					var v41 string
+					v41 = string(in.String())
+					(out.Financials)[key] = v41
+					in.WantComma()
+				}
+				in.Delim('}')
+			}
 		case "ProjectSize":
-			(out.ProjectSize).UnmarshalEasyJSON(in)
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				in.Delim('{')
+				if !in.IsDelim('}') {
+					out.ProjectSize = make(map[string]string)
+				} else {
+					out.ProjectSize = nil
+				}
+				for !in.IsDelim('}') {
+					key := string(in.String())
+					in.WantColon()
+					var v42 string
+					v42 = string(in.String())
+					(out.ProjectSize)[key] = v42
+					in.WantComma()
+				}
+				in.Delim('}')
+			}
 		case "SustainabilityMetrics":
-			(out.SustainabilityMetrics).UnmarshalEasyJSON(in)
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				in.Delim('{')
+				if !in.IsDelim('}') {
+					out.SustainabilityMetrics = make(map[string]string)
+				} else {
+					out.SustainabilityMetrics = nil
+				}
+				for !in.IsDelim('}') {
+					key := string(in.String())
+					in.WantColon()
+					var v43 string
+					v43 = string(in.String())
+					(out.SustainabilityMetrics)[key] = v43
+					in.WantComma()
+				}
+				in.Delim('}')
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -2279,7 +2573,7 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar8(in *jlex
 		in.Consumed()
 	}
 }
-func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar8(out *jwriter.Writer, in ExecutiveSummaryHelper) {
+func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar10(out *jwriter.Writer, in ExecutiveSummaryHelper) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -2291,7 +2585,23 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar8(out *jwr
 		} else {
 			out.RawString(prefix)
 		}
-		(in.Investment).MarshalEasyJSON(out)
+		if in.Investment == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
+			out.RawString(`null`)
+		} else {
+			out.RawByte('{')
+			v44First := true
+			for v44Name, v44Value := range in.Investment {
+				if v44First {
+					v44First = false
+				} else {
+					out.RawByte(',')
+				}
+				out.String(string(v44Name))
+				out.RawByte(':')
+				out.String(string(v44Value))
+			}
+			out.RawByte('}')
+		}
 	}
 	{
 		const prefix string = ",\"Financials\":"
@@ -2301,7 +2611,23 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar8(out *jwr
 		} else {
 			out.RawString(prefix)
 		}
-		(in.Financials).MarshalEasyJSON(out)
+		if in.Financials == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
+			out.RawString(`null`)
+		} else {
+			out.RawByte('{')
+			v45First := true
+			for v45Name, v45Value := range in.Financials {
+				if v45First {
+					v45First = false
+				} else {
+					out.RawByte(',')
+				}
+				out.String(string(v45Name))
+				out.RawByte(':')
+				out.String(string(v45Value))
+			}
+			out.RawByte('}')
+		}
 	}
 	{
 		const prefix string = ",\"ProjectSize\":"
@@ -2311,7 +2637,23 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar8(out *jwr
 		} else {
 			out.RawString(prefix)
 		}
-		(in.ProjectSize).MarshalEasyJSON(out)
+		if in.ProjectSize == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
+			out.RawString(`null`)
+		} else {
+			out.RawByte('{')
+			v46First := true
+			for v46Name, v46Value := range in.ProjectSize {
+				if v46First {
+					v46First = false
+				} else {
+					out.RawByte(',')
+				}
+				out.String(string(v46Name))
+				out.RawByte(':')
+				out.String(string(v46Value))
+			}
+			out.RawByte('}')
+		}
 	}
 	{
 		const prefix string = ",\"SustainabilityMetrics\":"
@@ -2321,7 +2663,23 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar8(out *jwr
 		} else {
 			out.RawString(prefix)
 		}
-		(in.SustainabilityMetrics).MarshalEasyJSON(out)
+		if in.SustainabilityMetrics == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
+			out.RawString(`null`)
+		} else {
+			out.RawByte('{')
+			v47First := true
+			for v47Name, v47Value := range in.SustainabilityMetrics {
+				if v47First {
+					v47First = false
+				} else {
+					out.RawByte(',')
+				}
+				out.String(string(v47Name))
+				out.RawByte(':')
+				out.String(string(v47Value))
+			}
+			out.RawByte('}')
+		}
 	}
 	out.RawByte('}')
 }
@@ -2329,27 +2687,27 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar8(out *jwr
 // MarshalJSON supports json.Marshaler interface
 func (v ExecutiveSummaryHelper) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar8(&w, v)
+	easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar10(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v ExecutiveSummaryHelper) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar8(w, v)
+	easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar10(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *ExecutiveSummaryHelper) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar8(&r, v)
+	easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar10(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *ExecutiveSummaryHelper) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar8(l, v)
+	easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar10(l, v)
 }
-func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar9(in *jlexer.Lexer, out *CommunityEngagementHelper) {
+func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar11(in *jlexer.Lexer, out *CommunityEngagementHelper) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -2388,7 +2746,7 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar9(in *jlex
 		in.Consumed()
 	}
 }
-func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar9(out *jwriter.Writer, in CommunityEngagementHelper) {
+func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar11(out *jwriter.Writer, in CommunityEngagementHelper) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -2448,27 +2806,122 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar9(out *jwr
 // MarshalJSON supports json.Marshaler interface
 func (v CommunityEngagementHelper) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar9(&w, v)
+	easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar11(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v CommunityEngagementHelper) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar9(w, v)
+	easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar11(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *CommunityEngagementHelper) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar9(&r, v)
+	easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar11(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *CommunityEngagementHelper) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar9(l, v)
+	easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar11(l, v)
 }
-func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar10(in *jlexer.Lexer, out *ArchitectureHelper) {
+func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar12(in *jlexer.Lexer, out *BulletHelper) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeString()
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "Bullet1":
+			out.Bullet1 = string(in.String())
+		case "Bullet2":
+			out.Bullet2 = string(in.String())
+		case "Bullet3":
+			out.Bullet3 = string(in.String())
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar12(out *jwriter.Writer, in BulletHelper) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	{
+		const prefix string = ",\"Bullet1\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Bullet1))
+	}
+	{
+		const prefix string = ",\"Bullet2\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Bullet2))
+	}
+	{
+		const prefix string = ",\"Bullet3\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Bullet3))
+	}
+	out.RawByte('}')
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v BulletHelper) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar12(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v BulletHelper) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar12(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *BulletHelper) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar12(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *BulletHelper) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar12(l, v)
+}
+func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar13(in *jlexer.Lexer, out *ArchitectureHelper) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -2511,7 +2964,7 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar10(in *jle
 		in.Consumed()
 	}
 }
-func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar10(out *jwriter.Writer, in ArchitectureHelper) {
+func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar13(out *jwriter.Writer, in ArchitectureHelper) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -2591,23 +3044,23 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar10(out *jw
 // MarshalJSON supports json.Marshaler interface
 func (v ArchitectureHelper) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar10(&w, v)
+	easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar13(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v ArchitectureHelper) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar10(w, v)
+	easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar13(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *ArchitectureHelper) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar10(&r, v)
+	easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar13(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *ArchitectureHelper) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar10(l, v)
+	easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar13(l, v)
 }

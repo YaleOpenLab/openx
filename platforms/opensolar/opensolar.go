@@ -35,6 +35,7 @@ type Project struct {
 	SolarCombiner             string  // the solar combiner of the installed project
 	Batteries                 string  // the batteries of the installed project. TODO: Batteries should also have a fixed nominal value of capacity, as well as one describing what setup it is.
 	IoTHub                    string  // the IoT Hub installed as part of the project
+	Rating                    string  // the rating of the project (Moody's, etc)
 	Metadata                  string  // other metadata which does not have an explicit name can be stored here. Used to derive assetIDs
 
 	// Define parameters related to finance
@@ -100,33 +101,53 @@ type Project struct {
 	WaterfallMap   map[string]float64 // publickey:amount map ni order to pay multiple accounts. A bit ugly, but should work fine. Make map before using
 
 	// Define things that will be displayed on the frontend
-	Terms                    []TermsHelper               // the terms of the project
-	ExecutiveSummary         ExecutiveSummaryHelper      // the bigger struct that holds all the executive summary metrics
-	AutoReloadInterval       float64                     // the interval in which the user's funds reach zero
-	ResilienceRating         float64                     // resilience of the project
-	ActionsRequired          string                      // the action(s) required by the user
-	Bullet1                  string                      // bullet points to be displayed on the project summary page
-	Bullet2                  string                      // bullet points to be displayed on the project summary page
-	Bullet3                  string                      // bullet points to be displayed on the project summary page
-	LegalProjectOverviewHash string                      // hash to be displayed on the project details page
-	LegalPPAHash             string                      // hash to be displayed on the project details page
-	LegalRECAgreementHash    string                      // hash to be displayed on the project details page
-	GuarantorAgreementHash   string                      // hash to be displayed on the project details page
-	ContractorAgreementHash  string                      // hash to be displayed on the project details page
-	StakeholderAgreementHash string                      // hash to be displayed on the project details page
-	CommunityEnergyHash      string                      // hash to be displayed on the project details page
-	FinancialReportingHash   string                      // hash to be displayed on the project details page
-	Contract1                string                      // contracts which will be linked to on the project details page
-	Contract2                string                      // contracts which will be linked to on the project details page
-	Contract3                string                      // contracts which will be linked to on the project details page
-	Contract4                string                      // contracts which will be linked to on the project details page
-	Contract5                string                      // contracts which will be linked to on the project details page
-	CommunityEngagement      []CommunityEngagementHelper // the section labelled "Community Engagement" on the frontend
-	Architecture             ArchitectureHelper          // the section labeled "Architecture/Project Design"
-	Context                  string                      // the section titled "Context"
-	SummaryImage             string                      // the url to the image linked in the summary
+	Terms               []TermsHelper               // the terms of the project
+	ExecutiveSummary    ExecutiveSummaryHelper      // the bigger struct that holds all the executive summary metrics
+	AutoReloadInterval  float64                     // the interval in which the user's funds reach zero
+	ResilienceRating    float64                     // resilience of the project
+	ActionsRequired     string                      // the action(s) required by the user
+	Bullets             BulletHelper                // list of bullet points to be displayed on the frontend
+	Hashes              HashHelper                  // list of hashes to be displayed on the project details page
+	ContractList        []string                    // the list of contracts to be displayed on the frontend
+	Architecture        ArchitectureHelper          // the section labeled "Architecture/Project Design"
+	Context             string                      // the section titled "Context"
+	SummaryImage        string                      // the url to the image linked in the summary
+	CommunityEngagement []CommunityEngagementHelper // the section labelled "Community Engagement" on the frontend
+	ExplorePageSummary  ExplorePageSummaryHelper    // the summary on the explore page tab
 }
 
+//easyjson:json
+type ExplorePageSummaryHelper struct {
+	Solar   string
+	Storage string
+	Tariff  string
+	Stage   int
+	Return  string
+	Rating  string
+	Tax     string
+	ETA     int
+}
+
+//easyjson:json
+type HashHelper struct {
+	LegalProjectOverviewHash string
+	LegalPPAHash             string
+	LegalRECAgreementHash    string
+	GuarantorAgreementHash   string
+	ContractorAgreementHash  string
+	StakeholderAgreementHash string
+	CommunityEnergyHash      string
+	FinancialReportingHash   string
+}
+
+//easyjson:json
+type BulletHelper struct {
+	Bullet1 string
+	Bullet2 string
+	Bullet3 string
+}
+
+//easyjson:json
 type ArchitectureHelper struct {
 	SpaceLayoutImage   string
 	SolarOutputImage   string
@@ -137,6 +158,7 @@ type ArchitectureHelper struct {
 	DesignDescription  string
 }
 
+//easyjson:json
 type CommunityEngagementHelper struct {
 	Width    int
 	Title    string
@@ -145,7 +167,7 @@ type CommunityEngagementHelper struct {
 	Link     string
 }
 
-// Terms a terms and conditions struct. WIll be used as an array in the main project
+//easyjson:json
 type TermsHelper struct {
 	Variable      string
 	Value         string
@@ -155,13 +177,15 @@ type TermsHelper struct {
 	SupportDoc    string
 }
 
+//easyjson:json
 type ExecutiveSummaryHelper struct {
-	Investment            InvestmentHelper
-	Financials            FinancialHelper
-	ProjectSize           ProjectSizeHelper
-	SustainabilityMetrics SustainabilityHelper
+	Investment            map[string]string
+	Financials            map[string]string
+	ProjectSize           map[string]string
+	SustainabilityMetrics map[string]string
 }
 
+//easyjson:json
 type InvestmentHelper struct {
 	Capex              string
 	Hardware           float64
@@ -169,6 +193,7 @@ type InvestmentHelper struct {
 	CertificationCosts string
 }
 
+//easyjson:json
 type FinancialHelper struct {
 	Return    float64
 	Insurance string
@@ -176,6 +201,7 @@ type FinancialHelper struct {
 	Maturity  string
 }
 
+//easyjson:json
 type ProjectSizeHelper struct {
 	PVSolar          string
 	Storage          string
@@ -183,6 +209,7 @@ type ProjectSizeHelper struct {
 	InverterCapacity string
 }
 
+//easyjson:json
 type SustainabilityHelper struct {
 	CarbonDrawdown string
 	CommunityValue string

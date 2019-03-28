@@ -39,7 +39,7 @@ func TestMultisig2of2(t *testing.T) {
 	// now account 1 requires the signature of both seed1 and seed2 in order to be able to send a tx.
 	// we need to check that.
 	destination := pubkey1
-	err = Tx2of2(pubkey1, destination, seed1, seed2)
+	err = Tx2of2(pubkey1, destination, seed1, seed2, "1", "test")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -76,7 +76,7 @@ func TestNew2of2MultiSig(t *testing.T) {
 	log.Println("New 2of2 Multisig Pubkey: ", pubkey)
 
 	destination := pubkey
-	err = Tx2of2(pubkey, destination, seed1, seed2)
+	err = Tx2of2(pubkey, destination, seed1, seed2, "1", "test")
 	if err != nil {
 		t.Fatal(err)
 	}
