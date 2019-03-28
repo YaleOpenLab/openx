@@ -27,7 +27,6 @@ var Code = "STABLEUSD"                                                          
 var DbDir = os.Getenv("HOME") + "/.openx/database"                                   // the directory where the main assets of our platform are stored
 var OpenSolarIssuerDir = HomeDir + "/projects/"                                      // the directory where we store issuer seeds related to the opensolar platforms
 var OpzonesIssuerDir = HomeDir + "/opzones/"                                         // the directory where we store issuer seeds related to the opzones platform
-var EscrowDir = HomeDir + "/escrows/"                                                // the directory where we store the escrows related to the opensolar platform
 var IpfsFileLength = 10                                                              // the length of the hash that we want our ipfs hashes to have
 var TellerHomeDir = os.Getenv("HOME") + "/.openx/teller"                             // the home directory of the teller executable
 var Tlsport = 443                                                                    // default port for ssl

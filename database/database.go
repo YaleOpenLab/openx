@@ -45,9 +45,6 @@ func CreateHomeDir() {
 	if _, err := os.Stat(consts.OpzonesIssuerDir); os.IsNotExist(err) {
 		os.MkdirAll(consts.OpzonesIssuerDir, os.ModePerm)
 	}
-	if _, err := os.Stat(consts.EscrowDir); os.IsNotExist(err) {
-		os.MkdirAll(consts.EscrowDir, os.ModePerm)
-	}
 }
 
 // don't lock since boltdb can only process one operation at a time. As the application

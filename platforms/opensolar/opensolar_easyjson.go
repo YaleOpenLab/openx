@@ -590,6 +590,8 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(in *jlex
 			out.ProposedInvetmentCap = float64(in.Float64())
 		case "SelfFund":
 			out.SelfFund = float64(in.Float64())
+		case "EscrowPubkey":
+			out.EscrowPubkey = string(in.String())
 		case "SecurityIssuer":
 			out.SecurityIssuer = string(in.String())
 		case "BrokerDealer":
@@ -933,6 +935,12 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(in *jlex
 				}
 				in.Delim(']')
 			}
+		case "Architecture":
+			(out.Architecture).UnmarshalEasyJSON(in)
+		case "Context":
+			out.Context = string(in.String())
+		case "SummaryImage":
+			out.SummaryImage = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -1306,6 +1314,16 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString(prefix)
 		}
 		out.Float64(float64(in.SelfFund))
+	}
+	{
+		const prefix string = ",\"EscrowPubkey\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.EscrowPubkey))
 	}
 	{
 		const prefix string = ",\"SecurityIssuer\":"
@@ -1954,6 +1972,36 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawByte(']')
 		}
 	}
+	{
+		const prefix string = ",\"Architecture\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		(in.Architecture).MarshalEasyJSON(out)
+	}
+	{
+		const prefix string = ",\"Context\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Context))
+	}
+	{
+		const prefix string = ",\"SummaryImage\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.SummaryImage))
+	}
 	out.RawByte('}')
 }
 
@@ -2419,4 +2467,147 @@ func (v *CommunityEngagementHelper) UnmarshalJSON(data []byte) error {
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *CommunityEngagementHelper) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar9(l, v)
+}
+func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar10(in *jlexer.Lexer, out *ArchitectureHelper) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeString()
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "SpaceLayoutImage":
+			out.SpaceLayoutImage = string(in.String())
+		case "SolarOutputImage":
+			out.SolarOutputImage = string(in.String())
+		case "SolarArray":
+			out.SolarArray = string(in.String())
+		case "DailyAvgGeneration":
+			out.DailyAvgGeneration = string(in.String())
+		case "System":
+			out.System = string(in.String())
+		case "InverterSize":
+			out.InverterSize = string(in.String())
+		case "DesignDescription":
+			out.DesignDescription = string(in.String())
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar10(out *jwriter.Writer, in ArchitectureHelper) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	{
+		const prefix string = ",\"SpaceLayoutImage\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.SpaceLayoutImage))
+	}
+	{
+		const prefix string = ",\"SolarOutputImage\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.SolarOutputImage))
+	}
+	{
+		const prefix string = ",\"SolarArray\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.SolarArray))
+	}
+	{
+		const prefix string = ",\"DailyAvgGeneration\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.DailyAvgGeneration))
+	}
+	{
+		const prefix string = ",\"System\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.System))
+	}
+	{
+		const prefix string = ",\"InverterSize\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.InverterSize))
+	}
+	{
+		const prefix string = ",\"DesignDescription\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.DesignDescription))
+	}
+	out.RawByte('}')
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v ArchitectureHelper) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar10(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v ArchitectureHelper) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar10(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *ArchitectureHelper) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar10(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *ArchitectureHelper) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar10(l, v)
 }

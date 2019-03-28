@@ -173,8 +173,8 @@ func sendPaymentNotif(recpIndex int, projIndex int, paybackPeriod int, email str
 
 // MunibondPayback is used by the recipient to pay the platform back. Here, we pay the
 // project escrow instead of the platform since it would be responsible for redistribution of funds
-func MunibondPayback(issuerPath string, escrowPath string, recpIndex int, amount string, recipientSeed string, projIndex int,
-	assetName string, projectInvestors []int, totalValue float64) (float64, error) {
+func MunibondPayback(issuerPath string, recpIndex int, amount string, recipientSeed string, projIndex int,
+	assetName string, projectInvestors []int, totalValue float64, escrowPubkey string) (float64, error) {
 
 	recipient, err := database.RetrieveRecipient(recpIndex)
 	if err != nil {
@@ -186,9 +186,16 @@ func MunibondPayback(issuerPath string, escrowPath string, recpIndex int, amount
 		return -1, errors.Wrap(err, "Unable to retrieve issuer seed")
 	}
 
-	escrowPubkey, err := wallet.RetrieveEscrowPubkey(escrowPath, consts.EscrowPwd)
+	monthlyBill := oracle.MonthlyBill()
 	if err != nil {
-		return -1, errors.Wrap(err, "Unable to retrieve issuer seed")
+		return -1, errors.Wrap(err, "Unable to fetch oracle price, exiting")
+	}
+
+	log.Println("Retrieved average price from oracle: ", monthlyBill)
+	mBillFloat := utils.StoF(monthlyBill)
+
+	if utils.StoF(amount) < mBillFloat {
+		return  -1, fmt.Errorf("amount paid is less than amount needed. Please refill your main account")
 	}
 
 	err = stablecoin.OfferExchange(recipient.U.PublicKey, recipientSeed, amount)
@@ -215,36 +222,7 @@ func MunibondPayback(issuerPath string, escrowPath string, recpIndex int, amount
 	}
 	log.Printf("Paid %s back to platform in DebtAsset, txhash %s ", amount, debtPaybackHash)
 
-	newBalanceS, err := xlm.GetAssetBalance(recipient.U.PublicKey, assetName)
-	if err != nil {
-		return -1, errors.Wrap(err, "API error while fetching balance")
-	}
-	newBalance := utils.StoF(newBalanceS)
-
-	DEBAssetBalance, err := xlm.GetAssetBalance(recipient.U.PublicKey, assetName)
-	if err != nil {
-		return -1, errors.Wrap(err, "Recipient does not have the debt asset?")
-	}
-	debtBalance := utils.StoF(DEBAssetBalance)
-
-	monthlyBill := oracle.MonthlyBill()
-	if err != nil {
-		return -1, errors.Wrap(err, "Unable to fetch oracle price, exiting")
-	}
-
-	log.Println("Retrieved average price from oracle: ", monthlyBill)
-	mBillFloat := utils.StoF(monthlyBill)
-
-	paidAmount := debtBalance - newBalance
-	//log.Println("Old Balance: ", DEBAssetBalanceFloat, " New Balance: ", newBalanceFloat, " Paid: ", paidAmount, " Bill Amount: ", mBillFloat)
-	// right now, we accept whatever amount the recipient chooses to payback. If we choose to enforce
-	// strict payback, we should check this first and then exchange STABLEUSD and DebtAssets
 	ownershipAmt := utils.StoF(amount) - mBillFloat
-	if paidAmount < mBillFloat {
-		// amount paid is less than the monthly bill, quit
-		return -1, fmt.Errorf("Amount paid from existing balance is less than amount required, please make sure to cover next time")
-	}
-
 	ownershipPct := ownershipAmt / totalValue
 	if recipient.U.Notification {
 		notif.SendPaybackNotifToRecipient(projIndex, recipient.U.Email, stableUSDHash, debtPaybackHash)

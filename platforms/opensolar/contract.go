@@ -411,17 +411,20 @@ func sendRecipientAssets(projIndex int) error {
 		return errors.Wrap(err, "couldn't decrypt seed")
 	}
 
-	err = InitEscrow(consts.EscrowDir, project.Index, consts.EscrowPwd, recipient.U.PublicKey, recpSeed)
+	escrowPubkey, err := InitEscrow(project.Index, consts.EscrowPwd, recipient.U.PublicKey, recpSeed)
 	if err != nil {
 		return errors.Wrap(err, "error while initializing issuer")
 	}
 
-	err = TransferFundsToEscrow(project.TotalValue, project.Index)
+	log.Println("succesfully setup escrow")
+	project.EscrowPubkey = escrowPubkey
+	err = TransferFundsToEscrow(project.TotalValue, project.Index, project.EscrowPubkey)
 	if err != nil {
 		log.Println(err)
 		return errors.Wrap(err, "could not transfer funds to the escrow, quitting!")
 	}
 
+	log.Println("Trasnferred funds to escrow!")
 	project.LockPwd = "" // set lockpwd to nil immediately after retrieving seed
 	metadata := project.Metadata
 
@@ -474,14 +477,12 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 		return errors.Wrap(err, "Couldn't retrieve project")
 	}
 
-	escrowPath := CreatePath(consts.EscrowDir, projIndex)
-
 	if project.InvestmentType != "munibond" {
 		return fmt.Errorf("other investment models are not supported right now, quitting")
 	}
 
-	pct, err := model.MunibondPayback(consts.OpenSolarIssuerDir, escrowPath, recpIndex, amount,
-		recipientSeed, projIndex, assetName, project.InvestorIndices, project.TotalValue)
+	pct, err := model.MunibondPayback(consts.OpenSolarIssuerDir, recpIndex, amount,
+		recipientSeed, projIndex, assetName, project.InvestorIndices, project.TotalValue, project.EscrowPubkey)
 	if err != nil {
 		return errors.Wrap(err, "Error while paying back the issuer")
 	}
@@ -513,12 +514,8 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 		return errors.Wrap(err, "coudln't save project")
 	}
 
-	escrowPubkey, escrowSeed, err := wallet.RetrieveSeed(escrowPath, consts.EscrowPwd)
-	if err != nil {
-		return errors.Wrap(err, "Unable to retrieve issuer seed")
-	}
-
-	err = DistributePayments(escrowSeed, escrowPubkey, projIndex, utils.StoI(amount))
+	// TODO: we need to distribute mBillFloat to all the parties involved, but we do so only for the investor here
+	err = DistributePayments(recipientSeed, project.EscrowPubkey, projIndex, utils.StoI(amount))
 	if err != nil {
 		return errors.Wrap(err, "error while distributing payments")
 	}
@@ -526,7 +523,7 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 	return nil
 }
 
-func DistributePayments(escrowSeed string, escrowPubkey string, projIndex int, amount int) error {
+func DistributePayments(recipientSeed string, escrowPubkey string, projIndex int, amount int) error {
 	// this should act as the service which redistributes payments received out to the parties involved
 	// amount is the amount that we want to give back to the investors and other entities involved
 	project, err := RetrieveProject(projIndex)
@@ -534,13 +531,18 @@ func DistributePayments(escrowSeed string, escrowPubkey string, projIndex int, a
 		errors.Wrap(err, "couldn't retrieve project, quitting!")
 	}
 
+	if project.EscrowLock {
+		log.Println("project", project.Index, "'s escrow locked, can't send funds")
+		return fmt.Errorf("project escrow locked, can't send funds")
+	}
 	fixedRate := 0.05 // 5 % of the totla investment as return or somethign similar. Should not be hardcoded
 	// TODO: return money to the developers and other people involved
 	amountGivenBack := fixedRate * float64(amount)
 	for pubkey, percentage := range project.InvestorMap {
 		// send x to this pubkey
 		txAmount := percentage * amountGivenBack
-		_, _, err := xlm.SendXLM(pubkey, utils.FtoS(txAmount), escrowSeed, "returns")
+		// here we send funds from the 2of2 multisig. Platform signs by default
+		err = SendFundsFromEscrow(project.EscrowPubkey, pubkey, recipientSeed, consts.PlatformSeed, utils.FtoS(txAmount), "returns")
 		if err != nil {
 			log.Println(err) // if there is an error with one payback, doesn't mean we should stop and wait for the others
 			continue

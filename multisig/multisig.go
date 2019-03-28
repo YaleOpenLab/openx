@@ -140,10 +140,7 @@ func New2of2(cosigner1Pubkey string, cosigner2Pubkey string) (string, error) {
 
 // Construct2of2Tx constructs a tx where the source account pubkey1 is the 2of2 account
 // we need 2 signers for this tx
-func Tx2of2(pubkey1 string, destination string, signer1 string, signer2 string) error {
-
-	memo := "testmultisig"
-
+func Tx2of2(pubkey1 string, destination string, signer1 string, signer2 string, amount string, memo string) error {
 	// construct a tx sending coins from account 1 to account 1
 	tx, err := build.Transaction(
 		build.SourceAccount{pubkey1},
@@ -152,7 +149,7 @@ func Tx2of2(pubkey1 string, destination string, signer1 string, signer2 string) 
 		build.MemoText{memo},
 		build.Payment(
 			build.Destination{pubkey1},
-			build.NativeAmount{"1"},
+			build.NativeAmount{amount},
 		),
 	)
 

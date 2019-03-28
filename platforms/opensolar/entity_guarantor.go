@@ -53,15 +53,8 @@ func CoverFirstLoss(projIndex int, entityIndex int, amount string) error {
 		return errors.Wrap(err, "could not decrypt seed, quitting!")
 	}
 
-	// we now have the seed of the guarantor, shift the money to the escrow now
-	escrowPath := CreatePath(consts.EscrowDir, projIndex)
-	escrowPubkey, _, err := wallet.RetrieveSeed(escrowPath, consts.EscrowPwd)
-	if err != nil {
-		return errors.Wrap(err, "Unable to retrieve issuer seed")
-	}
-
 	// we have the escrow's pubkey, transfer funds to the escrow
-	_, txhash, err := assets.SendAsset(consts.Code, consts.StableCoinAddress, escrowPubkey, amount, seed, entity.U.PublicKey, "first loss guarantee")
+	_, txhash, err := assets.SendAsset(consts.Code, consts.StableCoinAddress, project.EscrowPubkey, amount, seed, entity.U.PublicKey, "first loss guarantee")
 	if err != nil {
 		return errors.Wrap(err, "could not transfer asset to escrow, quitting")
 	}
