@@ -311,7 +311,7 @@ func createPuertoRicoProject() error {
 	project.AutoReloadInterval = -1
 	project.ResilienceRating = 0.8
 	project.ActionsRequired = ""
-	project.Bullets.Bullet1 = "Research proejct on smart financing"
+	project.Bullets.Bullet1 = "Research project on smart financing"
 	project.Bullets.Bullet2 = "Critical loads to the Admin Building"
 	project.Bullets.Bullet3 = "Grid-tied and storage"
 	var hashHelper opensolar.HashHelper
@@ -334,6 +334,14 @@ func createPuertoRicoProject() error {
 	project.ExplorePageSummary.Rating = project.Rating
 	project.ExplorePageSummary.Tax = "N/A"
 	project.ExplorePageSummary.ETA = project.EstimatedAcquisition
+
+	project.DPIntroImage = "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/1.jpg"
+	project.OHeroImage = "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/3.jpg"
+	project.OImages = append(project.OImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/2.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/5.jpg")
+	project.AImages = append(project.AImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/7.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/9.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/1.jpg")
+	project.EImages = append(project.EImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/6.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/8.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/6.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/6.jpg")
+	project.CEImages = append(project.CEImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/1.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/1.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/1.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/1.jpg")
+	project.BNImages = append(project.PSImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/1.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/1.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/1.jpg")
 
 	err = project.Save()
 	if err != nil {
@@ -604,6 +612,14 @@ func createOneMegaWattProject() error {
 	project.ExplorePageSummary.Rating = project.Rating
 	project.ExplorePageSummary.Tax = "N/A"
 	project.ExplorePageSummary.ETA = project.EstimatedAcquisition
+
+	project.DPIntroImage = "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/1.png"
+	project.OHeroImage = "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/1.png"
+	project.OImages = append(project.OImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/6.png", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/7.png", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/4.png", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/3.png")
+	project.AImages = append(project.AImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/2.png", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/1.png")
+	project.EImages = append(project.EImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/9.png", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/8.png")
+	project.CEImages = append(project.CEImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/5.png")
+	project.BNImages = append(project.BNImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/10.png", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/11.png", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/1.png")
 
 	err = project.Save()
 	if err != nil {
@@ -876,6 +892,16 @@ func createTenKiloWattProject() error {
 	project.ExplorePageSummary.Tax = "N/A"
 	project.ExplorePageSummary.ETA = project.EstimatedAcquisition
 
+	project.DPIntroImage = "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/8_NewHaven/3.jpg"
+	project.OHeroImage = ""
+	project.OImages = append(project.OImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/8_NewHaven/4.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/8_NewHaven/12.jpg")
+	project.OOImages = append(project.OOImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/8_NewHaven/6.jpg")
+	project.AImages = append(project.AImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/8_NewHaven/7.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/8_NewHaven/1.jpg")
+	project.EImages = append(project.EImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/8_NewHaven/9.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/8_NewHaven/10.jpg")
+	project.CEImages = append(project.CEImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/8_NewHaven/12.jpg")
+	project.PSImages = append(project.PSImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/8_NewHaven/11.jpg")
+	project.BNImages = append(project.BNImages, "")
+
 	err = project.Save()
 	if err != nil {
 		log.Fatal(err)
@@ -1137,6 +1163,16 @@ func createTenMegaWattProject() error {
 	project.ExplorePageSummary.Tax = "N/A"
 	project.ExplorePageSummary.ETA = project.EstimatedAcquisition
 
+	project.DPIntroImage = "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/2_PR_Bonds/1.jpg"
+	project.OHeroImage = "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/2_PR_Bonds/1.jpg"
+	project.OImages = append(project.OImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/2_PR_Bonds/3.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/2_PR_Bonds/8.jpg")
+	project.OOImages = append(project.OOImages, "")
+	project.AImages = append(project.AImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/2_PR_Bonds/2.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/2_PR_Bonds/1.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/2_PR_Bonds/1.jpg")
+	project.EImages = append(project.EImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/2_PR_Bonds/1.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/2_PR_Bonds/1.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/2_PR_Bonds/1.jpg")
+	project.CEImages = append(project.CEImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/2_PR_Bonds/7.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/2_PR_Bonds/1.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/2_PR_Bonds/1.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/2_PR_Bonds/1.jpg")
+	project.PSImages = append(project.PSImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/2_PR_Bonds/1.jpg")
+	project.BNImages = append(project.BNImages, "")
+
 	err = project.Save()
 	if err != nil {
 		log.Fatal(err)
@@ -1397,6 +1433,16 @@ func createOneHundredKiloWattProject() error {
 	project.ExplorePageSummary.Rating = project.Rating
 	project.ExplorePageSummary.Tax = "N/A"
 	project.ExplorePageSummary.ETA = project.EstimatedAcquisition
+
+	project.DPIntroImage = "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/1_Rwanda/9.jpg"
+	project.OHeroImage = ""
+	project.OImages = append(project.OImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/1_Rwanda/2.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/1_Rwanda/10.jpg")
+	project.OOImages = append(project.OOImages, "")
+	project.AImages = append(project.AImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/1_Rwanda/5.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/1_Rwanda/1.jpg")
+	project.EImages = append(project.EImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/1_Rwanda/6.jpg")
+	project.CEImages = append(project.CEImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/1_Rwanda/8.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/1_Rwanda/1.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/1_Rwanda/11.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/1_Rwanda/7.jpg")
+	project.PSImages = append(project.PSImages, "")
+	project.BNImages = append(project.BNImages, "")
 
 	err = project.Save()
 	if err != nil {

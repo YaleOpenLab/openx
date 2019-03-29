@@ -114,6 +114,19 @@ type Project struct {
 	SummaryImage        string                      // the url to the image linked in the summary
 	CommunityEngagement []CommunityEngagementHelper // the section labelled "Community Engagement" on the frontend
 	ExplorePageSummary  ExplorePageSummaryHelper    // the summary on the explore page tab
+
+	DPIntroImage string // details page intro image
+	OHeroImage string // opportunity page hero
+	OImages []string// the two images on the opportunity page that are places side to side
+	OOImages []string // opportunity page originator image
+	AImages []string
+	// the map layout
+ 	// solar output
+	// image below design description
+	EImages []string // 4 max
+	CEImages []string // 4 max
+	PSImages []string // 1
+	BNImages []string // 3 max
 }
 
 //easyjson:json
