@@ -22,8 +22,6 @@ import (
 // In financial terms, an escrow is a special purpose vehicle (kind of cool that we have SPV in finance)
 // InitEscrow creates a new keypair and stores it in a file
 func InitEscrow(projIndex int, seedpwd string, recpPubkey string, mySeed string) (string, error) {
-	// init a new pk and seed pair
-	// TODO: replace with the escrow here
 	pubkey, err := initMultisigEscrow(recpPubkey)
 	if err != nil {
 		return pubkey, errors.Wrap(err, "error while initalizing multisig escrow, quitting!")
@@ -51,9 +49,6 @@ func InitEscrow(projIndex int, seedpwd string, recpPubkey string, mySeed string)
 
 func TransferFundsToEscrow(amount float64, projIndex int, escrowPubkey string) error {
 	// we have the wallet pubkey, transfer funds to the escrow now
-	log.Println("LIST OF PARAMS: ", consts.Code, consts.StablecoinPublicKey, escrowPubkey,
-		utils.FtoS(amount), consts.PlatformSeed, consts.PlatformPublicKey)
-	// TODO: store escrowpubkey in project params
 	_, txhash, err := assets.SendAsset(consts.Code, consts.StablecoinPublicKey, escrowPubkey,
 		utils.FtoS(amount), consts.PlatformSeed, consts.PlatformPublicKey, "escrow init")
 	if err != nil {

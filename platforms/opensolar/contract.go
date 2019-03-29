@@ -42,8 +42,7 @@ const (
 	DisconnectionThreshold = 6   // DisconnectionThreshold is the threshold above which the user gets a notification telling that services have been disconnected.
 )
 
-// TODO:
-// 2. Peer-based star-rating
+// TODO: Peer-based star-rating
 // This should be the normal 5 star system that users get from other users that are involved in the same transaction.
 
 // TODO: Consider that in the family of Recipients or Investors, there are more than one actor, and sometimes signatory authorization is from only some of the actors.
@@ -504,7 +503,7 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 		// the recipient has paid off the asset completely. TODO: we need to transfer some sort
 		// of document to the person identifying that they now own the project
 		log.Println("You now own the asset completely, there is no need to pay money in the future towards this particular project")
-		project.Stage = 8 // TODO: review where this stage transition should ideally occur
+		project.Stage = 8 // TODO: review where and how this stage transition should occur
 		project.BalLeft = 0
 		project.AmountOwed = 0
 	}

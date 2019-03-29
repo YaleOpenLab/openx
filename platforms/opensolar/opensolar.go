@@ -13,9 +13,7 @@ import (
 )
 
 // A Project is the investment structure that will be invested in by people. In the case
-// of the opensolar platform, this is a solar system.
-
-// TODO: add more parameters here that would help identify a given solar project
+// of the opensolar platform, this is referred to as a solar system.
 
 // Project defines the project struct
 type Project struct {
@@ -115,18 +113,22 @@ type Project struct {
 	CommunityEngagement []CommunityEngagementHelper // the section labelled "Community Engagement" on the frontend
 	ExplorePageSummary  ExplorePageSummaryHelper    // the summary on the explore page tab
 
-	DPIntroImage string // details page intro image
-	OHeroImage string // opportunity page hero
-	OImages []string// the two images on the opportunity page that are places side to side
-	OOImages []string // opportunity page originator image
-	AImages []string
-	// the map layout
- 	// solar output
-	// image below design description
-	EImages []string // 4 max
-	CEImages []string // 4 max
-	PSImages []string // 1
-	BNImages []string // 3 max
+	// Define various images part of the frotnend that go itno different sections on the frontend
+	DPIntroImage string   // Intro image
+	OHeroImage   string   // Opportunity page hero
+	OImages      []string // Opportunity Images
+	OOImages     []string // Orignator Images
+	AImages      []string // Architecture
+	EImages      []string // Engineering
+	CEImages     []string // Community Engagement
+	PSImages     []string // Payment Scheme
+	BNImages     []string // Business Images
+
+	// Layout parsers
+	// Different pages have different layout so its necessary to have some identifiers for the same
+	// in order for us to be able to parse what we have correctly.
+
+	EngineeringLayoutType string
 }
 
 //easyjson:json

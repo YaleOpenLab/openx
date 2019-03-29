@@ -72,7 +72,7 @@ func Create(minimum int, shares int, raw string) ([]string, error) {
 	// always two, as it is storing an x, y pair of points.
 	//
 	// Note: this array is technically unnecessary due to creating result
-	// in the inner loop. Can disappear later if desired. [TODO]
+	// in the inner loop. Can disappear later if desired.
 	//
 	// secrets[shares][parts][2]
 	var secrets [][][]*big.Int = make([][][]*big.Int, shares)
