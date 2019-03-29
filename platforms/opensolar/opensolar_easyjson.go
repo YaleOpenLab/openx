@@ -1107,6 +1107,8 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(in *jlex
 				}
 				in.Delim(']')
 			}
+		case "EngineeringLayoutType":
+			out.EngineeringLayoutType = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -2245,6 +2247,16 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			}
 			out.RawByte(']')
 		}
+	}
+	{
+		const prefix string = ",\"EngineeringLayoutType\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.EngineeringLayoutType))
 	}
 	out.RawByte('}')
 }

@@ -71,7 +71,6 @@ type User struct {
 }
 
 // Wallet contains the stuff that we need for a wallet.
-// TODO: migrate the "normal" functions over to a wallet construction and we can have multiple wallets
 type Wallet struct {
 	EncryptedSeed []byte // the seedpwd for this would be the same as the one for the primary wallet
 	// since we don't want the user to remember like 10 passwords
@@ -347,7 +346,7 @@ func CheckUsernameCollision(uname string) error {
 // the inspector should have the power to set it to true.
 // the inspector itself requires kyc though, so we shall have an admin account which can
 // kickoff the kyc process.
-// MWTODO: what do we do with these KYC powers? what features are open and what can be
+// TODO: what do we do with these KYC powers? what features are open and what can be
 // viewed only by going through KYC?
 
 // Authorize authorizes a user

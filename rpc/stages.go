@@ -84,8 +84,6 @@ func promoteStage() {
 		checkGet(w, r)
 		checkOrigin(w, r)
 
-		// we need to authorize users (obviously). But the question is what / who triggers these changes
-		// MWTODO: get feedback on this
 		if r.URL.Query()["basestage"] == nil || r.URL.Query()["finalstage"] == nil || r.URL.Query()["index"] == nil {
 			log.Println("some fields missing to promote from stage x to y, quitting!")
 			responseHandler(w, r, StatusBadRequest)

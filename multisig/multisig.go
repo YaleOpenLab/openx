@@ -211,7 +211,6 @@ func AuthImmutable2of2(pubkey1 string, signer1 string, signer2 string) error {
 	return nil
 }
 
-
 func TrustAssetTx(assetCode string, assetIssuer string, limit string, pubkey string, signer1 string, signer2 string) error {
 	tx, err := build.Transaction(
 		build.SourceAccount{pubkey},
@@ -242,6 +241,7 @@ func TrustAssetTx(assetCode string, assetIssuer string, limit string, pubkey str
 	log.Printf("Two party multisig tx: %s, sequence: %d\n", resp.Hash, resp.Ledger)
 	return nil
 }
+
 // Convert2of2 converts the account with pubkey myPubkey to a 2of2 multisig account
 func Convert2of2(myPubkey string, mySeed string, cosignerPubkey string) error {
 	// don't check if the account exists or not, hopefully it does

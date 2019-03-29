@@ -10,97 +10,6 @@ import (
 	utils "github.com/YaleOpenLab/openx/utils"
 )
 
-/*
-TEMPLATE FOR A FRONTEND TEST PROJECT
-project.Index = //                     int     // an Index to keep track of how many projects exist
-project.Name = //                      string  // the name of the project / the identifier by which its referred to
-project.State = //                     string  // the state in which the project has been installed in
-project.Country = //                   string  // the country in which the project has been installed in
-project.TotalValue = //                float64 // the total money that we need from investors
-project.PanelSize = //                 string  // size of the given panel, for diplsaying to the user who wants to bid stuff
-project.PanelTechnicalDescription = // string  // This should talk about '10x 100W Komaes etc'
-project.Inverter = //                  string  // the inverter of the installed project
-project.ChargeRegulator = //           string  // the charge regulator of the installed project
-project.ControlPanel = //              string  // the control panel of the installed project
-project.CommBox = //                   string  // the comm box of the installed project
-project.ACTransfer = //                string  // the AC transfer of the installed project
-project.SolarCombiner = //             string  // the solar combiner of the installed project
-project.Batteries = //                 string  // the batteries of the installed project. TODO: Batteries should also have a fixed nominal value of capacity, as well as one describing what setup it is.
-project.IoTHub = //                    string  // the IoT Hub installed as part of the project
-project.Metadata = //                  string  // other metadata which does not have an explicit name can be stored here. Used to derive assetIDs
-
-// Define parameters related to finance
-project.MoneyRaised = //          float64 // total money that has been raised until now
-project.EstimatedAcquisition = // int     // the year in which the recipient is expected to repay the initial investment amount by
-project.BalLeft = //              float64 // denotes the balance left to pay by the party, percentage raised is not stored in the database since that can be calculated
-project.InterestRate = //         float64 // the rate of return for investors
-project.Tax = //                  string  // the specifications of the tax system associated with this particular project
-
-// Define dates of creation and funding
-project.DateInitiated = // string // date the project was created on the platform
-project.DateFunded = //    string // date that the project completed the stage 4-5 migration
-project.DateLastPaid = //  int64  // int64 ie unix time since we need comparisons on this one
-
-// Define technical paramters
-project.AuctionType = //          string  // the type of the auction in question. Default is blind auction unless explicitly mentioned
-project.InvestmentType = //       string  // the type of investment - equity crowdfunding, municipal bond, normal crowdfunding, etc defined in models
-project.PaybackPeriod = //        int     // the frequency in number of weeks that the recipient has to pay the platform.
-project.Stage = //                int     // the stage at which the contract is at, float due to potential support of 0.5 state changes in the future
-project.SeedInvestmentFactor = // float64 // the factor that a seed investor's investment is multiplied by in case he does invest at the seed stage
-project.SeedInvestmentCap = //    float64 // the max amount that a seed investor can put in a project when it is in its seed stages
-project.ProposedInvetmentCap = // float64 // the max amount that an investor can invest in when the project is in its proposed stage (stage 2)
-project.SelfFund = //             float64 // the amount that a beneficiary / recipient puts in a project wihtout asking from other investors. This is not included as a seed investment because this would mean the recipient pays his own investment back in the project
-
-// Describe issuer of security and the broker dealer
-SecurityIssuer string // the issuer of the security
-BrokerDealer   string // the broker dealer associated with the project
-
-// Define the various entities that are associated with a specific project
-project.RecipientIndex = //              int       // The index of the project's recipient
-project.OriginatorIndex = //             int       // the originator of the project
-project.GuarantorIndex = //              int       // the person guaranteeing the specific project in question
-project.ContractorIndex = //             int       // the person with the proposed contract
-project.MainDeveloperIndex = //          int       // the main developer of the project
-project.BlendedCapitalInvestorIndex = // int       // the index of the blended capital investor
-project.InvestorIndices = //             []int     // The various investors who have invested in the project
-project.SeedInvestorIndices = //         []int     // Investors who took part before the contract was at stage 3
-project.RecipientIndices = //            []int     // the indices of the recipient family (offtakers, beneficiaries, etc)
-project.DeveloperIndices = //            []int     // the indices of the developers involved in the project`
-project.ContractorFee = //               float64   // fee paid to the contractor from the total fee of the project
-project.OriginatorFee = //               float64   // fee paid to the originator included in the total value of the project
-project.DeveloperFee = //                []float64 // the fees charged by the developers
-project.DebtInvestor1 = //               string    // debt investor index, if any
-project.DebtInvestor2 = //               string    // debt investor index, if any
-project.TaxEquityInvestor = //           string    // tax equity investor if any
-
-// Define things that will be displayed on the frontend
-project.Terms = //                    []TermsHelper        // the terms of the project
-project.InvestmentMetrics = //        InvestmentHelper     // investment metrics that might be useful to an investor
-project.FinancialMetrics = //         FinancialHelper      // financial metrics that might be useful to an investor
-project.ProjectSizeMetric = //        ProjectSizeHelper    // a metric which shows the size of the project
-project.SustainabilityMetric = //     SustainabilityHelper // a metric which shows the sustainability index of the project
-project.AutoReloadInterval = //       float64              // the interval in which the user's funds reach zero
-project.ResilienceRating = //         float64              // resilience of the project
-project.ActionsRequired = //          string               // the action(s) required by the user
-project.Bullets.Bullet1 = //                  string               // bullet points to be displayed on the project summary page
-project.Bullets.Bullet2 = //                  string               // bullet points to be displayed on the project summary page
-project.Bullets.Bullet3 = //                  string               // bullet points to be displayed on the project summary page
-project.LegalProjectOverviewHash = // string               // hash to be displayed on the project details page
-project.LegalPPAHash = //             string               // hash to be displayed on the project details page
-project.LegalRECAgreementHash = //    string               // hash to be displayed on the project details page
-project.GuarantorAgreementHash = //   string               // hash to be displayed on the project details page
-project.ContractorAgreementHash = //  string               // hash to be displayed on the project details page
-project.StakeholderAgreementHash = // string               // hash to be displayed on the project details page
-project.CommunityEnergyHash = //      string               // hash to be displayed on the project details page
-project.FinancialReportingHash = //   string               // hash to be displayed on the project details page
-project.Contract1 = //                string               // contracts which will be linked to on the project details page
-project.Contract2 = //                string               // contracts which will be linked to on the project details page
-project.Contract3 = //                string               // contracts which will be linked to on the project details page
-project.Contract4 = //                string               // contracts which will be linked to on the project details page
-project.Contract5 = //                string               // contracts which will be linked to on the project details page
-
-// follow this by the terms and conditions of the specific project
-*/
 func createPuertoRicoProject() error {
 	// setup all the entities that will be involved with the project here
 	investor1, err := database.NewInvestor("OpenLab", "p", "x", "Yale OpenLab")
@@ -244,7 +153,7 @@ func createPuertoRicoProject() error {
 	communityblock4.Link = ""
 
 	project.Index = len(indexHelp) + 1
-	project.Name = "Puerto Rico Pilot Project"
+	project.Name = "Pasto Public School - POC 1 kW"
 	project.State = "Puerto Rico"
 	project.Country = "US"
 	project.TotalValue = 10000
@@ -338,11 +247,12 @@ func createPuertoRicoProject() error {
 	project.DPIntroImage = "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/1.jpg"
 	project.OHeroImage = "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/3.jpg"
 	project.OImages = append(project.OImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/2.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/5.jpg")
-	project.AImages = append(project.AImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/7.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/9.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/1.jpg")
-	project.EImages = append(project.EImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/6.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/8.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/6.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/6.jpg")
+	project.AImages = append(project.AImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/7.png", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/9.png", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/1.jpg")
+	project.EImages = append(project.EImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/6.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/8.png", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/6.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/6.jpg")
 	project.CEImages = append(project.CEImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/1.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/1.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/1.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/1.jpg")
 	project.BNImages = append(project.PSImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/1.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/1.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/1.jpg")
 
+	project.EngineeringLayoutType = "basic"
 	err = project.Save()
 	if err != nil {
 		return err
@@ -439,7 +349,7 @@ func createOneMegaWattProject() error {
 		log.Fatal(err)
 	}
 
-	// This is to populate the table of Terms and Conditions in the front end. TODO: change this inline with the FE
+	// This is to populate the table of Terms and Conditions in the front end.
 	var terms1 opensolar.TermsHelper
 	terms1.Variable = "Security Type"
 	terms1.Value = "Equity Notes"
@@ -615,12 +525,13 @@ func createOneMegaWattProject() error {
 
 	project.DPIntroImage = "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/1.png"
 	project.OHeroImage = "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/1.png"
-	project.OImages = append(project.OImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/6.png", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/7.png", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/4.png", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/3.png")
-	project.AImages = append(project.AImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/2.png", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/1.png")
+	project.OImages = append(project.OImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/6.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/7.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/4.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/3.jpg")
+	project.AImages = append(project.AImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/2.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/1.png")
 	project.EImages = append(project.EImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/9.png", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/8.png")
-	project.CEImages = append(project.CEImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/5.png")
+	project.CEImages = append(project.CEImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/5.jpg")
 	project.BNImages = append(project.BNImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/10.png", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/11.png", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/1.png")
 
+	project.EngineeringLayoutType = "complex"
 	err = project.Save()
 	if err != nil {
 		log.Fatal(err)
@@ -751,7 +662,7 @@ func createTenKiloWattProject() error {
 	communityblock1.Content = ""
 	communityblock1.Link = ""
 
-	// This is to populate the table of Terms and Conditions in the front end. TODO: change this inline with the FE
+	// This is to populate the table of Terms and Conditions in the front end.
 	var terms1 opensolar.TermsHelper
 	terms1.Variable = "Security Type"
 	terms1.Value = "Reg CF"
@@ -892,7 +803,7 @@ func createTenKiloWattProject() error {
 	project.ExplorePageSummary.Tax = "N/A"
 	project.ExplorePageSummary.ETA = project.EstimatedAcquisition
 
-	project.DPIntroImage = "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/8_NewHaven/3.jpg"
+	project.DPIntroImage = "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/8_NewHaven/3.png"
 	project.OHeroImage = ""
 	project.OImages = append(project.OImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/8_NewHaven/4.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/8_NewHaven/12.jpg")
 	project.OOImages = append(project.OOImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/8_NewHaven/6.jpg")
@@ -902,6 +813,7 @@ func createTenKiloWattProject() error {
 	project.PSImages = append(project.PSImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/8_NewHaven/11.jpg")
 	project.BNImages = append(project.BNImages, "")
 
+	project.EngineeringLayoutType = "basic"
 	err = project.Save()
 	if err != nil {
 		log.Fatal(err)
@@ -968,7 +880,7 @@ func createTenMegaWattProject() error {
 		log.Fatal(err)
 	}
 
-	// This is to populate the table of Terms and Conditions in the front end. TODO: change this inline with the FE
+	// This is to populate the table of Terms and Conditions in the front end.
 	var terms1 opensolar.TermsHelper
 	terms1.Variable = "Security Type"
 	terms1.Value = "Municipal Bond"
@@ -1072,7 +984,7 @@ func createTenMegaWattProject() error {
 	communityblock4.Link = ""
 
 	project.Index = len(indexHelp) + 1
-	project.Name = "Puerto Rico Public School Bond 10"
+	project.Name = "Puerto Rico Solar School Bond 1"
 	project.State = "Puerto Rico"
 	project.Country = "US"
 	project.TotalValue = 19000000
@@ -1173,6 +1085,7 @@ func createTenMegaWattProject() error {
 	project.PSImages = append(project.PSImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/2_PR_Bonds/1.jpg")
 	project.BNImages = append(project.BNImages, "")
 
+	project.EngineeringLayoutType = "simple"
 	err = project.Save()
 	if err != nil {
 		log.Fatal(err)
@@ -1444,6 +1357,7 @@ func createOneHundredKiloWattProject() error {
 	project.PSImages = append(project.PSImages, "")
 	project.BNImages = append(project.BNImages, "")
 
+	project.EngineeringLayoutType = "basic"
 	err = project.Save()
 	if err != nil {
 		log.Fatal(err)

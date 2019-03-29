@@ -195,7 +195,7 @@ func MunibondPayback(issuerPath string, recpIndex int, amount string, recipientS
 	mBillFloat := utils.StoF(monthlyBill)
 
 	if utils.StoF(amount) < mBillFloat {
-		return  -1, fmt.Errorf("amount paid is less than amount needed. Please refill your main account")
+		return -1, fmt.Errorf("amount paid is less than amount needed. Please refill your main account")
 	}
 
 	err = stablecoin.OfferExchange(recipient.U.PublicKey, recipientSeed, amount)
