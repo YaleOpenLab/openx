@@ -247,7 +247,7 @@ func Invest(projIndex int, invIndex int, invAmount string, invSeed string) error
 		project.InvestorAssetCode, project.TotalValue, 1)
 	if err != nil {
 		log.Println("Error while seed investing", err)
-		return errors.Wrap(err, "error while seed investing")
+		return errors.Wrap(err, "error while investing")
 	}
 
 	// once the investment is complete, update the project and store in the database
