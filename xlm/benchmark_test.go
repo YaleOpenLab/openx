@@ -64,7 +64,7 @@ func BenchmarkHasStableCoin(b *testing.B) {
 	}
 }
 
-// test with an accoutn that does nto have stabelcoin in its account
+// test with an accoutn that does not have stabelcoin in its account
 func BenchmarkHasStableCoin2(b *testing.B) {
 	b.ResetTimer()
 	for i := 1; i < b.N; i++ {

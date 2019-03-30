@@ -88,12 +88,10 @@ func FreezeIssuer(issuerPath string, projIndex int, seedpwd string) (string, err
 	path := CreatePath(issuerPath, projIndex)
 	_, seed, err := wallet.RetrieveSeed(path, seedpwd)
 	if err != nil {
-		log.Println("Error while retrieving seed", err)
 		return "", errors.Wrap(err, "Error while retrieving seed")
 	}
 	_, txhash, err := xlm.FreezeAccount(seed)
 	if err != nil {
-		log.Println("Error while freezing account", err)
 		return "", errors.Wrap(err, "Error while freezing account")
 	}
 	log.Println("Tx hash for freezing account is: ", txhash)

@@ -138,6 +138,20 @@ func New2of2(cosigner1Pubkey string, cosigner2Pubkey string) (string, error) {
 	return Newxofy(2, 2, cosigner1Pubkey, cosigner2Pubkey)
 }
 
+func SendTx(txe build.TransactionEnvelopeBuilder) error {
+	txeB64, err := txe.Base64()
+	if err != nil {
+		return errors.Wrap(err, "error while converting tx to base64")
+	}
+
+	resp, err := TestNetClient.SubmitTransaction(txeB64)
+	if err != nil {
+		return errors.Wrap(err, "error while submitting tx")
+	}
+
+	log.Printf("Two party multisig tx: %s, sequence: %d\n", resp.Hash, resp.Ledger)
+	return nil
+}
 // Construct2of2Tx constructs a tx where the source account pubkey1 is the 2of2 account
 // we need 2 signers for this tx
 func Tx2of2(pubkey1 string, destination string, signer1 string, signer2 string, amount string, memo string) error {
@@ -162,18 +176,7 @@ func Tx2of2(pubkey1 string, destination string, signer1 string, signer2 string, 
 		return errors.Wrap(err, "second party couldn't sign tx")
 	}
 
-	txeB64, err := txe.Base64()
-	if err != nil {
-		return errors.Wrap(err, "error while converting tx to base64")
-	}
-
-	resp, err := TestNetClient.SubmitTransaction(txeB64)
-	if err != nil {
-		return errors.Wrap(err, "error while submitting tx")
-	}
-
-	log.Printf("Two party multisig tx: %s, sequence: %d\n", resp.Hash, resp.Ledger)
-	return nil
+	return SendTx(txe)
 }
 
 // AuthImmutable2of2 sets the auth immutable flag on a multisig account
@@ -197,18 +200,7 @@ func AuthImmutable2of2(pubkey1 string, signer1 string, signer2 string) error {
 		return errors.Wrap(err, "second party couldn't sign tx")
 	}
 
-	txeB64, err := txe.Base64()
-	if err != nil {
-		return errors.Wrap(err, "error while converting tx to base64")
-	}
-
-	resp, err := TestNetClient.SubmitTransaction(txeB64)
-	if err != nil {
-		return errors.Wrap(err, "error while submitting tx")
-	}
-
-	log.Printf("Two party multisig tx: %s, sequence: %d\n", resp.Hash, resp.Ledger)
-	return nil
+	return SendTx(txe)
 }
 
 func TrustAssetTx(assetCode string, assetIssuer string, limit string, pubkey string, signer1 string, signer2 string) error {
@@ -228,18 +220,7 @@ func TrustAssetTx(assetCode string, assetIssuer string, limit string, pubkey str
 		return errors.Wrap(err, "second party couldn't sign tx")
 	}
 
-	txeB64, err := txe.Base64()
-	if err != nil {
-		return errors.Wrap(err, "error while converting tx to base64")
-	}
-
-	resp, err := TestNetClient.SubmitTransaction(txeB64)
-	if err != nil {
-		return errors.Wrap(err, "error while submitting tx")
-	}
-
-	log.Printf("Two party multisig tx: %s, sequence: %d\n", resp.Hash, resp.Ledger)
-	return nil
+	return SendTx(txe)
 }
 
 // Convert2of2 converts the account with pubkey myPubkey to a 2of2 multisig account

@@ -6,7 +6,10 @@ import (
 	"log"
 	"testing"
 
+	consts "github.com/YaleOpenLab/openx/consts"
 	xlm "github.com/YaleOpenLab/openx/xlm"
+	"github.com/stellar/go/build"
+	"github.com/stellar/go/network"
 )
 
 func TestMultisig2of2(t *testing.T) {
@@ -43,8 +46,44 @@ func TestMultisig2of2(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	err = AuthImmutable2of2(pubkey1, seed1, seed2)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = TrustAssetTx("STABLEUSD", consts.StableCoinAddress, "10000", pubkey1, seed1, seed2)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	tx, err := build.Transaction(
+		build.SourceAccount{pubkey1},
+		build.AutoSequence{TestNetClient},
+		build.Network{network.TestNetworkPassphrase},
+		build.MemoText{"running a test"},
+		build.Payment(
+			build.Destination{pubkey1},
+			build.NativeAmount{"1"},
+		),
+	)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	txe, err := tx.Sign(seed1, seed2) // sign using party 2's seed
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = SendTx(txe)
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
+/*
 // we're forced to hav separate tests because we can't use the same tests (they'll eb converted to multisig accounts)
 func TestNew2of2MultiSig(t *testing.T) {
 	seed1, pubkey1, err := xlm.GetKeyPair()
@@ -168,3 +207,4 @@ func Test1ofxMultiSig(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+*/

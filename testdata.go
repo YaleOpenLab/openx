@@ -182,7 +182,7 @@ func createPuertoRicoProject() error {
 	project.DateFunded = "06/19/2018"
 	project.DateLastPaid = -1
 
-	// Define technical paramters
+	// Define technical parameters
 	project.AuctionType = "private"
 	project.InvestmentType = "munibond"
 	project.PaybackPeriod = 4
@@ -244,13 +244,13 @@ func createPuertoRicoProject() error {
 	project.ExplorePageSummary.Tax = "N/A"
 	project.ExplorePageSummary.ETA = project.EstimatedAcquisition
 
-	project.DPIntroImage = "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/1.jpg"
-	project.OHeroImage = "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/3.jpg"
-	project.OImages = append(project.OImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/2.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/5.jpg")
-	project.AImages = append(project.AImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/7.png", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/9.png", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/1.jpg")
-	project.EImages = append(project.EImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/6.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/8.png", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/6.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/6.jpg")
-	project.CEImages = append(project.CEImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/1.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/1.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/1.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/1.jpg")
-	project.BNImages = append(project.PSImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/1.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/1.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/7_YaleMIT/1.jpg")
+	project.DPIntroImage = "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/1.jpg"
+	project.OHeroImage = "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/3.jpg"
+	project.OImages = append(project.OImages, "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/2.jpg", "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/5.jpg")
+	project.AImages = append(project.AImages, "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/7.png", "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/9.png", "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/1.jpg")
+	project.EImages = append(project.EImages, "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/6.jpg", "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/8.png", "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/6.jpg", "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/6.jpg")
+	project.CEImages = append(project.CEImages, "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/1.jpg", "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/1.jpg", "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/1.jpg", "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/1.jpg")
+	project.BNImages = append(project.PSImages, "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/1.jpg", "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/1.jpg", "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/1.jpg")
 
 	project.EngineeringLayoutType = "basic"
 	err = project.Save()
@@ -461,7 +461,7 @@ func createOneMegaWattProject() error {
 	project.DateFunded = ""
 	project.DateLastPaid = -1
 
-	// Define technical paramters
+	// Define technical parameters
 	project.AuctionType = "blind"
 	project.InvestmentType = "equity"
 	project.PaybackPeriod = 4
@@ -523,13 +523,13 @@ func createOneMegaWattProject() error {
 	project.ExplorePageSummary.Tax = "N/A"
 	project.ExplorePageSummary.ETA = project.EstimatedAcquisition
 
-	project.DPIntroImage = "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/1.png"
-	project.OHeroImage = "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/1.png"
-	project.OImages = append(project.OImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/6.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/7.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/4.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/3.jpg")
-	project.AImages = append(project.AImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/2.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/1.png")
-	project.EImages = append(project.EImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/9.png", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/8.png")
-	project.CEImages = append(project.CEImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/5.jpg")
-	project.BNImages = append(project.BNImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/10.png", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/11.png", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/4_NH_Lancaster/1.png")
+	project.DPIntroImage = "https://images.openx.solar/OpenSolarProjects/4_NH_Lancaster/1.png"
+	project.OHeroImage = "https://images.openx.solar/OpenSolarProjects/4_NH_Lancaster/1.png"
+	project.OImages = append(project.OImages, "https://images.openx.solar/OpenSolarProjects/4_NH_Lancaster/6.jpg", "https://images.openx.solar/OpenSolarProjects/4_NH_Lancaster/7.jpg", "https://images.openx.solar/OpenSolarProjects/4_NH_Lancaster/4.jpg", "https://images.openx.solar/OpenSolarProjects/4_NH_Lancaster/3.jpg")
+	project.AImages = append(project.AImages, "https://images.openx.solar/OpenSolarProjects/4_NH_Lancaster/2.jpg", "https://images.openx.solar/OpenSolarProjects/4_NH_Lancaster/1.png")
+	project.EImages = append(project.EImages, "https://images.openx.solar/OpenSolarProjects/4_NH_Lancaster/9.png", "https://images.openx.solar/OpenSolarProjects/4_NH_Lancaster/8.png")
+	project.CEImages = append(project.CEImages, "https://images.openx.solar/OpenSolarProjects/4_NH_Lancaster/5.jpg")
+	project.BNImages = append(project.BNImages, "https://images.openx.solar/OpenSolarProjects/4_NH_Lancaster/10.png", "https://images.openx.solar/OpenSolarProjects/4_NH_Lancaster/11.png", "https://images.openx.solar/OpenSolarProjects/4_NH_Lancaster/1.png")
 
 	project.EngineeringLayoutType = "complex"
 	err = project.Save()
@@ -741,7 +741,7 @@ func createTenKiloWattProject() error {
 	project.DateFunded = ""
 	project.DateLastPaid = -1
 
-	// Define technical paramters
+	// Define technical parameters
 	project.AuctionType = "blind"
 	project.InvestmentType = "regcf"
 	project.PaybackPeriod = 4
@@ -803,14 +803,14 @@ func createTenKiloWattProject() error {
 	project.ExplorePageSummary.Tax = "N/A"
 	project.ExplorePageSummary.ETA = project.EstimatedAcquisition
 
-	project.DPIntroImage = "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/8_NewHaven/3.png"
+	project.DPIntroImage = "https://images.openx.solar/OpenSolarProjects/8_NewHaven/3.png"
 	project.OHeroImage = ""
-	project.OImages = append(project.OImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/8_NewHaven/4.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/8_NewHaven/12.jpg")
-	project.OOImages = append(project.OOImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/8_NewHaven/6.jpg")
-	project.AImages = append(project.AImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/8_NewHaven/7.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/8_NewHaven/1.jpg")
-	project.EImages = append(project.EImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/8_NewHaven/9.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/8_NewHaven/10.jpg")
-	project.CEImages = append(project.CEImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/8_NewHaven/12.jpg")
-	project.PSImages = append(project.PSImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/8_NewHaven/11.jpg")
+	project.OImages = append(project.OImages, "https://images.openx.solar/OpenSolarProjects/8_NewHaven/4.jpg", "https://images.openx.solar/OpenSolarProjects/8_NewHaven/12.jpg")
+	project.OOImages = append(project.OOImages, "https://images.openx.solar/OpenSolarProjects/8_NewHaven/6.jpg")
+	project.AImages = append(project.AImages, "https://images.openx.solar/OpenSolarProjects/8_NewHaven/7.jpg", "https://images.openx.solar/OpenSolarProjects/8_NewHaven/1.jpg")
+	project.EImages = append(project.EImages, "https://images.openx.solar/OpenSolarProjects/8_NewHaven/9.jpg", "https://images.openx.solar/OpenSolarProjects/8_NewHaven/10.jpg")
+	project.CEImages = append(project.CEImages, "https://images.openx.solar/OpenSolarProjects/8_NewHaven/12.jpg")
+	project.PSImages = append(project.PSImages, "https://images.openx.solar/OpenSolarProjects/8_NewHaven/11.jpg")
 	project.BNImages = append(project.BNImages, "")
 
 	project.EngineeringLayoutType = "basic"
@@ -1013,7 +1013,7 @@ func createTenMegaWattProject() error {
 	project.DateFunded = ""
 	project.DateLastPaid = -1
 
-	// Define technical paramters
+	// Define technical parameters
 	project.AuctionType = "private"
 	project.InvestmentType = "munibond"
 	project.PaybackPeriod = 4
@@ -1075,14 +1075,14 @@ func createTenMegaWattProject() error {
 	project.ExplorePageSummary.Tax = "N/A"
 	project.ExplorePageSummary.ETA = project.EstimatedAcquisition
 
-	project.DPIntroImage = "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/2_PR_Bonds/1.jpg"
-	project.OHeroImage = "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/2_PR_Bonds/1.jpg"
-	project.OImages = append(project.OImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/2_PR_Bonds/3.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/2_PR_Bonds/8.jpg")
+	project.DPIntroImage = "https://images.openx.solar/OpenSolarProjects/2_PR_Bonds/1.jpg"
+	project.OHeroImage = "https://images.openx.solar/OpenSolarProjects/2_PR_Bonds/1.jpg"
+	project.OImages = append(project.OImages, "https://images.openx.solar/OpenSolarProjects/2_PR_Bonds/3.jpg", "https://images.openx.solar/OpenSolarProjects/2_PR_Bonds/8.jpg")
 	project.OOImages = append(project.OOImages, "")
-	project.AImages = append(project.AImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/2_PR_Bonds/2.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/2_PR_Bonds/1.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/2_PR_Bonds/1.jpg")
-	project.EImages = append(project.EImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/2_PR_Bonds/1.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/2_PR_Bonds/1.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/2_PR_Bonds/1.jpg")
-	project.CEImages = append(project.CEImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/2_PR_Bonds/7.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/2_PR_Bonds/1.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/2_PR_Bonds/1.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/2_PR_Bonds/1.jpg")
-	project.PSImages = append(project.PSImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/2_PR_Bonds/1.jpg")
+	project.AImages = append(project.AImages, "https://images.openx.solar/OpenSolarProjects/2_PR_Bonds/2.jpg", "https://images.openx.solar/OpenSolarProjects/2_PR_Bonds/1.jpg", "https://images.openx.solar/OpenSolarProjects/2_PR_Bonds/1.jpg")
+	project.EImages = append(project.EImages, "https://images.openx.solar/OpenSolarProjects/2_PR_Bonds/1.jpg", "https://images.openx.solar/OpenSolarProjects/2_PR_Bonds/1.jpg", "https://images.openx.solar/OpenSolarProjects/2_PR_Bonds/1.jpg")
+	project.CEImages = append(project.CEImages, "https://images.openx.solar/OpenSolarProjects/2_PR_Bonds/7.jpg", "https://images.openx.solar/OpenSolarProjects/2_PR_Bonds/1.jpg", "https://images.openx.solar/OpenSolarProjects/2_PR_Bonds/1.jpg", "https://images.openx.solar/OpenSolarProjects/2_PR_Bonds/1.jpg")
+	project.PSImages = append(project.PSImages, "https://images.openx.solar/OpenSolarProjects/2_PR_Bonds/1.jpg")
 	project.BNImages = append(project.BNImages, "")
 
 	project.EngineeringLayoutType = "simple"
@@ -1221,7 +1221,7 @@ func createOneHundredKiloWattProject() error {
 	esHelper.Financials["Return"] = "2.3%"
 	esHelper.Financials["First-Loss Escrow"] = "20%"
 	esHelper.Financials["Tariff"] = "0.24 ct/kWh"
-	esHelper.Financials["REC Value"] = "In Proces"
+	esHelper.Financials["REC Value"] = "In Process"
 
 	esHelper.ProjectSize["PVSolar"] = "4 x 25 kW"
 	esHelper.ProjectSize["Storage"] = "25 kWh"
@@ -1286,7 +1286,7 @@ func createOneHundredKiloWattProject() error {
 	project.DateFunded = ""
 	project.DateLastPaid = -1
 
-	// Define technical paramters
+	// Define technical parameters
 	project.AuctionType = "blind"
 	project.InvestmentType = "Equity Crowdfunding"
 	project.PaybackPeriod = 4
@@ -1347,13 +1347,13 @@ func createOneHundredKiloWattProject() error {
 	project.ExplorePageSummary.Tax = "N/A"
 	project.ExplorePageSummary.ETA = project.EstimatedAcquisition
 
-	project.DPIntroImage = "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/1_Rwanda/9.jpg"
+	project.DPIntroImage = "https://images.openx.solar/OpenSolarProjects/1_Rwanda/9.jpg"
 	project.OHeroImage = ""
-	project.OImages = append(project.OImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/1_Rwanda/2.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/1_Rwanda/10.jpg")
+	project.OImages = append(project.OImages, "https://images.openx.solar/OpenSolarProjects/1_Rwanda/2.jpg", "https://images.openx.solar/OpenSolarProjects/1_Rwanda/10.jpg")
 	project.OOImages = append(project.OOImages, "")
-	project.AImages = append(project.AImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/1_Rwanda/5.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/1_Rwanda/1.jpg")
-	project.EImages = append(project.EImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/1_Rwanda/6.jpg")
-	project.CEImages = append(project.CEImages, "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/1_Rwanda/8.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/1_Rwanda/1.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/1_Rwanda/11.jpg", "https://dz0o48nhc51g3.cloudfront.net/OpenSolarProjects/1_Rwanda/7.jpg")
+	project.AImages = append(project.AImages, "https://images.openx.solar/OpenSolarProjects/1_Rwanda/5.jpg", "https://images.openx.solar/OpenSolarProjects/1_Rwanda/1.jpg")
+	project.EImages = append(project.EImages, "https://images.openx.solar/OpenSolarProjects/1_Rwanda/6.jpg")
+	project.CEImages = append(project.CEImages, "https://images.openx.solar/OpenSolarProjects/1_Rwanda/8.jpg", "https://images.openx.solar/OpenSolarProjects/1_Rwanda/1.jpg", "https://images.openx.solar/OpenSolarProjects/1_Rwanda/11.jpg", "https://images.openx.solar/OpenSolarProjects/1_Rwanda/7.jpg")
 	project.PSImages = append(project.PSImages, "")
 	project.BNImages = append(project.BNImages, "")
 

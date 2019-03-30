@@ -415,7 +415,7 @@ func sendRecipientAssets(projIndex int) error {
 		return errors.Wrap(err, "error while initializing issuer")
 	}
 
-	log.Println("succesfully setup escrow")
+	log.Println("successfully setup escrow")
 	project.EscrowPubkey = escrowPubkey
 	err = TransferFundsToEscrow(project.TotalValue, project.Index, project.EscrowPubkey)
 	if err != nil {
@@ -423,7 +423,7 @@ func sendRecipientAssets(projIndex int) error {
 		return errors.Wrap(err, "could not transfer funds to the escrow, quitting!")
 	}
 
-	log.Println("Trasnferred funds to escrow!")
+	log.Println("Transferred funds to escrow!")
 	project.LockPwd = "" // set lockpwd to nil immediately after retrieving seed
 	metadata := project.Metadata
 
@@ -534,7 +534,7 @@ func DistributePayments(recipientSeed string, escrowPubkey string, projIndex int
 		log.Println("project", project.Index, "'s escrow locked, can't send funds")
 		return fmt.Errorf("project escrow locked, can't send funds")
 	}
-	fixedRate := 0.05 // 5 % of the totla investment as return or somethign similar. Should not be hardcoded
+	fixedRate := 0.05 // 5 % of the totla investment as return or something similar. Should not be hardcoded
 	// TODO: return money to the developers and other people involved
 	amountGivenBack := fixedRate * float64(amount)
 	for pubkey, percentage := range project.InvestorMap {

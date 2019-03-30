@@ -25,7 +25,7 @@ Broadly, the emulator has 4 different modes geared at 4 entities right now (2 in
 - Payback: pays back towards a specific project that the recipient has already accepted in the past
 - Finalize: finalizes a particular project ie moves it from stage 2 to stage 3
 - Originate: Originates a particular project ie brings the project from stage 0 to stage 1)
-- Calculate: calculates how much teh recipient owes the platform during a specific payback period
+- Calculate: calculates how much the recipient owes the platform during a specific payback period
 
 ## Contractor only functions
 

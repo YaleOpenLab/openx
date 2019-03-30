@@ -24,7 +24,7 @@ import (
 func InitEscrow(projIndex int, seedpwd string, recpPubkey string, mySeed string) (string, error) {
 	pubkey, err := initMultisigEscrow(recpPubkey)
 	if err != nil {
-		return pubkey, errors.Wrap(err, "error while initalizing multisig escrow, quitting!")
+		return pubkey, errors.Wrap(err, "error while initializing multisig escrow, quitting!")
 	}
 
 	log.Println("successfully initialized multisig escrow")
