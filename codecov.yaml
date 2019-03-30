@@ -8,3 +8,4 @@ ignore:
   - platforms/opensolar/entities_easyjson.go
   - platforms/ozones/ozones_easyjson.go
   - platforms/opensolar/opensolar_easyjson.go
+  - platforms/easyjson/entities_easyjson.go

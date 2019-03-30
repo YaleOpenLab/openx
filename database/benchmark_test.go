@@ -43,7 +43,7 @@ func RetrieveInvestor2(key int) (Investor, error) {
 }
 
 func PopulateDB() {
-	// populate the db with artifical values
+	// populate the db with artificial values
 	CreateHomeDir()                     // create home directory if it doesn't exist yet
 	os.Remove(consts.DbDir + "/yol.db") // remove the database file, if it exists
 	db, err := OpenDB()
@@ -111,7 +111,7 @@ func BenchmarkRetrieveUser(b *testing.B) {
 	}
 }
 
-// test retrieveallinvestors function. Note taht we're going to test with retrieving 10000 investors
+// test retrieveallinvestors function. Note that we're going to test with retrieving 10000 investors
 
 // RetrieveAllInvestors gets a list of all investors in the database
 func RetrieveAllInvestors1() ([]Investor, error) {

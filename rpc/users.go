@@ -725,7 +725,7 @@ func addContractHash() {
 			return
 		}
 		// there are in total 5 types of hashes: OriginatorMoUHash, ContractorContractHash, InvPlatformContractHash, RecPlatformContractHash, SpecSheetHash
-		// lets have a fixed set of strings that we can map on here so we ahve a single endpoitn for storing all these hashes
+		// lets have a fixed set of strings that we can map on here so we have a single endpoitn for storing all these hashes
 
 		// TODO: right now any entity can add the required hashes but in the future we must restrict adding hashes
 		// to entities that are associated with the particular hashes
@@ -803,7 +803,7 @@ type SeedResponse struct {
 	Seed string
 }
 
-// mergeSecrets tkaes in two shares in a 2 of 3 Shamir Secret Sharing Scheme and reconstructs the seed
+// mergeSecrets takes in two shares in a 2 of 3 Shamir Secret Sharing Scheme and reconstructs the seed
 func mergeSecrets() {
 	http.HandleFunc("/user/seedrecovery", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)

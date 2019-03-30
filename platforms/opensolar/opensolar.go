@@ -48,7 +48,7 @@ type Project struct {
 	DateFunded    string // date that the project completed the stage 4-5 migration
 	DateLastPaid  int64  // int64 ie unix time since we need comparisons on this one
 
-	// Define technical paramters
+	// Define technical parameters
 	AuctionType          string  // the type of the auction in question. Default is blind auction unless explicitly mentioned
 	InvestmentType       string  // the type of investment - equity crowdfunding, municipal bond, normal crowdfunding, etc defined in models
 	PaybackPeriod        int     // the frequency in number of weeks that the recipient has to pay the platform.
