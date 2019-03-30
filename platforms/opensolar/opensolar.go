@@ -129,6 +129,7 @@ type Project struct {
 	// in order for us to be able to parse what we have correctly.
 
 	EngineeringLayoutType string
+	FEText map[string]interface{} // put all the fe text in here reading it from the relevant json file(s)
 }
 
 //easyjson:json
