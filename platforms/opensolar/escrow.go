@@ -68,6 +68,6 @@ func initMultisigEscrow(pubkey1 string) (string, error) {
 	return multisig.New2of2(pubkey1, pubkey2)
 }
 
-func SendFundsFromEscrow(escrowPubkey string, destination string, signer1 string, signer2 string, amount string, memo string) error {
-	return multisig.Tx2of2(escrowPubkey, destination, signer1, signer2, amount, memo)
+func SendFundsFromEscrow(escrowPubkey string, destination string, signer1 string, amount string, memo string) error {
+	return multisig.Tx2of2(escrowPubkey, destination, signer1, consts.PlatformSeed, amount, memo)
 }

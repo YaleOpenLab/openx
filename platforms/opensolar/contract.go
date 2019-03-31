@@ -541,7 +541,7 @@ func DistributePayments(recipientSeed string, escrowPubkey string, projIndex int
 		// send x to this pubkey
 		txAmount := percentage * amountGivenBack
 		// here we send funds from the 2of2 multisig. Platform signs by default
-		err = SendFundsFromEscrow(project.EscrowPubkey, pubkey, recipientSeed, consts.PlatformSeed, utils.FtoS(txAmount), "returns")
+		err = SendFundsFromEscrow(project.EscrowPubkey, pubkey, recipientSeed, utils.FtoS(txAmount), "returns")
 		if err != nil {
 			log.Println(err) // if there is an error with one payback, doesn't mean we should stop and wait for the others
 			continue
@@ -578,7 +578,7 @@ func monitorPaybacks(recpIndex int, projIndex int) {
 
 		guarantor, err := RetrieveEntity(project.GuarantorIndex)
 		if err != nil {
-			log.Println("couldn't retrieve gurantor")
+			log.Println("couldn't retrieve guarantor")
 			continue
 		}
 		// this will be our payback period and we need to check if the user pays us back
@@ -658,6 +658,48 @@ func addWaterfallAccount(projIndex int, pubkey string, amount float64) error {
 	if err != nil {
 		return errors.Wrap(err, "could not retrieve project, quitting")
 	}
+	if project.WaterfallMap == nil {
+		project.WaterfallMap = make(map[string]float64)
+	}
 	project.WaterfallMap[pubkey] = amount
 	return project.Save()
+}
+
+// CoverFirstLoss covers first loss for investors byu sending funds from the guarantor's account
+func CoverFirstLoss(projIndex int, entityIndex int, amount string) error {
+	// cover first loss for the project specified
+	project, err := RetrieveProject(projIndex)
+	if err != nil {
+		return errors.Wrap(err, "could not retrieve projects from database, quitting")
+	}
+
+	entity, err := RetrieveEntity(entityIndex)
+	if err != nil {
+		return errors.Wrap(err, "could not retrieve entity from database, quitting")
+	}
+
+	// we now have the entity and the project under question
+	if project.GuarantorIndex != entity.U.Index {
+		return fmt.Errorf("guarantor index does not match with entity's index in database")
+	}
+
+	if entity.FirstLossGuaranteeAmt < utils.StoF(amount) {
+		log.Println("amount required greater than what guarantor agreed to provide, adjusting first loss to cover for what's available")
+		amount = utils.FtoS(entity.FirstLossGuaranteeAmt)
+	}
+	// we now need to send funds from the gurantor's account to the escrow
+	seed, err := wallet.DecryptSeed(entity.U.EncryptedSeed, entity.FirstLossGuarantee) //
+	if err != nil {
+		return errors.Wrap(err, "could not decrypt seed, quitting!")
+	}
+
+	// we have the escrow's pubkey, transfer funds to the escrow
+	_, txhash, err := assets.SendAsset(consts.Code, consts.StableCoinAddress, project.EscrowPubkey, amount, seed, entity.U.PublicKey, "first loss guarantee")
+	if err != nil {
+		return errors.Wrap(err, "could not transfer asset to escrow, quitting")
+	}
+
+	log.Println("txhash of guarantor kick in:", txhash)
+
+	return nil
 }

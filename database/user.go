@@ -517,7 +517,7 @@ func MoveFundsFromSecondaryWallet(userIndex int, pwhash string, amount string, s
 	// unlock secondary account
 	secSeed, err := wallet.DecryptSeed(user.SecondaryWallet.EncryptedSeed, seedpwd)
 	if err != nil {
-		return errors.Wrap(err, "could not unlock priamry seed, quitting")
+		return errors.Wrap(err, "could not unlock secondary seed, quitting")
 	}
 
 	// get secondary balance
@@ -554,7 +554,7 @@ func SweepSecondaryWallet(index int, pwhash string, seedpwd string) error {
 	}
 	secSeed, err := wallet.DecryptSeed(user.SecondaryWallet.EncryptedSeed, seedpwd)
 	if err != nil {
-		return errors.Wrap(err, "could not unlock priamry seed, quitting")
+		return errors.Wrap(err, "could not unlock primary seed, quitting")
 	}
 
 	// get secondary balance

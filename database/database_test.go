@@ -123,6 +123,23 @@ func TestDb(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Able to change reputation in database with invalid path")
 	}
+	err = IncreaseTrustLimit(1, "blah", "1")
+	if err == nil {
+		t.Fatalf("Able to increase trust limit in database with invalid path")
+	}
+	_, err = SearchWithEmailId("blahx@blah.com")
+	if err == nil {
+		t.Fatalf("user with invalid email exists")
+	}
+	err = MoveFundsFromSecondaryWallet(1, "ed2df20bb16ecb0b4b149cf8e7d9819afd608b22999e707364196187fca0cf38544c9f3eb981ad81cef18562e4c818370eab068992639af7d70488945265197f",
+		"10", "blah")
+	if err == nil {
+		t.Fatal(err)
+	}
+	err = SweepSecondaryWallet(1, "ed2df20bb16ecb0b4b149cf8e7d9819afd608b22999e707364196187fca0cf38544c9f3eb981ad81cef18562e4c818370eab068992639af7d70488945265197f", "ed2df20bb16ecb0b4b149cf8e7d9819afd608b22999e707364196187fca0cf38544c9f3eb981ad81cef18562e4c818370eab068992639af7d70488945265197f")
+	if err == nil {
+		t.Fatal(err)
+	}
 	// set the db directory back to normal so that we can test stuff which goes inside the db
 	consts.DbDir = os.Getenv("HOME") + "/.openx/database"
 	err = os.MkdirAll(consts.DbDir, os.ModePerm) // create the db
@@ -365,6 +382,10 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	err = IncreaseTrustLimit(inv.U.Index, "blah", "10")
+	if err != nil {
+		t.Fatal(err)
+	}
 	testAsset := build.CreditAsset("blah", recp.U.PublicKey)
 	invSeed, err := wallet.DecryptSeed(inv.U.EncryptedSeed, "blah")
 	if err != nil {
@@ -451,6 +472,44 @@ func TestDb(t *testing.T) {
 	err = recp.AddEmail("blah@blah.com")
 	if err != nil {
 		t.Fatal(err)
+	}
+	_, err = SearchWithEmailId("blah@blah.com")
+	if err != nil {
+		t.Fatal(err)
+	}
+	testuser, err := SearchWithEmailId("blahx@blah.com")
+	if testuser.PublicKey != "" {
+		t.Fatalf("user with invalid email exists")
+	}
+	err = xlm.GetXLM(inv.U.SecondaryWallet.PublicKey)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = MoveFundsFromSecondaryWallet(inv.U.Index, "ed2df20bb16ecb0b4b149cf8e7d9819afd608b22999e707364196187fca0cf38544c9f3eb981ad81cef18562e4c818370eab068992639af7d70488945265197f",
+		"10", "blah")
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = MoveFundsFromSecondaryWallet(inv.U.Index, "invalidpwhash","10", "blah")
+	if err == nil {
+		t.Fatalf("not able to catch invalid hash error")
+	}
+	err = MoveFundsFromSecondaryWallet(inv.U.Index, "ed2df20bb16ecb0b4b149cf8e7d9819afd608b22999e707364196187fca0cf38544c9f3eb981ad81cef18562e4c818370eab068992639af7d70488945265197f",
+		"blah", "blah")
+	if err == nil {
+		t.Fatalf("not able to catch invalid amount error")
+	}
+	err = SweepSecondaryWallet(inv.U.Index, "ed2df20bb16ecb0b4b149cf8e7d9819afd608b22999e707364196187fca0cf38544c9f3eb981ad81cef18562e4c818370eab068992639af7d70488945265197f", "blah")
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = SweepSecondaryWallet(inv.U.Index, "invalidpwhash", "blah")
+	if err == nil {
+		t.Fatalf("not able to catch invalid pwhash error")
+	}
+	err = SweepSecondaryWallet(inv.U.Index, "ed2df20bb16ecb0b4b149cf8e7d9819afd608b22999e707364196187fca0cf38544c9f3eb981ad81cef18562e4c818370eab068992639af7d70488945265197f", "invalidseedpwd")
+	if err == nil {
+		t.Fatalf("no able to catch invalid seedpwd")
 	}
 	_, err = TopReputationInvestors()
 	if err != nil {

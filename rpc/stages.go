@@ -84,22 +84,8 @@ func promoteStage() {
 		checkGet(w, r)
 		checkOrigin(w, r)
 
-		if r.URL.Query()["basestage"] == nil || r.URL.Query()["finalstage"] == nil || r.URL.Query()["index"] == nil {
+		if r.URL.Query()["index"] == nil {
 			log.Println("some fields missing to promote from stage x to y, quitting!")
-			responseHandler(w, r, StatusBadRequest)
-			return
-		}
-
-		baseStageNumber, err := utils.StoICheck(r.URL.Query()["basestage"][0])
-		if err != nil {
-			log.Println(err)
-			responseHandler(w, r, StatusBadRequest)
-			return
-		}
-
-		finalStageNumber, err := utils.StoICheck(r.URL.Query()["finalstage"][0])
-		if err != nil {
-			log.Println(err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -110,8 +96,7 @@ func promoteStage() {
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
-		log.Println(baseStageNumber, finalStageNumber)
-		err = opensolar.StageXtoY(index, baseStageNumber, finalStageNumber)
+		err = opensolar.StageXtoY(index)
 		if err != nil {
 			log.Println(err)
 			responseHandler(w, r, StatusInternalServerError)
