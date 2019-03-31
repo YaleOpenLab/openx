@@ -93,17 +93,17 @@ var Stage0 = Stage{
 }
 
 // StageXtoY promtoes a contract from  stage X.Number to stage Y.Number
-func StageXtoY(index int, x int, y int) error {
+func StageXtoY(index int) error {
 	// check for out of bound errors
-	if x < 0 || x > 9 || y < 0 || y > 9 {
-		log.Println("stage number out of bounds, quitting")
-		return fmt.Errorf("stage number out of bounds, quitting")
-	}
-
 	// retrieve the project
 	project, err := RetrieveProject(index)
 	if err != nil {
 		return errors.Wrap(err, "couldn't retrieve project")
+	}
+
+	if project.Stage < 0 || project.Stage > 8 {
+		log.Println("project stage number out of bounds, quitting")
+		return fmt.Errorf("stage number out of bounds or not eligible for stage updation")
 	}
 
 	if project.StageChecklist == nil || project.StageData == nil {
@@ -113,7 +113,8 @@ func StageXtoY(index int, x int, y int) error {
 
 	var baseStage Stage
 	var finalStage Stage
-	switch x {
+
+	switch project.Stage {
 	case 0:
 		baseStage = Stage0
 		finalStage = Stage1

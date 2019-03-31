@@ -83,7 +83,6 @@ func TestMultisig2of2(t *testing.T) {
 	}
 }
 
-/*
 // we're forced to hav separate tests because we can't use the same tests (they'll eb converted to multisig accounts)
 func TestNew2of2MultiSig(t *testing.T) {
 	seed1, pubkey1, err := xlm.GetKeyPair()
@@ -192,6 +191,11 @@ func Test1ofxMultiSig(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	_, err = Newxofy(1, 3, pubkey1, pubkey2)
+	if err == nil {
+		t.Fatalf("not able to catch number of signers error, quitting")
+	}
+
 	log.Println("New 1of2 Multisig Pubkey: ", pubkey)
 	destination := pubkey
 	amount := "1"
@@ -207,4 +211,3 @@ func Test1ofxMultiSig(t *testing.T) {
 		t.Fatal(err)
 	}
 }
-*/
