@@ -1,6 +1,7 @@
 package database
 
 import (
+	"crypto/ecdsa"
 	"fmt"
 	"github.com/pkg/errors"
 	"log"
@@ -13,6 +14,8 @@ import (
 	wallet "github.com/YaleOpenLab/openx/wallet"
 	xlm "github.com/YaleOpenLab/openx/xlm"
 	"github.com/boltdb/bolt"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	crypto "github.com/ethereum/go-ethereum/crypto"
 )
 
 // the user structure houses all entities that are of type "User". This contains
@@ -68,6 +71,16 @@ type User struct {
 
 	SecondaryWallet Wallet
 	// SecondaryWallet defines a higher level wallet which can be imagined to be similar to a savings account
+
+	EthereumWallet EthWallet
+	// EthereumWallet defines a separate wallet for ethereum which people can use to control their ERC721 RECs
+}
+
+// the EthWallet s truct con tains the structures needed for an ethereum wallet
+type EthWallet struct {
+	PrivateKey string
+	PublicKey  string
+	Address    string
 }
 
 // Wallet contains the stuff that we need for a wallet.
@@ -106,7 +119,6 @@ func NewUser(uname string, pwd string, seedpwd string, Name string) (User, error
 	a.FirstSignedUp = utils.Timestamp()
 	a.Kyc = false
 	a.Notification = false
-	log.Println("RECOVERY SHARES: ", a.RecoveryShares)
 	err = a.Save()
 	return a, err // since user is a meta structure, insert it and then return the function
 }
@@ -298,6 +310,28 @@ func (a *User) GenKeys(seedpwd string) error {
 		return errors.Wrap(err, "error while encrypting seed")
 	}
 
+	ecdsaPrivkey, err := crypto.GenerateKey()
+	if err != nil {
+		return errors.Wrap(err, "could not generate an ethereum keypair, quitting!")
+	}
+
+	privateKeyBytes := crypto.FromECDSA(ecdsaPrivkey)
+	a.EthereumWallet.PrivateKey = hexutil.Encode(privateKeyBytes)[2:]
+	a.EthereumWallet.Address = crypto.PubkeyToAddress(ecdsaPrivkey.PublicKey).Hex()
+
+	publicKeyECDSA, ok := ecdsaPrivkey.Public().(*ecdsa.PublicKey)
+	if !ok {
+		return errors.Wrap(err, "error casting public key to ECDSA")
+	}
+
+	publicKeyBytes := crypto.FromECDSAPub(publicKeyECDSA)
+	a.EthereumWallet.PublicKey = hexutil.Encode(publicKeyBytes)[4:] // an ethereum address is 65 bytes long and hte first byte is 0x04 for DER encoding, so we omit that
+
+	if crypto.PubkeyToAddress(*publicKeyECDSA).Hex() != a.EthereumWallet.Address {
+		return errors.Wrap(err, "addresses don't match, quitting!")
+	}
+
+	log.Println(a.EthereumWallet)
 	err = a.Save()
 	return err
 }

@@ -209,6 +209,8 @@ func easyjson9e1087fdDecodeGithubComYaleOpenLabOpenxDatabase1(in *jlexer.Lexer, 
 			out.PwdResetCode = string(in.String())
 		case "SecondaryWallet":
 			(out.SecondaryWallet).UnmarshalEasyJSON(in)
+		case "EthereumWallet":
+			(out.EthereumWallet).UnmarshalEasyJSON(in)
 		default:
 			in.SkipRecursive()
 		}
@@ -435,6 +437,16 @@ func easyjson9e1087fdEncodeGithubComYaleOpenLabOpenxDatabase1(out *jwriter.Write
 		}
 		(in.SecondaryWallet).MarshalEasyJSON(out)
 	}
+	{
+		const prefix string = ",\"EthereumWallet\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		(in.EthereumWallet).MarshalEasyJSON(out)
+	}
 	out.RawByte('}')
 }
 
@@ -460,4 +472,99 @@ func (v *User) UnmarshalJSON(data []byte) error {
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *User) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjson9e1087fdDecodeGithubComYaleOpenLabOpenxDatabase1(l, v)
+}
+func easyjson9e1087fdDecodeGithubComYaleOpenLabOpenxDatabase2(in *jlexer.Lexer, out *EthWallet) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeString()
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "PrivateKey":
+			out.PrivateKey = string(in.String())
+		case "PublicKey":
+			out.PublicKey = string(in.String())
+		case "Address":
+			out.Address = string(in.String())
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson9e1087fdEncodeGithubComYaleOpenLabOpenxDatabase2(out *jwriter.Writer, in EthWallet) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	{
+		const prefix string = ",\"PrivateKey\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.PrivateKey))
+	}
+	{
+		const prefix string = ",\"PublicKey\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.PublicKey))
+	}
+	{
+		const prefix string = ",\"Address\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Address))
+	}
+	out.RawByte('}')
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v EthWallet) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjson9e1087fdEncodeGithubComYaleOpenLabOpenxDatabase2(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v EthWallet) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjson9e1087fdEncodeGithubComYaleOpenLabOpenxDatabase2(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *EthWallet) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjson9e1087fdDecodeGithubComYaleOpenLabOpenxDatabase2(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *EthWallet) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjson9e1087fdDecodeGithubComYaleOpenLabOpenxDatabase2(l, v)
 }
