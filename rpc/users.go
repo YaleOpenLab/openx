@@ -422,7 +422,7 @@ func kycView() {
 	})
 }
 
-// askForCoins asks for coins from the testnet faucet. Will be disabled once we move to testnet
+// askForCoins asks for coins from the testnet faucet. Will be disabled once we move to mainnet
 func askForCoins() {
 	http.HandleFunc("/user/askxlm", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
@@ -458,6 +458,11 @@ func trustAsset() {
 			return
 		}
 
+		if r.URL.Query()["assetCode"] == nil || r.URL.Query()["assetIssuer"] == nil || r.URL.Query()["limit"] == nil || r.URL.Query()["seedpwd"] == nil {
+			log.Println("invalid number of params passed")
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
 		assetCode := r.URL.Query()["assetCode"][0]
 		assetIssuer := r.URL.Query()["assetIssuer"][0]
 		limit := r.URL.Query()["limit"][0]
@@ -628,7 +633,7 @@ func tellerPing() {
 		req, err := http.NewRequest("GET", TellerUrl+"/ping", nil)
 		if err != nil {
 			log.Println("did not create new GET request", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
@@ -636,13 +641,13 @@ func tellerPing() {
 		res, err := client.Do(req)
 		if err != nil {
 			log.Println("did not make request", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 		defer res.Body.Close()
 		data, err := ioutil.ReadAll(res.Body)
 		if err != nil {
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
@@ -650,7 +655,7 @@ func tellerPing() {
 
 		err = x.UnmarshalJSON(data)
 		if err != nil {
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
@@ -891,7 +896,6 @@ func generateNewSecrets() {
 
 func generateResetPwdCode() {
 	http.HandleFunc("/user/resetpwd", func(w http.ResponseWriter, r *http.Request) {
-		log.Println("CALLING ENDPOINT")
 		checkGet(w, r)
 		checkOrigin(w, r)
 
@@ -961,11 +965,14 @@ func resetPassword() {
 
 		_, err = ValidateSeedPwd(w, r, rUser.EncryptedSeed, rUser.PublicKey)
 		if err != nil {
+			log.Println("bad req1")
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		if vCode != rUser.PwdResetCode || vCode == "INVALID" {
+			log.Println("bad req2")
+			log.Println(rUser.PwdResetCode == vCode, vCode == "INVALID")
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -997,7 +1004,7 @@ func sweepFunds() {
 			return
 		}
 		if r.URL.Query()["seedpwd"] == nil || r.URL.Query()["destination"] == nil {
-			log.Println("did not validate user", err)
+			log.Println("seedpwd or destination missing")
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}

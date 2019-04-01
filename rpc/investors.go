@@ -19,7 +19,6 @@ import (
 // setupInvestorRPCs sets up all RPCs related to the investor
 func setupInvestorRPCs() {
 	registerInvestor()
-	insertInvestor()
 	validateInvestor()
 	getAllInvestors()
 	invest()
@@ -71,28 +70,6 @@ func registerInvestor() {
 		}
 
 		MarshalSend(w, r, user)
-	})
-}
-
-// insertInvestor inserts an investor in to the main platform database
-func insertInvestor() {
-	// this should be a post method since you want to accetp an project and then insert
-	// that into the database
-	http.HandleFunc("/investor/insert", func(w http.ResponseWriter, r *http.Request) {
-		checkPost(w, r)
-		prepInvestor, err := parseInvestor(r)
-		if err != nil {
-			log.Println("parseInvestor error", err)
-			responseHandler(w, r, StatusBadRequest)
-			return
-		}
-		err = prepInvestor.Save()
-		if err != nil {
-			log.Println("did not save investor", err)
-			responseHandler(w, r, StatusInternalServerError)
-			return
-		}
-		responseHandler(w, r, StatusCreated)
 	})
 }
 
