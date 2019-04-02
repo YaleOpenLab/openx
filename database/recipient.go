@@ -38,6 +38,12 @@ type Recipient struct {
 	StateHashes []string
 	// StateHashes provides the list of state updates (ipfs hashes) that the teller associated with this
 	// particular recipient has communicated.
+	TotalEnergyCP float64
+	// the total energy produced by the recipient's assets in the current period
+	TotalEnergy float64
+	// the total energy produced by the recipient's assets over all billed periods
+	Autoreload bool
+	// a bool to denote whether the recipient wants to reload balance from his secondary account to pay any dues that are remaining
 }
 
 // NewRecipient returns a new recipient provided with the function parameters

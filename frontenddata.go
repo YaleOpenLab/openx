@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/pkg/errors"
-	"log"
 	"encoding/json"
+	"github.com/pkg/errors"
 	"io/ioutil"
+	"log"
 
 	database "github.com/YaleOpenLab/openx/database"
 	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"

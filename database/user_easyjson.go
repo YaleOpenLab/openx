@@ -137,6 +137,14 @@ func easyjson9e1087fdDecodeGithubComYaleOpenLabOpenxDatabase1(in *jlexer.Lexer, 
 			out.Name = string(in.String())
 		case "PublicKey":
 			out.PublicKey = string(in.String())
+		case "City":
+			out.City = string(in.String())
+		case "ZipCode":
+			out.ZipCode = string(in.String())
+		case "Country":
+			out.Country = string(in.String())
+		case "RecoveryPhone":
+			out.RecoveryPhone = string(in.String())
 		case "Username":
 			out.Username = string(in.String())
 		case "Pwhash":
@@ -264,6 +272,46 @@ func easyjson9e1087fdEncodeGithubComYaleOpenLabOpenxDatabase1(out *jwriter.Write
 			out.RawString(prefix)
 		}
 		out.String(string(in.PublicKey))
+	}
+	{
+		const prefix string = ",\"City\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.City))
+	}
+	{
+		const prefix string = ",\"ZipCode\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.ZipCode))
+	}
+	{
+		const prefix string = ",\"Country\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Country))
+	}
+	{
+		const prefix string = ",\"RecoveryPhone\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.RecoveryPhone))
 	}
 	{
 		const prefix string = ",\"Username\":"

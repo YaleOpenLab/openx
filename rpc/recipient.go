@@ -39,20 +39,6 @@ func setupRecipientRPCs() {
 	storeStateHash()
 }
 
-// parseRecipient parses a recipient from the passed form data and returns a recipient structure if
-// the form data passed was accurate
-func parseRecipient(r *http.Request) (database.Recipient, error) {
-	var prepRecipient database.Recipient
-	err := r.ParseForm()
-	if err != nil || r.FormValue("username") == "" || r.FormValue("pwhash") == "" || r.FormValue("Name") == "" || r.FormValue("EPassword") == "" {
-		// don't care which type of error because you send 404 anyway
-		return prepRecipient, errors.New("one of required fields missing: username, pwhash, Name, EPassword")
-	}
-
-	prepRecipient.U, err = database.NewUser(r.FormValue("username"), r.FormValue("pwhash"), r.FormValue("Name"), r.FormValue("EPassword"))
-	return prepRecipient, err
-}
-
 // getAllRecipients gets a list of all the recipients who have registered on the platform
 func getAllRecipients() {
 	http.HandleFunc("/recipient/all", func(w http.ResponseWriter, r *http.Request) {
@@ -88,33 +74,33 @@ func registerRecipient() {
 		// check for username collision here. IF the usernamer already exists, fetch details from that and register as investor
 		duplicateUser, err := database.CheckUsernameCollision(username)
 		if err != nil {
-		  // username collision, check other fields by fetching user details for the collided user
-		  if duplicateUser.Name == name && duplicateUser.Pwhash == pwd {
-		    // this is the same user who wants to register as an investor now, check if encrypted seed decrypts
-		    seed, err := wallet.DecryptSeed(duplicateUser.EncryptedSeed, seedpwd)
-		    if err != nil {
-		      responseHandler(w, r, StatusInternalServerError)
-		      return
-		    }
-		    pubkey, err := wallet.ReturnPubkey(seed)
-		    if err != nil {
-		      responseHandler(w, r, StatusInternalServerError)
-		      return
-		    }
-		    if pubkey != duplicateUser.PublicKey {
-		      responseHandler(w, r, StatusUnauthorized)
-		      return
-		    }
-		    var a database.Recipient
-		    a.U = duplicateUser
-		    err = a.Save()
-		    if err != nil {
-		      responseHandler(w, r, StatusInternalServerError)
-		      return
-		    }
-		    MarshalSend(w, r, a)
-		    return
-		  }
+			// username collision, check other fields by fetching user details for the collided user
+			if duplicateUser.Name == name && duplicateUser.Pwhash == pwd {
+				// this is the same user who wants to register as an investor now, check if encrypted seed decrypts
+				seed, err := wallet.DecryptSeed(duplicateUser.EncryptedSeed, seedpwd)
+				if err != nil {
+					responseHandler(w, r, StatusInternalServerError)
+					return
+				}
+				pubkey, err := wallet.ReturnPubkey(seed)
+				if err != nil {
+					responseHandler(w, r, StatusInternalServerError)
+					return
+				}
+				if pubkey != duplicateUser.PublicKey {
+					responseHandler(w, r, StatusUnauthorized)
+					return
+				}
+				var a database.Recipient
+				a.U = duplicateUser
+				err = a.Save()
+				if err != nil {
+					responseHandler(w, r, StatusInternalServerError)
+					return
+				}
+				MarshalSend(w, r, a)
+				return
+			}
 		}
 
 		user, err := database.NewRecipient(username, pwd, seedpwd, name)
@@ -127,6 +113,7 @@ func registerRecipient() {
 		MarshalSend(w, r, user)
 	})
 }
+
 // validateRecipient validates a recipient on the platform
 func validateRecipient() {
 	http.HandleFunc("/recipient/validate", func(w http.ResponseWriter, r *http.Request) {

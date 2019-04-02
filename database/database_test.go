@@ -490,7 +490,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = MoveFundsFromSecondaryWallet(inv.U.Index, "invalidpwhash","10", "blah")
+	err = MoveFundsFromSecondaryWallet(inv.U.Index, "invalidpwhash", "10", "blah")
 	if err == nil {
 		t.Fatalf("not able to catch invalid hash error")
 	}

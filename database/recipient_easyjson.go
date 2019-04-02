@@ -134,6 +134,12 @@ func easyjson5e116a33DecodeGithubComYaleOpenLabOpenxDatabase(in *jlexer.Lexer, o
 				}
 				in.Delim(']')
 			}
+		case "TotalEnergyCP":
+			out.TotalEnergyCP = float64(in.Float64())
+		case "TotalEnergy":
+			out.TotalEnergy = float64(in.Float64())
+		case "Autoreload":
+			out.Autoreload = bool(in.Bool())
 		default:
 			in.SkipRecursive()
 		}
@@ -261,6 +267,36 @@ func easyjson5e116a33EncodeGithubComYaleOpenLabOpenxDatabase(out *jwriter.Writer
 			}
 			out.RawByte(']')
 		}
+	}
+	{
+		const prefix string = ",\"TotalEnergyCP\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Float64(float64(in.TotalEnergyCP))
+	}
+	{
+		const prefix string = ",\"TotalEnergy\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Float64(float64(in.TotalEnergy))
+	}
+	{
+		const prefix string = ",\"Autoreload\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Bool(bool(in.Autoreload))
 	}
 	out.RawByte('}')
 }

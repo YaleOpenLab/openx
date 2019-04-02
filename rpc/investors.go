@@ -31,20 +31,6 @@ func setupInvestorRPCs() {
 	investInLivingUnitCoop()
 }
 
-// parseInvestor is a helper that can be used to validate POST data and assigns the passed form
-// data to an Investor struct
-func parseInvestor(r *http.Request) (database.Investor, error) {
-	var prepInvestor database.Investor
-	err := r.ParseForm()
-	if err != nil || r.FormValue("username") == "" || r.FormValue("pwhash") == "" || r.FormValue("Name") == "" || r.FormValue("EPassword") == "" {
-		return prepInvestor, errors.New("one of required fields missing: username, pwhash, Name, EPassword")
-	}
-
-	prepInvestor.AmountInvested = float64(0)
-	prepInvestor.U, err = database.NewUser(r.FormValue("username"), r.FormValue("pwhash"), r.FormValue("Name"), r.FormValue("EPassword"))
-	return prepInvestor, err
-}
-
 func registerInvestor() {
 	http.HandleFunc("/investor/register", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)

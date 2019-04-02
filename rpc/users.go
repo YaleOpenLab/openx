@@ -23,6 +23,7 @@ import (
 
 func setupUserRpcs() {
 	registerUser()
+	updateUser()
 	ValidateUser()
 	getBalances()
 	getXLMBalance()
@@ -140,6 +141,82 @@ func registerUser() {
 		}
 
 		MarshalSend(w, r, user)
+	})
+}
+
+func updateUser() {
+	/* List of changeable parameters for the user struct
+	Name string
+	City string
+	ZipCode string
+	Country string
+	RecoveryPhone string
+	Address string
+	Description string
+	Email string
+	Notification bool
+	*/
+	http.HandleFunc("/user/update", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
+		user, err := UserValidateHelper(w, r)
+		if err != nil {
+			responseHandler(w, r, StatusUnauthorized)
+			return
+		}
+		if r.URL.Query()["name"] != nil {
+			user.Name = r.URL.Query()["name"][0]
+		} else if r.URL.Query()["city"] != nil {
+			user.City = r.URL.Query()["city"][0]
+		} else if r.URL.Query()["zipcode"] != nil {
+			user.ZipCode = r.URL.Query()["zipcode"][0]
+		} else if r.URL.Query()["country"] != nil {
+			user.Country = r.URL.Query()["country"][0]
+		} else if r.URL.Query()["recoveryphone"] != nil {
+			user.RecoveryPhone = r.URL.Query()["recoveryphone"][0]
+		} else if r.URL.Query()["address"] != nil {
+			user.Address = r.URL.Query()["address"][0]
+		} else if r.URL.Query()["description"] != nil {
+			user.Description = r.URL.Query()["description"][0]
+		} else if r.URL.Query()["email"] != nil {
+			user.Email = r.URL.Query()["email"][0]
+		} else if r.URL.Query()["notification"] != nil {
+			if r.URL.Query()["notification"][0] != "true" {
+				user.Notification = false
+			} else {
+				user.Notification = true
+			}
+		} else {
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+		err = user.Save()
+		if err != nil {
+			responseHandler(w, r, StatusInternalServerError)
+			return
+		}
+
+		// check whether given user is an investor or recipient
+		investor, err := InvValidateHelper(w, r)
+		if err == nil {
+			investor.U = user
+			err = investor.Save()
+			if err != nil {
+				responseHandler(w, r, StatusInternalServerError)
+				return
+			}
+		}
+		recipient, err := RecpValidateHelper(w, r)
+		if err == nil {
+			recipient.U = user
+			err = recipient.Save()
+			if err != nil {
+				responseHandler(w, r, StatusInternalServerError)
+				return
+			}
+		}
+		responseHandler(w, r, StatusOK)
+		// now we have the user, need to check which parts the user has specified
 	})
 }
 

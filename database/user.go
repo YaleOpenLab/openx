@@ -33,6 +33,14 @@ type User struct {
 	// Name of the primary stakeholder involved (principal trustee of school, for eg.)
 	PublicKey string
 	// PublicKey denotes the public key of the recipient
+	City string
+	// the city of residence of the resident
+	ZipCode string
+	// the zipcode of hte particular city
+	Country string
+	// the coutnry of residence of the resident
+	RecoveryPhone string
+	// the phone number where we need to send recovery codes to
 	Username string
 	// the username you use to login to the platform
 	Pwhash string

@@ -48,7 +48,7 @@ func NewUserPrompt() (string, string, string, string, error) {
 		return "", "", "", "", err
 	}
 
-	err = database.CheckUsernameCollision(loginUserName)
+	_, err = database.CheckUsernameCollision(loginUserName)
 	if err != nil {
 		fmt.Printf("%s", "username already taken, please choose a different one")
 		return "", "", "", "", errors.New("username already taken, please choose a different one")
