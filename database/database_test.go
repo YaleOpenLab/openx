@@ -91,7 +91,7 @@ func TestDb(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Able to retrieve users in database with invalid path")
 	}
-	err = CheckUsernameCollision("blah")
+	_, err = CheckUsernameCollision("blah")
 	if err == nil {
 		t.Fatalf("Able to check collision in database with invalid path")
 	}
@@ -417,7 +417,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = CheckUsernameCollision("recipient1")
+	_, err = CheckUsernameCollision("recipient1")
 	if err == nil {
 		t.Fatalf("recipient username collision not picked up")
 	}
