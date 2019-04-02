@@ -166,21 +166,29 @@ func updateUser() {
 		}
 		if r.URL.Query()["name"] != nil {
 			user.Name = r.URL.Query()["name"][0]
-		} else if r.URL.Query()["city"] != nil {
+		}
+		if r.URL.Query()["city"] != nil {
 			user.City = r.URL.Query()["city"][0]
-		} else if r.URL.Query()["zipcode"] != nil {
+		}
+		if r.URL.Query()["zipcode"] != nil {
 			user.ZipCode = r.URL.Query()["zipcode"][0]
-		} else if r.URL.Query()["country"] != nil {
+		}
+		if r.URL.Query()["country"] != nil {
 			user.Country = r.URL.Query()["country"][0]
-		} else if r.URL.Query()["recoveryphone"] != nil {
+		}
+		if r.URL.Query()["recoveryphone"] != nil {
 			user.RecoveryPhone = r.URL.Query()["recoveryphone"][0]
-		} else if r.URL.Query()["address"] != nil {
+		}
+		if r.URL.Query()["address"] != nil {
 			user.Address = r.URL.Query()["address"][0]
-		} else if r.URL.Query()["description"] != nil {
+		}
+		if r.URL.Query()["description"] != nil {
 			user.Description = r.URL.Query()["description"][0]
-		} else if r.URL.Query()["email"] != nil {
+		}
+		if r.URL.Query()["email"] != nil {
 			user.Email = r.URL.Query()["email"][0]
-		} else if r.URL.Query()["notification"] != nil {
+		}
+		if r.URL.Query()["notification"] != nil {
 			if r.URL.Query()["notification"][0] != "true" {
 				user.Notification = false
 			} else {
