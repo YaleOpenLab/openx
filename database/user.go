@@ -517,11 +517,11 @@ func MoveFundsFromSecondaryWallet(userIndex int, pwhash string, amount string, s
 	}
 
 	if user.Pwhash != pwhash {
-		return fmt.Errorf("pw hashes don't match, quitting!")
+		return fmt.Errorf("pw hashes don't match, quitting")
 	}
 	amountI, err := utils.StoFWithCheck(amount)
 	if err != nil {
-		return errors.Wrap(err, "amount not float, quitting!")
+		return errors.Wrap(err, "amount not float, quitting")
 	}
 	// unlock secondary account
 	secSeed, err := wallet.DecryptSeed(user.SecondaryWallet.EncryptedSeed, seedpwd)
@@ -559,7 +559,7 @@ func SweepSecondaryWallet(index int, pwhash string, seedpwd string) error {
 	}
 
 	if user.Pwhash != pwhash {
-		return fmt.Errorf("pw hashes don't match, quitting!")
+		return fmt.Errorf("pw hashes don't match, quitting")
 	}
 	secSeed, err := wallet.DecryptSeed(user.SecondaryWallet.EncryptedSeed, seedpwd)
 	if err != nil {

@@ -258,6 +258,9 @@ func createPuertoRicoProject() error {
 	project.EngineeringLayoutType = "basic"
 	project.FEText = make(map[string]interface{})
 	project.FEText, err = parseJsonText("text/pasto.json")
+	if err != nil {
+		log.Fatal(err)
+	}
 	err = project.Save()
 	if err != nil {
 		return err
@@ -538,6 +541,9 @@ func createOneMegaWattProject() error {
 
 	project.FEText = make(map[string]interface{})
 	project.FEText, err = parseJsonText("text/newhampshire.json")
+	if err != nil {
+		log.Fatal(err)
+	}
 	project.EngineeringLayoutType = "complex"
 	err = project.Save()
 	if err != nil {
@@ -824,7 +830,9 @@ func createTenKiloWattProject() error {
 
 	project.FEText = make(map[string]interface{})
 	project.FEText, err = parseJsonText("text/newhaven.json")
-
+	if err != nil {
+		log.Fatal(err)
+	}
 	err = project.Save()
 	if err != nil {
 		log.Fatal(err)
@@ -1097,9 +1105,11 @@ func createTenMegaWattProject() error {
 	project.BNImages = append(project.BNImages, "")
 
 	project.EngineeringLayoutType = "simple"
-
 	project.FEText = make(map[string]interface{})
 	project.FEText, err = parseJsonText("text/prbonds.json")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	err = project.Save()
 	if err != nil {
@@ -1371,12 +1381,12 @@ func createOneHundredKiloWattProject() error {
 	project.CEImages = append(project.CEImages, "https://images.openx.solar/OpenSolarProjects/1_Rwanda/8.jpg", "https://images.openx.solar/OpenSolarProjects/1_Rwanda/1.jpg", "https://images.openx.solar/OpenSolarProjects/1_Rwanda/11.jpg", "https://images.openx.solar/OpenSolarProjects/1_Rwanda/7.jpg")
 	project.PSImages = append(project.PSImages, "")
 	project.BNImages = append(project.BNImages, "")
-
 	project.EngineeringLayoutType = "basic"
-
 	project.FEText = make(map[string]interface{})
 	project.FEText, err = parseJsonText("text/ubadu.json")
-
+	if err != nil {
+		log.Fatal(err)
+	}
 	err = project.Save()
 	if err != nil {
 		log.Fatal(err)
