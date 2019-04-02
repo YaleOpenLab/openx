@@ -19,7 +19,7 @@ import (
 // to avoid code duplication
 // not exporting this function because its being used only within the same package
 func setupRecipientRPCs() {
-	insertRecipient()
+	registerRecipient()
 	validateRecipient()
 	getAllRecipients()
 	payback()
@@ -68,31 +68,65 @@ func getAllRecipients() {
 	})
 }
 
-// insertRecipient inserts a particular recipient into the database
-func insertRecipient() {
-	// this should be a post method since you want to accept an project and then insert
-	// that into the database
-	http.HandleFunc("/recipient/insert", func(w http.ResponseWriter, r *http.Request) {
-		checkPost(w, r)
+func registerRecipient() {
+	http.HandleFunc("/recipient/register", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
 		checkOrigin(w, r)
-		prepRecipient, err := parseRecipient(r)
-		if err != nil {
-			log.Println("did not parse recipients", err)
+
+		// to register, we need the name, username and pwhash
+		if r.URL.Query()["name"] == nil || r.URL.Query()["username"] == nil || r.URL.Query()["pwd"] == nil || r.URL.Query()["seedpwd"] == nil {
+			log.Println("missing basic set of params that can be used ot validate a user")
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
-		err = prepRecipient.Save()
+		name := r.URL.Query()["name"][0]
+		username := r.URL.Query()["username"][0]
+		pwd := r.URL.Query()["pwd"][0]
+		seedpwd := r.URL.Query()["seedpwd"][0]
+
+		// check for username collision here. IF the usernamer already exists, fetch details from that and register as investor
+		duplicateUser, err := database.CheckUsernameCollision(username)
 		if err != nil {
-			log.Println("did not save recipient", err)
+		  // username collision, check other fields by fetching user details for the collided user
+		  if duplicateUser.Name == name && duplicateUser.Pwhash == pwd {
+		    // this is the same user who wants to register as an investor now, check if encrypted seed decrypts
+		    seed, err := wallet.DecryptSeed(duplicateUser.EncryptedSeed, seedpwd)
+		    if err != nil {
+		      responseHandler(w, r, StatusInternalServerError)
+		      return
+		    }
+		    pubkey, err := wallet.ReturnPubkey(seed)
+		    if err != nil {
+		      responseHandler(w, r, StatusInternalServerError)
+		      return
+		    }
+		    if pubkey != duplicateUser.PublicKey {
+		      responseHandler(w, r, StatusUnauthorized)
+		      return
+		    }
+		    var a database.Recipient
+		    a.U = duplicateUser
+		    err = a.Save()
+		    if err != nil {
+		      responseHandler(w, r, StatusInternalServerError)
+		      return
+		    }
+		    MarshalSend(w, r, a)
+		    return
+		  }
+		}
+
+		user, err := database.NewRecipient(username, pwd, seedpwd, name)
+		if err != nil {
+			log.Println(err)
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
-		responseHandler(w, r, StatusCreated)
+		MarshalSend(w, r, user)
 	})
 }
-
 // validateRecipient validates a recipient on the platform
 func validateRecipient() {
 	http.HandleFunc("/recipient/validate", func(w http.ResponseWriter, r *http.Request) {

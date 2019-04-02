@@ -62,6 +62,37 @@ func registerInvestor() {
 		pwd := r.URL.Query()["pwd"][0]
 		seedpwd := r.URL.Query()["seedpwd"][0]
 
+		// check for username collision here. IF the usernamer already exists, fetch details from that and register as investor
+		duplicateUser, err := database.CheckUsernameCollision(username)
+		if err != nil {
+			// username collision, check other fields by fetching user details for the collided user
+			if duplicateUser.Name == name && duplicateUser.Pwhash == pwd {
+				// this is the same user who wants to register as an investor now, check if encrypted seed decrypts
+				seed, err := wallet.DecryptSeed(duplicateUser.EncryptedSeed, seedpwd)
+				if err != nil {
+					responseHandler(w, r, StatusInternalServerError)
+					return
+				}
+				pubkey, err := wallet.ReturnPubkey(seed)
+				if err != nil {
+					responseHandler(w, r, StatusInternalServerError)
+					return
+				}
+				if pubkey != duplicateUser.PublicKey {
+					responseHandler(w, r, StatusUnauthorized)
+					return
+				}
+				var a database.Investor
+				a.U = duplicateUser
+				err = a.Save()
+				if err != nil {
+					responseHandler(w, r, StatusInternalServerError)
+					return
+				}
+				MarshalSend(w, r, a)
+				return
+			}
+		}
 		user, err := database.NewInvestor(username, pwd, seedpwd, name)
 		if err != nil {
 			log.Println(err)

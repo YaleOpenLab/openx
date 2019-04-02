@@ -124,6 +124,14 @@ func registerUser() {
 		pwd := r.URL.Query()["pwd"][0]
 		seedpwd := r.URL.Query()["seedpwd"][0]
 
+		// if the username already exists, we don't allow for a new user with the same username
+		_, err := database.CheckUsernameCollision(username)
+		if err != nil {
+			log.Println("already registered as an user, so not registering again")
+			responseHandler(w, r, StatusNotAcceptable)
+			return
+		}
+
 		user, err := database.NewUser(username, pwd, seedpwd, name)
 		if err != nil {
 			log.Println(err)

@@ -338,15 +338,16 @@ func (a *User) GenKeys(seedpwd string) error {
 
 // CheckUsernameCollision checks if a username is available to a new user who
 // wants to signup on the platform
-func CheckUsernameCollision(uname string) error {
+func CheckUsernameCollision(uname string) (User, error) {
+	var dummy User
 	temp, err := RetrieveAllUsers()
 	if err != nil {
-		return errors.Wrap(err, "error while retrieving all users from database")
+		return dummy, errors.Wrap(err, "error while retrieving all users from database")
 	}
 	limit := len(temp) + 1
 	db, err := OpenDB()
 	if err != nil {
-		return errors.Wrap(err, "error while opening database")
+		return dummy, errors.Wrap(err, "error while opening database")
 	}
 	defer db.Close()
 	err = db.View(func(tx *bolt.Tx) error {
@@ -359,14 +360,14 @@ func CheckUsernameCollision(uname string) error {
 				return errors.Wrap(err, "error while unmarshalling json")
 			}
 			// check names
-			log.Println("USERNAME: ", rUser.Username)
 			if rUser.Username == uname {
+				dummy = rUser
 				return errors.New("Username collision")
 			}
 		}
 		return nil
 	})
-	return err
+	return dummy, err
 }
 
 // Everything above this is exactly the same as the investor class. Need to replicate
