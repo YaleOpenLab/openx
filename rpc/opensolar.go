@@ -140,7 +140,7 @@ func projectHandler(w http.ResponseWriter, r *http.Request, stage int) {
 func getProjectsAtIndex() {
 	http.HandleFunc("/projects", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Query()["index"] == nil {
-			log.Println("NO index passed, not returning anything!")
+			log.Println("No stage number passed, not returning anything!")
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}

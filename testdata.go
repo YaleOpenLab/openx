@@ -234,5 +234,11 @@ func InsertDummyData() error {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	err = createOneHundredKiloWattProject()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	return nil
 }

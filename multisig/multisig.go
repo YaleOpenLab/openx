@@ -152,6 +152,7 @@ func SendTx(txe build.TransactionEnvelopeBuilder) error {
 	log.Printf("Two party multisig tx: %s, sequence: %d\n", resp.Hash, resp.Ledger)
 	return nil
 }
+
 // Construct2of2Tx constructs a tx where the source account pubkey1 is the 2of2 account
 // we need 2 signers for this tx
 func Tx2of2(pubkey1 string, destination string, signer1 string, signer2 string, amount string, memo string) error {

@@ -20,7 +20,6 @@ import (
 // not exporting this function because its being used only within the same package
 func setupRecipientRPCs() {
 	registerRecipient()
-	insertRecipient()
 	validateRecipient()
 	getAllRecipients()
 	payback()
@@ -40,18 +39,19 @@ func setupRecipientRPCs() {
 	storeStateHash()
 }
 
-// parseRecipient parses a recipient from the passed form data and returns a recipient structure if
-// the form data passed was accurate
-func parseRecipient(r *http.Request) (database.Recipient, error) {
-	var prepRecipient database.Recipient
-	err := r.ParseForm()
-	if err != nil || r.FormValue("username") == "" || r.FormValue("pwhash") == "" || r.FormValue("Name") == "" || r.FormValue("EPassword") == "" {
-		// don't care which type of error because you send 404 anyway
-		return prepRecipient, errors.New("one of required fields missing: username, pwhash, Name, EPassword")
-	}
-
-	prepRecipient.U, err = database.NewUser(r.FormValue("username"), r.FormValue("pwhash"), r.FormValue("Name"), r.FormValue("EPassword"))
-	return prepRecipient, err
+// getAllRecipients gets a list of all the recipients who have registered on the platform
+func getAllRecipients() {
+	http.HandleFunc("/recipient/all", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
+		recipients, err := database.RetrieveAllRecipients()
+		if err != nil {
+			log.Println("did not retrieve all recipients", err)
+			responseHandler(w, r, StatusInternalServerError)
+			return
+		}
+		MarshalSend(w, r, recipients)
+	})
 }
 
 func registerRecipient() {
@@ -71,6 +71,38 @@ func registerRecipient() {
 		pwd := r.URL.Query()["pwd"][0]
 		seedpwd := r.URL.Query()["seedpwd"][0]
 
+		// check for username collision here. IF the usernamer already exists, fetch details from that and register as investor
+		duplicateUser, err := database.CheckUsernameCollision(username)
+		if err != nil {
+			// username collision, check other fields by fetching user details for the collided user
+			if duplicateUser.Name == name && duplicateUser.Pwhash == pwd {
+				// this is the same user who wants to register as an investor now, check if encrypted seed decrypts
+				seed, err := wallet.DecryptSeed(duplicateUser.EncryptedSeed, seedpwd)
+				if err != nil {
+					responseHandler(w, r, StatusInternalServerError)
+					return
+				}
+				pubkey, err := wallet.ReturnPubkey(seed)
+				if err != nil {
+					responseHandler(w, r, StatusInternalServerError)
+					return
+				}
+				if pubkey != duplicateUser.PublicKey {
+					responseHandler(w, r, StatusUnauthorized)
+					return
+				}
+				var a database.Recipient
+				a.U = duplicateUser
+				err = a.Save()
+				if err != nil {
+					responseHandler(w, r, StatusInternalServerError)
+					return
+				}
+				MarshalSend(w, r, a)
+				return
+			}
+		}
+
 		user, err := database.NewRecipient(username, pwd, seedpwd, name)
 		if err != nil {
 			log.Println(err)
@@ -79,46 +111,6 @@ func registerRecipient() {
 		}
 
 		MarshalSend(w, r, user)
-	})
-}
-
-// getAllRecipients gets a list of all the recipients who have registered on the platform
-func getAllRecipients() {
-	http.HandleFunc("/recipient/all", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
-		checkOrigin(w, r)
-		recipients, err := database.RetrieveAllRecipients()
-		if err != nil {
-			log.Println("did not retrieve all recipients", err)
-			responseHandler(w, r, StatusInternalServerError)
-			return
-		}
-		MarshalSend(w, r, recipients)
-	})
-}
-
-// insertRecipient inserts a particular recipient into the database
-func insertRecipient() {
-	// this should be a post method since you want to accept an project and then insert
-	// that into the database
-	http.HandleFunc("/recipient/insert", func(w http.ResponseWriter, r *http.Request) {
-		checkPost(w, r)
-		checkOrigin(w, r)
-		prepRecipient, err := parseRecipient(r)
-		if err != nil {
-			log.Println("did not parse recipients", err)
-			responseHandler(w, r, StatusBadRequest)
-			return
-		}
-
-		err = prepRecipient.Save()
-		if err != nil {
-			log.Println("did not save recipient", err)
-			responseHandler(w, r, StatusInternalServerError)
-			return
-		}
-
-		responseHandler(w, r, StatusCreated)
 	})
 }
 

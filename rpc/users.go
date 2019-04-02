@@ -23,6 +23,7 @@ import (
 
 func setupUserRpcs() {
 	registerUser()
+	updateUser()
 	ValidateUser()
 	getBalances()
 	getXLMBalance()
@@ -124,6 +125,14 @@ func registerUser() {
 		pwd := r.URL.Query()["pwd"][0]
 		seedpwd := r.URL.Query()["seedpwd"][0]
 
+		// if the username already exists, we don't allow for a new user with the same username
+		_, err := database.CheckUsernameCollision(username)
+		if err != nil {
+			log.Println("already registered as an user, so not registering again")
+			responseHandler(w, r, StatusNotAcceptable)
+			return
+		}
+
 		user, err := database.NewUser(username, pwd, seedpwd, name)
 		if err != nil {
 			log.Println(err)
@@ -132,6 +141,82 @@ func registerUser() {
 		}
 
 		MarshalSend(w, r, user)
+	})
+}
+
+func updateUser() {
+	/* List of changeable parameters for the user struct
+	Name string
+	City string
+	ZipCode string
+	Country string
+	RecoveryPhone string
+	Address string
+	Description string
+	Email string
+	Notification bool
+	*/
+	http.HandleFunc("/user/update", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
+		user, err := UserValidateHelper(w, r)
+		if err != nil {
+			responseHandler(w, r, StatusUnauthorized)
+			return
+		}
+		if r.URL.Query()["name"] != nil {
+			user.Name = r.URL.Query()["name"][0]
+		} else if r.URL.Query()["city"] != nil {
+			user.City = r.URL.Query()["city"][0]
+		} else if r.URL.Query()["zipcode"] != nil {
+			user.ZipCode = r.URL.Query()["zipcode"][0]
+		} else if r.URL.Query()["country"] != nil {
+			user.Country = r.URL.Query()["country"][0]
+		} else if r.URL.Query()["recoveryphone"] != nil {
+			user.RecoveryPhone = r.URL.Query()["recoveryphone"][0]
+		} else if r.URL.Query()["address"] != nil {
+			user.Address = r.URL.Query()["address"][0]
+		} else if r.URL.Query()["description"] != nil {
+			user.Description = r.URL.Query()["description"][0]
+		} else if r.URL.Query()["email"] != nil {
+			user.Email = r.URL.Query()["email"][0]
+		} else if r.URL.Query()["notification"] != nil {
+			if r.URL.Query()["notification"][0] != "true" {
+				user.Notification = false
+			} else {
+				user.Notification = true
+			}
+		} else {
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+		err = user.Save()
+		if err != nil {
+			responseHandler(w, r, StatusInternalServerError)
+			return
+		}
+
+		// check whether given user is an investor or recipient
+		investor, err := InvValidateHelper(w, r)
+		if err == nil {
+			investor.U = user
+			err = investor.Save()
+			if err != nil {
+				responseHandler(w, r, StatusInternalServerError)
+				return
+			}
+		}
+		recipient, err := RecpValidateHelper(w, r)
+		if err == nil {
+			recipient.U = user
+			err = recipient.Save()
+			if err != nil {
+				responseHandler(w, r, StatusInternalServerError)
+				return
+			}
+		}
+		responseHandler(w, r, StatusOK)
+		// now we have the user, need to check which parts the user has specified
 	})
 }
 
@@ -422,7 +507,7 @@ func kycView() {
 	})
 }
 
-// askForCoins asks for coins from the testnet faucet. Will be disabled once we move to testnet
+// askForCoins asks for coins from the testnet faucet. Will be disabled once we move to mainnet
 func askForCoins() {
 	http.HandleFunc("/user/askxlm", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
@@ -458,6 +543,11 @@ func trustAsset() {
 			return
 		}
 
+		if r.URL.Query()["assetCode"] == nil || r.URL.Query()["assetIssuer"] == nil || r.URL.Query()["limit"] == nil || r.URL.Query()["seedpwd"] == nil {
+			log.Println("invalid number of params passed")
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
 		assetCode := r.URL.Query()["assetCode"][0]
 		assetIssuer := r.URL.Query()["assetIssuer"][0]
 		limit := r.URL.Query()["limit"][0]
@@ -628,7 +718,7 @@ func tellerPing() {
 		req, err := http.NewRequest("GET", TellerUrl+"/ping", nil)
 		if err != nil {
 			log.Println("did not create new GET request", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
@@ -636,13 +726,13 @@ func tellerPing() {
 		res, err := client.Do(req)
 		if err != nil {
 			log.Println("did not make request", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 		defer res.Body.Close()
 		data, err := ioutil.ReadAll(res.Body)
 		if err != nil {
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
@@ -650,7 +740,7 @@ func tellerPing() {
 
 		err = x.UnmarshalJSON(data)
 		if err != nil {
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
 
@@ -891,7 +981,6 @@ func generateNewSecrets() {
 
 func generateResetPwdCode() {
 	http.HandleFunc("/user/resetpwd", func(w http.ResponseWriter, r *http.Request) {
-		log.Println("CALLING ENDPOINT")
 		checkGet(w, r)
 		checkOrigin(w, r)
 
@@ -961,11 +1050,14 @@ func resetPassword() {
 
 		_, err = ValidateSeedPwd(w, r, rUser.EncryptedSeed, rUser.PublicKey)
 		if err != nil {
+			log.Println("bad req1")
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
 
 		if vCode != rUser.PwdResetCode || vCode == "INVALID" {
+			log.Println("bad req2")
+			log.Println(rUser.PwdResetCode == vCode, vCode == "INVALID")
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -997,7 +1089,7 @@ func sweepFunds() {
 			return
 		}
 		if r.URL.Query()["seedpwd"] == nil || r.URL.Query()["destination"] == nil {
-			log.Println("did not validate user", err)
+			log.Println("seedpwd or destination missing")
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}

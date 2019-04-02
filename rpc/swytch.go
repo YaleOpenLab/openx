@@ -26,7 +26,7 @@ type getAccessTokenDataHelper struct {
 }
 
 type GetAccessTokenData struct {
-	Data []getAccessTokenDataHelper `json:data"`
+	Data []getAccessTokenDataHelper `json:"data"`
 }
 
 func getAccessToken() {
@@ -159,7 +159,7 @@ type getSwytchUserStructHelper struct {
 	Email         string                   `json:"email"`
 	Username      string                   `json:"username"`
 	Roles         []string                 `json:"roles"`
-	Token_staking getSwytchUserStructToken `json:token_staking`
+	Token_staking getSwytchUserStructToken `json:"token_staking"`
 	Wallet        string                   `json:"wallet"`
 }
 
@@ -241,7 +241,7 @@ type gA2 struct {
 	Name       string      `json:"name"`
 	Type       string      `json:"type"`
 	Location   string      `json:"location"`
-	Meta       gA2Meta     `json:meta`
+	Meta       gA2Meta     `json:"meta"`
 	Country    string      `json:"country"`
 	Status     string      `json:"status"`
 	Generating bool        `json:"generating"`
@@ -436,7 +436,7 @@ type getEnergyAttributionHelper struct {
 	Tags                   string                     `json:"tags"`
 	Tx_history             string                     `json:"tx_history"`
 	Processing_status      string                     `json:"processing_status"`
-	Transactions           []string                   `json:transactions`
+	Transactions           []string                   `json:"transactions"`
 	Redeemable             bool                       `json:"redeemable"`
 	Claimed                bool                       `json:"claimed"`
 	Confirmed              bool                       `json:"confirmed"`

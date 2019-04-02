@@ -19,7 +19,6 @@ import (
 // setupInvestorRPCs sets up all RPCs related to the investor
 func setupInvestorRPCs() {
 	registerInvestor()
-	insertInvestor()
 	validateInvestor()
 	getAllInvestors()
 	invest()
@@ -30,20 +29,6 @@ func setupInvestorRPCs() {
 	sendEmail()
 	investInConstructionBond()
 	investInLivingUnitCoop()
-}
-
-// parseInvestor is a helper that can be used to validate POST data and assigns the passed form
-// data to an Investor struct
-func parseInvestor(r *http.Request) (database.Investor, error) {
-	var prepInvestor database.Investor
-	err := r.ParseForm()
-	if err != nil || r.FormValue("username") == "" || r.FormValue("pwhash") == "" || r.FormValue("Name") == "" || r.FormValue("EPassword") == "" {
-		return prepInvestor, errors.New("one of required fields missing: username, pwhash, Name, EPassword")
-	}
-
-	prepInvestor.AmountInvested = float64(0)
-	prepInvestor.U, err = database.NewUser(r.FormValue("username"), r.FormValue("pwhash"), r.FormValue("Name"), r.FormValue("EPassword"))
-	return prepInvestor, err
 }
 
 func registerInvestor() {
@@ -63,6 +48,37 @@ func registerInvestor() {
 		pwd := r.URL.Query()["pwd"][0]
 		seedpwd := r.URL.Query()["seedpwd"][0]
 
+		// check for username collision here. IF the usernamer already exists, fetch details from that and register as investor
+		duplicateUser, err := database.CheckUsernameCollision(username)
+		if err != nil {
+			// username collision, check other fields by fetching user details for the collided user
+			if duplicateUser.Name == name && duplicateUser.Pwhash == pwd {
+				// this is the same user who wants to register as an investor now, check if encrypted seed decrypts
+				seed, err := wallet.DecryptSeed(duplicateUser.EncryptedSeed, seedpwd)
+				if err != nil {
+					responseHandler(w, r, StatusInternalServerError)
+					return
+				}
+				pubkey, err := wallet.ReturnPubkey(seed)
+				if err != nil {
+					responseHandler(w, r, StatusInternalServerError)
+					return
+				}
+				if pubkey != duplicateUser.PublicKey {
+					responseHandler(w, r, StatusUnauthorized)
+					return
+				}
+				var a database.Investor
+				a.U = duplicateUser
+				err = a.Save()
+				if err != nil {
+					responseHandler(w, r, StatusInternalServerError)
+					return
+				}
+				MarshalSend(w, r, a)
+				return
+			}
+		}
 		user, err := database.NewInvestor(username, pwd, seedpwd, name)
 		if err != nil {
 			log.Println(err)
@@ -71,28 +87,6 @@ func registerInvestor() {
 		}
 
 		MarshalSend(w, r, user)
-	})
-}
-
-// insertInvestor inserts an investor in to the main platform database
-func insertInvestor() {
-	// this should be a post method since you want to accetp an project and then insert
-	// that into the database
-	http.HandleFunc("/investor/insert", func(w http.ResponseWriter, r *http.Request) {
-		checkPost(w, r)
-		prepInvestor, err := parseInvestor(r)
-		if err != nil {
-			log.Println("parseInvestor error", err)
-			responseHandler(w, r, StatusBadRequest)
-			return
-		}
-		err = prepInvestor.Save()
-		if err != nil {
-			log.Println("did not save investor", err)
-			responseHandler(w, r, StatusInternalServerError)
-			return
-		}
-		responseHandler(w, r, StatusCreated)
 	})
 }
 

@@ -35,11 +35,19 @@ type Investor struct {
 	// array of asset codes this user has invested in
 	// also I think we need a username + password for logging on to the platform itself
 	// linking it here for now
-	U User
+	U User // TODO: change this to a pointer to the user struct to avoid redundancy
 	// user related functions are called as an instance directly
 	// TODO: Consider other information and fields required by the investor struct,
 	// eg. like unique ID, metadata
 	// TODO: Consider the banking onboarding problem (see notes in Anchor.md and define general banking strategy)
+	WeightedROI string
+	// the weightedROI for all the projects under the investor's umbrella
+	AllTimeReturns float64
+	// the all time returns accumulated by teh investor during his time on the platform
+	ReceivedRECs string
+	// The renewable enrgy  certificated received by the investor as part o
+	Prorata string
+	// the pro rata in all the projects that the in vestor has invested in
 }
 
 // NewInvestor creates a new investor object when passed the username, password hash,

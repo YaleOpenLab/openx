@@ -33,6 +33,14 @@ type User struct {
 	// Name of the primary stakeholder involved (principal trustee of school, for eg.)
 	PublicKey string
 	// PublicKey denotes the public key of the recipient
+	City string
+	// the city of residence of the resident
+	ZipCode string
+	// the zipcode of hte particular city
+	Country string
+	// the coutnry of residence of the resident
+	RecoveryPhone string
+	// the phone number where we need to send recovery codes to
 	Username string
 	// the username you use to login to the platform
 	Pwhash string
@@ -338,15 +346,16 @@ func (a *User) GenKeys(seedpwd string) error {
 
 // CheckUsernameCollision checks if a username is available to a new user who
 // wants to signup on the platform
-func CheckUsernameCollision(uname string) error {
+func CheckUsernameCollision(uname string) (User, error) {
+	var dummy User
 	temp, err := RetrieveAllUsers()
 	if err != nil {
-		return errors.Wrap(err, "error while retrieving all users from database")
+		return dummy, errors.Wrap(err, "error while retrieving all users from database")
 	}
 	limit := len(temp) + 1
 	db, err := OpenDB()
 	if err != nil {
-		return errors.Wrap(err, "error while opening database")
+		return dummy, errors.Wrap(err, "error while opening database")
 	}
 	defer db.Close()
 	err = db.View(func(tx *bolt.Tx) error {
@@ -359,14 +368,14 @@ func CheckUsernameCollision(uname string) error {
 				return errors.Wrap(err, "error while unmarshalling json")
 			}
 			// check names
-			log.Println("USERNAME: ", rUser.Username)
 			if rUser.Username == uname {
+				dummy = rUser
 				return errors.New("Username collision")
 			}
 		}
 		return nil
 	})
-	return err
+	return dummy, err
 }
 
 // Everything above this is exactly the same as the investor class. Need to replicate
@@ -508,11 +517,11 @@ func MoveFundsFromSecondaryWallet(userIndex int, pwhash string, amount string, s
 	}
 
 	if user.Pwhash != pwhash {
-		return fmt.Errorf("pw hashes don't match, quitting!")
+		return fmt.Errorf("pw hashes don't match, quitting")
 	}
 	amountI, err := utils.StoFWithCheck(amount)
 	if err != nil {
-		return errors.Wrap(err, "amount not float, quitting!")
+		return errors.Wrap(err, "amount not float, quitting")
 	}
 	// unlock secondary account
 	secSeed, err := wallet.DecryptSeed(user.SecondaryWallet.EncryptedSeed, seedpwd)
@@ -550,7 +559,7 @@ func SweepSecondaryWallet(index int, pwhash string, seedpwd string) error {
 	}
 
 	if user.Pwhash != pwhash {
-		return fmt.Errorf("pw hashes don't match, quitting!")
+		return fmt.Errorf("pw hashes don't match, quitting")
 	}
 	secSeed, err := wallet.DecryptSeed(user.SecondaryWallet.EncryptedSeed, seedpwd)
 	if err != nil {

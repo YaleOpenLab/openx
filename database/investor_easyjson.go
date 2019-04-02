@@ -111,6 +111,14 @@ func easyjsonA00f0bbcDecodeGithubComYaleOpenLabOpenxDatabase(in *jlexer.Lexer, o
 			}
 		case "U":
 			(out.U).UnmarshalEasyJSON(in)
+		case "WeightedROI":
+			out.WeightedROI = string(in.String())
+		case "AllTimeReturns":
+			out.AllTimeReturns = float64(in.Float64())
+		case "ReceivedRECs":
+			out.ReceivedRECs = string(in.String())
+		case "Prorata":
+			out.Prorata = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -217,6 +225,46 @@ func easyjsonA00f0bbcEncodeGithubComYaleOpenLabOpenxDatabase(out *jwriter.Writer
 			out.RawString(prefix)
 		}
 		(in.U).MarshalEasyJSON(out)
+	}
+	{
+		const prefix string = ",\"WeightedROI\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.WeightedROI))
+	}
+	{
+		const prefix string = ",\"AllTimeReturns\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Float64(float64(in.AllTimeReturns))
+	}
+	{
+		const prefix string = ",\"ReceivedRECs\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.ReceivedRECs))
+	}
+	{
+		const prefix string = ",\"Prorata\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Prorata))
 	}
 	out.RawByte('}')
 }

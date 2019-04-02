@@ -118,7 +118,7 @@ func VoteTowardsProposedProject(invIndex int, votes int, projectIndex int) error
 		return errors.Wrap(err, "couldn't retrieve project")
 	}
 	if project.Stage != 2 {
-		return errors.New("You can't vote for a project with stage less than 2")
+		return errors.New("You can't vote for a project with stage not equal to 2")
 	}
 
 	project.Votes += votes
