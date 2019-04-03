@@ -264,6 +264,7 @@ func (project *Project) updateProjectAfterInvestment(invAmount string, invIndex 
 	var err error
 	project.MoneyRaised += utils.StoF(invAmount)
 	project.InvestorIndices = append(project.InvestorIndices, invIndex)
+	log.Println("INV INDEX: ", invIndex)
 	err = project.Save()
 	if err != nil {
 		return errors.Wrap(err, "couldn't save project")
@@ -286,16 +287,18 @@ func (project *Project) updateProjectAfterInvestment(invAmount string, invIndex 
 
 	// we need to udpate the project investment map here
 	project.InvestorMap = make(map[string]float64) // make the map
-
-	for _, elem := range project.InvestorIndices {
-		investor, err := database.RetrieveInvestor(elem)
+	log.Println("INVESTOR INDICES: ", project.InvestorIndices)
+	for i, _ := range project.InvestorIndices {
+		investor, err := database.RetrieveInvestor(project.InvestorIndices[i])
 		if err != nil {
 			return errors.Wrap(err, "error while retrieving investors, quitting")
 		}
 
+		log.Println(investor.U.PublicKey, project.InvestorAssetCode)
 		balanceS, err := xlm.GetAssetBalance(investor.U.PublicKey, project.InvestorAssetCode)
 		if err != nil {
-			return errors.Wrap(err, "error while retrieving asset balance, quitting")
+			balanceS = "0"
+			// return errors.Wrap(err, "error while retrieving asset balance, quitting")
 		}
 
 		balanceF, err := utils.StoFWithCheck(balanceS)
