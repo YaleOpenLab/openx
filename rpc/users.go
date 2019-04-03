@@ -194,10 +194,8 @@ func updateUser() {
 			} else {
 				user.Notification = true
 			}
-		} else {
-			responseHandler(w, r, StatusBadRequest)
-			return
 		}
+
 		err = user.Save()
 		if err != nil {
 			responseHandler(w, r, StatusInternalServerError)

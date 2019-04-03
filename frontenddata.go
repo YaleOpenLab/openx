@@ -471,7 +471,7 @@ func createOneMegaWattProject() error {
 
 	// Define technical parameters
 	project.AuctionType = "blind"
-	project.InvestmentType = "equity"
+	project.InvestmentType = "munibond"
 	project.PaybackPeriod = 4
 	project.Stage = 4
 	project.SeedInvestmentFactor = 1.1
@@ -756,7 +756,7 @@ func createTenKiloWattProject() error {
 
 	// Define technical parameters
 	project.AuctionType = "blind"
-	project.InvestmentType = "regcf"
+	project.InvestmentType = "munibond"
 	project.PaybackPeriod = 4
 	project.Stage = 8
 	project.SeedInvestmentFactor = 1.1
@@ -1313,7 +1313,7 @@ func createOneHundredKiloWattProject() error {
 
 	// Define technical parameters
 	project.AuctionType = "blind"
-	project.InvestmentType = "Equity Crowdfunding"
+	project.InvestmentType = "munibond"
 	project.PaybackPeriod = 4
 	project.Stage = 7
 	project.SeedInvestmentFactor = 1.1

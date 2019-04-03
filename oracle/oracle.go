@@ -42,6 +42,6 @@ func ExchangeXLMforUSD(amount string) float64 {
 	// defines the rate for 1 usd = x XLM. Currently hardcoded to 10
 	amountF := utils.StoF(amount)
 	// exchangeRate := 0.1 // hardcode for now, can query cmc apis later
-	exchangeRate := 1000000000.0 // rig the exchange rate so that we can test some stuff
+	exchangeRate := 10000000.0 // rig the exchange rate so that we can test some stuff
 	return amountF * exchangeRate
 }

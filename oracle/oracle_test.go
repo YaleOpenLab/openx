@@ -28,7 +28,7 @@ func TestOracle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if exchangeFloat != 1000000000 {
+	if exchangeFloat != 10000000 {
 		t.Fatalf("Exchange value does not match")
 	}
 }
