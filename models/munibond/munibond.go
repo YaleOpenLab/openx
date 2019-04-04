@@ -79,11 +79,13 @@ func MunibondInvest(issuerPath string, invIndex int, invSeed string, invAmount s
 func MunibondReceive(issuerPath string, recpIndex int, projIndex int, debtAssetId string,
 	paybackAssetId string, years int, recpSeed string, totalValue float64, paybackPeriod int) error {
 
+	log.Println("Retrieving recipient")
 	recipient, err := database.RetrieveRecipient(recpIndex)
 	if err != nil {
 		return errors.Wrap(err, "Unable to retrieve recipient from database")
 	}
 
+	log.Println("Retrieving issuer")
 	issuerPubkey, issuerSeed, err := wallet.RetrieveSeed(issuer.CreatePath(issuerPath, projIndex), consts.IssuerSeedPwd)
 	if err != nil {
 		return errors.Wrap(err, "Unable to retrieve issuer seed")
@@ -92,6 +94,9 @@ func MunibondReceive(issuerPath string, recpIndex int, projIndex int, debtAssetI
 	DebtAsset := assets.CreateAsset(debtAssetId, issuerPubkey)
 	PaybackAsset := assets.CreateAsset(paybackAssetId, issuerPubkey)
 
+	if years == 0 {
+		years = 1
+	}
 	pbAmtTrust := utils.ItoS(years * 12 * 2) // two way exchange possible, to account for errors
 
 	paybackTrustHash, err := assets.TrustAsset(PaybackAsset.Code, issuerPubkey, pbAmtTrust, recipient.U.PublicKey, recpSeed)

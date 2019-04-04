@@ -339,7 +339,6 @@ func (a *User) GenKeys(seedpwd string) error {
 		return errors.Wrap(err, "addresses don't match, quitting!")
 	}
 
-	log.Println(a.EthereumWallet)
 	err = a.Save()
 	return err
 }

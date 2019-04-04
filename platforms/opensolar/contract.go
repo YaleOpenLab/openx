@@ -161,6 +161,7 @@ func preInvestmentCheck(projIndex int, invIndex int, invAmount string) (Project,
 
 	// check if investment amount is greater than or equal to the project requirements
 	if utils.StoF(invAmount) > project.TotalValue-project.MoneyRaised {
+		log.Println(utils.StoF(invAmount), project.TotalValue, project.MoneyRaised)
 		return project, errors.New("Investment amount greater than what is required! Adjust your investment")
 	}
 
@@ -577,19 +578,19 @@ func monitorPaybacks(recpIndex int, projIndex int) {
 		project, err := RetrieveProject(projIndex)
 		if err != nil {
 			log.Println("Couldn't retrieve project")
-			time.Sleep(time.Duration(consts.OneWeekInSecond))
+			time.Sleep(6000000 * time.Second)
 		}
 
 		recipient, err := database.RetrieveRecipient(recpIndex)
 		if err != nil {
 			log.Println("Couldn't retrieve recipient")
-			time.Sleep(time.Duration(consts.OneWeekInSecond))
+			time.Sleep(6000000 * time.Second)
 		}
 
 		guarantor, err := RetrieveEntity(project.GuarantorIndex)
 		if err != nil {
 			log.Println("couldn't retrieve guarantor")
-			time.Sleep(time.Duration(consts.OneWeekInSecond))
+			time.Sleep(6000000 * time.Second)
 		}
 		// this will be our payback period and we need to check if the user pays us back
 
@@ -613,7 +614,7 @@ func monitorPaybacks(recpIndex int, projIndex int) {
 		} else if factor > NormalThreshold && factor < AlertThreshold {
 			// person has not paid back for one-two consecutive period, send gentle reminder
 			notif.SendNicePaybackAlertEmail(projIndex, recipient.U.Email)
-			time.Sleep(time.Duration(consts.OneWeekInSecond))
+			time.Sleep(6000000 * time.Second)
 		} else if factor >= SternAlertThreshold && factor < DisconnectionThreshold {
 			// person has not paid back for four consecutive cycles, send reminder
 			notif.SendSternPaybackAlertEmail(projIndex, recipient.U.Email)
@@ -630,7 +631,7 @@ func monitorPaybacks(recpIndex int, projIndex int) {
 				}
 			}
 			notif.SendSternPaybackAlertEmailG(projIndex, guarantor.U.Email)
-			time.Sleep(time.Duration(consts.OneWeekInSecond))
+			time.Sleep(6000000 * time.Second)
 		} else if factor >= DisconnectionThreshold {
 			// send a disconnection notice to the recipient and let them know we have redirected
 			// power towards the grid. Also maybe email ourselves in this case so that we can
@@ -642,7 +643,7 @@ func monitorPaybacks(recpIndex int, projIndex int) {
 				investor, err := database.RetrieveInvestor(i)
 				if err != nil {
 					log.Println(err)
-					time.Sleep(time.Duration(consts.OneWeekInSecond))
+					time.Sleep(6000000 * time.Second)
 					continue
 				}
 				if investor.U.Notification {
@@ -654,12 +655,12 @@ func monitorPaybacks(recpIndex int, projIndex int) {
 			err = CoverFirstLoss(project.Index, guarantor.U.Index, utils.FtoS(project.AmountOwed))
 			if err != nil {
 				log.Println(err)
-				time.Sleep(time.Duration(consts.OneWeekInSecond))
+				time.Sleep(6000000 * time.Second)
 				continue
 			}
 		}
 
-		time.Sleep(time.Duration(consts.OneWeekInSecond)) // poll every week to check progress on payments
+		time.Sleep(6000000 * time.Second) // poll every week to check progress on payments
 	}
 }
 
