@@ -119,6 +119,7 @@ func MunibondReceive(issuerPath string, recpIndex int, projIndex int, debtAssetI
 
 	log.Printf("Sent DebtAsset to recipient %s with txhash %s\n", recipient.U.PublicKey, recpDebtAssetHash)
 	recipient.ReceivedSolarProjects = append(recipient.ReceivedSolarProjects, DebtAsset.Code)
+	recipient.ReceivedSolarProjectIndices = append(recipient.ReceivedSolarProjectIndices, projIndex)
 	err = recipient.Save()
 	if err != nil {
 		return errors.Wrap(err, "couldn't save recipient")

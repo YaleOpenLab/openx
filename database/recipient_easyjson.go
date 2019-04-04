@@ -61,6 +61,29 @@ func easyjson5e116a33DecodeGithubComYaleOpenLabOpenxDatabase(in *jlexer.Lexer, o
 				}
 				in.Delim(']')
 			}
+		case "ReceivedSolarProjectIndices":
+			if in.IsNull() {
+				in.Skip()
+				out.ReceivedSolarProjectIndices = nil
+			} else {
+				in.Delim('[')
+				if out.ReceivedSolarProjectIndices == nil {
+					if !in.IsDelim(']') {
+						out.ReceivedSolarProjectIndices = make([]int, 0, 8)
+					} else {
+						out.ReceivedSolarProjectIndices = []int{}
+					}
+				} else {
+					out.ReceivedSolarProjectIndices = (out.ReceivedSolarProjectIndices)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v2 int
+					v2 = int(in.Int())
+					out.ReceivedSolarProjectIndices = append(out.ReceivedSolarProjectIndices, v2)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
 		case "ReceivedConstructionBonds":
 			if in.IsNull() {
 				in.Skip()
@@ -77,9 +100,9 @@ func easyjson5e116a33DecodeGithubComYaleOpenLabOpenxDatabase(in *jlexer.Lexer, o
 					out.ReceivedConstructionBonds = (out.ReceivedConstructionBonds)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v2 string
-					v2 = string(in.String())
-					out.ReceivedConstructionBonds = append(out.ReceivedConstructionBonds, v2)
+					var v3 string
+					v3 = string(in.String())
+					out.ReceivedConstructionBonds = append(out.ReceivedConstructionBonds, v3)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -102,9 +125,9 @@ func easyjson5e116a33DecodeGithubComYaleOpenLabOpenxDatabase(in *jlexer.Lexer, o
 					out.DeviceStarts = (out.DeviceStarts)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v3 string
-					v3 = string(in.String())
-					out.DeviceStarts = append(out.DeviceStarts, v3)
+					var v4 string
+					v4 = string(in.String())
+					out.DeviceStarts = append(out.DeviceStarts, v4)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -127,9 +150,9 @@ func easyjson5e116a33DecodeGithubComYaleOpenLabOpenxDatabase(in *jlexer.Lexer, o
 					out.StateHashes = (out.StateHashes)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v4 string
-					v4 = string(in.String())
-					out.StateHashes = append(out.StateHashes, v4)
+					var v5 string
+					v5 = string(in.String())
+					out.StateHashes = append(out.StateHashes, v5)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -176,11 +199,32 @@ func easyjson5e116a33EncodeGithubComYaleOpenLabOpenxDatabase(out *jwriter.Writer
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v5, v6 := range in.ReceivedSolarProjects {
-				if v5 > 0 {
+			for v6, v7 := range in.ReceivedSolarProjects {
+				if v6 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v6))
+				out.String(string(v7))
+			}
+			out.RawByte(']')
+		}
+	}
+	{
+		const prefix string = ",\"ReceivedSolarProjectIndices\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		if in.ReceivedSolarProjectIndices == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+			out.RawString("null")
+		} else {
+			out.RawByte('[')
+			for v8, v9 := range in.ReceivedSolarProjectIndices {
+				if v8 > 0 {
+					out.RawByte(',')
+				}
+				out.Int(int(v9))
 			}
 			out.RawByte(']')
 		}
@@ -197,11 +241,11 @@ func easyjson5e116a33EncodeGithubComYaleOpenLabOpenxDatabase(out *jwriter.Writer
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v7, v8 := range in.ReceivedConstructionBonds {
-				if v7 > 0 {
+			for v10, v11 := range in.ReceivedConstructionBonds {
+				if v10 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v8))
+				out.String(string(v11))
 			}
 			out.RawByte(']')
 		}
@@ -228,11 +272,11 @@ func easyjson5e116a33EncodeGithubComYaleOpenLabOpenxDatabase(out *jwriter.Writer
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v9, v10 := range in.DeviceStarts {
-				if v9 > 0 {
+			for v12, v13 := range in.DeviceStarts {
+				if v12 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v10))
+				out.String(string(v13))
 			}
 			out.RawByte(']')
 		}
@@ -259,11 +303,11 @@ func easyjson5e116a33EncodeGithubComYaleOpenLabOpenxDatabase(out *jwriter.Writer
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v11, v12 := range in.StateHashes {
-				if v11 > 0 {
+			for v14, v15 := range in.StateHashes {
+				if v14 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v12))
+				out.String(string(v15))
 			}
 			out.RawByte(']')
 		}

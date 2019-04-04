@@ -95,6 +95,6 @@ func OfferExchange(publicKey string, seed string, invAmount string) error {
 		}
 	}
 
-	time.Sleep(5 * time.Second) // 5 seconds for issuing stalbeusd to the person who's requested for it
+	time.Sleep(10 * time.Second) // 5 seconds for issuing stalbeusd to the person who's requested for it
 	return nil
 }

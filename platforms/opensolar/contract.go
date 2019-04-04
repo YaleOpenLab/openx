@@ -187,8 +187,7 @@ func preInvestmentCheck(projIndex int, invIndex int, invAmount string) (Project,
 
 // --SEED INVESTMENT--
 // SeedInvest is the seed investment function of the opensolar platform
-func SeedInvest(projIndex int, invIndex int, recpIndex int, invAmount string,
-	invSeed string, recpSeed string) error {
+func SeedInvest(projIndex int, invIndex int, invAmount string, invSeed string) error {
 
 	project, err := preInvestmentCheck(projIndex, invIndex, invAmount)
 	if err != nil {
@@ -209,6 +208,10 @@ func SeedInvest(projIndex int, invIndex int, recpIndex int, invAmount string,
 		return fmt.Errorf("you can't invest more than what the seed investment cap permits you to, quitting")
 	}
 
+	if project.SeedAssetCode == "" {
+		log.Println("assigning a seed asset code")
+		project.SeedAssetCode = "SEEDASSET"
+	}
 	err = model.MunibondInvest(consts.OpenSolarIssuerDir, invIndex, invSeed, invAmount, projIndex,
 		project.SeedAssetCode, project.TotalValue, project.SeedInvestmentFactor)
 	if err != nil {
@@ -239,6 +242,10 @@ func Invest(projIndex int, invIndex int, invAmount string, invSeed string) error
 	}
 
 	if project.Stage != 4 {
+		if project.Stage == 1 {
+			// need to redirect it to the seedinvest function
+			return SeedInvest(projIndex, invIndex, invAmount, invSeed)
+		}
 		return fmt.Errorf("project not at stage where it can solicit investment, quitting")
 	}
 	// call the model and invest in the particular project
@@ -570,19 +577,19 @@ func monitorPaybacks(recpIndex int, projIndex int) {
 		project, err := RetrieveProject(projIndex)
 		if err != nil {
 			log.Println("Couldn't retrieve project")
-			continue
+			time.Sleep(time.Duration(consts.OneWeekInSecond))
 		}
 
 		recipient, err := database.RetrieveRecipient(recpIndex)
 		if err != nil {
 			log.Println("Couldn't retrieve recipient")
-			continue
+			time.Sleep(time.Duration(consts.OneWeekInSecond))
 		}
 
 		guarantor, err := RetrieveEntity(project.GuarantorIndex)
 		if err != nil {
 			log.Println("couldn't retrieve guarantor")
-			continue
+			time.Sleep(time.Duration(consts.OneWeekInSecond))
 		}
 		// this will be our payback period and we need to check if the user pays us back
 
