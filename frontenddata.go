@@ -338,7 +338,7 @@ func I1R1(projIndex int, invName string, invDescription string, recpName string,
 		log.Fatal(err)
 	}
 
-	time.Sleep(35 * time.Second)
+	time.Sleep(100 * time.Second)
 	project.Stage = oldStage
 	err = project.Save()
 	if err != nil {
@@ -714,48 +714,7 @@ func createOneMegaWattProject() error {
 	return nil
 }
 
-func createTenKiloWattProject() error {
-
-	investor1, err := database.NewInvestor("MatthewMoroney", "p", "x", "Matthew Moroney")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	investor2, err := database.NewInvestor("FranzHochstrasser", "p", "x", "Franz Hochstrasser")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	investor3, err := database.NewInvestor("CTGreenBank", "p", "x", "Connecticut Green Bank")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	investor4, err := database.NewInvestor("YaleUniversity", "p", "x", "Yale University Community Fund")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	investor5, err := database.NewInvestor("JeromeGreen", "p", "x", "Jerome Green")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	investor6, err := database.NewInvestor("OpenSolarFund", "p", "x", "Open Solar Revolving Fund")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	recipient1, err := database.NewRecipient("Shelter1", "p", "x", "Shelter1 Community Solar")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	recipient2, err := database.NewRecipient("ColumbusHouse", "p", "x", "Columbus House Foundation")
-	if err != nil {
-		log.Fatal(err)
-	}
-
+func populateStaticData10KW() (int, error) {
 	developer1, err := opensolar.NewDeveloper("YaleArchitecture", "p", "x", "Yale School of Architecture", "45 York St, New Haven, CT", "System and layout designer")
 	if err != nil {
 		log.Fatal(err)
@@ -905,7 +864,6 @@ func createTenKiloWattProject() error {
 	project.Metadata = "Residential solar array for a homeless shelter. The project was originated by a member of the board of the homeless shelter who gets the shelter to purchase all the electricity at a discounted rate. The shelter chooses to lease the roof for free over the lifetime of the project. The originator knows the solar developer who set up the project company"
 
 	// Define parameters related to finance
-	project.MoneyRaised = 30000
 	project.EstimatedAcquisition = 0 // this project already flipped ownership
 	project.BalLeft = 0
 	project.InterestRate = 0.05
@@ -930,23 +888,6 @@ func createTenKiloWattProject() error {
 	project.SecurityIssuer = ""
 	project.BrokerDealer = ""
 
-	// Define the various entities that are associated with a specific project
-	project.RecipientIndex = recipient1.U.Index
-	project.OriginatorIndex = originator1.U.Index
-	project.GuarantorIndex = guarantor1.U.Index
-	project.ContractorIndex = contractor1.U.Index
-	project.MainDeveloperIndex = developer1.U.Index
-	project.BlendedCapitalInvestorIndex = -1
-	project.InvestorIndices = append(project.InvestorIndices, investor1.U.Index, investor2.U.Index, investor3.U.Index, investor4.U.Index, investor5.U.Index, investor6.U.Index)
-	project.SeedInvestorIndices = nil
-	project.RecipientIndices = append(project.RecipientIndices, recipient1.U.Index, recipient2.U.Index)
-	project.DeveloperIndices = append(project.DeveloperIndices, developer1.U.Index, developer2.U.Index, developer3.U.Index, developer4.U.Index, developer5.U.Index)
-	project.ContractorFee = 0
-	project.OriginatorFee = 0
-	project.DeveloperFee = append(project.DeveloperFee, 0)
-	project.DebtInvestor1 = ""
-	project.DebtInvestor2 = ""
-	project.TaxEquityInvestor = ""
 
 	// Define things that will be displayed on the frontend
 	project.Terms = append(project.Terms, terms1, terms2, terms3, terms4, terms5, terms6)
@@ -995,11 +936,161 @@ func createTenKiloWattProject() error {
 	if err != nil {
 		log.Fatal(err)
 	}
+	project.OriginatorIndex = originator1.U.Index
+	project.GuarantorIndex = guarantor1.U.Index
+	project.ContractorIndex = contractor1.U.Index
+	project.MainDeveloperIndex = developer1.U.Index
+	project.DeveloperIndices = append(project.DeveloperIndices, developer1.U.Index, developer2.U.Index, developer3.U.Index, developer4.U.Index, developer5.U.Index)
+
 	err = project.Save()
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	return project.Index, nil
+}
+
+func I6R1(projIndex int, invName1 string, invDescription1 string, invName2 string, invDescription2 string,
+	invName3 string, invDescription3 string, invName4 string, invDescription4 string, invName5 string, invDescription5 string,
+	invName6 string, invDescription6 string, invAmount1 string, invAmount2 string, invAmount3 string,invAmount4 string,
+	invAmount5 string, invAmount6 string, recpName string, recpDescription string) error {
+
+	project, err := opensolar.RetrieveProject(projIndex)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	recipient1, _, err := recpHelper(recpName, recpDescription)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	oldStage := project.Stage
+	project.RecipientIndex = recipient1.U.Index
+	project.Stage = 4 // to enable investments on this particular project
+	err = project.Save()
+	if err != nil {
+		return err
+	}
+
+	// passwd := "p"
+	seedpwd := "x"
+	investor1, invSeed1, err := invHelper(invName1, invDescription1)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	investor2, invSeed2, err := invHelper(invName2, invDescription2)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	investor3, invSeed3, err := invHelper(invName3, invDescription3)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	investor4, invSeed4, err := invHelper(invName4, invDescription4)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	investor5, invSeed5, err := invHelper(invName5, invDescription5)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	investor6, invSeed6, err := invHelper(invName6, invDescription6)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = project.Save()
+	if err != nil {
+		return err
+	}
+
+	err = opensolar.Invest(projIndex, investor1.U.Index, invAmount1, invSeed1)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = opensolar.Invest(projIndex, investor2.U.Index, invAmount2, invSeed2)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = opensolar.Invest(projIndex, investor3.U.Index, invAmount3, invSeed3)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = opensolar.Invest(projIndex, investor4.U.Index, invAmount4, invSeed4)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = opensolar.Invest(projIndex, investor5.U.Index, invAmount5, invSeed5)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = opensolar.Invest(projIndex, investor6.U.Index, invAmount6, invSeed6)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	time.Sleep(5 * time.Second)
+	err = opensolar.UnlockProject(recipient1.U.Username, recipient1.U.Pwhash, projIndex, seedpwd)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	time.Sleep(100 * time.Second)
+	project, err = opensolar.RetrieveProject(projIndex)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	project.BlendedCapitalInvestorIndex = investor1.U.Index
+	project.Stage = oldStage
+	err = project.Save()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func createTenKiloWattProject() error {
+
+	projIndex, err := populateStaticData10KW()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = I6R1(projIndex, "MatthewMoroney", "Matthew Moroney", "FranzHochstrasser", "Franz Hochstrasser", "CTGreenBank", "Connecticut Green Bank",
+		"YaleUniversity", "Yale University Community Fund", "JeromeGreen", "Jerome Green", "OpenSolarFund", "Open Solar Revolving Fund",
+		"4000", "4000", "4000", "4000", "4000", "10000", "colhouse", "Columbus House Foundation")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	recipient2, err := database.NewRecipient("ColumbusHouse", "p", "x", "Columbus House Foundation")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	project, err := opensolar.RetrieveProject(projIndex)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// Define the various entities that are associated with a specific project
+	project.RecipientIndices = append(project.RecipientIndices, recipient2.U.Index)
+	err = project.Save()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

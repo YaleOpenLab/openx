@@ -218,10 +218,10 @@ func InsertDummyData() error {
 // 	}
 	// project: One Mega Watt Project
 	// STAGE 4 - New Hampshire
-	err = createOneMegaWattProject()
-	if err != nil {
-		log.Fatal(err)
-	}
+//	err = createOneMegaWattProject()
+//	if err != nil {
+//		log.Fatal(err)
+//	}
 	// project: Ten Kilowatt Project
 	// STAGE 8 - Connecticut Homeless Shelter
 	err = createTenKiloWattProject()
