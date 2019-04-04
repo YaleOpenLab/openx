@@ -45,6 +45,18 @@ func ParseConfig(args []string) (string, error) {
 func StartPlatform() error {
 
 	database.CreateHomeDir()
+	var err error
+	err = opensolar.InitializePlatform()
+	if err != nil {
+		return err
+	}
+
+	// init stablecoin before platform so we don't have to create a stablecoin in case our dbdir is wiped
+	err = stablecoin.InitStableCoin() // start the stablecoin daemon
+	if err != nil {
+		return err
+	}
+
 	allContracts, err := opensolar.RetrieveAllProjects()
 	if err != nil {
 		log.Println("Error retrieving all projects from the database")
@@ -57,17 +69,6 @@ func StartPlatform() error {
 		if err != nil {
 			return err
 		}
-	}
-
-	// init stablecoin before platform so we don't have to create a stablecoin in case our dbdir is wiped
-	err = stablecoin.InitStableCoin() // start the stablecoin daemon
-	if err != nil {
-		return err
-	}
-
-	err = opensolar.InitializePlatform()
-	if err != nil {
-		return err
 	}
 
 	viper.SetConfigType("yaml")

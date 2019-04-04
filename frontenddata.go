@@ -1,4 +1,3 @@
-
 package main
 
 import (
@@ -6,51 +5,16 @@ import (
 	"github.com/pkg/errors"
 	"io/ioutil"
 	"log"
+	"time"
 
 	database "github.com/YaleOpenLab/openx/database"
 	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
 	utils "github.com/YaleOpenLab/openx/utils"
+	wallet "github.com/YaleOpenLab/openx/wallet"
+	xlm "github.com/YaleOpenLab/openx/xlm"
 )
 
-// this file contains the data that we need to display on the frontend
-
-func createPuertoRicoProject() error {
-	// setup all the entities that will be involved with the project here
-	investor1, err := database.NewInvestor("OpenLab", "p", "x", "Yale OpenLab")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	recipient1, err := database.NewRecipient("SUpasto", "p", "x", "S.U. Pasto School")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	originator1, err := opensolar.NewOriginator("DCI", "p", "x", "MIT DCI", "MIT Building E14-15", "The MIT Media Lab's Digital Currency Initiative")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	contractor1, err := opensolar.NewContractor("MartinWainstein", "p", "x", "Martin Wainstein", "254 Elm Street, New Haven, CT", "Martin Wainstein from the Yale OpenLab")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	developer1, err := opensolar.NewDeveloper("gs", "p", "x", "Genmoji Solar", "Genmoji, San Juan, Puerto Rico", "Genmoji Solar")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	developer2, err := opensolar.NewDeveloper("nbly", "p", "x", "Neighborly Securities", "San Francisco, CA", "Broker Dealer")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	guarantor1, err := opensolar.NewGuarantor("mitml", "p", "x", "MIT Media Lab", "MIT Building E14-15", "The MIT Media Lab is an interdisciplinary lab with innovators from all around the globe")
-	if err != nil {
-		log.Fatal(err)
-	}
-
+func populateStaticDataPR() (int, error) {
 	var project opensolar.Project
 	indexHelp, err := opensolar.RetrieveAllProjects()
 	if err != nil {
@@ -175,7 +139,6 @@ func createPuertoRicoProject() error {
 	project.Metadata = "This project is a pilot initiative from MIT MediaLab's DCI & the Yale Openlab at Tsai CITY, as to integrate the opensolar platforms with IoT data and blockchain based payment systems to help finance community energy in Puerto Rico"
 
 	// Define parameters related to finance
-	project.MoneyRaised = 10000
 	project.EstimatedAcquisition = 5
 	project.BalLeft = 10000
 	project.InterestRate = 0.029
@@ -199,24 +162,6 @@ func createPuertoRicoProject() error {
 	// Describe issuer of security and the broker dealer
 	project.SecurityIssuer = "Neighborly Securities"
 	project.BrokerDealer = "Broker Dealer"
-
-	// Define the various entities that are associated with a specific project
-	project.RecipientIndex = recipient1.U.Index
-	project.OriginatorIndex = originator1.U.Index
-	project.GuarantorIndex = guarantor1.U.Index
-	project.ContractorIndex = contractor1.U.Index
-	project.MainDeveloperIndex = developer1.U.Index
-	project.BlendedCapitalInvestorIndex = -1
-	project.InvestorIndices = append(project.InvestorIndices, investor1.U.Index)
-	project.SeedInvestorIndices = nil
-	project.RecipientIndices = append(project.RecipientIndices, recipient1.U.Index)
-	project.DeveloperIndices = append(project.DeveloperIndices, developer1.U.Index, developer2.U.Index)
-	project.ContractorFee = 2000
-	project.OriginatorFee = 0
-	project.DeveloperFee = append(project.DeveloperFee, 6000)
-	project.DebtInvestor1 = ""
-	project.DebtInvestor2 = ""
-	project.TaxEquityInvestor = ""
 
 	// Define things that will be displayed on the frontend
 	project.Terms = append(project.Terms, terms1, terms2, terms3, terms4, terms5, terms6)
@@ -262,41 +207,161 @@ func createPuertoRicoProject() error {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	originator1, err := opensolar.NewOriginator("DCI", "p", "x", "MIT DCI", "MIT Building E14-15", "The MIT Media Lab's Digital Currency Initiative")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	contractor1, err := opensolar.NewContractor("MartinWainstein", "p", "x", "Martin Wainstein", "254 Elm Street, New Haven, CT", "Martin Wainstein from the Yale OpenLab")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	developer1, err := opensolar.NewDeveloper("gs", "p", "x", "Genmoji Solar", "Genmoji, San Juan, Puerto Rico", "Genmoji Solar")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	developer2, err := opensolar.NewDeveloper("nbly", "p", "x", "Neighborly Securities", "San Francisco, CA", "Broker Dealer")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	guarantor1, err := opensolar.NewGuarantor("mitml", "p", "x", "MIT Media Lab", "MIT Building E14-15", "The MIT Media Lab is an interdisciplinary lab with innovators from all around the globe")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	project.OriginatorIndex = originator1.U.Index
+	project.GuarantorIndex = guarantor1.U.Index
+	project.ContractorIndex = contractor1.U.Index
+	project.MainDeveloperIndex = developer1.U.Index
+	project.DeveloperIndices = append(project.DeveloperIndices, developer1.U.Index, developer2.U.Index)
+	project.ContractorFee = 2000
+	project.OriginatorFee = 0
+	project.DeveloperFee = append(project.DeveloperFee, 6000)
+	project.DebtInvestor1 = ""
+	project.DebtInvestor2 = ""
+	project.TaxEquityInvestor = ""
+	project.BlendedCapitalInvestorIndex = -1
+	project.SeedInvestorIndices = nil
+
+	err = project.Save()
+	if err != nil {
+		return -1, err
+	}
+
+	return project.Index, nil
+}
+
+func invHelper(invName, invDescription string) (database.Investor, string, error) {
+	// setup investor account
+	passwd := "p"
+	seedpwd := "x"
+	investor1, err := database.NewInvestor(invName, passwd, seedpwd, invDescription)
+	if err != nil {
+		return investor1, "", err
+	}
+	invSeed, err := wallet.DecryptSeed(investor1.U.EncryptedSeed, seedpwd)
+	if err != nil {
+		return investor1, "", err
+	}
+	err = xlm.GetXLM(investor1.U.PublicKey)
+	if err != nil {
+		return investor1, "", err
+	}
+	return investor1, invSeed, nil
+}
+
+func recpHelper(recpName, recpDescription string) (database.Recipient, string ,error) {
+	// setup recipient account
+	passwd := "p"
+	seedpwd := "x"
+	recipient, err := database.NewRecipient(recpName, passwd, seedpwd, recpDescription)
+	if err != nil {
+		return recipient, "", err
+	}
+	recpSeed, err := wallet.DecryptSeed(recipient.U.EncryptedSeed, seedpwd)
+	if err != nil {
+		return recipient, "", err
+	}
+	err = xlm.GetXLM(recipient.U.PublicKey)
+	if err != nil {
+		return recipient, "", err
+	}
+	return recipient, recpSeed, nil
+
+}
+// this file contains the data that we need to display on the frontend
+
+func I1R1(projIndex int, invName string, invDescription string, recpName string, recpDescription string) error {
+	project, err := opensolar.RetrieveProject(projIndex)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	oldStage := project.Stage
+	project.Stage = 4 // to enable investments on this particular project
 	err = project.Save()
 	if err != nil {
 		return err
 	}
 
+	// passwd := "p"
+	seedpwd := "x"
+
+	investor1, invSeed, err := invHelper(invName, invDescription)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	recipient1, _, err := recpHelper(recpName, recpDescription)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	project.RecipientIndex = recipient1.U.Index
+	err = project.Save()
+	if err != nil {
+		return err
+	}
+
+	err = opensolar.Invest(projIndex, investor1.U.Index, utils.FtoS(project.TotalValue), invSeed)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	time.Sleep(5 * time.Second)
+	err = opensolar.UnlockProject(recipient1.U.Username, recipient1.U.Pwhash, projIndex, seedpwd)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	time.Sleep(35 * time.Second)
+	project.Stage = oldStage
+	err = project.Save()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-func createOneMegaWattProject() error {
-	// setup all the entities involved with the project here
-	investor1, err := database.NewInvestor("GreenBank", "p", "x", "NH Green Bank")
+func createPuertoRicoProject() error {
+	// setup all the entities that will be involved with the project here
+	projIndex, err := populateStaticDataPR()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	investor2, err := database.NewInvestor("OZFunds", "p", "x", "OZ FundCo")
+	err = I1R1(projIndex, "OpenLab", "Yale OpenLab", "SUpasto", "S.U. Pasto School")
 	if err != nil {
 		log.Fatal(err)
 	}
+	return nil
+}
 
-	investor3, err := database.NewInvestor("TaxEquity", "p", "x", "Lancaster Lumber Mill Coop")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	recipient1, err := database.NewRecipient("LancasterHigh", "p", "x", "Lancaster Elementary School")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	recipient2, err := database.NewRecipient("LancasterT", "p", "x", "Town of Lancaster NH")
-	if err != nil {
-		log.Fatal(err)
-	}
-
+func populateStaticData1MW() (int, error) {
 	originator1, err := opensolar.NewOriginator("testorig", "p", "x", "testorig", "testorig", "testorig")
 	if err != nil {
 		log.Fatal(err)
@@ -459,7 +524,6 @@ func createOneMegaWattProject() error {
 	project.Metadata = "Neighborhood 1MW solar array on the field next to Lancaster Elementary High School. The project was originated by the head of the community organization, Ben Southworth, who is also active in the parent teacher association (PTA). The city of Lancaster has agreed to give a 20 year lease of the land to the project if the school gets to own the solar array after the lease expires. The school is located in an opportunity zone"
 
 	// Define parameters related to finance
-	project.MoneyRaised = 1500000
 	project.EstimatedAcquisition = 20
 	project.BalLeft = -1
 	project.InterestRate = 0.05
@@ -483,24 +547,6 @@ func createOneMegaWattProject() error {
 	// Describe issuer of security and the broker dealer
 	project.SecurityIssuer = "Lancaster Mutual Fund"
 	project.BrokerDealer = "Neighborly Securities"
-
-	// Define the various entities that are associated with a specific project
-	project.RecipientIndex = recipient1.U.Index
-	project.OriginatorIndex = originator1.U.Index
-	project.GuarantorIndex = guarantor1.U.Index
-	project.ContractorIndex = contractor1.U.Index
-	project.MainDeveloperIndex = developer1.U.Index
-	project.BlendedCapitalInvestorIndex = investor2.U.Index
-	project.InvestorIndices = append(project.InvestorIndices, investor1.U.Index, investor3.U.Index)
-	project.SeedInvestorIndices = nil
-	project.RecipientIndices = append(project.RecipientIndices, recipient1.U.Index, recipient2.U.Index)
-	project.DeveloperIndices = append(project.DeveloperIndices, developer1.U.Index, developer2.U.Index, developer3.U.Index, developer4.U.Index, developer5.U.Index, developer6.U.Index, developer7.U.Index, developer8.U.Index)
-	project.ContractorFee = 2000
-	project.OriginatorFee = 0
-	project.DeveloperFee = append(project.DeveloperFee, 6000)
-	project.DebtInvestor1 = "OZFunds"
-	project.DebtInvestor2 = "GreenBank"
-	project.TaxEquityInvestor = "TaxEquity"
 
 	// Define things that will be displayed on the frontend
 	project.Terms = append(project.Terms, terms1, terms2, terms3, terms4, terms5, terms6)
@@ -546,6 +592,121 @@ func createOneMegaWattProject() error {
 		log.Fatal(err)
 	}
 	project.EngineeringLayoutType = "complex"
+	project.OriginatorIndex = originator1.U.Index
+	project.GuarantorIndex = guarantor1.U.Index
+	project.ContractorIndex = contractor1.U.Index
+	project.MainDeveloperIndex = developer1.U.Index
+	project.DeveloperIndices = append(project.DeveloperIndices, developer1.U.Index, developer2.U.Index, developer3.U.Index, developer4.U.Index, developer5.U.Index, developer6.U.Index, developer7.U.Index, developer8.U.Index)
+	project.DebtInvestor1 = "OZFunds"
+	project.DebtInvestor2 = "GreenBank"
+	project.TaxEquityInvestor = "TaxEquity"
+	err = project.Save()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return project.Index, nil
+}
+
+func I3R1(projIndex int, invName1 string, invDescription1 string, invName2 string, invDescription2 string,
+	invName3 string, invDescription3 string, invAmount1 string, invAmount2 string, invAmount3 string,
+	recpName string, recpDescription string) error {
+
+	project, err := opensolar.RetrieveProject(projIndex)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	oldStage := project.Stage
+	project.Stage = 4 // to enable investments on this particular project
+	err = project.Save()
+	if err != nil {
+		return err
+	}
+
+	// passwd := "p"
+	// seedpwd := "x"
+
+	investor1, invSeed1, err := invHelper(invName1, invDescription1)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	investor2, invSeed2, err := invHelper(invName2, invDescription2)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	investor3, invSeed3, err := invHelper(invName3, invDescription3)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	recipient1, _, err := recpHelper(recpName, recpDescription)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	project.RecipientIndex = recipient1.U.Index
+	err = project.Save()
+	if err != nil {
+		return err
+	}
+
+	err = opensolar.Invest(projIndex, investor1.U.Index, invAmount1, invSeed1)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = opensolar.Invest(projIndex, investor2.U.Index, invAmount2, invSeed2)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = opensolar.Invest(projIndex, investor3.U.Index, invAmount3, invSeed3)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// update local project with changes from storage
+	project, err = opensolar.RetrieveProject(projIndex)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	project.BlendedCapitalInvestorIndex = investor1.U.Index
+	project.Stage = oldStage
+	err = project.Save()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func createOneMegaWattProject() error {
+	// setup all the entities involved with the project here
+	projIndex, err := populateStaticData1MW()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = I3R1(projIndex, "OZFunds", "OZ FundCo", "GreenBank", "NH Green Bank", "TaxEquity", "Lancaster Lumber Mill Coop",
+		"1000000", "400000", "100000", "LancasterHigh", "Lancaster Elementary School")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	recipient2, err := database.NewRecipient("LancasterT", "p", "x", "Town of Lancaster NH")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	project, err := opensolar.RetrieveProject(projIndex)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Define the various entities that are associated with a specific project
+	project.RecipientIndices = append(project.RecipientIndices, recipient2.U.Index)
 	err = project.Save()
 	if err != nil {
 		log.Fatal(err)
@@ -1438,10 +1599,6 @@ func parseJsonText(fileName string) (map[string]interface{}, error) {
 	err = json.Unmarshal(data, &result)
 	if err != nil {
 		log.Fatal(err)
-	}
-
-	for key, value := range result {
-		log.Println("KEY: ", key, " VALUE: ", value)
 	}
 
 	return result, nil

@@ -212,10 +212,10 @@ func InsertDummyData() error {
 
 	// project: Puerto Rico Project
 	// STAGE 7 - Puerto Rico
-	err = createPuertoRicoProject()
-	if err != nil {
-		log.Fatal(err)
-	}
+// 	err = createPuertoRicoProject()
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
 	// project: One Mega Watt Project
 	// STAGE 4 - New Hampshire
 	err = createOneMegaWattProject()
