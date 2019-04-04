@@ -1,3 +1,4 @@
+
 package main
 
 import (
@@ -1315,7 +1316,7 @@ func createOneHundredKiloWattProject() error {
 	project.AuctionType = "blind"
 	project.InvestmentType = "munibond"
 	project.PaybackPeriod = 4
-	project.Stage = 7
+	project.Stage = 1
 	project.SeedInvestmentFactor = 1.1
 	project.SeedInvestmentCap = 500
 	project.ProposedInvetmentCap = 15000

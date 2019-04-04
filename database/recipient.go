@@ -21,8 +21,9 @@ import (
 type Recipient struct {
 	U User
 	// user related functions are called as an instance directly
-	ReceivedSolarProjects     []string
-	ReceivedConstructionBonds []string
+	ReceivedSolarProjects       []string
+	ReceivedSolarProjectIndices []int
+	ReceivedConstructionBonds   []string
 	// ReceivedProjects denotes the projects that have been received by the recipient
 	// instead of storing the PaybackAssets and the DebtAssets, we store this
 	DeviceId string

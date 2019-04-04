@@ -153,7 +153,7 @@ func TestDb(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Invest succeeds, quitting!")
 	}
-	err = SeedInvest(1, 1, 1, "", "", "")
+	err = SeedInvest(1, 1, "", "")
 	if err == nil {
 		t.Fatalf("SeedInvest succeeds, quitting!")
 	}
