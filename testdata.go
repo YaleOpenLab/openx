@@ -71,9 +71,8 @@ func newConstructionBond(mdate string, stype string, intrate float64, rating str
 	return cBond, err
 }
 
-// ALL 5 PROJECT DATA WILL BE ADDED HERE FOR THE DEMO
 // InsertDummyData inserts sample data
-func InsertDummyData() error {
+func InsertDummyData(simulate bool) error {
 	var err error
 	// populate database with dumym data
 	var recp database.Recipient
@@ -210,35 +209,37 @@ func InsertDummyData() error {
 		log.Fatal(err)
 	}
 
-	// project: Puerto Rico Project
-	// STAGE 7 - Puerto Rico
-// 	err = createPuertoRicoProject()
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-	// project: One Mega Watt Project
-	// STAGE 4 - New Hampshire
-//	err = createOneMegaWattProject()
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-	// project: Ten Kilowatt Project
-	// STAGE 8 - Connecticut Homeless Shelter
-	err = createTenKiloWattProject()
-	if err != nil {
-		log.Fatal(err)
-	}
-	// project: Ten Mega Watt Project
-	// STAGE 2 - Puerto Rico Public School Bond
-	err = createTenMegaWattProject()
-	if err != nil {
-		log.Fatal(err)
-	}
+	// simulate only if the bool is set to true
+	if simulate {
+		// project: Puerto Rico Project
+		// STAGE 7 - Puerto Rico
+		err = createPuertoRicoProject()
+		if err != nil {
+			log.Fatal(err)
+		}
+		// project: One Mega Watt Project
+		// STAGE 4 - New Hampshire
+		err = createOneMegaWattProject()
+		if err != nil {
+			log.Fatal(err)
+		}
+		// project: Ten Kilowatt Project
+		// STAGE 8 - Connecticut Homeless Shelter
+		err = createTenKiloWattProject()
+		if err != nil {
+			log.Fatal(err)
+		}
+		// project: Ten Mega Watt Project
+		// STAGE 2 - Puerto Rico Public School Bond
+		err = createTenMegaWattProject()
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	err = createOneHundredKiloWattProject()
-	if err != nil {
-		log.Fatal(err)
+		err = createOneHundredKiloWattProject()
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
-
 	return nil
 }

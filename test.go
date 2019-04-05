@@ -25,6 +25,7 @@ import (
 // go SDK docs are insufficient.
 var opts struct {
 	Port int `short:"p" description:"The port on which the server runs on"`
+	Simulate bool `short:"t" description:"Simulate the test database with demo values"`
 }
 
 // ParseConfig parses CLI parameters passed
@@ -65,7 +66,7 @@ func StartPlatform() error {
 
 	if len(allContracts) == 0 {
 		log.Println("Populating database with test values")
-		err = InsertDummyData()
+		err = InsertDummyData(opts.Simulate)
 		if err != nil {
 			return err
 		}
