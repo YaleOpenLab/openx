@@ -59,7 +59,6 @@ func Exchange(recipientPK string, recipientSeed string, convAmount string) error
 // stableUSD to complete the payment
 func OfferExchange(publicKey string, seed string, invAmount string) error {
 
-	log.Println("OFFERING EXCHANGE TO INVESTOR")
 	balance, err := xlm.GetAssetBalance(publicKey, consts.Code)
 	if err != nil {
 		// the user does not have a balance in STABLEUSD
@@ -69,6 +68,7 @@ func OfferExchange(publicKey string, seed string, invAmount string) error {
 	balF := utils.StoF(balance)
 	invF := utils.StoF(invAmount)
 	if balF < invF {
+		log.Println("Offering xlm to stableusd exchange to investor")
 		// user's stablecoin balance is less than the amount he wishes to invest, get stablecoin
 		// equal to the amount he wishes to exchange
 		diff := invF - balF + 10 // the extra 1 is to cover for fees
@@ -93,8 +93,10 @@ func OfferExchange(publicKey string, seed string, invAmount string) error {
 		if err != nil {
 			return errors.New("Unable to exchange XLM for USD and automate payment. Please get more STABLEUSD to fulfil the payment")
 		}
+		time.Sleep(10 * time.Second) // 5 seconds for issuing stalbeusd to the person who's requested for it
+	} else {
+		log.Println("User has sufficient stablecoin balance, not exchanging xlm for usd")
 	}
 
-	time.Sleep(10 * time.Second) // 5 seconds for issuing stalbeusd to the person who's requested for it
 	return nil
 }

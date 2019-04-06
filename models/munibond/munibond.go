@@ -159,12 +159,12 @@ func sendPaymentNotif(recpIndex int, projIndex int, paybackPeriod int, email str
 			log.Println("Error while retrieving recipient from database", err)
 			message := "Error while retrieving your account details, please contact help as soon as you receive this message " + err.Error()
 			notif.SendAlertEmail(message, email) // don't catch the error here
-			time.Sleep(time.Duration(paybackPeriod * consts.OneWeekInSecond))
+			time.Sleep(time.Second * 2 * 604800)
 		}
 
 		if paybackTimes == 0 {
 			// sleep and bother during the next cycle
-			time.Sleep(time.Duration(paybackPeriod * consts.OneWeekInSecond))
+			time.Sleep(time.Second * 2 * 604800)
 		}
 
 		// PAYBACK TIME!!
@@ -173,7 +173,7 @@ func sendPaymentNotif(recpIndex int, projIndex int, paybackPeriod int, email str
 		// sleep until the next payment is due
 		paybackTimes += 1
 		log.Println("Sent: ", email, "a notification on payments for payment cycle: ", paybackTimes)
-		time.Sleep(time.Duration(1000 * paybackPeriod * consts.OneWeekInSecond))
+		time.Sleep(2 * 604800 * time.Second) // TODO: add back payback period here (instead of 2)
 	}
 }
 

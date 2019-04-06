@@ -8,6 +8,8 @@ import (
 	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
 	utils "github.com/YaleOpenLab/openx/utils"
 	wallet "github.com/YaleOpenLab/openx/wallet"
+	consts "github.com/YaleOpenLab/openx/consts"
+	assets "github.com/YaleOpenLab/openx/assets"
 	xlm "github.com/YaleOpenLab/openx/xlm"
 )
 
@@ -16,231 +18,231 @@ func createAllStaticEntities() error {
 	var err error
 	_, err = opensolar.NewOriginator("dci@test.com", "p", "x", "MIT DCI", "MIT Building E14-15", "The MIT Media Lab's Digital Currency Initiative")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = opensolar.NewContractor("martinwainstein@test.com", "p", "x", "Martin Wainstein", "254 Elm Street, New Haven, CT", "Martin Wainstein from the Yale OpenLab")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = opensolar.NewDeveloper("gs@test.com", "p", "x", "Genmoji Solar", "Genmoji, San Juan, Puerto Rico", "Genmoji Solar")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = opensolar.NewDeveloper("nbly@test.com", "p", "x", "Neighborly Securities", "San Francisco, CA", "Broker Dealer")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = opensolar.NewGuarantor("mitml@test.com", "p", "x", "MIT Media Lab", "MIT Building E14-15", "The MIT Media Lab is an interdisciplinary lab with innovators from all around the globe")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	// 1MW project (5)
 	_, err = opensolar.NewContractor("testcont@test.com", "p", "x", "testcont", "testcont", "testcont")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = opensolar.NewDeveloper("solardev@test.com", "p", "x", "First Solar", "Solar Rd, San Diego, California", "Main contractor for full solar development")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = opensolar.NewDeveloper("LancasterSolar@test.com", "p", "x", "Town of Lancaste NH", "Lancaster, New Hampshire", "Host")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = opensolar.NewDeveloper("LancasterRFP@test.com", "p", "x", "Lancaster Solar Engineer Solutions", "25 Lancaster Rd, New Hampshire", "Independent RFP Engineer")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = opensolar.NewDeveloper("SimpleServiceProvider@test.com", "p", "x", "Simple Service Provider", "Simple Service Provider", "Simple Service Provider")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = opensolar.NewDeveloper("VendorX@test.com", "p", "x", "Solar Racking Systems Inc", "34 Crack St, Boston", "Retail Vendor")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = opensolar.NewDeveloper("NEpool@test.com", "p", "x", "New England Pool Registered Auditor", "56 Hamden Ave, Stamford, CT", "REC Auditors for New England")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = opensolar.NewGuarantor("AllianzCS@test.com", "p", "x", "Allianz Climate Solutions", "34 5th, New York, NY", "Insurance Agent")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = opensolar.NewDeveloper("UIavangrid@test.com", "p", "x", "Avangrid Networks", "100 Marsh Hill Rd, New Haven, CT", "Utility")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = opensolar.NewGuarantor("GreenBank@test.com", "p", "x", "NH Green Bank", "67 Washington Rd, New Hampshire", "Impact-first escrow provider")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = opensolar.NewOriginator("testorig@test.com", "p", "x", "testorig", "testorig", "testorig")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	// 10kW project (16)
 	_, err = opensolar.NewDeveloper("YaleArchitecture@test.com", "p", "x", "Yale School of Architecture", "45 York St, New Haven, CT", "System and layout designer")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = opensolar.NewDeveloper("CTSolar@test.com", "p", "x", "Connecticut Solar", "45 Sun Street, Stamford, CT", "Solar system installer")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = opensolar.NewDeveloper("ColumbusHouse@test.com", "p", "x", "Columbus House", "21 Hagrid Ave, New Haven, CT", "Project Host")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = opensolar.NewGuarantor("RGreenFund@test.com", "p", "x", "RaiseGreen Blend Fund", "21 orange st, New Haven, CT", "Impact-first blended capital provider")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = opensolar.NewDeveloper("Avangrid@test.com", "p", "x", "Avangrid RECs", "100 Marsh Hill Rd, New Haven, CT", "Certifier of RECs and provider of REC meter")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = opensolar.NewOriginator("RaiseGreen@test.com", "p", "x", "Raise Green", "21 orange st, New Haven, CT", "Project originator")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = opensolar.NewContractor("testcont@test.com", "p", "x", "testcont", "testcont", "testcont")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = opensolar.NewGuarantor("testguarantor@test.com", "p", "x", "testguarantor", "testguarantor", "testguarantor")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	// 10MW project (24)
 	_, err = database.NewInvestor("emcoll@test.com", "p", "x", "Emerson Collective")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = database.NewInvestor("prqozfund@test.com", "p", "x", "Puerto Rico QOZ Fund")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = database.NewRecipient("prgov@test.com", "p", "x", "PR Government")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = database.NewRecipient("prschools@test.com", "p", "x", "Puerto Rico Solar Schools Limited")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = database.NewRecipient("prdoe@test.com", "p", "x", "Puerto Rico Department of Education")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = opensolar.NewOriginator("MartinWainstein1@test.com", "p", "x", "Martin Wainstein", "254 Elm Street, New Haven, CT", "Martin Wainstein from the Yale OpenLab")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = opensolar.NewDeveloper("hst@test.com", "p", "x", "HST Solar", "25 Hewlett St, San Francisco, CA", "Preliminary finance and engineering assessment")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = opensolar.NewDeveloper("FemaRoofs@test.com", "p", "x", "FEMA Puerto Rico", "“45 Old Town Rd, Puerto Rico", "Civil engineering assessment of school roofs")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = opensolar.NewContractor("testcont@test.com", "p", "x", "testcont", "testcont", "testcont")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = opensolar.NewGuarantor("testguarantor@test.com", "p", "x", "testguarantor", "testguarantor", "testguarantor")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	// 100 kw project (34)
 	_, err = database.NewInvestor("jjackson@test.com", "p", "x", "Jerome Jackson")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = database.NewInvestor("esare@test.com", "p", "x", "Eliah Sare")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = database.NewInvestor("yaleuf@test.com", "p", "x", "Yale University Fund")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = database.NewRecipient("ubaduef@test.com", "p", "x", "Ubadu Energy Collective")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = database.NewRecipient("sunshinegschool@test.com", "p", "x", "Sunshine Garden School")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = database.NewRecipient("ubaduth@test.com", "p", "x", "Ubadu Town Hall")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = database.NewRecipient("dwbrf@test.com", "p", "x", " Doctors without borders, Rwanda chapter")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = database.NewRecipient("largerof@test.com", "p", "x", "Large Residential offtakers")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = opensolar.NewOriginator("DjiembeMbeba@test.com", "p", "x", "Djiembe Mbeba", "Ubadu village, Rwanda", "Project originator")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = opensolar.NewDeveloper("SolarPartners@test.com", "p", "x", "Solar Partners", "34 Hiete st, Somaliland", "MiniGrid game developer")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = opensolar.NewDeveloper("hst2@test.com", "p", "x", "HST Solar", "25 Hewlett St, San Francisco, CA", "Preliminary finance and engineering assessment")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	return nil
@@ -248,7 +250,7 @@ func createAllStaticEntities() error {
 
 func populateStaticData1kw() error {
 
-	project, err := opensolar.RetrieveProject(5)
+	project, err := opensolar.RetrieveProject(4)
 
 	project.ExplorePageSummary.Solar = project.PanelSize
 	project.ExplorePageSummary.Storage = project.ExecutiveSummary.ProjectSize["Storage"]
@@ -283,8 +285,9 @@ func populateStaticData1kw() error {
 }
 
 func populateStaticData1mw() error {
-	project, err := opensolar.RetrieveProject(6)
+	project, err := opensolar.RetrieveProject(5)
 	if err != nil {
+		log.Println("bug?")
 		return err
 	}
 	// Define things that will be displayed on the frontend
@@ -332,7 +335,7 @@ func populateStaticData1mw() error {
 }
 
 func populateStaticData10kw() error {
-	project, err := opensolar.RetrieveProject(7)
+	project, err := opensolar.RetrieveProject(6)
 	if err != nil {
 		return err
 	}
@@ -372,7 +375,7 @@ func populateStaticData10kw() error {
 
 func populateStaticData10MW() error {
 	// create the required entities that we need over here
-	project, err := opensolar.RetrieveProject(8)
+	project, err := opensolar.RetrieveProject(7)
 	if err != nil {
 		return err
 	}
@@ -412,7 +415,7 @@ func populateStaticData10MW() error {
 
 	err = project.Save()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	return nil
@@ -420,7 +423,7 @@ func populateStaticData10MW() error {
 
 func populateStaticData100KW() error {
 
-	project, err := opensolar.RetrieveProject(9)
+	project, err := opensolar.RetrieveProject(8)
 	if err != nil {
 		return err
 	}
@@ -453,7 +456,7 @@ func populateStaticData100KW() error {
 	project.CEImages = append(project.CEImages, "https://images.openx.solar/OpenSolarProjects/1_Rwanda/8.jpg", "https://images.openx.solar/OpenSolarProjects/1_Rwanda/1.jpg", "https://images.openx.solar/OpenSolarProjects/1_Rwanda/11.jpg", "https://images.openx.solar/OpenSolarProjects/1_Rwanda/7.jpg")
 	err = project.Save()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	return nil
@@ -461,6 +464,7 @@ func populateStaticData100KW() error {
 
 func bootstrapInvestor(invName, invDescription string) (database.Investor, string, error) {
 	// setup investor account
+	log.Println(consts.StablecoinSeed, consts.StablecoinPublicKey, consts.Code)
 	passwd := "p"
 	seedpwd := "x"
 	investor1, err := database.NewInvestor(invName, passwd, seedpwd, invDescription)
@@ -472,6 +476,16 @@ func bootstrapInvestor(invName, invDescription string) (database.Investor, strin
 		return investor1, "", err
 	}
 	err = xlm.GetXLM(investor1.U.PublicKey)
+	if err != nil {
+		return investor1, "", err
+	}
+	// trust the stablecoin issuer and give the investor a fixed number of stableusd to invest
+	// this helps prevent calling the exchange function that is implicitly called in the payment function
+	_, err = assets.TrustAsset(consts.Code, consts.StablecoinPublicKey, "10000000000", investor1.U.PublicKey, invSeed)
+	if err != nil {
+		return investor1, "", err
+	}
+	_, _, err = assets.SendAssetFromIssuer(consts.Code, investor1.U.PublicKey, "1000000", consts.StablecoinSeed, consts.StablecoinPublicKey)
 	if err != nil {
 		return investor1, "", err
 	}
@@ -501,7 +515,7 @@ func bootstrapRecipient(recpName, recpDescription string) (database.Recipient, s
 func oneInvestor(projIndex int, invName string, invDescription string, recpName string, recpDescription string) error {
 	project, err := opensolar.RetrieveProject(projIndex)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	oldStage := project.Stage
@@ -516,14 +530,18 @@ func oneInvestor(projIndex int, invName string, invDescription string, recpName 
 
 	investor1, invSeed, err := bootstrapInvestor(invName, invDescription)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	recipient1, _, err := bootstrapRecipient(recpName, recpDescription)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
+	project, err = opensolar.RetrieveProject(projIndex)
+	if err != nil {
+		return err
+	}
 	project.RecipientIndex = recipient1.U.Index
 	err = project.Save()
 	if err != nil {
@@ -532,13 +550,13 @@ func oneInvestor(projIndex int, invName string, invDescription string, recpName 
 
 	err = opensolar.Invest(projIndex, investor1.U.Index, utils.FtoS(project.TotalValue), invSeed)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	time.Sleep(5 * time.Second)
 	err = opensolar.UnlockProject(recipient1.U.Username, recipient1.U.Pwhash, projIndex, seedpwd)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	time.Sleep(100 * time.Second)
@@ -556,7 +574,7 @@ func threeInvestor(projIndex int, invName1 string, invDescription1 string, invNa
 
 	project, err := opensolar.RetrieveProject(projIndex)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	oldStage := project.Stage
@@ -571,22 +589,22 @@ func threeInvestor(projIndex int, invName1 string, invDescription1 string, invNa
 
 	investor1, invSeed1, err := bootstrapInvestor(invName1, invDescription1)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	investor2, invSeed2, err := bootstrapInvestor(invName2, invDescription2)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	investor3, invSeed3, err := bootstrapInvestor(invName3, invDescription3)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	recipient1, _, err := bootstrapRecipient(recpName, recpDescription)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	project.RecipientIndex = recipient1.U.Index
@@ -597,23 +615,23 @@ func threeInvestor(projIndex int, invName1 string, invDescription1 string, invNa
 
 	err = opensolar.Invest(projIndex, investor1.U.Index, invAmount1, invSeed1)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	err = opensolar.Invest(projIndex, investor2.U.Index, invAmount2, invSeed2)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	err = opensolar.Invest(projIndex, investor3.U.Index, invAmount3, invSeed3)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	// update local project with changes from storage
 	project, err = opensolar.RetrieveProject(projIndex)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	project.BlendedCapitalInvestorIndex = investor1.U.Index
@@ -632,12 +650,12 @@ func sixInvestor(projIndex int, invName1 string, invDescription1 string, invName
 
 	project, err := opensolar.RetrieveProject(projIndex)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	recipient1, _, err := bootstrapRecipient(recpName, recpDescription)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	oldStage := project.Stage
@@ -652,32 +670,32 @@ func sixInvestor(projIndex int, invName1 string, invDescription1 string, invName
 	seedpwd := "x"
 	investor1, invSeed1, err := bootstrapInvestor(invName1, invDescription1)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	investor2, invSeed2, err := bootstrapInvestor(invName2, invDescription2)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	investor3, invSeed3, err := bootstrapInvestor(invName3, invDescription3)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	investor4, invSeed4, err := bootstrapInvestor(invName4, invDescription4)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	investor5, invSeed5, err := bootstrapInvestor(invName5, invDescription5)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	investor6, invSeed6, err := bootstrapInvestor(invName6, invDescription6)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	err = project.Save()
@@ -687,44 +705,44 @@ func sixInvestor(projIndex int, invName1 string, invDescription1 string, invName
 
 	err = opensolar.Invest(projIndex, investor1.U.Index, invAmount1, invSeed1)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	err = opensolar.Invest(projIndex, investor2.U.Index, invAmount2, invSeed2)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	err = opensolar.Invest(projIndex, investor3.U.Index, invAmount3, invSeed3)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	err = opensolar.Invest(projIndex, investor4.U.Index, invAmount4, invSeed4)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	err = opensolar.Invest(projIndex, investor5.U.Index, invAmount5, invSeed5)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	err = opensolar.Invest(projIndex, investor6.U.Index, invAmount6, invSeed6)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	time.Sleep(5 * time.Second)
 	err = opensolar.UnlockProject(recipient1.U.Username, recipient1.U.Pwhash, projIndex, seedpwd)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	time.Sleep(100 * time.Second)
 	project, err = opensolar.RetrieveProject(projIndex)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	project.BlendedCapitalInvestorIndex = investor1.U.Index
@@ -738,7 +756,7 @@ func sixInvestor(projIndex int, invName1 string, invDescription1 string, invName
 
 func populateDynamicData1kw() error {
 	// setup all the entities that will be involved with the project here
-	err := oneInvestor(5, "OpenLab", "Yale OpenLab", "SUpasto", "S.U. Pasto School")
+	err := oneInvestor(4, "OpenLab", "Yale OpenLab", "SUpasto", "S.U. Pasto School")
 	if err != nil {
 		return err
 	}
@@ -747,49 +765,49 @@ func populateDynamicData1kw() error {
 
 func populateDynamicData1mw() error {
 	// setup all the entities involved with the project here
-	err := threeInvestor(6, "OZFunds", "OZ FundCo", "GreenBank", "NH Green Bank", "TaxEquity", "Lancaster Lumber Mill Coop",
+	err := threeInvestor(5, "OZFunds", "OZ FundCo", "GreenBank", "NH Green Bank", "TaxEquity", "Lancaster Lumber Mill Coop",
 		"1000000", "400000", "100000", "LancasterHigh", "Lancaster Elementary School")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	recipient2, err := database.NewRecipient("LancasterT", "p", "x", "Town of Lancaster NH")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	project, err := opensolar.RetrieveProject(6)
+	project, err := opensolar.RetrieveProject(5)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	// Define the various entities that are associated with a specific project
 	project.RecipientIndices = append(project.RecipientIndices, recipient2.U.Index)
 	err = project.Save()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	return nil
 }
 
 func populateDynamicData10kw() error {
 
-	err := sixInvestor(7, "MatthewMoroney", "Matthew Moroney", "FranzHochstrasser", "Franz Hochstrasser", "CTGreenBank", "Connecticut Green Bank",
+	err := sixInvestor(6, "MatthewMoroney", "Matthew Moroney", "FranzHochstrasser", "Franz Hochstrasser", "CTGreenBank", "Connecticut Green Bank",
 		"YaleUniversity", "Yale University Community Fund", "JeromeGreen", "Jerome Green", "OpenSolarFund", "Open Solar Revolving Fund",
 		"4000", "4000", "4000", "4000", "4000", "10000", "colhouse", "Columbus House Foundation")
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	recipient2, err := database.NewRecipient("ColumbusHouse", "p", "x", "Columbus House Foundation")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	project, err := opensolar.RetrieveProject(7)
+	project, err := opensolar.RetrieveProject(6)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	// Define the various entities that are associated with a specific project
 	project.RecipientIndices = append(project.RecipientIndices, recipient2.U.Index)
