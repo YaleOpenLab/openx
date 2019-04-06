@@ -10,6 +10,37 @@ import (
 	utils "github.com/YaleOpenLab/openx/utils"
 )
 
+func testSolarProject(index int, panelsize string, totalValue float64, location string, moneyRaised float64,
+	metadata string, invAssetCode string, debtAssetCode string, pbAssetCode string, years int, recpIndex int,
+	contractor opensolar.Entity, originator opensolar.Entity, stage int, pbperiod int, auctionType string) (opensolar.Project, error) {
+
+	var project opensolar.Project
+	project.Index = index
+	project.PanelSize = panelsize
+	project.TotalValue = totalValue
+	project.State = location
+	project.MoneyRaised = moneyRaised
+	project.Metadata = metadata
+	project.InvestorAssetCode = invAssetCode
+	project.DebtAssetCode = debtAssetCode
+	project.PaybackAssetCode = pbAssetCode
+	project.DateInitiated = utils.Timestamp()
+	project.EstimatedAcquisition = years
+	project.RecipientIndex = recpIndex
+	project.ContractorIndex = contractor.U.Index
+	project.OriginatorIndex = originator.U.Index
+	project.Stage = stage
+	project.PaybackPeriod = pbperiod
+	project.AuctionType = auctionType
+	project.InvestmentType = "munibond"
+
+	err := project.Save()
+	if err != nil {
+		return project, errors.New("Error inserting project into db")
+	}
+	return project, nil
+}
+
 // newLivingUnitCoop creates a new living unit coop
 func newLivingUnitCoop(mdate string, mrights string, stype string, intrate float64, rating string,
 	bIssuer string, uWriter string, totalAmount float64, typeOfUnit string, monthlyPayment float64,
@@ -74,8 +105,12 @@ func newConstructionBond(mdate string, stype string, intrate float64, rating str
 // InsertDummyData inserts sample data
 func InsertDummyData(simulate bool) error {
 	var err error
-	// populate database with dumym data
+	// populate database with dummy data
 	var recp database.Recipient
+	// simulate only if the bool is set to true
+	if simulate {
+		return CreateSandbox()
+	}
 	allRecs, err := database.RetrieveAllRecipients()
 	if err != nil {
 		log.Fatal(err)
@@ -209,37 +244,5 @@ func InsertDummyData(simulate bool) error {
 		log.Fatal(err)
 	}
 
-	// simulate only if the bool is set to true
-	if simulate {
-		// project: Puerto Rico Project
-		// STAGE 7 - Puerto Rico
-		err = createPuertoRicoProject()
-		if err != nil {
-			log.Fatal(err)
-		}
-		// project: One Mega Watt Project
-		// STAGE 4 - New Hampshire
-		err = createOneMegaWattProject()
-		if err != nil {
-			log.Fatal(err)
-		}
-		// project: Ten Kilowatt Project
-		// STAGE 8 - Connecticut Homeless Shelter
-		err = createTenKiloWattProject()
-		if err != nil {
-			log.Fatal(err)
-		}
-		// project: Ten Mega Watt Project
-		// STAGE 2 - Puerto Rico Public School Bond
-		err = createTenMegaWattProject()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		err = createOneHundredKiloWattProject()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
 	return nil
 }
