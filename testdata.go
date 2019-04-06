@@ -10,6 +10,38 @@ import (
 	utils "github.com/YaleOpenLab/openx/utils"
 )
 
+
+func testSolarProject(index int, panelsize string, totalValue float64, location string, moneyRaised float64,
+	metadata string, invAssetCode string, debtAssetCode string, pbAssetCode string, years int, recpIndex int,
+	contractor opensolar.Entity, originator opensolar.Entity, stage int, pbperiod int, auctionType string) (opensolar.Project, error) {
+
+	var project opensolar.Project
+	project.Index = index
+	project.PanelSize = panelsize
+	project.TotalValue = totalValue
+	project.State = location
+	project.MoneyRaised = moneyRaised
+	project.Metadata = metadata
+	project.InvestorAssetCode = invAssetCode
+	project.DebtAssetCode = debtAssetCode
+	project.PaybackAssetCode = pbAssetCode
+	project.DateInitiated = utils.Timestamp()
+	project.EstimatedAcquisition = years
+	project.RecipientIndex = recpIndex
+	project.ContractorIndex = contractor.U.Index
+	project.OriginatorIndex = originator.U.Index
+	project.Stage = stage
+	project.PaybackPeriod = pbperiod
+	project.AuctionType = auctionType
+	project.InvestmentType = "munibond"
+
+	err := project.Save()
+	if err != nil {
+		return project, errors.New("Error inserting project into db")
+	}
+	return project, nil
+}
+
 // newLivingUnitCoop creates a new living unit coop
 func newLivingUnitCoop(mdate string, mrights string, stype string, intrate float64, rating string,
 	bIssuer string, uWriter string, totalAmount float64, typeOfUnit string, monthlyPayment float64,

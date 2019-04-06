@@ -1,0 +1,107 @@
+# Have all the frontend sandbox params here and avoid cluttering the frontend
+Index:                     9
+Name:                      "Ubadu Village Microgrid, Rwanda"
+State:                     "Kigali"
+Country:                   "Rwanda"
+TotalValue:                230000.0
+PanelSize:                 "100kW"
+PanelTechnicalDescription: ""
+Inverter:                  ""
+ChargeRegulator:           ""
+ControlPanel:              ""
+CommBox:                   ""
+ACTransfer:                ""
+SolarCombiner:             ""
+Batteries:                 ""
+IoTHub:                    ""
+Rating:                    "N/A"
+Metadata:                  "The community of Ubadu, Rwanda has no access to grid electricity yet shows a  growing local economy. This microgrid project, will serve 250 homes, a school, an infirmary and the town hall"
+EstimatedAcquisition:      5
+BalLeft:                   -1.1
+InterestRate:              0.029
+Tax:                       ""
+DateInitiated:             ""
+DateFunded:                ""
+AuctionType:               "blind"
+InvestmentType:            "munibond"
+PaybackPeriod:             4
+Stage:                     1
+SeedInvestmentFactor:      1.1
+SeedInvestmentCap:         500.0
+ProposedInvetmentCap:      15000.0
+SelfFund:                  0.0
+SecurityIssuer:            ""
+BrokerDealer:              ""
+EngineeringLayoutType:     "basic"
+Terms:
+  Terms1:
+    Variable:              "Security Type"
+    Value:                 "Equity Crowdfunding"
+    RelevantParty:         "Ubadu Collective"
+    Note:                  "Coop is not incorporated yet"
+    Status:                "Open"
+    SupportDoc:            "https://openlab.yale.edu"
+  Terms2:
+    Variable:              "PPA Tariff"
+    Value:                 "0.12 ct/KWh"
+    RelevantParty:         "Ubadu Collective"
+    Note:                  "Average PPA, from tiered offtakers"
+    Status:                "Open"
+    SupportDoc:            "https://openlab.yale.edu"
+  Terms3:
+    Variable:              "Exp. Return"
+    Value:                 "2.3%"
+    RelevantParty:         "Equity Value"
+    Note:                  "Growth value. No tax incentives"
+    Status:                "Open"
+    SupportDoc:            "https://openlab.yale.edu"
+  Terms4:
+    Variable:              "Ownership Flip"
+    Value:                 "2027"
+    RelevantParty:         "By convertible notes"
+    Note:                  "Crowd investors sell stock"
+    Status:                "Open"
+    SupportDoc:            "https://openlab.yale.edu"
+  Terms5:
+    Variable:              "Guarantee"
+    Value:                 "20%"
+    RelevantParty:         "Africa Fund"
+    Note:                  "Agreed but pending"
+    Status:                "Open"
+    SupportDoc:            "https://openlab.yale.edu"
+  Terms6:
+    Variable:              "Insurance"
+    Value:                 "N/A"
+    RelevantParty:         "N/A"
+    Note:                  "Defining insurance parties"
+    Status:                "Open"
+    SupportDoc:            "https://openlab.yale.edu"
+ExecutiveSummary:
+  Investment:
+    Capex:                 "230000"
+    Hardware Ratio:        "75"
+    Raise Type:            "Equity w/Notes"
+    Maturity:              "2028"
+  Financials:
+    Expected Return):      "2.3%"
+    First Loss Escrow:     "20%"
+    Tariff (Fixed):        "0.24 ct/kWh"
+    REC Value:             "In Process"
+  ProjectSize:
+    PV Solar:              "4 x 25 kW"
+    Storage:               "25 kWh"
+    Critical:              "100"
+    Inverter Capacity:     "4 x 30 kW"
+  SustainabilityMetrics:
+   Carbon Drawdown:        "N/A"
+   Community Value:        "7/7"
+   LCA:                    "N/A"
+Bullets:
+  Bullet1:                 "Community owned cooperative mircrogrid"
+  Bullet2:                 "Transactive energy capability"
+  Bullet3:                 "Certified high social impact"
+Architecture:
+  SolarArray:              "10x 100 W"
+  DailyAvgGeneration:      "4000 kWh"
+  System:                  "600A Deep Cycle"
+  InverterSize:            "2024W 230V"

@@ -5,9 +5,11 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"log"
+	"encoding/json"
+	"io/ioutil"
 )
 
-func parseYaml(fileName string) error {
+func parseYaml(fileName string, feJson string) error {
 	viper.SetConfigType("yaml")
 	viper.SetConfigName(fileName)
 	viper.AddConfigPath("./data-sandbox")
@@ -117,7 +119,7 @@ func parseYaml(fileName string) error {
 	project.BrokerDealer = viper.Get("BrokerDealer").(string)
 	project.EngineeringLayoutType = viper.Get("EngineeringLayoutType").(string)
 
-	project.FEText, err = parseJsonText("data-sandbox/pasto.json")
+	project.FEText, err = parseJsonText(feJson)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -130,34 +132,51 @@ func CreateSandbox() error {
 	// project: Puerto Rico Project
 	// STAGE 7 - Puerto Rico
 	var err error
-	err = parseYaml("pastoy")
+	err = parseYaml("1kwy", "data-sandbox/1kw.json")
 	if err != nil {
 		return err
 	}
+	err = parseYaml("1mwy", "data-sandbox/1mw.json")
+	if err != nil {
+		return err
+	}
+	err = parseYaml("10kwy", "data-sandbox/10kw.json")
+	if err != nil {
+		return err
+	}
+	err = parseYaml("10mwy", "data-sandbox/10mw.json")
+	if err != nil {
+		return err
+	}
+	err = parseYaml("100kwy", "data-sandbox/100kw.json")
+	if err != nil {
+		return err
+	}
+	log.Fatal("cool")
 	err = createAllStaticEntities()
 	if err != nil {
 		return err
 	}
 	log.Fatal("cool")
-	err = createPuertoRicoProject()
+	err = create1kwProject()
 	if err != nil {
 		return err
 	}
 	// project: One Mega Watt Project
 	// STAGE 4 - New Hampshire
-	err = createOneMegaWattProject()
+	err = create1mwProject()
 	if err != nil {
 		return err
 	}
 	// project: Ten Kilowatt Project
 	// STAGE 8 - Connecticut Homeless Shelter
-	err = createTenKiloWattProject()
+	err = create10kwProject()
 	if err != nil {
 		return err
 	}
 	// project: Ten Mega Watt Project
 	// STAGE 2 - Puerto Rico Public School Bond
-	err = createTenMegaWattProject()
+	err = create10mwProject()
 	if err != nil {
 		return err
 	}
@@ -168,4 +187,20 @@ func CreateSandbox() error {
 	}
 
 	return nil
+}
+
+func parseJsonText(fileName string) (map[string]interface{}, error) {
+
+	data, err := ioutil.ReadFile(fileName)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var result map[string]interface{}
+	err = json.Unmarshal(data, &result)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return result, nil
 }
