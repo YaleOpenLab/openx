@@ -10,7 +10,6 @@ import (
 	utils "github.com/YaleOpenLab/openx/utils"
 )
 
-
 func testSolarProject(index int, panelsize string, totalValue float64, location string, moneyRaised float64,
 	metadata string, invAssetCode string, debtAssetCode string, pbAssetCode string, years int, recpIndex int,
 	contractor opensolar.Entity, originator opensolar.Entity, stage int, pbperiod int, auctionType string) (opensolar.Project, error) {
@@ -106,15 +105,11 @@ func newConstructionBond(mdate string, stype string, intrate float64, rating str
 // InsertDummyData inserts sample data
 func InsertDummyData(simulate bool) error {
 	var err error
-	// populate database with dumym data
+	// populate database with dummy data
 	var recp database.Recipient
 	// simulate only if the bool is set to true
 	if simulate {
-		err = CreateSandbox()
-		if err != nil {
-			log.Fatal(err)
-		}
-		return nil
+		return CreateSandbox()
 	}
 	allRecs, err := database.RetrieveAllRecipients()
 	if err != nil {

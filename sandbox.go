@@ -1,12 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
-	"log"
-	"encoding/json"
 	"io/ioutil"
+	"log"
 )
 
 func parseYaml(fileName string, feJson string) error {
@@ -127,12 +127,19 @@ func parseYaml(fileName string, feJson string) error {
 	return project.Save()
 }
 
-// CreateSandbox is the main function that controls data insertion as part of the sandbox environment
-func CreateSandbox() error {
-	// project: Puerto Rico Project
-	// STAGE 7 - Puerto Rico
+func populateStaticData() error {
 	var err error
+	err = createAllStaticEntities()
+	if err != nil {
+		return err
+	}
 	err = parseYaml("1kwy", "data-sandbox/1kw.json")
+	if err != nil {
+		return err
+	}
+	// project: One Kilowatt Project
+	// STAGE 7 - Puerto Rico
+	err = populateStaticData1kw()
 	if err != nil {
 		return err
 	}
@@ -140,7 +147,19 @@ func CreateSandbox() error {
 	if err != nil {
 		return err
 	}
+	// project: One Megawatt Project
+	// STAGE 4 - New Hampshire
+	err = populateStaticData1mw()
+	if err != nil {
+		return err
+	}
 	err = parseYaml("10kwy", "data-sandbox/10kw.json")
+	if err != nil {
+		return err
+	}
+	// project: Ten Kilowatt Project
+	// STAGE 8 - Connecticut Homeless Shelter
+	err = populateStaticData10kw()
 	if err != nil {
 		return err
 	}
@@ -148,44 +167,55 @@ func CreateSandbox() error {
 	if err != nil {
 		return err
 	}
+	// project: Ten Megawatt Project
+	// STAGE 2 - Puerto Rico Public School Bond
+	err = populateStaticData10MW()
+	if err != nil {
+		return err
+	}
 	err = parseYaml("100kwy", "data-sandbox/100kw.json")
 	if err != nil {
 		return err
 	}
-	log.Fatal("cool")
-	err = createAllStaticEntities()
+	// project: One HUndred Kilowatt Project
+	// STAGE 1 - Rwanda Project
+	err = populateStaticData100KW()
 	if err != nil {
 		return err
 	}
-	log.Fatal("cool")
-	err = create1kwProject()
-	if err != nil {
-		return err
-	}
-	// project: One Mega Watt Project
-	// STAGE 4 - New Hampshire
-	err = create1mwProject()
-	if err != nil {
-		return err
-	}
-	// project: Ten Kilowatt Project
-	// STAGE 8 - Connecticut Homeless Shelter
-	err = create10kwProject()
-	if err != nil {
-		return err
-	}
-	// project: Ten Mega Watt Project
-	// STAGE 2 - Puerto Rico Public School Bond
-	err = create10mwProject()
-	if err != nil {
-		return err
-	}
+	return nil
+}
 
-	err = createOneHundredKiloWattProject()
+func populateDynamicData() error {
+	var err error
+	err = populateDynamicData1kw()
 	if err != nil {
 		return err
 	}
+	err = populateDynamicData1mw()
+	if err != nil {
+		return err
+	}
+	err = populateDynamicData10kw()
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
+// CreateSandbox is the main function that controls data insertion as part of the sandbox environment
+func CreateSandbox() error {
+	// project: Puerto Rico Project
+	// STAGE 7 - Puerto Rico
+	var err error
+	err = populateStaticData()
+	if err != nil {
+		return err
+	}
+	err = populateDynamicData()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
