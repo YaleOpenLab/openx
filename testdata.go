@@ -76,6 +76,14 @@ func InsertDummyData(simulate bool) error {
 	var err error
 	// populate database with dumym data
 	var recp database.Recipient
+	// simulate only if the bool is set to true
+	if simulate {
+		err = CreateSandbox()
+		if err != nil {
+			log.Fatal(err)
+		}
+		return nil
+	}
 	allRecs, err := database.RetrieveAllRecipients()
 	if err != nil {
 		log.Fatal(err)
@@ -209,37 +217,5 @@ func InsertDummyData(simulate bool) error {
 		log.Fatal(err)
 	}
 
-	// simulate only if the bool is set to true
-	if simulate {
-		// project: Puerto Rico Project
-		// STAGE 7 - Puerto Rico
-		err = createPuertoRicoProject()
-		if err != nil {
-			log.Fatal(err)
-		}
-		// project: One Mega Watt Project
-		// STAGE 4 - New Hampshire
-		err = createOneMegaWattProject()
-		if err != nil {
-			log.Fatal(err)
-		}
-		// project: Ten Kilowatt Project
-		// STAGE 8 - Connecticut Homeless Shelter
-		err = createTenKiloWattProject()
-		if err != nil {
-			log.Fatal(err)
-		}
-		// project: Ten Mega Watt Project
-		// STAGE 2 - Puerto Rico Public School Bond
-		err = createTenMegaWattProject()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		err = createOneHundredKiloWattProject()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
 	return nil
 }

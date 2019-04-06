@@ -14,181 +14,46 @@ import (
 	xlm "github.com/YaleOpenLab/openx/xlm"
 )
 
-func populateStaticDataPR() (int, error) {
-	var project opensolar.Project
-	indexHelp, err := opensolar.RetrieveAllProjects()
+func createAllStaticEntities() error {
+	// PR static entities
+	var err error
+	_, err = opensolar.NewOriginator("DCI", "p", "x", "MIT DCI", "MIT Building E14-15", "The MIT Media Lab's Digital Currency Initiative")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// This is to populate the table of Terms and Conditions in the front end
-	var terms1 opensolar.TermsHelper
-	terms1.Variable = "Security Type"
-	terms1.Value = "Municipal Bond"
-	terms1.RelevantParty = "PR DofEd"
-	terms1.Note = "Promoted by PR governor's office"
-	terms1.Status = "Demo"
-	terms1.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+	_, err = opensolar.NewContractor("MartinWainstein", "p", "x", "Martin Wainstein", "254 Elm Street, New Haven, CT", "Martin Wainstein from the Yale OpenLab")
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	var terms2 opensolar.TermsHelper
-	terms2.Variable = "PPA Tariff"
-	terms2.Value = "0.24 ct/KWh"
-	terms2.RelevantParty = "oracle X / PREPA"
-	terms2.Note = "Variable anchored to local tariff"
-	terms2.Status = "Signed"
-	terms2.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+	_, err = opensolar.NewDeveloper("gs", "p", "x", "Genmoji Solar", "Genmoji, San Juan, Puerto Rico", "Genmoji Solar")
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	var terms3 opensolar.TermsHelper
-	terms3.Variable = "Return (TEY)"
-	terms3.Value = "3.1%"
-	terms3.RelevantParty = "Broker Dealer"
-	terms3.Note = "Variable tied to tariff"
-	terms3.Status = "Signed"
-	terms3.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+	_, err = opensolar.NewDeveloper("nbly", "p", "x", "Neighborly Securities", "San Francisco, CA", "Broker Dealer")
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	var terms4 opensolar.TermsHelper
-	terms4.Variable = "Maturity"
-	terms4.Value = "+/- 2025"
-	terms4.RelevantParty = "Broker Dealer"
-	terms4.Note = "Tax adjusted Yield"
-	terms4.Status = "Signed"
-	terms4.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+	_, err = opensolar.NewGuarantor("mitml", "p", "x", "MIT Media Lab", "MIT Building E14-15", "The MIT Media Lab is an interdisciplinary lab with innovators from all around the globe")
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	var terms5 opensolar.TermsHelper
-	terms5.Variable = "Guarantee"
-	terms5.Value = "50%"
-	terms5.RelevantParty = "Foundation X"
-	terms5.Note = "First-loss upon breach"
-	terms5.Status = "Started"
-	terms5.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+	return nil
+}
 
-	var terms6 opensolar.TermsHelper
-	terms6.Variable = "Insurance"
-	terms6.Value = "Premium"
-	terms6.RelevantParty = "Allianz CS"
-	terms6.Note = "Hurricane Coverage"
-	terms6.Status = "Started"
-	terms6.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+func populateStaticDataPR() (int, error) {
 
-	var esHelper opensolar.ExecutiveSummaryHelper
+	project, err := opensolar.RetrieveProject(5)
 
-	esHelper.Investment = make(map[string]string)
-	esHelper.Financials = make(map[string]string)
-	esHelper.ProjectSize = make(map[string]string)
-	esHelper.SustainabilityMetrics = make(map[string]string)
-
-	esHelper.Investment["Capex"] = "5000"
-	esHelper.Investment["Hardware"] = "60"
-	esHelper.Investment["First-Loss-Escrow"] = "30%"
-	esHelper.Investment["Certification Costs"] = "N/A"
-
-	esHelper.Financials["Return (TEY)"] = "3.1"
-	esHelper.Financials["Insurance"] = "Premium"
-	esHelper.Financials["Tariff (Variable)"] = "0.24 ct/kWh"
-	esHelper.Financials["Maturity (Variable)"] = "2028"
-
-	esHelper.ProjectSize["PV Solar"] = "1 kW"
-	esHelper.ProjectSize["Storage"] = "200 Wh"
-	esHelper.ProjectSize["% Critical"] = "2"
-	esHelper.ProjectSize["Inverter Capacity"] = "2.5 kW"
-
-	esHelper.SustainabilityMetrics["Carbon Drawdown"] = "0.1 t/kWh"
-	esHelper.SustainabilityMetrics["Community Value"] = "5/7"
-	esHelper.SustainabilityMetrics["LCA"] = "N/A"
-
-	var communityblock1 opensolar.CommunityEngagementHelper
-	communityblock1.Title = "Consultation"
-	communityblock1.ImageURL = ""
-	communityblock1.Content = ""
-	communityblock1.Link = ""
-
-	var communityblock2 opensolar.CommunityEngagementHelper
-	communityblock2.Title = "Participation"
-	communityblock2.ImageURL = ""
-	communityblock2.Content = ""
-	communityblock2.Link = ""
-
-	var communityblock3 opensolar.CommunityEngagementHelper
-	communityblock3.Title = "Outreach"
-	communityblock3.ImageURL = ""
-	communityblock3.Content = ""
-	communityblock3.Link = ""
-
-	var communityblock4 opensolar.CommunityEngagementHelper
-	communityblock4.Title = "Governance"
-	communityblock4.ImageURL = ""
-	communityblock4.Content = ""
-	communityblock4.Link = ""
-
-	project.Index = len(indexHelp) + 1
-	project.Name = "Pasto Public School - POC 1 kW"
-	project.State = "Puerto Rico"
-	project.Country = "US"
-	project.TotalValue = 10000
-	project.PanelSize = "1kW"
-	project.PanelTechnicalDescription = "10x 100W Komaes"
-	project.Inverter = "Schneider Conext SW 230V 2024"
-	project.ChargeRegulator = "Schneider MPPT60"
-	project.ControlPanel = "Schneider XW SCP"
-	project.CommBox = "Schneider Conext Insight"
-	project.ACTransfer = "Eaton Manual throw switches between grid and solar+grid setups"
-	project.SolarCombiner = "MidNite"
-	project.Batteries = "Advance Autoparts Deep cycle 600A"
-	project.IoTHub = "Yale Open Powermeter w/ RaspberryPi3"
-	project.Rating = "N/A"
-	project.Metadata = "This project is a pilot initiative from MIT MediaLab's DCI & the Yale Openlab at Tsai CITY, as to integrate the opensolar platforms with IoT data and blockchain based payment systems to help finance community energy in Puerto Rico"
-
-	// Define parameters related to finance
-	project.EstimatedAcquisition = 5
-	project.BalLeft = 10000
-	project.InterestRate = 0.029
-	project.Tax = "Insert tax scheme here"
-
-	// Define dates of creation and funding
-	project.DateInitiated = "01/23/2018"
-	project.DateFunded = "06/19/2018"
-	project.DateLastPaid = -1
-
-	// Define technical parameters
-	project.AuctionType = "private"
-	project.InvestmentType = "munibond"
-	project.PaybackPeriod = 4
-	project.Stage = 7
-	project.SeedInvestmentFactor = 1.1
-	project.SeedInvestmentCap = 500
-	project.ProposedInvetmentCap = 15000
-	project.SelfFund = 0
-
-	// Describe issuer of security and the broker dealer
-	project.SecurityIssuer = "Neighborly Securities"
-	project.BrokerDealer = "Broker Dealer"
-
-	// Define things that will be displayed on the frontend
-	project.Terms = append(project.Terms, terms1, terms2, terms3, terms4, terms5, terms6)
-	project.ExecutiveSummary = esHelper
-	project.AutoReloadInterval = -1
-	project.ResilienceRating = 0.8
-	project.ActionsRequired = ""
-	project.Bullets.Bullet1 = "Research project on smart financing"
-	project.Bullets.Bullet2 = "Critical loads to the Admin Building"
-	project.Bullets.Bullet3 = "Grid-tied and storage"
-	var hashHelper opensolar.HashHelper
-	project.Hashes = hashHelper
-	project.ContractList = nil
-	project.CommunityEngagement = append(project.CommunityEngagement, communityblock1, communityblock2, communityblock3, communityblock4)
-	project.Architecture.SolarOutputImage = ""
-	project.Architecture.SolarArray = "10x 100 W"
-	project.Architecture.DailyAvgGeneration = "4000 kWh"
-	project.Architecture.System = "600A Deep Cycle"
-	project.Architecture.InverterSize = "2024W 230V"
-	project.Architecture.DesignDescription = ""
-	project.Context = ""
-	project.SummaryImage = ""
 	project.ExplorePageSummary.Solar = project.PanelSize
-	project.ExplorePageSummary.Storage = esHelper.ProjectSize["Storage"]
-	project.ExplorePageSummary.Tariff = esHelper.Financials["Tariff (Variable)"]
+	project.ExplorePageSummary.Storage = project.ExecutiveSummary.ProjectSize["Storage"]
+	project.ExplorePageSummary.Tariff = project.ExecutiveSummary.Financials["Tariff (Variable)"]
 	project.ExplorePageSummary.Stage = project.Stage
-	project.ExplorePageSummary.Return = esHelper.Financials["Return (TEY)"]
+	project.ExplorePageSummary.Return = project.ExecutiveSummary.Financials["Return (TEY)"]
 	project.ExplorePageSummary.Rating = project.Rating
 	project.ExplorePageSummary.Tax = "N/A"
 	project.ExplorePageSummary.ETA = project.EstimatedAcquisition
@@ -201,51 +66,14 @@ func populateStaticDataPR() (int, error) {
 	project.CEImages = append(project.CEImages, "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/12.png", "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/13.png", "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/14.png", "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/15.png")
 	project.BNImages = append(project.PSImages, "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/16.png", "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/17.png", "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/18.png", "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/19.png")
 
-	project.EngineeringLayoutType = "basic"
-	project.FEText = make(map[string]interface{})
-	project.FEText, err = parseJsonText("text/pasto.json")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	originator1, err := opensolar.NewOriginator("DCI", "p", "x", "MIT DCI", "MIT Building E14-15", "The MIT Media Lab's Digital Currency Initiative")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	contractor1, err := opensolar.NewContractor("MartinWainstein", "p", "x", "Martin Wainstein", "254 Elm Street, New Haven, CT", "Martin Wainstein from the Yale OpenLab")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	developer1, err := opensolar.NewDeveloper("gs", "p", "x", "Genmoji Solar", "Genmoji, San Juan, Puerto Rico", "Genmoji Solar")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	developer2, err := opensolar.NewDeveloper("nbly", "p", "x", "Neighborly Securities", "San Francisco, CA", "Broker Dealer")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	guarantor1, err := opensolar.NewGuarantor("mitml", "p", "x", "MIT Media Lab", "MIT Building E14-15", "The MIT Media Lab is an interdisciplinary lab with innovators from all around the globe")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	project.OriginatorIndex = originator1.U.Index
-	project.GuarantorIndex = guarantor1.U.Index
-	project.ContractorIndex = contractor1.U.Index
-	project.MainDeveloperIndex = developer1.U.Index
-	project.DeveloperIndices = append(project.DeveloperIndices, developer1.U.Index, developer2.U.Index)
+	project.OriginatorIndex = 1
+	project.GuarantorIndex = 5
+	project.ContractorIndex = 2
+	project.MainDeveloperIndex = 3
+	project.DeveloperIndices = append(project.DeveloperIndices, 3, 4)
 	project.ContractorFee = 2000
 	project.OriginatorFee = 0
 	project.DeveloperFee = append(project.DeveloperFee, 6000)
-	project.DebtInvestor1 = ""
-	project.DebtInvestor2 = ""
-	project.TaxEquityInvestor = ""
-	project.BlendedCapitalInvestorIndex = -1
-	project.SeedInvestorIndices = nil
 
 	err = project.Save()
 	if err != nil {
@@ -274,7 +102,7 @@ func invHelper(invName, invDescription string) (database.Investor, string, error
 	return investor1, invSeed, nil
 }
 
-func recpHelper(recpName, recpDescription string) (database.Recipient, string ,error) {
+func recpHelper(recpName, recpDescription string) (database.Recipient, string, error) {
 	// setup recipient account
 	passwd := "p"
 	seedpwd := "x"
@@ -293,6 +121,7 @@ func recpHelper(recpName, recpDescription string) (database.Recipient, string ,e
 	return recipient, recpSeed, nil
 
 }
+
 // this file contains the data that we need to display on the frontend
 
 func I1R1(projIndex int, invName string, invDescription string, recpName string, recpDescription string) error {
@@ -430,7 +259,7 @@ func populateStaticData1MW() (int, error) {
 	terms1.RelevantParty = "Lancaster Mutual Solar"
 	terms1.Note = "Co-owned by the town of Lancaster"
 	terms1.Status = "Issued"
-	terms1.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+	terms1.SupportDoc = "https://openlab.yale.edu"
 
 	var terms2 opensolar.TermsHelper
 	terms2.Variable = "PPA Avg. Tariff"
@@ -438,7 +267,7 @@ func populateStaticData1MW() (int, error) {
 	terms2.RelevantParty = "Multiple Parties"
 	terms2.Note = "Local schools ans business offtaking"
 	terms2.Status = "Signed"
-	terms2.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+	terms2.SupportDoc = "https://openlab.yale.edu"
 
 	var terms3 opensolar.TermsHelper
 	terms3.Variable = "Return (TEY)"
@@ -446,7 +275,7 @@ func populateStaticData1MW() (int, error) {
 	terms3.RelevantParty = "Broker Dealer"
 	terms3.Note = "Tax equivalent yield, with capital gains"
 	terms3.Status = "Approv"
-	terms3.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+	terms3.SupportDoc = "https://openlab.yale.edu"
 
 	var terms4 opensolar.TermsHelper
 	terms4.Variable = "Maturity"
@@ -454,7 +283,7 @@ func populateStaticData1MW() (int, error) {
 	terms4.RelevantParty = "Broker Dealer"
 	terms4.Note = "By convertible notes"
 	terms4.Status = "Signed"
-	terms4.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+	terms4.SupportDoc = "https://openlab.yale.edu"
 
 	var terms5 opensolar.TermsHelper
 	terms5.Variable = "Guarantee"
@@ -462,7 +291,7 @@ func populateStaticData1MW() (int, error) {
 	terms5.RelevantParty = "NH Green Bank"
 	terms5.Note = "First-loss escrow upon breach"
 	terms5.Status = "Signed"
-	terms5.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+	terms5.SupportDoc = "https://openlab.yale.edu"
 
 	var terms6 opensolar.TermsHelper
 	terms6.Variable = "Insurance"
@@ -470,7 +299,7 @@ func populateStaticData1MW() (int, error) {
 	terms6.RelevantParty = "Allstate"
 	terms6.Note = "Force Majeur"
 	terms6.Status = "Signed"
-	terms6.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+	terms6.SupportDoc = "https://openlab.yale.edu"
 
 	var esHelper opensolar.ExecutiveSummaryHelper
 
@@ -587,7 +416,7 @@ func populateStaticData1MW() (int, error) {
 	project.BNImages = append(project.BNImages, "https://images.openx.solar/OpenSolarProjects/4_NH_Lancaster/10.png", "https://images.openx.solar/OpenSolarProjects/4_NH_Lancaster/11.png", "https://images.openx.solar/OpenSolarProjects/4_NH_Lancaster/1.png")
 
 	project.FEText = make(map[string]interface{})
-	project.FEText, err = parseJsonText("text/newhampshire.json")
+	project.FEText, err = parseJsonText("data-sandbox/newhampshire.json")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -803,7 +632,7 @@ func populateStaticData10KW() (int, error) {
 	terms1.RelevantParty = "NH Community Solar"
 	terms1.Note = "Special Purpose Vehicle"
 	terms1.Status = "Flipped"
-	terms1.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+	terms1.SupportDoc = "https://openlab.yale.edu"
 
 	var terms2 opensolar.TermsHelper
 	terms2.Variable = "PPA Tariff"
@@ -811,7 +640,7 @@ func populateStaticData10KW() (int, error) {
 	terms2.RelevantParty = "NH Homeless Shelter"
 	terms2.Note = "Fixed PPA determined by offtaker"
 	terms2.Status = "Signed"
-	terms2.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+	terms2.SupportDoc = "https://openlab.yale.edu"
 
 	var terms3 opensolar.TermsHelper
 	terms3.Variable = "Return"
@@ -819,7 +648,7 @@ func populateStaticData10KW() (int, error) {
 	terms3.RelevantParty = "Equity Value"
 	terms3.Note = "Growth in value. No tax incentives"
 	terms3.Status = "Open"
-	terms3.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+	terms3.SupportDoc = "https://openlab.yale.edu"
 
 	var terms4 opensolar.TermsHelper
 	terms4.Variable = "Ownership Flip"
@@ -827,7 +656,7 @@ func populateStaticData10KW() (int, error) {
 	terms4.RelevantParty = "Convertible Note"
 	terms4.Note = "Crowd investors sell stock"
 	terms4.Status = "Flipped"
-	terms4.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+	terms4.SupportDoc = "https://openlab.yale.edu"
 
 	var terms5 opensolar.TermsHelper
 	terms5.Variable = "Guarantee"
@@ -835,7 +664,7 @@ func populateStaticData10KW() (int, error) {
 	terms5.RelevantParty = "N/A"
 	terms5.Note = "No guarantees of breach"
 	terms5.Status = "None"
-	terms5.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+	terms5.SupportDoc = "https://openlab.yale.edu"
 
 	var terms6 opensolar.TermsHelper
 	terms6.Variable = "Insurance"
@@ -843,7 +672,7 @@ func populateStaticData10KW() (int, error) {
 	terms6.RelevantParty = "CT Insurers"
 	terms6.Note = "Force Majeur"
 	terms6.Status = "Signed"
-	terms6.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+	terms6.SupportDoc = "https://openlab.yale.edu"
 
 	project.Index = len(indexHelp) + 1
 	project.Name = "New Haven Shelter Solar 2"
@@ -888,7 +717,6 @@ func populateStaticData10KW() (int, error) {
 	project.SecurityIssuer = ""
 	project.BrokerDealer = ""
 
-
 	// Define things that will be displayed on the frontend
 	project.Terms = append(project.Terms, terms1, terms2, terms3, terms4, terms5, terms6)
 	project.ExecutiveSummary = esHelper
@@ -932,7 +760,7 @@ func populateStaticData10KW() (int, error) {
 	project.EngineeringLayoutType = "basic"
 
 	project.FEText = make(map[string]interface{})
-	project.FEText, err = parseJsonText("text/newhaven.json")
+	project.FEText, err = parseJsonText("data-sandbox/newhaven.json")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -952,7 +780,7 @@ func populateStaticData10KW() (int, error) {
 
 func I6R1(projIndex int, invName1 string, invDescription1 string, invName2 string, invDescription2 string,
 	invName3 string, invDescription3 string, invName4 string, invDescription4 string, invName5 string, invDescription5 string,
-	invName6 string, invDescription6 string, invAmount1 string, invAmount2 string, invAmount3 string,invAmount4 string,
+	invName6 string, invDescription6 string, invAmount1 string, invAmount2 string, invAmount3 string, invAmount4 string,
 	invAmount5 string, invAmount6 string, recpName string, recpDescription string) error {
 
 	project, err := opensolar.RetrieveProject(projIndex)
@@ -1159,7 +987,7 @@ func createTenMegaWattProject() error {
 	terms1.RelevantParty = "PR DofEd"
 	terms1.Note = "Not yet issued. See informal Agreements"
 	terms1.Status = "Open"
-	terms1.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+	terms1.SupportDoc = "https://openlab.yale.edu"
 
 	var terms2 opensolar.TermsHelper
 	terms2.Variable = "PPA Tariff"
@@ -1167,7 +995,7 @@ func createTenMegaWattProject() error {
 	terms2.RelevantParty = "Oracle X / PREPA"
 	terms2.Note = "Not signed. Expected as variable tariff"
 	terms2.Status = "Open"
-	terms2.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+	terms2.SupportDoc = "https://openlab.yale.edu"
 
 	var terms3 opensolar.TermsHelper
 	terms3.Variable = "Return (TEY)"
@@ -1175,7 +1003,7 @@ func createTenMegaWattProject() error {
 	terms3.RelevantParty = "See Broker Dealer"
 	terms3.Note = "Tax equivalent yield with capital gains"
 	terms3.Status = "Open"
-	terms3.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+	terms3.SupportDoc = "https://openlab.yale.edu"
 
 	var terms4 opensolar.TermsHelper
 	terms4.Variable = "Maturity"
@@ -1183,7 +1011,7 @@ func createTenMegaWattProject() error {
 	terms4.RelevantParty = "Broker Dealer"
 	terms4.Note = "Variable tied to tariff"
 	terms4.Status = "Open"
-	terms4.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+	terms4.SupportDoc = "https://openlab.yale.edu"
 
 	var terms5 opensolar.TermsHelper
 	terms5.Variable = "Guarantee"
@@ -1191,7 +1019,7 @@ func createTenMegaWattProject() error {
 	terms5.RelevantParty = "FEMA"
 	terms5.Note = "First-loss upon breach"
 	terms5.Status = "Started"
-	terms5.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+	terms5.SupportDoc = "https://openlab.yale.edu"
 
 	var terms6 opensolar.TermsHelper
 	terms6.Variable = "Insurance"
@@ -1199,7 +1027,7 @@ func createTenMegaWattProject() error {
 	terms6.RelevantParty = "Allianz CS"
 	terms6.Note = "Hurricane Coverage"
 	terms6.Status = "Started"
-	terms6.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+	terms6.SupportDoc = "https://openlab.yale.edu"
 
 	var esHelper opensolar.ExecutiveSummaryHelper
 
@@ -1359,7 +1187,7 @@ func createTenMegaWattProject() error {
 
 	project.EngineeringLayoutType = "simple"
 	project.FEText = make(map[string]interface{})
-	project.FEText, err = parseJsonText("text/prbonds.json")
+	project.FEText, err = parseJsonText("data-sandbox/prbonds.json")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -1442,7 +1270,7 @@ func createOneHundredKiloWattProject() error {
 	terms1.RelevantParty = "Ubadu Collective"
 	terms1.Note = "Coop is not incorporated yet"
 	terms1.Status = "Open"
-	terms1.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+	terms1.SupportDoc = "https://openlab.yale.edu"
 
 	var terms2 opensolar.TermsHelper
 	terms2.Variable = "PPA Tariff"
@@ -1450,7 +1278,7 @@ func createOneHundredKiloWattProject() error {
 	terms2.RelevantParty = "Ubadu Collective"
 	terms2.Note = "Average PPA, from tiered offtakers"
 	terms2.Status = "Open"
-	terms2.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+	terms2.SupportDoc = "https://openlab.yale.edu"
 
 	var terms3 opensolar.TermsHelper
 	terms3.Variable = "Exp. Return"
@@ -1458,7 +1286,7 @@ func createOneHundredKiloWattProject() error {
 	terms3.RelevantParty = "Equity Value"
 	terms3.Note = "Growth value. No tax incentives"
 	terms3.Status = "Open"
-	terms3.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+	terms3.SupportDoc = "https://openlab.yale.edu"
 
 	var terms4 opensolar.TermsHelper
 	terms4.Variable = "Ownership Flip"
@@ -1466,7 +1294,7 @@ func createOneHundredKiloWattProject() error {
 	terms4.RelevantParty = "By convertible notes"
 	terms4.Note = "Crowd investors sell stock"
 	terms4.Status = "Open"
-	terms4.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+	terms4.SupportDoc = "https://openlab.yale.edu"
 
 	var terms5 opensolar.TermsHelper
 	terms5.Variable = "Guarantee"
@@ -1474,7 +1302,7 @@ func createOneHundredKiloWattProject() error {
 	terms5.RelevantParty = "Africa Fund"
 	terms5.Note = "Agreed but pending"
 	terms5.Status = "Open"
-	terms5.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+	terms5.SupportDoc = "https://openlab.yale.edu"
 
 	var terms6 opensolar.TermsHelper
 	terms6.Variable = "Insurance"
@@ -1482,7 +1310,7 @@ func createOneHundredKiloWattProject() error {
 	terms6.RelevantParty = "N/A"
 	terms6.Note = "Defining insurance parties"
 	terms6.Status = "Open"
-	terms6.SupportDoc = "https://openlab.yale.edu" // replace this with the relevant doc
+	terms6.SupportDoc = "https://openlab.yale.edu"
 
 	var esHelper opensolar.ExecutiveSummaryHelper
 
@@ -1636,7 +1464,7 @@ func createOneHundredKiloWattProject() error {
 	project.BNImages = append(project.BNImages, "")
 	project.EngineeringLayoutType = "basic"
 	project.FEText = make(map[string]interface{})
-	project.FEText, err = parseJsonText("text/ubadu.json")
+	project.FEText, err = parseJsonText("data-sandbox/ubadu.json")
 	if err != nil {
 		log.Fatal(err)
 	}
