@@ -129,6 +129,7 @@ func parseYaml(fileName string, feJson string) error {
 
 func populateStaticData() error {
 	var err error
+	log.Println("populating db with static data")
 	err = createAllStaticEntities()
 	if err != nil {
 		return err
@@ -188,17 +189,18 @@ func populateStaticData() error {
 
 func populateDynamicData() error {
 	var err error
+	// we ignore errors here since they are b ound to happen (guarantor related errors)
 	err = populateDynamicData1kw()
 	if err != nil {
-		return err
+		log.Println("error while populating 1kw project", err)
 	}
 	err = populateDynamicData1mw()
 	if err != nil {
-		return err
+		log.Println("error while populating 1mw project", err)
 	}
 	err = populateDynamicData10kw()
 	if err != nil {
-		return err
+		log.Println("error while populating 10kw project", err)
 	}
 	return nil
 }
