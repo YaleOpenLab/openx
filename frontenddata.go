@@ -465,7 +465,7 @@ func populateStaticData100KW() error {
 func bootstrapInvestor(invName, invDescription string) (database.Investor, string, error) {
 	// setup investor account
 	log.Println(consts.StablecoinSeed, consts.StablecoinPublicKey, consts.Code)
-	passwd := "p"
+	passwd := "password"
 	seedpwd := "x"
 	investor1, err := database.NewInvestor(invName, passwd, seedpwd, invDescription)
 	if err != nil {
@@ -494,7 +494,7 @@ func bootstrapInvestor(invName, invDescription string) (database.Investor, strin
 
 func bootstrapRecipient(recpName, recpDescription string) (database.Recipient, string, error) {
 	// setup recipient account
-	passwd := "p"
+	passwd := "password"
 	seedpwd := "x"
 	recipient, err := database.NewRecipient(recpName, passwd, seedpwd, recpDescription)
 	if err != nil {
