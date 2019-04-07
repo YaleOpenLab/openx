@@ -47,13 +47,13 @@ func StartPlatform() error {
 
 	database.CreateHomeDir()
 	var err error
-	err = opensolar.InitializePlatform()
+	// init stablecoin before platform so we don't have to create a stablecoin in case our dbdir is wiped
+	err = stablecoin.InitStableCoin() // start the stablecoin daemon
 	if err != nil {
 		return err
 	}
 
-	// init stablecoin before platform so we don't have to create a stablecoin in case our dbdir is wiped
-	err = stablecoin.InitStableCoin() // start the stablecoin daemon
+	err = opensolar.InitializePlatform()
 	if err != nil {
 		return err
 	}

@@ -756,7 +756,7 @@ func sixInvestor(projIndex int, invName1 string, invDescription1 string, invName
 
 func populateDynamicData1kw() error {
 	// setup all the entities that will be involved with the project here
-	err := oneInvestor(4, "OpenLab", "Yale OpenLab", "SUpasto", "S.U. Pasto School")
+	err := oneInvestor(4, "OpenLab@test.com", "Yale OpenLab", "SUpasto@test.com", "S.U. Pasto School")
 	if err != nil {
 		return err
 	}
@@ -765,13 +765,13 @@ func populateDynamicData1kw() error {
 
 func populateDynamicData1mw() error {
 	// setup all the entities involved with the project here
-	err := threeInvestor(5, "OZFunds", "OZ FundCo", "GreenBank", "NH Green Bank", "TaxEquity", "Lancaster Lumber Mill Coop",
-		"1000000", "400000", "100000", "LancasterHigh", "Lancaster Elementary School")
+	err := threeInvestor(5, "OZFunds@test.com", "OZ FundCo", "GreenBank@test.com", "NH Green Bank", "TaxEquity@test.com", "Lancaster Lumber Mill Coop",
+		"1000000", "400000", "100000", "LancasterHigh@test.com", "Lancaster Elementary School")
 	if err != nil {
 		return err
 	}
 
-	recipient2, err := database.NewRecipient("LancasterT", "p", "x", "Town of Lancaster NH")
+	recipient2, err := database.NewRecipient("Lancastert@test.com", "password", "x", "Town of Lancaster NH")
 	if err != nil {
 		return err
 	}
@@ -792,15 +792,15 @@ func populateDynamicData1mw() error {
 
 func populateDynamicData10kw() error {
 
-	err := sixInvestor(6, "MatthewMoroney", "Matthew Moroney", "FranzHochstrasser", "Franz Hochstrasser", "CTGreenBank", "Connecticut Green Bank",
-		"YaleUniversity", "Yale University Community Fund", "JeromeGreen", "Jerome Green", "OpenSolarFund", "Open Solar Revolving Fund",
-		"4000", "4000", "4000", "4000", "4000", "10000", "colhouse", "Columbus House Foundation")
+	err := sixInvestor(6, "MatthewMoroney@test.com", "Matthew Moroney", "FranzHochstrasser@test.com", "Franz Hochstrasser", "CTGreenBank@test.com", "Connecticut Green Bank",
+		"YaleUniversity@test.com", "Yale University Community Fund", "JeromeGreen@test.com", "Jerome Green", "OpenSolarFund@test.com", "Open Solar Revolving Fund",
+		"4000", "4000", "4000", "4000", "4000", "10000", "colhouse@test.com", "Columbus House Foundation")
 
 	if err != nil {
 		return err
 	}
 
-	recipient2, err := database.NewRecipient("ColumbusHouse", "p", "x", "Columbus House Foundation")
+	recipient2, err := database.NewRecipient("ColumbusHouse@test.com", "password", "x", "Columbus House Foundation")
 	if err != nil {
 		return err
 	}
