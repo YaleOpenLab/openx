@@ -62,6 +62,7 @@ func MunibondInvest(issuerPath string, invIndex int, invSeed string, invAmount s
 
 	investor.AmountInvested += utils.StoF(invAmount) / seedInvestmentFactor
 	investor.InvestedSolarProjects = append(investor.InvestedSolarProjects, InvestorAsset.Code)
+	investor.InvestedSolarProjectsIndices = append(investor.InvestedSolarProjectsIndices, projIndex)
 	// keep note of who all invested in this asset (even though it should be easy
 	// to get that from the blockchain)
 	err = investor.Save()

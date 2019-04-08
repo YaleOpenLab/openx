@@ -63,6 +63,29 @@ func easyjsonA00f0bbcDecodeGithubComYaleOpenLabOpenxDatabase(in *jlexer.Lexer, o
 				}
 				in.Delim(']')
 			}
+		case "InvestedSolarProjectsIndices":
+			if in.IsNull() {
+				in.Skip()
+				out.InvestedSolarProjectsIndices = nil
+			} else {
+				in.Delim('[')
+				if out.InvestedSolarProjectsIndices == nil {
+					if !in.IsDelim(']') {
+						out.InvestedSolarProjectsIndices = make([]int, 0, 8)
+					} else {
+						out.InvestedSolarProjectsIndices = []int{}
+					}
+				} else {
+					out.InvestedSolarProjectsIndices = (out.InvestedSolarProjectsIndices)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v2 int
+					v2 = int(in.Int())
+					out.InvestedSolarProjectsIndices = append(out.InvestedSolarProjectsIndices, v2)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
 		case "InvestedBonds":
 			if in.IsNull() {
 				in.Skip()
@@ -79,9 +102,9 @@ func easyjsonA00f0bbcDecodeGithubComYaleOpenLabOpenxDatabase(in *jlexer.Lexer, o
 					out.InvestedBonds = (out.InvestedBonds)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v2 string
-					v2 = string(in.String())
-					out.InvestedBonds = append(out.InvestedBonds, v2)
+					var v3 string
+					v3 = string(in.String())
+					out.InvestedBonds = append(out.InvestedBonds, v3)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -102,9 +125,9 @@ func easyjsonA00f0bbcDecodeGithubComYaleOpenLabOpenxDatabase(in *jlexer.Lexer, o
 					out.InvestedCoops = (out.InvestedCoops)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v3 string
-					v3 = string(in.String())
-					out.InvestedCoops = append(out.InvestedCoops, v3)
+					var v4 string
+					v4 = string(in.String())
+					out.InvestedCoops = append(out.InvestedCoops, v4)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -165,11 +188,32 @@ func easyjsonA00f0bbcEncodeGithubComYaleOpenLabOpenxDatabase(out *jwriter.Writer
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v4, v5 := range in.InvestedSolarProjects {
-				if v4 > 0 {
+			for v5, v6 := range in.InvestedSolarProjects {
+				if v5 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v5))
+				out.String(string(v6))
+			}
+			out.RawByte(']')
+		}
+	}
+	{
+		const prefix string = ",\"InvestedSolarProjectsIndices\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		if in.InvestedSolarProjectsIndices == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+			out.RawString("null")
+		} else {
+			out.RawByte('[')
+			for v7, v8 := range in.InvestedSolarProjectsIndices {
+				if v7 > 0 {
+					out.RawByte(',')
+				}
+				out.Int(int(v8))
 			}
 			out.RawByte(']')
 		}
@@ -186,11 +230,11 @@ func easyjsonA00f0bbcEncodeGithubComYaleOpenLabOpenxDatabase(out *jwriter.Writer
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v6, v7 := range in.InvestedBonds {
-				if v6 > 0 {
+			for v9, v10 := range in.InvestedBonds {
+				if v9 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v7))
+				out.String(string(v10))
 			}
 			out.RawByte(']')
 		}
@@ -207,11 +251,11 @@ func easyjsonA00f0bbcEncodeGithubComYaleOpenLabOpenxDatabase(out *jwriter.Writer
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v8, v9 := range in.InvestedCoops {
-				if v8 > 0 {
+			for v11, v12 := range in.InvestedCoops {
+				if v11 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v9))
+				out.String(string(v12))
 			}
 			out.RawByte(']')
 		}
