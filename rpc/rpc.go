@@ -174,6 +174,6 @@ func StartServer(port string) {
 	setupSwytchApis()
 	setupStagesHandlers()
 
-	portString := ":" + port // weird construction, but this should work
-	log.Fatal(http.ListenAndServe(portString, nil))
+	//portString := ":" + port // weird construction, but this should work
+	log.Fatal(http.ListenAndServeTLS(":443", "server.crt", "server.key", nil))
 }
