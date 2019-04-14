@@ -15,3 +15,6 @@ misspell
 multisig/multisig
 logger
 aws
+openx-backend.pem
+openx-frontend.pem
+openx-react
