@@ -306,7 +306,7 @@ func populateStaticData1mw() error {
 	project.ExplorePageSummary.Storage = project.ExecutiveSummary.ProjectSize["storage"]
 	project.ExplorePageSummary.Tariff = project.ExecutiveSummary.Financials["tariff (variable)"]
 	project.ExplorePageSummary.Stage = project.Stage
-	project.ExplorePageSummary.Return = project.ExecutiveSummary.Financials["return(tey)"]
+	project.ExplorePageSummary.Return = project.ExecutiveSummary.Financials["return (tey)"]
 	project.ExplorePageSummary.Rating = project.Rating
 	project.ExplorePageSummary.Tax = "N/A"
 	project.ExplorePageSummary.ETA = project.EstimatedAcquisition
@@ -344,7 +344,7 @@ func populateStaticData10kw() error {
 	project.ExplorePageSummary.Storage = project.ExecutiveSummary.ProjectSize["storage"]
 	project.ExplorePageSummary.Tariff = project.ExecutiveSummary.Financials["tariff(fixed)"]
 	project.ExplorePageSummary.Stage = project.Stage
-	project.ExplorePageSummary.Return = project.ExecutiveSummary.Financials["return(tey)"]
+	project.ExplorePageSummary.Return = project.ExecutiveSummary.Financials["return"]
 	project.ExplorePageSummary.Rating = project.Rating
 	project.ExplorePageSummary.Tax = "N/A"
 	project.ExplorePageSummary.ETA = project.EstimatedAcquisition
