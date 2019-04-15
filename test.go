@@ -87,6 +87,7 @@ func StartPlatform() error {
 
 func main() {
 	var err error
+	parseYaml("100kwy", "")
 	port, err := ParseConfig(os.Args)
 	if err != nil {
 		log.Fatal(err)

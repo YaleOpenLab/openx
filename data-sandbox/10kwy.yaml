@@ -87,6 +87,7 @@ ExecutiveSummary:
     Insurance:             "Basic"
     Tariff(Fixed):         "0.12 ct/kWh"
     Maturity(Fixed):       "2019"
+    Return:                "130%"
   ProjectSize:
     PV Solar:              "10 kW"
     Storage:               "N/A Grid Tied"
