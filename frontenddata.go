@@ -253,10 +253,10 @@ func populateStaticData1kw() error {
 	project, err := opensolar.RetrieveProject(4)
 
 	project.ExplorePageSummary.Solar = project.PanelSize
-	project.ExplorePageSummary.Storage = project.ExecutiveSummary.ProjectSize["Storage"]
-	project.ExplorePageSummary.Tariff = project.ExecutiveSummary.Financials["Tariff (Variable)"]
+	project.ExplorePageSummary.Storage = project.ExecutiveSummary.ProjectSize["storage"]
+	project.ExplorePageSummary.Tariff = project.ExecutiveSummary.Financials["tariff (variable)"]
 	project.ExplorePageSummary.Stage = project.Stage
-	project.ExplorePageSummary.Return = project.ExecutiveSummary.Financials["Return (TEY)"]
+	project.ExplorePageSummary.Return = project.ExecutiveSummary.Financials["return(tey)"]
 	project.ExplorePageSummary.Rating = project.Rating
 	project.ExplorePageSummary.Tax = "N/A"
 	project.ExplorePageSummary.ETA = project.EstimatedAcquisition
@@ -303,10 +303,10 @@ func populateStaticData1mw() error {
 	project.Context = ""
 	project.SummaryImage = ""
 	project.ExplorePageSummary.Solar = project.PanelSize
-	project.ExplorePageSummary.Storage = project.ExecutiveSummary.ProjectSize["Storage"]
-	project.ExplorePageSummary.Tariff = project.ExecutiveSummary.Financials["Tariff (Variable)"]
+	project.ExplorePageSummary.Storage = project.ExecutiveSummary.ProjectSize["storage"]
+	project.ExplorePageSummary.Tariff = project.ExecutiveSummary.Financials["tariff (variable)"]
 	project.ExplorePageSummary.Stage = project.Stage
-	project.ExplorePageSummary.Return = project.ExecutiveSummary.Financials["Return (TEY)"]
+	project.ExplorePageSummary.Return = project.ExecutiveSummary.Financials["return(tey)"]
 	project.ExplorePageSummary.Rating = project.Rating
 	project.ExplorePageSummary.Tax = "N/A"
 	project.ExplorePageSummary.ETA = project.EstimatedAcquisition
@@ -341,10 +341,10 @@ func populateStaticData10kw() error {
 	}
 
 	project.ExplorePageSummary.Solar = project.PanelSize
-	project.ExplorePageSummary.Storage = project.ExecutiveSummary.ProjectSize["Storage"]
-	project.ExplorePageSummary.Tariff = project.ExecutiveSummary.Financials["Tariff (Fixed)"]
+	project.ExplorePageSummary.Storage = project.ExecutiveSummary.ProjectSize["storage"]
+	project.ExplorePageSummary.Tariff = project.ExecutiveSummary.Financials["tariff (fixed)"]
 	project.ExplorePageSummary.Stage = project.Stage
-	project.ExplorePageSummary.Return = project.ExecutiveSummary.Financials["Return (TEY)"]
+	project.ExplorePageSummary.Return = project.ExecutiveSummary.Financials["return(tey)"]
 	project.ExplorePageSummary.Rating = project.Rating
 	project.ExplorePageSummary.Tax = "N/A"
 	project.ExplorePageSummary.ETA = project.EstimatedAcquisition
@@ -395,10 +395,10 @@ func populateStaticData10MW() error {
 
 	project.ResilienceRating = 0.75
 	project.ExplorePageSummary.Solar = project.PanelSize
-	project.ExplorePageSummary.Storage = project.ExecutiveSummary.ProjectSize["Storage"]
-	project.ExplorePageSummary.Tariff = project.ExecutiveSummary.Financials["Tariff (Variable)"]
+	project.ExplorePageSummary.Storage = project.ExecutiveSummary.ProjectSize["storage"]
+	project.ExplorePageSummary.Tariff = project.ExecutiveSummary.Financials["tariff (variable)"]
 	project.ExplorePageSummary.Stage = project.Stage
-	project.ExplorePageSummary.Return = project.ExecutiveSummary.Financials["Expected Return (Non TEY)"]
+	project.ExplorePageSummary.Return = project.ExecutiveSummary.Financials["expected return (non teyg)"]
 	project.ExplorePageSummary.Rating = project.Rating
 	project.ExplorePageSummary.Tax = "N/A"
 	project.ExplorePageSummary.ETA = project.EstimatedAcquisition
@@ -441,10 +441,10 @@ func populateStaticData100KW() error {
 	// Define things that will be displayed on the frontend
 	project.ResilienceRating = 0.8
 	project.ExplorePageSummary.Solar = project.PanelSize
-	project.ExplorePageSummary.Storage = project.ExecutiveSummary.ProjectSize["Storage"]
-	project.ExplorePageSummary.Tariff = project.ExecutiveSummary.Financials["Tariff"]
+	project.ExplorePageSummary.Storage = project.ExecutiveSummary.ProjectSize["storage"]
+	project.ExplorePageSummary.Tariff = project.ExecutiveSummary.Financials["tariff"]
 	project.ExplorePageSummary.Stage = project.Stage
-	project.ExplorePageSummary.Return = project.ExecutiveSummary.Financials["Return"]
+	project.ExplorePageSummary.Return = project.ExecutiveSummary.Financials["return"]
 	project.ExplorePageSummary.Rating = project.Rating
 	project.ExplorePageSummary.Tax = "N/A"
 	project.ExplorePageSummary.ETA = project.EstimatedAcquisition
@@ -512,7 +512,8 @@ func bootstrapRecipient(recpName, recpDescription string) (database.Recipient, s
 
 }
 
-func oneInvestor(projIndex int, invName string, invDescription string, recpName string, recpDescription string) error {
+func oneInvestor(projIndex int, invName string, invDescription string, recpName string,
+		recpDescription string) error {
 	project, err := opensolar.RetrieveProject(projIndex)
 	if err != nil {
 		return err
@@ -538,10 +539,6 @@ func oneInvestor(projIndex int, invName string, invDescription string, recpName 
 		return err
 	}
 
-	project, err = opensolar.RetrieveProject(projIndex)
-	if err != nil {
-		return err
-	}
 	project.RecipientIndex = recipient1.U.Index
 	err = project.Save()
 	if err != nil {
@@ -560,6 +557,10 @@ func oneInvestor(projIndex int, invName string, invDescription string, recpName 
 	}
 
 	time.Sleep(100 * time.Second)
+	project, err = opensolar.RetrieveProject(projIndex)
+	if err != nil {
+		return err
+	}
 	project.Stage = oldStage
 	err = project.Save()
 	if err != nil {
