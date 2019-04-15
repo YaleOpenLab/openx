@@ -67,8 +67,6 @@ func parseYaml(fileName string, feJson string) error {
 	executiveSummary.SustainabilityMetrics = execSummaryWriter
 
 	project.ExecutiveSummary = executiveSummary
-	log.Println("EXEC SUMMARY: ", project.ExecutiveSummary.Financials["tariff (fixed)"])
-	log.Fatal("cool")
 
 	var bullets opensolar.BulletHelper
 	bullets.Bullet1 = viper.Get("Bullets.Bullet1").(string)
