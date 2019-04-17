@@ -43,8 +43,8 @@ type Investor struct {
 	// TODO: Consider the banking onboarding problem (see notes in Anchor.md and define general banking strategy)
 	WeightedROI string
 	// the weightedROI for all the projects under the investor's umbrella
-	AllTimeReturns float64
-	// the all time returns accumulated by teh investor during his time on the platform
+	AllTimeReturns []float64
+	// the all time returns accumulated by the investor during his time on the platform indexed by project index
 	ReceivedRECs string
 	// The renewable enrgy  certificated received by the investor as part o
 	Prorata string
