@@ -2,11 +2,13 @@ package main
 
 import (
 	"encoding/json"
+	"io/ioutil"
+	"log"
+
+	database "github.com/YaleOpenLab/openx/database"
 	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
-	"io/ioutil"
-	"log"
 )
 
 func parseYaml(fileName string, feJson string) error {
@@ -113,11 +115,12 @@ func parseYaml(fileName string, feJson string) error {
 	project.Stage = viper.Get("Stage").(int)
 	project.SeedInvestmentFactor = viper.Get("SeedInvestmentFactor").(float64)
 	project.SeedInvestmentCap = viper.Get("SeedInvestmentCap").(float64)
-	project.ProposedInvetmentCap = viper.Get("ProposedInvetmentCap").(float64)
+	project.ProposedInvestmentCap = viper.Get("ProposedInvestmentCap").(float64)
 	project.SelfFund = viper.Get("SelfFund").(float64)
 	project.SecurityIssuer = viper.Get("SecurityIssuer").(string)
 	project.BrokerDealer = viper.Get("BrokerDealer").(string)
 	project.EngineeringLayoutType = viper.Get("EngineeringLayoutType").(string)
+	project.MapLink = viper.Get("MapLink").(string)
 
 	project.FEText, err = parseJsonText(feJson)
 	if err != nil {
@@ -218,6 +221,10 @@ func CreateSandbox() error {
 	if err != nil {
 		return err
 	}
+	err = populateAdditionalData()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -235,4 +242,49 @@ func parseJsonText(fileName string) (map[string]interface{}, error) {
 	}
 
 	return result, nil
+}
+
+// seed additional data for a few specific investors that are useful for showing in demos
+func populateAdditionalData() error {
+	openlab, err := database.RetrieveInvestor(46)
+	if err != nil {
+		return err
+	}
+	openlab.U.Email = "martin.wainstein@yale.edu"
+	openlab.U.Address = "254 Elm Street"
+	openlab.U.Country = "US"
+	openlab.U.City = "New Haven"
+	openlab.U.ZipCode = "06511"
+	openlab.U.RecoveryPhone = "1800SECRETS"
+	openlab.U.Description = "The Yale OPen Lab is the open innovation lab at the Tsai Centre for Innovative Thinking at Yale"
+	err = openlab.U.Save()
+	if err != nil {
+		return err
+	}
+	err = openlab.Save()
+	if err != nil {
+		return err
+	}
+
+	// insert data for one specific recipient
+	pasto, err := database.RetrieveRecipient(47)
+	if err != nil {
+		return err
+	}
+	pasto.U.Email = "supasto2018@gmail.com"
+	pasto.U.Address = "Puerto Rico, PR"
+	pasto.U.Country = "US"
+	pasto.U.City = "Puerto Rico"
+	pasto.U.ZipCode = "00909"
+	pasto.U.RecoveryPhone = "1800SECRETS"
+	pasto.U.Description = "S.U. Pasto School is a school in Puerto Rico"
+	err = pasto.U.Save()
+	if err != nil {
+		return err
+	}
+	err = pasto.Save()
+	if err != nil {
+		return err
+	}
+	return nil
 }

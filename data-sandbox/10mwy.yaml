@@ -28,11 +28,12 @@ PaybackPeriod:             4
 Stage:                     2
 SeedInvestmentFactor:      1.1
 SeedInvestmentCap:         500.0
-ProposedInvetmentCap:      15000.0
+ProposedInvestmentCap:     15000.0
 SelfFund:                  0.0
 SecurityIssuer:            "Neighborly Securities"
 BrokerDealer:              "Neighborly Securities"
 EngineeringLayoutType:     "simple"
+MapLink:                   "https://goo.gl/maps/kprW9Uxqgr52"
 Terms:
   Terms1:
     Variable:              "Security Type"
@@ -81,7 +82,7 @@ ExecutiveSummary:
     Capex:                 "19000000"
     Hardware Ratio:        "70"
     First-Loss-Escrow:     "15%"
-    Maturity:              ""
+    Maturity:              "2028"
   Financials:
     Expected Return (Non TEY): "2.5%"
     Insurance:             "Basic Force Majeur"

@@ -19,7 +19,7 @@ Metadata:                  "Neighborhood 1MW solar array on the field next to La
 EstimatedAcquisition:      20
 BalLeft:                   -1.1
 InterestRate:              0.05
-Tax:                      "Tax free Opportunity Zone"
+Tax:                       "Tax free Opportunity Zone"
 DateInitiated:             ""
 DateFunded:                ""
 AuctionType:               "blind"
@@ -28,11 +28,12 @@ PaybackPeriod:             4
 Stage:                     4
 SeedInvestmentFactor:      1.1
 SeedInvestmentCap:         500.0
-ProposedInvetmentCap:      15000.0
+ProposedInvestmentCap:     15000.0
 SelfFund:                  0.0
 SecurityIssuer:            "Lancaster Mutual Fund"
 BrokerDealer:              "Neighborly Securities"
 EngineeringLayoutType:     "complex"
+MapLink:                   "https://goo.gl/maps/sv8D8kjPHAv"
 Terms:
   Terms1:
     Variable:              "Security Type"

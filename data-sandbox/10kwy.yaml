@@ -28,11 +28,12 @@ PaybackPeriod:             4
 Stage:                     8
 SeedInvestmentFactor:      1.1
 SeedInvestmentCap:         500.0
-ProposedInvetmentCap:      15000.0
+ProposedInvestmentCap:     15000.0
 SelfFund:                  0.0
 SecurityIssuer:            ""
 BrokerDealer:              ""
 EngineeringLayoutType:     "basic"
+MapLink:                   "https://goo.gl/maps/jNR4VGJQkin"
 Terms:
   Terms1:
     Variable:              "Security Type"
@@ -87,7 +88,6 @@ ExecutiveSummary:
     Insurance:             "Basic"
     Tariff(Fixed):         "0.12 ct/kWh"
     Maturity(Fixed):       "2019"
-    Return:                "130%"
   ProjectSize:
     PV Solar:              "10 kW"
     Storage:               "N/A Grid Tied"
