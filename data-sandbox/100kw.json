@@ -25,14 +25,14 @@
     "width": 6,
     "content": [{
       "type": "image",
-      "value": "https://images.openx.solar/OpenSolarProjects/8_NewHaven/12.jpg",
+      "value": "https://images.openx.solar/demo/rwanda-opportunity-1.jpg",
       "height": 319
     }]
   }, {
     "width": 6,
     "content": [{
       "type": "image",
-      "value": "https://images.openx.solar/OpenSolarProjects/8_NewHaven/4.jpg",
+      "value": "https://images.openx.solar/demo/rwanda-opportunity-2.jpg",
       "height": 319
     }]
   }],
@@ -46,7 +46,7 @@
     "width": 8,
     "content": [{
       "type": "header",
-      "value": "Leapfrogging coal plants wiht community solar microgrids"
+      "value": "Leapfrogging coal plants with community solar microgrids"
     }, {
       "type": "text",
       "value": "The main electricity grid in the Kigali province does not serve all surrounding towns, particularly those in the elevated hills, like Ubadu. Rwanda’s economy has grown at double digits in the past three years along with its demand for electricity. The government has considered the development of a coal plant and extension of its transmission lines, but the community has resisted due to the project’s high risk of carbon lock-in, and central government corruption. Decentralised solar microgrids in villages, such as the one proposed in Ubadu, can help bi-pass the need for centralised coal generation."
@@ -75,7 +75,7 @@
       "value": "Map Layout"
     }, {
       "type": "image",
-      "value": "https://images.openx.solar/OpenSolarProjects/8_NewHaven/7.jpg",
+      "value": "https://images.openx.solar/demo/rwanda-architecture.png",
       "height": 538
     }]
   }, {
@@ -105,17 +105,10 @@
       "value": "ENGINEERING / SOLAR PROPERTIES"
     }]
   }, {
-    "width": 5,
-    "content": [{
-      "type": "image",
-      "value": "http://images.openx.solar/demo/rwanda-engineering-1.png",
-      "height": 437
-    }]
-  }, {
     "width": 7,
     "content": [{
       "type": "image",
-      "value": "http://images.openx.solar/demo/rwanda-engineering-2.png",
+      "value": "http://images.openx.solar/demo/rwanda-engineering.png",
       "height": 437
     }]
   }, {
@@ -138,7 +131,7 @@
       "value": "Consultation"
     }, {
       "type": "image",
-      "value": "https://images.openx.solar/demo/puerto-rico-consultation.png",
+      "value": "https://images.openx.solar/demo/rwanda-community-1.jpg",
       "height": 162
     }, {
       "type": "text",
@@ -151,7 +144,7 @@
       "value": "Participation"
     }, {
       "type": "image",
-      "value": "https://images.openx.solar/demo/puerto-rico-participation.png",
+      "value": "https://images.openx.solar/demo/rwanda-community-2.jpg",
       "height": 162
     }, {
       "type": "text",
@@ -164,7 +157,7 @@
       "value": "Outreach"
     }, {
       "type": "image",
-      "value": "http://images.openx.solar/demo/pasto-page-outreach.png",
+      "value": "https://images.openx.solar/demo/rwanda-community-3.jpg",
       "height": 162
     }, {
       "type": "text",
@@ -177,7 +170,7 @@
       "value": "Governance"
     }, {
       "type": "image",
-      "value": "https://images.openx.solar/demo/puerto-rico-governance.png",
+      "value": "https://images.openx.solar/demo/rwanda-community-4.jpg",
       "height": 162
     }, {
       "type": "text",
@@ -256,19 +249,6 @@
     "content": [{
       "type": "text",
       "value": "Payments done by offtakers accrue to cover the cost of purchasing the convertible notes by 2027, upon which the community will have reduced tariffs to cover O&M."
-    }]
-  }, {
-    "width": 12,
-    "content": [{
-      "type": "link",
-      "link": "#",
-      "value": "Access projects annual reports >"
-    }]
-  }, {
-    "width": 5,
-    "content": [{
-      "type": "image",
-      "value": "https://images.openx.solar/demo/rwanda-invesment-overview.png"
     }]
   }],
   "stages": {
