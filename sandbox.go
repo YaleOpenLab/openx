@@ -286,5 +286,22 @@ func populateAdditionalData() error {
 	if err != nil {
 		return err
 	}
+	dci, err := opensolar.RetrieveEntity(1)
+	if err != nil {
+		return err
+	}
+	// we now need to register the dci as an investor as well
+	var inv database.Investor
+	inv.U = dci.U
+	err = inv.Save()
+	if err != nil {
+		return err
+	}
+	var recp database.Recipient
+	recp.U = dci.U
+	err = recp.Save()
+	if err != nil {
+		return err
+	}
 	return nil
 }
