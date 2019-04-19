@@ -5,8 +5,11 @@ import (
 	"io/ioutil"
 	"log"
 
+	assets "github.com/YaleOpenLab/openx/assets"
+	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
 	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
+	wallet "github.com/YaleOpenLab/openx/wallet"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
@@ -303,5 +306,30 @@ func populateAdditionalData() error {
 	if err != nil {
 		return err
 	}
+
+	recp, err = database.RetrieveRecipient(47)
+	if err != nil {
+		return err
+	}
+
+	seed, err := wallet.DecryptSeed(recp.U.EncryptedSeed, "x")
+	if err != nil {
+		return err
+	}
+
+	// send the pasto school account some money so we can demo using it on the frontend
+	txhash, err := assets.TrustAsset(consts.Code, consts.StablecoinPublicKey, "10000000000", recp.U.PublicKey, seed)
+	if err != nil {
+		return err
+	}
+	log.Println("TX HASH for pasto school trusting stableUSD: ", txhash)
+
+	_, txhash, err = assets.SendAssetFromIssuer(consts.Code, recp.U.PublicKey, "600", consts.StablecoinSeed, consts.StablecoinPublicKey)
+	if err != nil {
+		log.Println("SEED: ", consts.StablecoinSeed)
+		return err
+	}
+	log.Println("TX HASH for pasto school getting stableUSD: ", txhash)
+
 	return nil
 }

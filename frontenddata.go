@@ -344,7 +344,7 @@ func populateStaticData10kw() error {
 	project.ExplorePageSummary.Storage = project.ExecutiveSummary.ProjectSize["storage"]
 	project.ExplorePageSummary.Tariff = project.ExecutiveSummary.Financials["tariff(fixed)"]
 	project.ExplorePageSummary.Stage = project.Stage
-	project.ExplorePageSummary.Return = project.ExecutiveSummary.Financials["return"]
+	project.ExplorePageSummary.Return = "3%" // since we don't have that in the exec page summary, we hardcode that here
 	project.ExplorePageSummary.Rating = project.Rating
 	project.ExplorePageSummary.Tax = "N/A"
 	project.ExplorePageSummary.ETA = project.EstimatedAcquisition
