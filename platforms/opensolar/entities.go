@@ -234,6 +234,10 @@ func newEntity(uname string, pwd string, seedpwd string, Name string, Address st
 		return a, errors.New("invalid entity type passed!")
 	}
 
+	err = a.U.Save()
+	if err != nil {
+		return a, err
+	}
 	err = a.Save()
 	return a, err
 }

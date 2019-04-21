@@ -4,7 +4,6 @@ import (
 	"log"
 	"net/http"
 
-	database "github.com/YaleOpenLab/openx/database"
 	stablecoin "github.com/YaleOpenLab/openx/stablecoin"
 	wallet "github.com/YaleOpenLab/openx/wallet"
 )
@@ -23,7 +22,7 @@ func getStableCoin() {
 	http.HandleFunc("/stablecoin/get", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
 		checkOrigin(w, r)
-		user, err := database.ValidateUser(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
+		user, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["seedpwd"] == nil || r.URL.Query()["amount"] == nil {
 			responseHandler(w, r, StatusBadRequest)
 			return
