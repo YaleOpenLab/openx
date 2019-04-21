@@ -6,6 +6,7 @@ import (
 	"log"
 
 	assets "github.com/YaleOpenLab/openx/assets"
+	xlm "github.com/YaleOpenLab/openx/xlm"
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
 	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
@@ -293,6 +294,20 @@ func populateAdditionalData() error {
 	if err != nil {
 		return err
 	}
+
+	dci.U.Email = "dci@mit.edu"
+	dci.U.Address = "MIT Media Lab"
+	dci.U.Country = "US"
+	dci.U.City = "Cambridge"
+	dci.U.ZipCode = "02142"
+	dci.U.RecoveryPhone = "1800SECRETS"
+	dci.U.Description = "The Digital Currency Initiative at the MIT Media Lab"
+
+	err = dci.U.Save()
+	if err != nil {
+		return err
+	}
+
 	// we now need to register the dci as an investor as well
 	var inv database.Investor
 	inv.U = dci.U
@@ -307,7 +322,7 @@ func populateAdditionalData() error {
 		return err
 	}
 
-	recp, err = database.RetrieveRecipient(47)
+	err = xlm.GetXLM(dci.U.PublicKey)
 	if err != nil {
 		return err
 	}
@@ -322,6 +337,30 @@ func populateAdditionalData() error {
 	if err != nil {
 		return err
 	}
+	log.Println("TX HASH for dci trusting stableUSD: ", txhash)
+
+	_, txhash, err = assets.SendAssetFromIssuer(consts.Code, recp.U.PublicKey, "600", consts.StablecoinSeed, consts.StablecoinPublicKey)
+	if err != nil {
+		log.Println("SEED: ", consts.StablecoinSeed)
+		return err
+	}
+	log.Println("TX HASH for dci getting stableUSD: ", txhash)
+
+	recp, err = database.RetrieveRecipient(47)
+	if err != nil {
+		return err
+	}
+
+	seed, err = wallet.DecryptSeed(recp.U.EncryptedSeed, "x")
+	if err != nil {
+		return err
+	}
+
+	// send the pasto school account some money so we can demo using it on the frontend
+	txhash, err = assets.TrustAsset(consts.Code, consts.StablecoinPublicKey, "10000000000", recp.U.PublicKey, seed)
+	if err != nil {
+		return err
+	}
 	log.Println("TX HASH for pasto school trusting stableUSD: ", txhash)
 
 	_, txhash, err = assets.SendAssetFromIssuer(consts.Code, recp.U.PublicKey, "600", consts.StablecoinSeed, consts.StablecoinPublicKey)
@@ -330,6 +369,31 @@ func populateAdditionalData() error {
 		return err
 	}
 	log.Println("TX HASH for pasto school getting stableUSD: ", txhash)
+
+	err = xlm.GetXLM(recp.U.SecondaryWallet.PublicKey)
+	if err != nil {
+		return err
+	}
+
+	seed, err = wallet.DecryptSeed(recp.U.SecondaryWallet.EncryptedSeed, "x")
+	if err != nil {
+		return err
+	}
+
+	// send the pasto school account some money so we can demo using it on the frontend
+
+	txhash, err = assets.TrustAsset(consts.Code, consts.StablecoinPublicKey, "10000000000", recp.U.SecondaryWallet.PublicKey, seed)
+	if err != nil {
+		return err
+	}
+	log.Println("TX HASH for pasto school sec wallet trusting stableUSD: ", txhash)
+
+	_, txhash, err = assets.SendAssetFromIssuer(consts.Code, recp.U.SecondaryWallet.PublicKey, "10000", consts.StablecoinSeed, consts.StablecoinPublicKey)
+	if err != nil {
+		log.Println("SEED: ", consts.StablecoinSeed)
+		return err
+	}
+	log.Println("TX HASH for pasto school sec wallet getting stableUSD: ", txhash)
 
 	return nil
 }

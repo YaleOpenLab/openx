@@ -24,6 +24,7 @@ func getStableCoin() {
 		checkOrigin(w, r)
 		user, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["seedpwd"] == nil || r.URL.Query()["amount"] == nil {
+			log.Println(err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
@@ -31,6 +32,7 @@ func getStableCoin() {
 		// we don't allow it to exchange xlm for stablecoin.
 		receiverSeed, err := wallet.DecryptSeed(user.EncryptedSeed, r.URL.Query()["seedpwd"][0])
 		if err != nil {
+			log.Println(err)
 			responseHandler(w, r, StatusBadRequest)
 			return
 		}
