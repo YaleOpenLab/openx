@@ -19,7 +19,7 @@ Metadata:                  "Transformation of 300 Puerto Rican public schools in
 EstimatedAcquisition:      8
 BalLeft:                   -1.1
 InterestRate:              0.029
-Tax:                      ""
+Tax:                       ""
 DateInitiated:             "01/23/2019"
 DateFunded:                ""
 AuctionType:               "private"
@@ -28,11 +28,12 @@ PaybackPeriod:             4
 Stage:                     2
 SeedInvestmentFactor:      1.1
 SeedInvestmentCap:         500.0
-ProposedInvetmentCap:      15000.0
+ProposedInvestmentCap:     15000.0
 SelfFund:                  0.0
 SecurityIssuer:            "Neighborly Securities"
 BrokerDealer:              "Neighborly Securities"
 EngineeringLayoutType:     "simple"
+MapLink:                   "https://goo.gl/maps/kprW9Uxqgr52"
 Terms:
   Terms1:
     Variable:              "Security Type"
@@ -81,16 +82,16 @@ ExecutiveSummary:
     Capex:                 "19000000"
     Hardware Ratio:        "70"
     First-Loss-Escrow:     "15%"
-    Maturity:       ""
+    Maturity:              "2028"
   Financials:
-    Expected Return (Non TEY):          "2.5%"
+    Expected Return (Non TEY): "2.5%"
     Insurance:             "Basic Force Majeur"
     Tariff (Variable):     "0.24 ct/kWh"
     REC Value:             "$234/MWh"
   ProjectSize:
     PV Solar:              "300 x 30kW"
     Storage:               "350 x 2.5 kWh"
-    Critical:           "20"
+    Critical:              "20"
     Inverter Capacity:     "300 x 35 kW"
   SustainabilityMetrics:
    Carbon Drawdown:        "0.1t/kWh"

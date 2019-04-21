@@ -28,11 +28,12 @@ PaybackPeriod:             4
 Stage:                     1
 SeedInvestmentFactor:      1.1
 SeedInvestmentCap:         500.0
-ProposedInvetmentCap:      15000.0
+ProposedInvestmentCap:     15000.0
 SelfFund:                  0.0
 SecurityIssuer:            ""
 BrokerDealer:              ""
 EngineeringLayoutType:     "basic"
+MapLink:                   "https://goo.gl/maps/iddQtYfMRAM2"
 Terms:
   Terms1:
     Variable:              "Security Type"
@@ -83,7 +84,7 @@ ExecutiveSummary:
     Raise Type:            "Equity w/Notes"
     Maturity:              "2028"
   Financials:
-    Expected Return):      "2.3%"
+    Expected Return:       "2.3%"
     First Loss Escrow:     "20%"
     Tariff (Fixed):        "0.24 ct/kWh"
     REC Value:             "In Process"

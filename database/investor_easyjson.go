@@ -137,7 +137,28 @@ func easyjsonA00f0bbcDecodeGithubComYaleOpenLabOpenxDatabase(in *jlexer.Lexer, o
 		case "WeightedROI":
 			out.WeightedROI = string(in.String())
 		case "AllTimeReturns":
-			out.AllTimeReturns = float64(in.Float64())
+			if in.IsNull() {
+				in.Skip()
+				out.AllTimeReturns = nil
+			} else {
+				in.Delim('[')
+				if out.AllTimeReturns == nil {
+					if !in.IsDelim(']') {
+						out.AllTimeReturns = make([]float64, 0, 8)
+					} else {
+						out.AllTimeReturns = []float64{}
+					}
+				} else {
+					out.AllTimeReturns = (out.AllTimeReturns)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v5 float64
+					v5 = float64(in.Float64())
+					out.AllTimeReturns = append(out.AllTimeReturns, v5)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
 		case "ReceivedRECs":
 			out.ReceivedRECs = string(in.String())
 		case "Prorata":
@@ -188,11 +209,11 @@ func easyjsonA00f0bbcEncodeGithubComYaleOpenLabOpenxDatabase(out *jwriter.Writer
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v5, v6 := range in.InvestedSolarProjects {
-				if v5 > 0 {
+			for v6, v7 := range in.InvestedSolarProjects {
+				if v6 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v6))
+				out.String(string(v7))
 			}
 			out.RawByte(']')
 		}
@@ -209,11 +230,11 @@ func easyjsonA00f0bbcEncodeGithubComYaleOpenLabOpenxDatabase(out *jwriter.Writer
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v7, v8 := range in.InvestedSolarProjectsIndices {
-				if v7 > 0 {
+			for v8, v9 := range in.InvestedSolarProjectsIndices {
+				if v8 > 0 {
 					out.RawByte(',')
 				}
-				out.Int(int(v8))
+				out.Int(int(v9))
 			}
 			out.RawByte(']')
 		}
@@ -230,11 +251,11 @@ func easyjsonA00f0bbcEncodeGithubComYaleOpenLabOpenxDatabase(out *jwriter.Writer
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v9, v10 := range in.InvestedBonds {
-				if v9 > 0 {
+			for v10, v11 := range in.InvestedBonds {
+				if v10 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v10))
+				out.String(string(v11))
 			}
 			out.RawByte(']')
 		}
@@ -251,11 +272,11 @@ func easyjsonA00f0bbcEncodeGithubComYaleOpenLabOpenxDatabase(out *jwriter.Writer
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v11, v12 := range in.InvestedCoops {
-				if v11 > 0 {
+			for v12, v13 := range in.InvestedCoops {
+				if v12 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v12))
+				out.String(string(v13))
 			}
 			out.RawByte(']')
 		}
@@ -288,7 +309,18 @@ func easyjsonA00f0bbcEncodeGithubComYaleOpenLabOpenxDatabase(out *jwriter.Writer
 		} else {
 			out.RawString(prefix)
 		}
-		out.Float64(float64(in.AllTimeReturns))
+		if in.AllTimeReturns == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+			out.RawString("null")
+		} else {
+			out.RawByte('[')
+			for v14, v15 := range in.AllTimeReturns {
+				if v14 > 0 {
+					out.RawByte(',')
+				}
+				out.Float64(float64(v15))
+			}
+			out.RawByte(']')
+		}
 	}
 	{
 		const prefix string = ",\"ReceivedRECs\":"

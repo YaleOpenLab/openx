@@ -144,6 +144,15 @@ func setupPingHandler() {
 	})
 }
 
+
+func certBotHandler() {
+	http.HandleFunc("/.well-known/acme-challenge/RSUIeRcTdYTVNEnXtZsK8_2v8Kdpc3dNRX_2pLpne_4", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
+		x := "RSUIeRcTdYTVNEnXtZsK8_2v8Kdpc3dNRX_2pLpne_4._yODJ2rmXd9pNKqEEV3JwwWj9150pR-52TgsCHStijU"
+		w.Write([]byte(x))
+	})
+}
 // StartServer runs on the server side ie the server with the frontend.
 // having to define specific endpoints for this because this
 // is the system that would be used by the backend, so has to be built secure.
@@ -173,7 +182,6 @@ func StartServer(port string) {
 	setupParticleHandlers()
 	setupSwytchApis()
 	setupStagesHandlers()
-
-	portString := ":" + port // weird construction, but this should work
-	log.Fatal(http.ListenAndServe(portString, nil))
+	certBotHandler()
+	log.Fatal(http.ListenAndServeTLS(":443", "server.crt", "server.key", nil))
 }

@@ -28,11 +28,12 @@ PaybackPeriod:             4
 Stage:                     8
 SeedInvestmentFactor:      1.1
 SeedInvestmentCap:         500.0
-ProposedInvetmentCap:      15000.0
+ProposedInvestmentCap:     15000.0
 SelfFund:                  0.0
 SecurityIssuer:            ""
 BrokerDealer:              ""
 EngineeringLayoutType:     "basic"
+MapLink:                   "https://goo.gl/maps/jNR4VGJQkin"
 Terms:
   Terms1:
     Variable:              "Security Type"

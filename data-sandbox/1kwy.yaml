@@ -28,10 +28,11 @@ PaybackPeriod:             4
 Stage:                     7
 SeedInvestmentFactor:      1.1
 SeedInvestmentCap:         500.0
-ProposedInvetmentCap:      15000.0
+ProposedInvestmentCap:     15000.0
 SelfFund:                  0.0
 SecurityIssuer:            "Neighborly Securities"
-BrokerDealer:              "Broker Dealer"
+BrokerDealer:              "Neighborly Securities"
+MapLink:                   "https://goo.gl/maps/kprW9Uxqgr52"
 EngineeringLayoutType:     "basic"
 Terms:
   Terms1:
@@ -97,11 +98,11 @@ ExecutiveSummary:
     Community Value:       "5/7"
     LCA:                   "N/A"
 Bullets:
-  Bullet1:               "Research project on smart financing"
-  Bullet2:               "Critical loads to the Admin Building"
-  Bullet3:               "Grid-tied and storage"
+  Bullet1:                 "Research project on smart financing"
+  Bullet2:                 "Critical loads to the Admin Building"
+  Bullet3:                 "Grid-tied and storage"
 Architecture:
-  SolarArray:            "10x 100 W"
-  DailyAvgGeneration:    "4000 kWh"
-  System:                "600A Deep Cycle"
-  InverterSize:          "2024W 230V"
+  SolarArray:              "10x 100 W"
+  DailyAvgGeneration:      "4000 kWh"
+  System:                  "600A Deep Cycle"
+  InverterSize:            "2024W 230V"

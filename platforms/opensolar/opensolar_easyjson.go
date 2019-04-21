@@ -588,8 +588,8 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(in *jlex
 			out.SeedInvestmentFactor = float64(in.Float64())
 		case "SeedInvestmentCap":
 			out.SeedInvestmentCap = float64(in.Float64())
-		case "ProposedInvetmentCap":
-			out.ProposedInvetmentCap = float64(in.Float64())
+		case "ProposedInvestmentCap":
+			out.ProposedInvestmentCap = float64(in.Float64())
 		case "SelfFund":
 			out.SelfFund = float64(in.Float64())
 		case "EscrowPubkey":
@@ -1135,6 +1135,8 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(in *jlex
 				}
 				in.Delim('}')
 			}
+		case "MapLink":
+			out.MapLink = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -1500,14 +1502,14 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 		out.Float64(float64(in.SeedInvestmentCap))
 	}
 	{
-		const prefix string = ",\"ProposedInvetmentCap\":"
+		const prefix string = ",\"ProposedInvestmentCap\":"
 		if first {
 			first = false
 			out.RawString(prefix[1:])
 		} else {
 			out.RawString(prefix)
 		}
-		out.Float64(float64(in.ProposedInvetmentCap))
+		out.Float64(float64(in.ProposedInvestmentCap))
 	}
 	{
 		const prefix string = ",\"SelfFund\":"
@@ -2315,6 +2317,16 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			}
 			out.RawByte('}')
 		}
+	}
+	{
+		const prefix string = ",\"MapLink\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.MapLink))
 	}
 	out.RawByte('}')
 }

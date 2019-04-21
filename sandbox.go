@@ -2,11 +2,17 @@ package main
 
 import (
 	"encoding/json"
-	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
-	"github.com/pkg/errors"
-	"github.com/spf13/viper"
 	"io/ioutil"
 	"log"
+
+	assets "github.com/YaleOpenLab/openx/assets"
+	xlm "github.com/YaleOpenLab/openx/xlm"
+	consts "github.com/YaleOpenLab/openx/consts"
+	database "github.com/YaleOpenLab/openx/database"
+	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
+	wallet "github.com/YaleOpenLab/openx/wallet"
+	"github.com/pkg/errors"
+	"github.com/spf13/viper"
 )
 
 func parseYaml(fileName string, feJson string) error {
@@ -113,11 +119,12 @@ func parseYaml(fileName string, feJson string) error {
 	project.Stage = viper.Get("Stage").(int)
 	project.SeedInvestmentFactor = viper.Get("SeedInvestmentFactor").(float64)
 	project.SeedInvestmentCap = viper.Get("SeedInvestmentCap").(float64)
-	project.ProposedInvetmentCap = viper.Get("ProposedInvetmentCap").(float64)
+	project.ProposedInvestmentCap = viper.Get("ProposedInvestmentCap").(float64)
 	project.SelfFund = viper.Get("SelfFund").(float64)
 	project.SecurityIssuer = viper.Get("SecurityIssuer").(string)
 	project.BrokerDealer = viper.Get("BrokerDealer").(string)
 	project.EngineeringLayoutType = viper.Get("EngineeringLayoutType").(string)
+	project.MapLink = viper.Get("MapLink").(string)
 
 	project.FEText, err = parseJsonText(feJson)
 	if err != nil {
@@ -218,6 +225,10 @@ func CreateSandbox() error {
 	if err != nil {
 		return err
 	}
+	err = populateAdditionalData()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -235,4 +246,154 @@ func parseJsonText(fileName string) (map[string]interface{}, error) {
 	}
 
 	return result, nil
+}
+
+// seed additional data for a few specific investors that are useful for showing in demos
+func populateAdditionalData() error {
+	openlab, err := database.RetrieveInvestor(46)
+	if err != nil {
+		return err
+	}
+	openlab.U.Email = "martin.wainstein@yale.edu"
+	openlab.U.Address = "254 Elm Street"
+	openlab.U.Country = "US"
+	openlab.U.City = "New Haven"
+	openlab.U.ZipCode = "06511"
+	openlab.U.RecoveryPhone = "1800SECRETS"
+	openlab.U.Description = "The Yale OPen Lab is the open innovation lab at the Tsai Centre for Innovative Thinking at Yale"
+	err = openlab.U.Save()
+	if err != nil {
+		return err
+	}
+	err = openlab.Save()
+	if err != nil {
+		return err
+	}
+
+	// insert data for one specific recipient
+	pasto, err := database.RetrieveRecipient(47)
+	if err != nil {
+		return err
+	}
+	pasto.U.Email = "supasto2018@gmail.com"
+	pasto.U.Address = "Puerto Rico, PR"
+	pasto.U.Country = "US"
+	pasto.U.City = "Puerto Rico"
+	pasto.U.ZipCode = "00909"
+	pasto.U.RecoveryPhone = "1800SECRETS"
+	pasto.U.Description = "S.U. Pasto School is a school in Puerto Rico"
+	err = pasto.U.Save()
+	if err != nil {
+		return err
+	}
+	err = pasto.Save()
+	if err != nil {
+		return err
+	}
+	dci, err := opensolar.RetrieveEntity(1)
+	if err != nil {
+		return err
+	}
+
+	dci.U.Email = "dci@mit.edu"
+	dci.U.Address = "MIT Media Lab"
+	dci.U.Country = "US"
+	dci.U.City = "Cambridge"
+	dci.U.ZipCode = "02142"
+	dci.U.RecoveryPhone = "1800SECRETS"
+	dci.U.Description = "The Digital Currency Initiative at the MIT Media Lab"
+
+	err = dci.U.Save()
+	if err != nil {
+		return err
+	}
+
+	// we now need to register the dci as an investor as well
+	var inv database.Investor
+	inv.U = dci.U
+	err = inv.Save()
+	if err != nil {
+		return err
+	}
+	var recp database.Recipient
+	recp.U = dci.U
+	err = recp.Save()
+	if err != nil {
+		return err
+	}
+
+	err = xlm.GetXLM(dci.U.PublicKey)
+	if err != nil {
+		return err
+	}
+
+	seed, err := wallet.DecryptSeed(recp.U.EncryptedSeed, "x")
+	if err != nil {
+		return err
+	}
+
+	// send the pasto school account some money so we can demo using it on the frontend
+	txhash, err := assets.TrustAsset(consts.Code, consts.StablecoinPublicKey, "10000000000", recp.U.PublicKey, seed)
+	if err != nil {
+		return err
+	}
+	log.Println("TX HASH for dci trusting stableUSD: ", txhash)
+
+	_, txhash, err = assets.SendAssetFromIssuer(consts.Code, recp.U.PublicKey, "600", consts.StablecoinSeed, consts.StablecoinPublicKey)
+	if err != nil {
+		log.Println("SEED: ", consts.StablecoinSeed)
+		return err
+	}
+	log.Println("TX HASH for dci getting stableUSD: ", txhash)
+
+	recp, err = database.RetrieveRecipient(47)
+	if err != nil {
+		return err
+	}
+
+	seed, err = wallet.DecryptSeed(recp.U.EncryptedSeed, "x")
+	if err != nil {
+		return err
+	}
+
+	// send the pasto school account some money so we can demo using it on the frontend
+	txhash, err = assets.TrustAsset(consts.Code, consts.StablecoinPublicKey, "10000000000", recp.U.PublicKey, seed)
+	if err != nil {
+		return err
+	}
+	log.Println("TX HASH for pasto school trusting stableUSD: ", txhash)
+
+	_, txhash, err = assets.SendAssetFromIssuer(consts.Code, recp.U.PublicKey, "600", consts.StablecoinSeed, consts.StablecoinPublicKey)
+	if err != nil {
+		log.Println("SEED: ", consts.StablecoinSeed)
+		return err
+	}
+	log.Println("TX HASH for pasto school getting stableUSD: ", txhash)
+
+	err = xlm.GetXLM(recp.U.SecondaryWallet.PublicKey)
+	if err != nil {
+		return err
+	}
+
+	seed, err = wallet.DecryptSeed(recp.U.SecondaryWallet.EncryptedSeed, "x")
+	if err != nil {
+		return err
+	}
+
+	// send the pasto school account some money so we can demo using it on the frontend
+
+	txhash, err = assets.TrustAsset(consts.Code, consts.StablecoinPublicKey, "10000000000", recp.U.SecondaryWallet.PublicKey, seed)
+	if err != nil {
+		return err
+	}
+	log.Println("TX HASH for pasto school sec wallet trusting stableUSD: ", txhash)
+
+	_, txhash, err = assets.SendAssetFromIssuer(consts.Code, recp.U.SecondaryWallet.PublicKey, "10000", consts.StablecoinSeed, consts.StablecoinPublicKey)
+	if err != nil {
+		log.Println("SEED: ", consts.StablecoinSeed)
+		return err
+	}
+	log.Println("TX HASH for pasto school sec wallet getting stableUSD: ", txhash)
+
+	return nil
 }
