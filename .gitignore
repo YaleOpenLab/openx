@@ -18,3 +18,5 @@ aws
 openx-backend.pem
 openx-frontend.pem
 openx-react
+server.crt
+server.key
