@@ -4,10 +4,11 @@ package xlm
 
 import (
 	"testing"
+	"log"
 )
 
 func TestBalances(t *testing.T) {
-	balance, err := GetNativeBalance("GDPCBDVZGJ3WXL2B7YUSTRYPNZ464MCZDAHA3ZTPC36KULDYAMPNX423")
+	balance, err := GetNativeBalance("GAMTX6MDG65OFU42WGZH2W73AODEKILBW3IWZYPY5SMIVSDSMYXGTTUH")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -15,7 +16,7 @@ func TestBalances(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Account doesn't exist, quitting!")
 	}
-	_, err = GetAccountData("GDPCBDVZGJ3WXL2B7YUSTRYPNZ464MCZDAHA3ZTPC36KULDYAMPNX423")
+	_, err = GetAccountData("GAMTX6MDG65OFU42WGZH2W73AODEKILBW3IWZYPY5SMIVSDSMYXGTTUH")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -30,25 +31,26 @@ func TestBalances(t *testing.T) {
 		t.Fatalf("Can return data with invalid url, quitting!")
 	}
 	TestNetClient.URL = oldTc
-	if balance != "9998.9999600" {
+	if balance != "5.9999700" {
+		log.Println("CHECKBAL:", balance)
 		t.Fatalf("Balance doesn't match with remote API, quitting!")
 	}
-	balance, err = GetAssetBalance("GDPCBDVZGJ3WXL2B7YUSTRYPNZ464MCZDAHA3ZTPC36KULDYAMPNX423", "YOL9e0b5fa3d")
+	balance, err = GetAssetBalance("GAMTX6MDG65OFU42WGZH2W73AODEKILBW3IWZYPY5SMIVSDSMYXGTTUH", "OXAc6989b60f")
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = GetAssetBalance("blah", "YOL9e0b5fa3d")
+	_, err = GetAssetBalance("blah", "OXAc6989b60f")
 	if err == nil {
 		t.Fatalf("Account doesn't exist, quitting!")
 	}
-	_, err = GetAssetBalance("GDPCBDVZGJ3WXL2B7YUSTRYPNZ464MCZDAHA3ZTPC36KULDYAMPNX423", "blah")
+	_, err = GetAssetBalance("GAMTX6MDG65OFU42WGZH2W73AODEKILBW3IWZYPY5SMIVSDSMYXGTTUH", "blah")
 	if err == nil {
 		t.Fatalf("Asset doesn't exist, quitting!")
 	}
-	if balance != "1000.0000000" {
+	if balance != "120.0000000" {
 		t.Fatalf("Balance doesn't match with remote API, quitting!")
 	}
-	_, err = GetAllBalances("GDPCBDVZGJ3WXL2B7YUSTRYPNZ464MCZDAHA3ZTPC36KULDYAMPNX423")
+	_, err = GetAllBalances("GAMTX6MDG65OFU42WGZH2W73AODEKILBW3IWZYPY5SMIVSDSMYXGTTUH")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -56,7 +58,7 @@ func TestBalances(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Account doesn't exist, quitting!")
 	}
-	if !HasStableCoin("GDPCBDVZGJ3WXL2B7YUSTRYPNZ464MCZDAHA3ZTPC36KULDYAMPNX423") {
+	if !HasStableCoin("GAMTX6MDG65OFU42WGZH2W73AODEKILBW3IWZYPY5SMIVSDSMYXGTTUH") {
 		// no token balance, should error out
 		t.Fatal("Stablecoin not present on an address which should have no stablecoin associated with it")
 	}

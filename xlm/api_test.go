@@ -17,7 +17,7 @@ func TestApi(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if hash != "1685117d8d2270aed3cf81b641087b4f8d8e2b0774b4bb82d1de34d9472fb3d5" {
+	if hash != "3c46ced6f9bf63bc6c2de5f9a5386445ff04340697c61699d91be92da91b9a45" {
 		t.Fatalf("Hashes don't match, quitting!")
 	}
 	log.Println(hash)
@@ -38,7 +38,7 @@ func TestApi(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if x.ID != "1685117d8d2270aed3cf81b641087b4f8d8e2b0774b4bb82d1de34d9472fb3d5" {
+	if x.ID != "3c46ced6f9bf63bc6c2de5f9a5386445ff04340697c61699d91be92da91b9a45" {
 		t.Fatal(err)
 	}
 	_, err = GetLatestBlockHash()

@@ -10,7 +10,7 @@ import (
 // if not, this quits immediately
 func TestAPIs(t *testing.T) {
 	var err error
-	height, err := GetTransactionHeight("5454e1594d2a6986b094ddf90302d0d838abab258cbec515da75198161091b83")
+	height, err := GetTransactionHeight("bea5f00c6327a2d76dbe427c242c5087230191a9c83778b68f3d1fda5a7534a8")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -18,10 +18,10 @@ func TestAPIs(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Shouldn't work, invalid tx hash")
 	}
-	if height != 4335 {
+	if height != 2452 {
 		t.Fatalf("Heights don't match, quitting!")
 	}
-	_, err = GetTransactionData("5454e1594d2a6986b094ddf90302d0d838abab258cbec515da75198161091b83")
+	_, err = GetTransactionData("bea5f00c6327a2d76dbe427c242c5087230191a9c83778b68f3d1fda5a7534a8")
 	if err != nil {
 		t.Fatal(err)
 	}

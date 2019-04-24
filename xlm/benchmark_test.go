@@ -32,28 +32,28 @@ func BenchmarkGetLatestBlockHash(b *testing.B) {
 func BenchmarkGetNativeBalance(b *testing.B) {
 	b.ResetTimer()
 	for i := 1; i < b.N; i++ {
-		_, _ = GetNativeBalance("GC6Z2KKU4EDTIHAYTJC3Y3AER4ZS5GDSX7S5IKJRRTHLRMJIMCPKQY34")
+		_, _ = GetNativeBalance("GAMTX6MDG65OFU42WGZH2W73AODEKILBW3IWZYPY5SMIVSDSMYXGTTUH")
 	}
 }
 
 func BenchmarkGetAccountData(b *testing.B) {
 	b.ResetTimer()
 	for i := 1; i < b.N; i++ {
-		_, _ = GetAccountData("GC6Z2KKU4EDTIHAYTJC3Y3AER4ZS5GDSX7S5IKJRRTHLRMJIMCPKQY34")
+		_, _ = GetAccountData("GAMTX6MDG65OFU42WGZH2W73AODEKILBW3IWZYPY5SMIVSDSMYXGTTUH")
 	}
 }
 
 func BenchmarkGetAssetBalance(b *testing.B) {
 	b.ResetTimer()
 	for i := 1; i < b.N; i++ {
-		_, _ = GetAssetBalance("GC6Z2KKU4EDTIHAYTJC3Y3AER4ZS5GDSX7S5IKJRRTHLRMJIMCPKQY34", "YOL77fa301ef")
+		_, _ = GetAssetBalance("GAMTX6MDG65OFU42WGZH2W73AODEKILBW3IWZYPY5SMIVSDSMYXGTTUH", "OXA6fd8ca6bc")
 	}
 }
 
 func BenchmarkGetAllBalances(b *testing.B) {
 	b.ResetTimer()
 	for i := 1; i < b.N; i++ {
-		_, _ = GetAllBalances("GC6Z2KKU4EDTIHAYTJC3Y3AER4ZS5GDSX7S5IKJRRTHLRMJIMCPKQY34")
+		_, _ = GetAllBalances("GAMTX6MDG65OFU42WGZH2W73AODEKILBW3IWZYPY5SMIVSDSMYXGTTUH")
 	}
 }
 
@@ -68,21 +68,21 @@ func BenchmarkHasStableCoin(b *testing.B) {
 func BenchmarkHasStableCoin2(b *testing.B) {
 	b.ResetTimer()
 	for i := 1; i < b.N; i++ {
-		_ = HasStableCoin("GC6Z2KKU4EDTIHAYTJC3Y3AER4ZS5GDSX7S5IKJRRTHLRMJIMCPKQY34")
+		_ = HasStableCoin("GAMTX6MDG65OFU42WGZH2W73AODEKILBW3IWZYPY5SMIVSDSMYXGTTUH")
 	}
 }
 
 func BenchmarkGetTransactionHeight(b *testing.B) {
 	b.ResetTimer()
 	for i := 1; i < b.N; i++ {
-		_, _ = GetTransactionHeight("46c04134b95204b82067f8753dce5bf825365ae58753effbfcc9a7cac2e14f65")
+		_, _ = GetTransactionHeight("7c4a995b2cb881618fc3b799d0492d24c38af67f764c5e0c66984a291204a6ad")
 	}
 }
 
 func BenchmarkGetTransactionData(b *testing.B) {
 	b.ResetTimer()
 	for i := 1; i < b.N; i++ {
-		_, _ = GetTransactionData("46c04134b95204b82067f8753dce5bf825365ae58753effbfcc9a7cac2e14f65")
+		_, _ = GetTransactionData("7c4a995b2cb881618fc3b799d0492d24c38af67f764c5e0c66984a291204a6ad")
 	}
 }
 
