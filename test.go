@@ -97,6 +97,11 @@ func main() {
 		log.Fatal(err)
 	}
 
+	err = parseYamlProject("1kwy", "data-sandbox/1kw.json", 8)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	go opensolar.MonitorTeller(1)
 
 	fmt.Printf("PLATFORM SEED IS: %s\n PLATFORM PUBLIC KEY IS: %s\n", consts.PlatformSeed, consts.PlatformPublicKey)

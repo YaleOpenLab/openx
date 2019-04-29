@@ -205,7 +205,7 @@ func createAllStaticEntities() error {
 		return err
 	}
 
-	_, err = database.NewRecipient("ubaduef@test.com", "password", "x", "Ubadu Energy Collective")
+	_, err = database.NewRecipient("villageec@test.com", "password", "x", "Village Energy Collective")
 	if err != nil {
 		return err
 	}
@@ -230,12 +230,13 @@ func createAllStaticEntities() error {
 		return err
 	}
 
-	_, err = opensolar.NewOriginator("DjiembeMbeba@test.com", "password", "x", "Djiembe Mbeba", "Ubadu village, Rwanda", "Project originator")
+	// insert small residential offtakers as well
+	_, err = opensolar.NewOriginator("embeba@test.com", "password", "x", "School Principa", "Village, Rwanda", "Project originator")
 	if err != nil {
 		return err
 	}
 
-	_, err = opensolar.NewDeveloper("SolarPartners@test.com", "password", "x", "Solar Partners", "34 Hiete st, Somaliland", "MiniGrid game developer")
+	_, err = opensolar.NewDeveloper("solarpartners@test.com", "password", "x", "Solar Partners", "KG 10, House 25 Gasabo district, kamatamuUrugwiro, Kacyiru, Kigali", "MiniGrid game developer")
 	if err != nil {
 		return err
 	}
