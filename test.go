@@ -103,17 +103,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	project, err := opensolar.RetrieveProject(4)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	project.DPIntroImage = "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/1.jpg"
-	err = project.Save()
-
-	if err != nil {
-		log.Fatal(err)
-	}
 	go opensolar.MonitorTeller(1)
 
 	fmt.Printf("PLATFORM SEED IS: %s\n PLATFORM PUBLIC KEY IS: %s\n", consts.PlatformSeed, consts.PlatformPublicKey)

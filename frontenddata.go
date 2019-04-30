@@ -92,7 +92,7 @@ func createAllStaticEntities() error {
 		return err
 	}
 
-	_, err = opensolar.NewOriginator("ben@test.com", "password", "x", "bensouthworth", "Lancaster, NH", "Originator of the Lancaster oz fund community")
+	_, err = opensolar.NewOriginator("ben@test.com", "password", "x", "Ben Southworth", "Lancaster, NH", "Originator of the Lancaster oz fund community")
 	if err != nil {
 		return err
 	}
