@@ -196,7 +196,7 @@ func SeedInvest(projIndex int, invIndex int, invAmount string, invSeed string) e
 	}
 
 	// MW: Consider other seed investments in stages before the big raise of stage 4
-	if project.Stage != 1 {
+	if project.Stage != 1 && project.Stage != 2 {
 		return fmt.Errorf("project stage not at 1, you either have passed the seed stage or project is not at seed stage yet")
 	}
 
@@ -243,7 +243,7 @@ func Invest(projIndex int, invIndex int, invAmount string, invSeed string) error
 	}
 
 	if project.Stage != 4 {
-		if project.Stage == 1 {
+		if project.Stage == 1  || project.Stage == 2 {
 			// need to redirect it to the seedinvest function
 			return SeedInvest(projIndex, invIndex, invAmount, invSeed)
 		}
