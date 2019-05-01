@@ -101,13 +101,14 @@ func StartTeller() error {
 		return errors.Wrap(err, "could not store start time locally")
 	}
 
-	// sotre location at the start because if a person changes location, it is likely that the
+	// store location at the start because if a person changes location, it is likely that the
 	// teller goes offline and we get notified
 	err = StoreLocation(mapskey) // stores DeviceLocation
 	if err != nil {
 		return errors.Wrap(err, "could not store location of teller")
 	}
 
+	log.Println("STORED LOCATION SUCCESSFULLY")
 	err = GetPlatformEmail()
 	if err != nil {
 		return errors.Wrap(err, "could not store platform email")

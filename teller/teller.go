@@ -136,8 +136,8 @@ func main() {
 	}
 	// run goroutines in the background to routinely check for payback, state updates and stuff
 	go checkPayback()
-	go updateState()
-	go storeDataLocal()
+	// go updateState()
+	// go storeDataLocal()
 
 	if opts.Daemon {
 		log.Println("Running teller in daemon mode")

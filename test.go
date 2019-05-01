@@ -103,6 +103,18 @@ func main() {
 		log.Fatal(err)
 	}
 
+	project, err := opensolar.RetrieveProject(4)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	project.DebtAssetCode = "OXA6fd8ca6bc"
+
+	err = project.Save()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	go opensolar.MonitorTeller(1)
 
 	fmt.Printf("PLATFORM SEED IS: %s\n PLATFORM PUBLIC KEY IS: %s\n", consts.PlatformSeed, consts.PlatformPublicKey)
