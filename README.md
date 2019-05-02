@@ -53,6 +53,9 @@ The dependency graph of this repo can be seen [here](godepgraph.png)
 This is an open source project and everyone is invited to contribute value to it. It is part of an open innovation framework and published using an MIT License so that it allows compatibility with proprietary layers. General code standards are to be considered while opening Pull Requests.
 ![Open Contributions](docs/figures/OpenContributions.png)
 
+## Security
+For security related issues, *DO NOT OPEN A GITHUB ISSUE!*. Please disclose the information responsibly by sending a (preferably PGP Encrypted) email to `contact@varunram.com`. [Our PGP Key](https://pgp.mit.edu/pks/lookup?op=vindex&fingerprint=on&search=0x708C606504A49970) fingerprint is `C98F 0014 9A99 36E4 E56D  2471 708C 6065 04A4 9970`
+
 ## License
 
 [MIT](https://github.com/YaleOpenLab/openx/blob/master/LICENSE)
