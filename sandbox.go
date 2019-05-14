@@ -536,5 +536,69 @@ func populateAdditionalData() error {
 	}
 	log.Println("TX HASH for pasto school sec wallet getting stableUSD: ", txhash)
 
+	investor1, invSeed, err := bootstrapInvestor("medici@test.com", "Medici Ventures")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = assets.TrustAsset(consts.Code, consts.StablecoinPublicKey, "10000000000", investor1.U.PublicKey, invSeed)
+	if err != nil {
+		log.Fatal(err)
+	}
+	_, _, err = assets.SendAssetFromIssuer(consts.Code, investor1.U.PublicKey, "1000000", consts.StablecoinSeed, consts.StablecoinPublicKey)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	investor1.U.Email = "medici@test.com"
+	investor1.U.Address = "101 Medici Rd"
+	investor1.U.Country = "US"
+	investor1.U.City = "Salt Lake City"
+	investor1.U.ZipCode = "08404"
+	investor1.U.RecoveryPhone = "1800SECRETS"
+
+	err = investor1.Save()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	recp1, recpSeed, err := bootstrapRecipient("rwandaenergy@test.com", "Rwanda Village Energy Collective")
+	if err != nil {
+	  log.Fatal(err)
+	}
+
+	_, err = assets.TrustAsset(consts.Code, consts.StablecoinPublicKey, "10000000000", recp1.U.PublicKey, recpSeed)
+	if err != nil {
+	  log.Fatal(err)
+	}
+	_, _, err = assets.SendAssetFromIssuer(consts.Code, recp1.U.PublicKey, "1000000", consts.StablecoinSeed, consts.StablecoinPublicKey)
+	if err != nil {
+	  log.Fatal(err)
+	}
+
+	recp1.U.Email = "rwandaenergy@test.com"
+	recp1.U.Address = "45 Cyangugu Rd, Rwanda"
+	recp1.U.Country = "Rwanda"
+	recp1.U.City = "Rusizi"
+	recp1.U.ZipCode = "6502"
+	recp1.U.RecoveryPhone = "1800SECRETS"
+
+	err = recp1.Save()
+	if err != nil {
+	  log.Fatal(err)
+	}
+
+	project, err := opensolar.RetrieveProject(8)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	project.RecipientIndex = 64
+
+	err = project.Save()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	return nil
 }

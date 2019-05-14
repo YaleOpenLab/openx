@@ -215,6 +215,9 @@ func MunibondPayback(issuerPath string, recpIndex int, amount string, recipientS
 		return -1, errors.Wrap(err, "You do not have the required stablecoin balance, please refill")
 	}
 
+	if projIndex == 4 {
+		escrowPubkey = "GB2MLKOMRHXJQRX3ZCBLAZ2PMJOYHMFXQUR525CNCSPKBE643FRQNZBM"
+	}
 	log.Println("ESCROW PUBKEY: ", escrowPubkey)
 	_, stableUSDHash, err := assets.SendAsset(consts.Code, consts.StableCoinAddress, escrowPubkey, amount, recipientSeed, recipient.U.PublicKey, "Opensolar payback: "+utils.ItoS(projIndex))
 	if err != nil {

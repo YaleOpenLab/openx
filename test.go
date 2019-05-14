@@ -15,6 +15,7 @@ import (
 	utils "github.com/YaleOpenLab/openx/utils"
 	// wallet "github.com/YaleOpenLab/openx/wallet"
 	// xlm "github.com/YaleOpenLab/openx/xlm"
+	// assets "github.com/YaleOpenLab/openx/assets"
 	flags "github.com/jessevdk/go-flags"
 	"github.com/spf13/viper"
 )
@@ -98,6 +99,18 @@ func main() {
 	}
 
 	err = parseYamlProject("100kwy", "data-sandbox/100kw.json", 8)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	project, err := opensolar.RetrieveProject(4)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	project.DebtAssetCode = "OXA6fd8ca6bc"
+
+	err = project.Save()
 	if err != nil {
 		log.Fatal(err)
 	}

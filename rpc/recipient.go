@@ -167,6 +167,7 @@ func payback() {
 			return
 		}
 
+		log.Println(recpIndex, projIndex, assetName, amount, recipientSeed)
 		err = opensolar.Payback(recpIndex, projIndex, assetName, amount, recipientSeed)
 		if err != nil {
 			log.Println("did not payback", err)

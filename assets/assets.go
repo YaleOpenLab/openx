@@ -116,6 +116,7 @@ func SendAssetFromIssuer(assetName string, destination string, amount string,
 func SendAssetToIssuer(assetName string, destination string, amount string,
 	seed string, pubkey string) (int32, string, error) {
 	// this transaction is FROM recipient TO issuer
+	// TODO: remove pubkey field since we already have the seed
 	paymentTx, err := build.Transaction(
 		build.SourceAccount{pubkey},
 		build.TestNetwork,

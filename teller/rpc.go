@@ -18,7 +18,11 @@ func GetLocation(mapskey string) string {
 	// see https://developers.google.com/maps/documentation/geolocation/intro on how
 	// to improve location accuracy
 	client := geo.NewGoogleGeo(mapskey)
-	res, _ := client.Geolocate()
+	res, err := client.Geolocate()
+	if err != nil {
+		log.Println("Error while getting location: ", err)
+		return ""
+	}
 	location := fmt.Sprintf("Lat%fLng%f", res.Lat, res.Lng) // some random format, can be improved upon if necessary
 	DeviceLocation = location
 	return location
@@ -44,9 +48,9 @@ func PingRpc() error {
 
 // GetProjectIndex gets a specific project's index
 func GetProjectIndex(assetName string) (int, error) {
-	data, err := rpc.GetRequest(ApiUrl + "/project/funded")
+	data, err := rpc.GetRequest(ApiUrl + "/projects?index=7")
 	if err != nil {
-		log.Println(err)
+		log.Println("Error while making get request: ", err)
 		return -1, err
 	}
 	var x solar.SolarProjectArray
@@ -81,6 +85,9 @@ func LoginToPlatform(username string, pwhash string) error {
 // ProjectPayback pays back to the platform
 func ProjectPayback(assetName string, amount string) error {
 	// retrieve project index
+	log.Println("PAYMENT BODY: ", ApiUrl + "/recipient/payback?" + "username=" + LocalRecipient.U.Username +
+		"&pwhash=" + LocalRecipient.U.Pwhash + "&projIndex=" + LocalProjIndex + "&assetName=" + LocalProject.DebtAssetCode + "&seedpwd=" +
+		LocalSeedPwd + "&amount=" + amount)
 	data, err := rpc.GetRequest(ApiUrl + "/recipient/payback?" + "username=" + LocalRecipient.U.Username +
 		"&pwhash=" + LocalRecipient.U.Pwhash + "&projIndex=" + LocalProjIndex + "&assetName=" + LocalProject.DebtAssetCode + "&seedpwd=" +
 		LocalSeedPwd + "&amount=" + amount)
@@ -92,6 +99,7 @@ func ProjectPayback(assetName string, amount string) error {
 	if err != nil {
 		return err
 	}
+	log.Println("PAYBACK RESPONSE: ", x)
 	if x.Code == 200 {
 		ColorOutput("PAID!", GreenColor)
 		return nil
@@ -140,13 +148,18 @@ func StoreStartTime() error {
 
 // StoreLocation stores the location of the teller
 func StoreLocation(mapskey string) error {
-	location := GetLocation(mapskey)
+	location := GetLocation(mapskey) // this happens to return null
+	log.Println("MAPSKEY: ", mapskey, location)
+	log.Println(ApiUrl + "/recipient/storelocation?" + "username=" + LocalRecipient.U.Username +
+		"&pwhash=" + LocalRecipient.U.Pwhash + "&location=" + location)
 	data, err := rpc.GetRequest(ApiUrl + "/recipient/storelocation?" + "username=" + LocalRecipient.U.Username +
 		"&pwhash=" + LocalRecipient.U.Pwhash + "&location=" + location)
 	if err != nil {
+		log.Println("RPC ERROR IN STORELOCATION ENDPOINT")
 		return err
 	}
 
+	log.Println("DATA: ", data)
 	var x rpc.StatusResponse
 	err = x.UnmarshalJSON(data)
 	if err != nil {
@@ -267,7 +280,7 @@ func StoreStateHistory(hash string) error {
 
 // testSwytch tests whether the swytch workflow works correctly
 func testSwytch() {
-	body := "http://localhost:8080/swytch/accessToken?" +
+	body := ApiUrl + ApiUrl + "swytch/accessToken?" +
 		"clientId=" + SwytchClientid + "&clientSecret=" + SwytchPassword + "&username=" + SwytchPassword +
 		"&password=" + SwytchPassword
 	log.Println(body)
@@ -286,7 +299,7 @@ func testSwytch() {
 	refresh_token := x1.Data[0].Refresh_token
 	// we have the access token as well but need to refresh it using the refresh token, so
 	// might as well store later.
-	data, err = rpc.GetRequest("http://localhost:8080/swytch/refreshToken?clientId=c0fe38566a254a3a80b2a42081b46843&clientSecret=46d10252a4954007af5e2f8941aeeb37&" +
+	data, err = rpc.GetRequest("swytch/refreshToken?clientId=c0fe38566a254a3a80b2a42081b46843&clientSecret=46d10252a4954007af5e2f8941aeeb37&" +
 		"refreshToken=" + refresh_token)
 	if err != nil {
 		log.Println(err)
@@ -301,7 +314,7 @@ func testSwytch() {
 
 	access_token := x1.Data[0].Access_token
 
-	data, err = rpc.GetRequest("http://localhost:8080/swytch/getuser?authToken=" + access_token)
+	data, err = rpc.GetRequest(ApiUrl + "swytch/getuser?authToken=" + access_token)
 	if err != nil {
 		log.Println(err)
 		return
@@ -317,7 +330,7 @@ func testSwytch() {
 	log.Println("USER ID: ", user_id)
 	// we have the user id, query for assets
 
-	data, err = rpc.GetRequest("http://localhost:8080/swytch/getassets?authToken=" + access_token + "&userId=" + user_id)
+	data, err = rpc.GetRequest(ApiUrl + "swytch/getassets?authToken=" + access_token + "&userId=" + user_id)
 	if err != nil {
 		log.Println(err)
 		return
@@ -332,7 +345,7 @@ func testSwytch() {
 	asset_id := x4.Data[0].Id
 	log.Println("ASSETID: ", asset_id)
 	// we have the asset id, try to get some info
-	data, err = rpc.GetRequest("http://localhost:8080/swytch/getenergy?authToken=" + access_token + "&assetId=" + asset_id)
+	data, err = rpc.GetRequest(ApiUrl + "swytch/getenergy?authToken=" + access_token + "&assetId=" + asset_id)
 	if err != nil {
 		log.Println(err)
 		return
@@ -346,7 +359,7 @@ func testSwytch() {
 
 	log.Println("Energy data from installed asset: ", x4)
 
-	data, err = rpc.GetRequest("http://localhost:8080/swytch/getattributes?authToken=" + access_token + "&assetId=" + asset_id)
+	data, err = rpc.GetRequest(ApiUrl + "swytch/getattributes?authToken=" + access_token + "&assetId=" + asset_id)
 	if err != nil {
 		log.Println(err)
 		return

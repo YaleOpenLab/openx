@@ -82,7 +82,7 @@
       "value": "Solar Output"
     }, {
       "type": "image",
-      "value": "https://s3.amazonaws.com/cz-public-images/openx/rwanda-solargen.png",
+      "value": "https://images.openx.solar/demo/rwanda-solargen.png",
       "height": 538
     }]
   }, {
@@ -105,7 +105,7 @@
     "width": 7,
     "content": [{
       "type": "image",
-      "value": "http://images.openx.solar/demo/rwanda-engineering.png",
+      "value": "https://images.openx.solar/demo/rwanda-engineering.png",
       "height": 437
     }]
   }, {

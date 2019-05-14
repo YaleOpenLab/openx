@@ -31,7 +31,7 @@ func TestBalances(t *testing.T) {
 		t.Fatalf("Can return data with invalid url, quitting!")
 	}
 	TestNetClient.URL = oldTc
-	if balance != "5.9999700" {
+	if balance != "5.9996700" {
 		log.Println("CHECKBAL:", balance)
 		t.Fatalf("Balance doesn't match with remote API, quitting!")
 	}
