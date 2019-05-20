@@ -24,7 +24,7 @@ Tax:                       "0.3 Tax Credit"
 DateInitiated:             "03/25/2019"
 DateFunded:                ""
 AuctionType:               "blind"
-InvestmentType:            "equity"
+InvestmentType:            "munibond" # munibond in order for the platform in order to work without problems
 PaybackPeriod:             4
 Stage:                     1
 SeedInvestmentFactor:      1.3
