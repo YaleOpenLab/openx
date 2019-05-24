@@ -477,7 +477,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	testuser, err := SearchWithEmailId("blahx@blah.com")
+	testuser, _ := SearchWithEmailId("blahx@blah.com")
 	if testuser.PublicKey != "" {
 		t.Fatalf("user with invalid email exists")
 	}

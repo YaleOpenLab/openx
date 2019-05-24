@@ -8,7 +8,6 @@ import (
 	assets "github.com/YaleOpenLab/openx/assets"
 	consts "github.com/YaleOpenLab/openx/consts"
 	utils "github.com/YaleOpenLab/openx/utils"
-	wallet "github.com/YaleOpenLab/openx/wallet"
 	xlm "github.com/YaleOpenLab/openx/xlm"
 )
 
@@ -21,19 +20,15 @@ func SendUSDToPlatform(invSeed string, invAmount string, memo string) (string, e
 	// and we can't use the funds. We also need ot be able to redeem the stablecoin for fiat
 	// so we can't burn them
 
-	invPubkey, err := wallet.ReturnPubkey(invSeed)
-	if err != nil {
-		return "", errors.Wrap(err, "error while returning pubkey")
-	}
-
 	var oldPlatformBalance string
+	var err error
 	oldPlatformBalance, err = xlm.GetAssetBalance(consts.PlatformPublicKey, consts.Code)
 	if err != nil {
 		// platform does not have stablecoin, shouldn't arrive here ideally
 		oldPlatformBalance = "0"
 	}
 
-	_, txhash, err := assets.SendAsset(consts.Code, consts.StablecoinPublicKey, consts.PlatformPublicKey, invAmount, invSeed, invPubkey, memo)
+	_, txhash, err := assets.SendAsset(consts.Code, consts.StablecoinPublicKey, consts.PlatformPublicKey, invAmount, invSeed, memo)
 	if err != nil {
 		return txhash, errors.Wrap(err, "sending stableusd to platform failed")
 	}

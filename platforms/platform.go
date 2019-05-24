@@ -86,7 +86,7 @@ func InitializePlatform() error {
 		log.Println("ERROR WHILE SETTING OPTIONS")
 	}
 	// make the platform trust the stablecoin for receiving payments
-	txhash, err = assets.TrustAsset(consts.Code, consts.StablecoinPublicKey, "10000000000", publicKey, seed)
+	txhash, err = assets.TrustAsset(consts.Code, consts.StablecoinPublicKey, "10000000000", seed)
 	if err != nil {
 		return err
 	}

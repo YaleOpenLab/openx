@@ -47,7 +47,7 @@ func MunibondInvest(issuerPath string, invIndex int, invSeed string, invAmount s
 	}
 
 	InvestorAsset := assets.CreateAsset(invAssetCode, issuerPubkey)
-	invTrustTxHash, err := assets.TrustAsset(InvestorAsset.Code, issuerPubkey, utils.FtoS(totalValue), investor.U.PublicKey, invSeed)
+	invTrustTxHash, err := assets.TrustAsset(InvestorAsset.Code, issuerPubkey, utils.FtoS(totalValue), invSeed)
 	if err != nil {
 		return errors.Wrap(err, "Error while trusting investor asset")
 	}
@@ -100,7 +100,7 @@ func MunibondReceive(issuerPath string, recpIndex int, projIndex int, debtAssetI
 	}
 	pbAmtTrust := utils.ItoS(years * 12 * 2) // two way exchange possible, to account for errors
 
-	paybackTrustHash, err := assets.TrustAsset(PaybackAsset.Code, issuerPubkey, pbAmtTrust, recipient.U.PublicKey, recpSeed)
+	paybackTrustHash, err := assets.TrustAsset(PaybackAsset.Code, issuerPubkey, pbAmtTrust, recpSeed)
 	if err != nil {
 		return errors.Wrap(err, "Error while trusting Payback Asset")
 	}
@@ -112,7 +112,7 @@ func MunibondReceive(issuerPath string, recpIndex int, projIndex int, debtAssetI
 	}
 
 	log.Printf("Sent PaybackAsset to recipient %s with txhash %s", recipient.U.PublicKey, paybackAssetHash)
-	debtTrustHash, err := assets.TrustAsset(DebtAsset.Code, issuerPubkey, utils.FtoS(totalValue*2), recipient.U.PublicKey, recpSeed)
+	debtTrustHash, err := assets.TrustAsset(DebtAsset.Code, issuerPubkey, utils.FtoS(totalValue*2), recpSeed)
 	if err != nil {
 		return errors.Wrap(err, "Error while trusting debt asset")
 	}
@@ -174,7 +174,7 @@ func sendPaymentNotif(recpIndex int, projIndex int, paybackPeriod int, email str
 		// sleep until the next payment is due
 		paybackTimes += 1
 		log.Println("Sent: ", email, "a notification on payments for payment cycle: ", paybackTimes)
-		time.Sleep(2 * paybackPeriod * time.Second)
+		time.Sleep(2 * time.Duration(paybackPeriod) * time.Second)
 	}
 }
 
@@ -219,14 +219,14 @@ func MunibondPayback(issuerPath string, recpIndex int, amount string, recipientS
 		escrowPubkey = "GB2MLKOMRHXJQRX3ZCBLAZ2PMJOYHMFXQUR525CNCSPKBE643FRQNZBM"
 	}
 	log.Println("ESCROW PUBKEY: ", escrowPubkey)
-	_, stableUSDHash, err := assets.SendAsset(consts.Code, consts.StableCoinAddress, escrowPubkey, amount, recipientSeed, recipient.U.PublicKey, "Opensolar payback: "+utils.ItoS(projIndex))
+	_, stableUSDHash, err := assets.SendAsset(consts.Code, consts.StableCoinAddress, escrowPubkey, amount, recipientSeed, "Opensolar payback: "+utils.ItoS(projIndex))
 	if err != nil {
 		log.Println("ESCROW PUBKEY: ", escrowPubkey)
 		return -1, errors.Wrap(err, "Error while sending STABLEUSD back")
 	}
 	log.Printf("Paid %s back to platform in stableUSD, txhash %s ", amount, stableUSDHash)
 
-	_, debtPaybackHash, err := assets.SendAssetToIssuer(assetName, issuerPubkey, amount, recipientSeed, recipient.U.PublicKey)
+	_, debtPaybackHash, err := assets.SendAssetToIssuer(assetName, issuerPubkey, amount, recipientSeed)
 	if err != nil {
 		return -1, errors.Wrap(err, "Error while sending debt asset back")
 	}

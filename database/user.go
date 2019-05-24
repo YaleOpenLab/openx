@@ -468,7 +468,7 @@ func IncreaseTrustLimit(userIndex int, seedpwd string, trust string) error {
 
 	trustLimit := utils.StoF(trust) + utils.StoF(consts.StablecoinTrustLimit)
 
-	_, err = assets.TrustAsset(consts.Code, consts.StableCoinAddress, utils.FtoS(trustLimit), user.PublicKey, seed)
+	_, err = assets.TrustAsset(consts.Code, consts.StableCoinAddress, utils.FtoS(trustLimit), seed)
 	if err != nil {
 		return errors.Wrap(err, "couldn't trust asset, quitting!")
 	}

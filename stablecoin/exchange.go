@@ -40,7 +40,7 @@ func Exchange(recipientPK string, recipientSeed string, convAmount string) error
 		return errors.Wrap(err, "trust limit doesn't warrant investment, please contact platform admin")
 	}
 
-	hash, err := assets.TrustAsset(consts.Code, consts.StableCoinAddress, consts.StablecoinTrustLimit, recipientPK, recipientSeed)
+	hash, err := assets.TrustAsset(consts.Code, consts.StableCoinAddress, consts.StablecoinTrustLimit, recipientSeed)
 	if err != nil {
 		return errors.Wrap(err, "couldn't trust asset")
 	}

@@ -295,7 +295,7 @@ func (project *Project) updateProjectAfterInvestment(invAmount string, invIndex 
 	// we need to udpate the project investment map here
 	project.InvestorMap = make(map[string]float64) // make the map
 	log.Println("INVESTOR INDICES: ", project.InvestorIndices)
-	for i, _ := range project.InvestorIndices {
+	for i := range project.InvestorIndices {
 		investor, err := database.RetrieveInvestor(project.InvestorIndices[i])
 		if err != nil {
 			return errors.Wrap(err, "error while retrieving investors, quitting")
@@ -725,7 +725,7 @@ func CoverFirstLoss(projIndex int, entityIndex int, amount string) error {
 	}
 
 	// we have the escrow's pubkey, transfer funds to the escrow
-	_, txhash, err := assets.SendAsset(consts.Code, consts.StableCoinAddress, project.EscrowPubkey, amount, seed, entity.U.PublicKey, "first loss guarantee")
+	_, txhash, err := assets.SendAsset(consts.Code, consts.StableCoinAddress, project.EscrowPubkey, amount, seed, "first loss guarantee")
 	if err != nil {
 		return errors.Wrap(err, "could not transfer asset to escrow, quitting")
 	}

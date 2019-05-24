@@ -69,10 +69,10 @@ func CreateAsset(assetName string, PublicKey string) build.Asset {
 // TrustAsset trusts a specific asset issued by a particular public key and signs
 // a transaction with a preset limit on how much it is willing to trsut that issuer's
 // asset for
-func TrustAsset(assetCode string, assetIssuer string, limit string, PublicKey string, Seed string) (string, error) {
-	// TRUST is FROM PublicKey TO Seed
+func TrustAsset(assetCode string, assetIssuer string, limit string, Seed string) (string, error) {
+	// TRUST is FROM Seed TO assetIssuer
 	trustTx, err := build.Transaction(
-		build.SourceAccount{PublicKey},
+		build.SourceAccount{Seed},
 		build.AutoSequence{SequenceProvider: xlm.TestNetClient},
 		build.TestNetwork,
 		build.Trust(assetCode, assetIssuer, build.Limit(limit)),
@@ -94,7 +94,7 @@ func SendAssetFromIssuer(assetName string, destination string, amount string,
 	issuerSeed string, issuerPubkey string) (int32, string, error) {
 	// this transaction is FROM issuer TO recipient
 	paymentTx, err := build.Transaction(
-		build.SourceAccount{issuerPubkey},
+		build.SourceAccount{issuerSeed},
 		build.TestNetwork,
 		build.AutoSequence{SequenceProvider: xlm.TestNetClient},
 		build.MemoText{"Sending Asset: " + assetName},
@@ -114,11 +114,10 @@ func SendAssetFromIssuer(assetName string, destination string, amount string,
 
 // SendAssetToIssuer sends a specific asset back to the issuer
 func SendAssetToIssuer(assetName string, destination string, amount string,
-	seed string, pubkey string) (int32, string, error) {
+	seed string) (int32, string, error) {
 	// this transaction is FROM recipient TO issuer
-	// TODO: remove pubkey field since we already have the seed
 	paymentTx, err := build.Transaction(
-		build.SourceAccount{pubkey},
+		build.SourceAccount{seed},
 		build.TestNetwork,
 		build.AutoSequence{SequenceProvider: xlm.TestNetClient},
 		build.MemoText{"Sending Asset: " + assetName},
@@ -137,10 +136,10 @@ func SendAssetToIssuer(assetName string, destination string, amount string,
 
 // SendAsset sends the asset to a destination which already has an established trustline with the issuer
 func SendAsset(assetName string, issuerPubkey string, destination string, amount string,
-	seed string, pubkey string, memo string) (int32, string, error) {
-	// this transaction is FROM pubkey TO destination
+	seed string, memo string) (int32, string, error) {
+	// this transaction is FROM seed TO destination
 	paymentTx, err := build.Transaction(
-		build.SourceAccount{pubkey},
+		build.SourceAccount{seed},
 		build.TestNetwork,
 		build.AutoSequence{SequenceProvider: xlm.TestNetClient},
 		build.MemoText{memo},
