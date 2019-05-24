@@ -3,8 +3,8 @@
 package xlm
 
 import (
-	"testing"
 	"log"
+	"testing"
 )
 
 func TestBalances(t *testing.T) {

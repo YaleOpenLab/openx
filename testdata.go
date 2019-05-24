@@ -7,8 +7,8 @@ import (
 	database "github.com/YaleOpenLab/openx/database"
 	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
 	opzones "github.com/YaleOpenLab/openx/platforms/ozones"
-	utils "github.com/YaleOpenLab/openx/utils"
 	sandbox "github.com/YaleOpenLab/openx/sandbox"
+	utils "github.com/YaleOpenLab/openx/utils"
 )
 
 func testSolarProject(index int, panelsize string, totalValue float64, location string, moneyRaised float64,

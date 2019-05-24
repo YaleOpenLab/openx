@@ -6,12 +6,12 @@ import (
 	"log"
 	"time"
 
+	assets "github.com/YaleOpenLab/openx/assets"
+	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
 	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
 	utils "github.com/YaleOpenLab/openx/utils"
 	wallet "github.com/YaleOpenLab/openx/wallet"
-	consts "github.com/YaleOpenLab/openx/consts"
-	assets "github.com/YaleOpenLab/openx/assets"
 	xlm "github.com/YaleOpenLab/openx/xlm"
 )
 
@@ -516,7 +516,7 @@ func bootstrapRecipient(recpName, recpDescription string) (database.Recipient, s
 }
 
 func oneInvestor(projIndex int, invName string, invDescription string, recpName string,
-		recpDescription string) error {
+	recpDescription string) error {
 	project, err := opensolar.RetrieveProject(projIndex)
 	if err != nil {
 		return err

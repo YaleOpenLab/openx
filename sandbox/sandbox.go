@@ -8,11 +8,11 @@ import (
 	"log"
 
 	assets "github.com/YaleOpenLab/openx/assets"
-	xlm "github.com/YaleOpenLab/openx/xlm"
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
 	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
 	wallet "github.com/YaleOpenLab/openx/wallet"
+	xlm "github.com/YaleOpenLab/openx/xlm"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
@@ -561,16 +561,16 @@ func populateAdditionalData() error {
 
 	recp1, recpSeed, err := bootstrapRecipient("rwandaenergy@test.com", "Rwanda Village Energy Collective")
 	if err != nil {
-	  log.Fatal(err)
+		log.Fatal(err)
 	}
 
 	_, err = assets.TrustAsset(consts.Code, consts.StablecoinPublicKey, "10000000000", recp1.U.PublicKey, recpSeed)
 	if err != nil {
-	  log.Fatal(err)
+		log.Fatal(err)
 	}
 	_, _, err = assets.SendAssetFromIssuer(consts.Code, recp1.U.PublicKey, "1000000", consts.StablecoinSeed, consts.StablecoinPublicKey)
 	if err != nil {
-	  log.Fatal(err)
+		log.Fatal(err)
 	}
 
 	recp1.U.Email = "rwandaenergy@test.com"
@@ -582,7 +582,7 @@ func populateAdditionalData() error {
 
 	err = recp1.Save()
 	if err != nil {
-	  log.Fatal(err)
+		log.Fatal(err)
 	}
 
 	project, err := opensolar.RetrieveProject(8)
