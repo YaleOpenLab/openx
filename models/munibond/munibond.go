@@ -60,7 +60,7 @@ func MunibondInvest(issuerPath string, invIndex int, invSeed string, invAmount s
 
 	log.Printf("Sent InvAsset %s to investor %s with txhash %s", InvestorAsset.Code, investor.U.PublicKey, invAssetTxHash)
 
-	investor.AmountInvested += utils.StoF(invAmount)//  / seedInvestmentFactor -> figure out after demo
+	investor.AmountInvested += utils.StoF(invAmount) //  / seedInvestmentFactor -> figure out after demo
 	investor.InvestedSolarProjects = append(investor.InvestedSolarProjects, InvestorAsset.Code)
 	investor.InvestedSolarProjectsIndices = append(investor.InvestedSolarProjectsIndices, projIndex)
 	// keep note of who all invested in this asset (even though it should be easy

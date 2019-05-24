@@ -144,7 +144,6 @@ func setupPingHandler() {
 	})
 }
 
-
 func certBotHandler() {
 	http.HandleFunc("/.well-known/acme-challenge/RSUIeRcTdYTVNEnXtZsK8_2v8Kdpc3dNRX_2pLpne_4", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
@@ -153,10 +152,11 @@ func certBotHandler() {
 		w.Write([]byte(x))
 	})
 }
+
 // StartServer runs on the server side ie the server with the frontend.
 // having to define specific endpoints for this because this
 // is the system that would be used by the backend, so has to be built secure.
-func StartServer(port string) {
+func StartServer(port string, insecure bool) {
 	// we have a sub handlers for each major entity. These handlers
 	// call the relevant internal endpoints and return a StatusResponse message.
 	// we also have to process data from the pi itself, and that should have its own
@@ -183,5 +183,10 @@ func StartServer(port string) {
 	setupSwytchApis()
 	setupStagesHandlers()
 	certBotHandler()
-	log.Fatal(http.ListenAndServeTLS(":443", "server.crt", "server.key", nil))
+	log.Println("Starting RPC Server on Port: ", port)
+	if insecure {
+		log.Fatal(http.ListenAndServe(":"+port, nil))
+	} else {
+		log.Fatal(http.ListenAndServeTLS(":"+port, "server.crt", "server.key", nil))
+	}
 }

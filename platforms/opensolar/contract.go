@@ -243,7 +243,7 @@ func Invest(projIndex int, invIndex int, invAmount string, invSeed string) error
 	}
 
 	if project.Stage != 4 {
-		if project.Stage == 1  || project.Stage == 2 {
+		if project.Stage == 1 || project.Stage == 2 {
 			// need to redirect it to the seedinvest function
 			return SeedInvest(projIndex, invIndex, invAmount, invSeed)
 		}

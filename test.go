@@ -21,26 +21,26 @@ import (
 )
 
 // the server powering the openx platform of platforms. There are two clients that can be used
-// with the backned - ofcli and emulator
+// with the backend - ofcli and emulator
 // refer https://github.com/stellar/go/blob/master/build/main_test.go in case the stellar
 // go SDK docs are insufficient.
 var opts struct {
-	Port     int  `short:"p" description:"The port on which the server runs on"`
-	Simulate bool `short:"t" description:"Simulate the test database with demo values"`
+	Insecure bool `short:"i" description:"Start the API using http. Not recommended"`
+	Port     int  `short:"p" description:"The port on which the server runs on. Default: HTTPS/8080"`
+	Simulate bool `short:"t" description:"Simulate the test database with demo values (last updated: April 2019)"`
 }
 
 // ParseConfig parses CLI parameters passed
-func ParseConfig(args []string) (string, error) {
+func ParseConfig(args []string) (bool, string, error) {
 	_, err := flags.ParseArgs(&opts, args)
 	if err != nil {
-		return "", err
+		return false, "", err
 	}
 	port := utils.ItoS(consts.DefaultRpcPort)
 	if opts.Port != 0 {
 		port = utils.ItoS(opts.Port)
-		log.Println("Starting RPC Server on Port: ", opts.Port)
 	}
-	return port, nil
+	return opts.Insecure, port, nil
 }
 
 // StartPlatform starts the platform
@@ -88,7 +88,7 @@ func StartPlatform() error {
 
 func main() {
 	var err error
-	port, err := ParseConfig(os.Args)
+	insecure, port, err := ParseConfig(os.Args)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -98,9 +98,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	go opensolar.MonitorTeller(1)
-
+	// run this only when you need to monitor the tellers. Not required for local testing.
+	// go opensolar.MonitorTeller(1)
 	fmt.Printf("PLATFORM SEED IS: %s\n PLATFORM PUBLIC KEY IS: %s\n", consts.PlatformSeed, consts.PlatformPublicKey)
 	fmt.Printf("STABLECOIN PUBLICKEY IS: %s\nSTABLECOIN SEED is: %s\n\n", consts.StablecoinPublicKey, consts.StablecoinSeed)
-	rpc.StartServer(port)
+	rpc.StartServer(port, insecure)
 }

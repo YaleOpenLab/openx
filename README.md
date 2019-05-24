@@ -4,9 +4,9 @@
 [![Codecov](https://codecov.io/gh/YaleOpenLab/openx/branch/master/graph/badge.svg)](https://codecov.io/gh/YaleOpenLab/openx)
 [![Go Report Card](https://goreportcard.com/badge/github.com/YaleOpenLab/openx)](https://goreportcard.com/report/github.com/YaleOpenLab/openx)
 
-This repo contains a WIP implementation of the OpenX 'Platform of Platforms' idea in stellar. Broadly, the openx model seeks to implement the paradigm of investing and developing projects without hassles and enabling smart ownership with the help of semi trusted entities on the blockchain. The openx model can be thought more generally as a platform of platforms and houses multiple platforms within it (in `platforms/`).  The goal is to have a common interface between all parties that relate to a project; investors, investees (i.e. beneficiaries or receivers of the investment, often also including the issuer of the security), and the family of developers that include all service providers. Investors must complete KYC, authentication, etc and to be able to invest in multiple assets. We use the help of the blockchain to have trustless proof of ownership and debt along with a publicly auditable source of data along with proofs. Currently there are two platforms housed within openx:
+This repo contains a WIP implementation of the OpenX 'Platform of Platforms' idea in stellar. Broadly, the openx model seeks to implement the paradigm of investing and developing projects without hassles and enabling smart ownership with the help of semi trusted entities on the blockchain. The openx model can be thought more generally as a platform of platforms and houses multiple platforms within it (in `platforms/`).  The goal is to have a common interface between all parties that relate to a project; investors, investees (i.e. beneficiaries or receivers of the investment, often also including the issuer of the security), and the family of developers that include all service providers. Investors must complete KYC, authentication, etc and to be able to invest in multiple assets. We use the help of the blockchain to have trust minimized proof of ownership and debt along with a publicly audit-able source of data along with proofs. Currently there are two platforms housed within openx:
 
-1. Ozones - the ozones platform focuses on opportunity zones.
+1. Opzones - the ozones platform focuses on opportunity zones.
 
 2. Opensolar - the opensolar platform aims to use schools as community centres during natural disasters like hurricanes and also aims to make schools electricity sufficient by installing solar panels on rooftop spaces. The schools themselves need not pay upfront for the solar panel cost, but instead just need to pay their electricity bill over time and through the course of payment, get ownership of the solar panels.
 
@@ -15,7 +15,7 @@ This repo contains a WIP implementation of the OpenX 'Platform of Platforms' ide
 Comprehensive documentation on each platform is available inside each repo.
 
 1. [Opensolar](platforms/opensolar/README.md)
-2. [OZones](platforms/ozones/README.md)
+2. [Opzones](platforms/ozones/README.md)
 
 ## Getting Started
 

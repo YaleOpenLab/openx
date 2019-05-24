@@ -85,9 +85,9 @@ func LoginToPlatform(username string, pwhash string) error {
 // ProjectPayback pays back to the platform
 func ProjectPayback(assetName string, amount string) error {
 	// retrieve project index
-	log.Println("PAYMENT BODY: ", ApiUrl + "/recipient/payback?" + "username=" + LocalRecipient.U.Username +
-		"&pwhash=" + LocalRecipient.U.Pwhash + "&projIndex=" + LocalProjIndex + "&assetName=" + LocalProject.DebtAssetCode + "&seedpwd=" +
-		LocalSeedPwd + "&amount=" + amount)
+	log.Println("PAYMENT BODY: ", ApiUrl+"/recipient/payback?"+"username="+LocalRecipient.U.Username+
+		"&pwhash="+LocalRecipient.U.Pwhash+"&projIndex="+LocalProjIndex+"&assetName="+LocalProject.DebtAssetCode+"&seedpwd="+
+		LocalSeedPwd+"&amount="+amount)
 	data, err := rpc.GetRequest(ApiUrl + "/recipient/payback?" + "username=" + LocalRecipient.U.Username +
 		"&pwhash=" + LocalRecipient.U.Pwhash + "&projIndex=" + LocalProjIndex + "&assetName=" + LocalProject.DebtAssetCode + "&seedpwd=" +
 		LocalSeedPwd + "&amount=" + amount)

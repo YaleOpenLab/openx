@@ -1,30 +1,33 @@
-package main
+package sandbox
 
+// sandbox contains sandbox data that can be used to spin up openx for presentations at demos in conjunction
+// with the openx-frontend repo. Can be edited to one's needs. File last updated: May 2019
 import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
 
 	assets "github.com/YaleOpenLab/openx/assets"
-	xlm "github.com/YaleOpenLab/openx/xlm"
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
 	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
 	wallet "github.com/YaleOpenLab/openx/wallet"
+	xlm "github.com/YaleOpenLab/openx/xlm"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
 
+// parseYamlProject reparses yaml for an existing project
 func parseYamlProject(fileName string, feJson string, projIndex int) error {
 	viper.SetConfigType("yaml")
 	viper.SetConfigName(fileName)
-	viper.AddConfigPath("./data-sandbox")
+	viper.AddConfigPath("./data")
 	err := viper.ReadInConfig()
 	if err != nil {
 		return errors.Wrap(err, "error while reading values from config file")
 	}
 
-	project, err := opensolar.RetrieveProject(8)
+	project, err := opensolar.RetrieveProject(projIndex)
 	if err != nil {
 		return err
 	}
@@ -156,10 +159,11 @@ func parseYamlProject(fileName string, feJson string, projIndex int) error {
 	return project.Save()
 }
 
+// parseYaml parses yaml, creates a new project and saves it to the database
 func parseYaml(fileName string, feJson string) error {
 	viper.SetConfigType("yaml")
 	viper.SetConfigName(fileName)
-	viper.AddConfigPath("./data-sandbox")
+	viper.AddConfigPath("./data")
 	err := viper.ReadInConfig()
 	if err != nil {
 		return errors.Wrap(err, "error while reading values from config file")
@@ -275,6 +279,7 @@ func parseYaml(fileName string, feJson string) error {
 	return project.Save()
 }
 
+// populateStaticData populates static data for the demo projects
 func populateStaticData() error {
 	var err error
 	log.Println("populating db with static data")
@@ -282,52 +287,47 @@ func populateStaticData() error {
 	if err != nil {
 		return err
 	}
-	err = parseYaml("1kwy", "data-sandbox/1kw.json")
+	err = parseYaml("1kwy", "data/1kw.json")
 	if err != nil {
 		return err
 	}
-	// project: One Kilowatt Project
-	// STAGE 7 - Puerto Rico
+	// project: One Kilowatt Project / STAGE 7 - Puerto Rico
 	err = populateStaticData1kw()
 	if err != nil {
 		return err
 	}
-	err = parseYaml("1mwy", "data-sandbox/1mw.json")
+	err = parseYaml("1mwy", "data/1mw.json")
 	if err != nil {
 		return err
 	}
-	// project: One Megawatt Project
-	// STAGE 4 - New Hampshire
+	// project: One Megawatt Project / STAGE 4 - New Hampshire
 	err = populateStaticData1mw()
 	if err != nil {
 		return err
 	}
-	err = parseYaml("10kwy", "data-sandbox/10kw.json")
+	err = parseYaml("10kwy", "data/10kw.json")
 	if err != nil {
 		return err
 	}
-	// project: Ten Kilowatt Project
-	// STAGE 8 - Connecticut Homeless Shelter
+	// project: Ten Kilowatt Project / STAGE 8 - Connecticut Homeless Shelter
 	err = populateStaticData10kw()
 	if err != nil {
 		return err
 	}
-	err = parseYaml("10mwy", "data-sandbox/10mw.json")
+	err = parseYaml("10mwy", "data/10mw.json")
 	if err != nil {
 		return err
 	}
-	// project: Ten Megawatt Project
-	// STAGE 2 - Puerto Rico Public School Bond
+	// project: Ten Megawatt Project / STAGE 2 - Puerto Rico Public School Bond
 	err = populateStaticData10MW()
 	if err != nil {
 		return err
 	}
-	err = parseYaml("100kwy", "data-sandbox/100kw.json")
+	err = parseYaml("100kwy", "data/100kw.json")
 	if err != nil {
 		return err
 	}
-	// project: One HUndred Kilowatt Project
-	// STAGE 1 - Rwanda Project
+	// project: One Hundred Kilowatt Project / STAGE 1 - Rwanda Project
 	err = populateStaticData100KW()
 	if err != nil {
 		return err
@@ -337,7 +337,7 @@ func populateStaticData() error {
 
 func populateDynamicData() error {
 	var err error
-	// we ignore errors here since they are b ound to happen (guarantor related errors)
+	// we ignore errors here since they are bound to happen (guarantor related errors)
 	err = populateDynamicData1kw()
 	if err != nil {
 		log.Println("error while populating 1kw project", err)
@@ -353,10 +353,8 @@ func populateDynamicData() error {
 	return nil
 }
 
-// CreateSandbox is the main function that controls data insertion as part of the sandbox environment
+// Create Sandbox populates the database with test values
 func CreateSandbox() error {
-	// project: Puerto Rico Project
-	// STAGE 7 - Puerto Rico
 	var err error
 	err = populateStaticData()
 	if err != nil {
@@ -373,8 +371,8 @@ func CreateSandbox() error {
 	return nil
 }
 
+// parseJsonText is a helper function that reads json for the frontend data
 func parseJsonText(fileName string) (map[string]interface{}, error) {
-
 	data, err := ioutil.ReadFile(fileName)
 	if err != nil {
 		log.Fatal(err)
@@ -522,7 +520,6 @@ func populateAdditionalData() error {
 	}
 
 	// send the pasto school account some money so we can demo using it on the frontend
-
 	txhash, err = assets.TrustAsset(consts.Code, consts.StablecoinPublicKey, "10000000000", recp.U.SecondaryWallet.PublicKey, seed)
 	if err != nil {
 		return err
@@ -564,16 +561,16 @@ func populateAdditionalData() error {
 
 	recp1, recpSeed, err := bootstrapRecipient("rwandaenergy@test.com", "Rwanda Village Energy Collective")
 	if err != nil {
-	  log.Fatal(err)
+		log.Fatal(err)
 	}
 
 	_, err = assets.TrustAsset(consts.Code, consts.StablecoinPublicKey, "10000000000", recp1.U.PublicKey, recpSeed)
 	if err != nil {
-	  log.Fatal(err)
+		log.Fatal(err)
 	}
 	_, _, err = assets.SendAssetFromIssuer(consts.Code, recp1.U.PublicKey, "1000000", consts.StablecoinSeed, consts.StablecoinPublicKey)
 	if err != nil {
-	  log.Fatal(err)
+		log.Fatal(err)
 	}
 
 	recp1.U.Email = "rwandaenergy@test.com"
@@ -585,7 +582,7 @@ func populateAdditionalData() error {
 
 	err = recp1.Save()
 	if err != nil {
-	  log.Fatal(err)
+		log.Fatal(err)
 	}
 
 	project, err := opensolar.RetrieveProject(8)
