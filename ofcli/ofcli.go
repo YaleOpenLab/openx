@@ -39,7 +39,7 @@ func ParseConfig(args []string) error {
 		port = utils.ItoS(opts.Port)
 	}
 	log.Println("Starting RPC Server on Port: ", opts.Port)
-	go rpc.StartServer(port) // run as go routine for now
+	go rpc.StartServer(port, false) // run as go routine for now
 	return nil
 }
 
