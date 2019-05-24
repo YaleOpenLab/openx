@@ -50,7 +50,7 @@ func InitEscrow(projIndex int, seedpwd string, recpPubkey string, mySeed string)
 func TransferFundsToEscrow(amount float64, projIndex int, escrowPubkey string) error {
 	// we have the wallet pubkey, transfer funds to the escrow now
 	_, txhash, err := assets.SendAsset(consts.Code, consts.StablecoinPublicKey, escrowPubkey,
-		utils.FtoS(amount), consts.PlatformSeed, consts.PlatformPublicKey, "escrow init")
+		utils.FtoS(amount), consts.PlatformSeed, "escrow init")
 	if err != nil {
 		return errors.Wrap(err, "could not fund escrow, quitting!")
 	}

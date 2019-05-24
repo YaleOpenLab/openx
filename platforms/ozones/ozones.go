@@ -7,9 +7,7 @@ import (
 // An Opportunity Zone  has multiple forms of investment opportunities within it. SOme examples are
 // Construction Bonds, Living Unit Coops, Utility Investments, etc. Ozones aims to start off with a construction
 // bond and living unit coops facilitated by CityScope and then build more complex constructions like Utility
-// INvestments and DAOs for governane mechanisms on top of the construction we have right now.
-
-// TODO: add description of what the construction bond model does in ozones below with inputs from John
+// Investments and DAOs for governane mechanisms on top of the construction we have right now.
 
 // ConstructionBond defines the various parameters that constitute a Construction Bond
 type ConstructionBond struct {
@@ -39,7 +37,6 @@ type ConstructionBond struct {
 	RecipientIndex    int   // the index of the recipient who ideally would be the person constructing this particular space
 	LockPwd           string
 	Lock              bool
-	// TODO: add more parameters based on discussions and feedback from Martin and John
 }
 
 // LivingUnitCoop defines the various parameters that constitute a Living Unit Coop
@@ -68,7 +65,6 @@ type LivingUnitCoop struct {
 	RecipientIndex int
 	LockPwd        string
 	Lock           bool
-	// TODO: add more parameters based on discussions and feedback from Martin and John
 }
 
 // InitializePlatform borrows the init platform method from the common platform handler

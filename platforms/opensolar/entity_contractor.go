@@ -11,9 +11,6 @@ import (
 // we need to ensure they are not following the price (eg bidding down) and are giving
 // their best quote. In this scenario, a blind auction method is the best option.
 
-// TODO: Consider other specific information needed for contractors, other than
-// the ones set for users and entities. It can go here, or set as a separate struct.
-
 // NewContractor creates a new contractor and inherits properties from Users
 func NewContractor(uname string, pwd string, seedpwd string, Name string, Address string, Description string) (Entity, error) {
 	// Create a new entity with the boolean of 'contractor' set to 'true.' This is

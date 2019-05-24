@@ -45,7 +45,7 @@ func Invest(projIndex int, invIndex int, invAssetCode string, invSeed string,
 	log.Println("STABLEHASH: ", stableTxHash)
 
 	// make investor trust the asset that we provide
-	investorAssetTrustHash, err := assets.TrustAsset(invAssetCode, issuerPubkey, trustLimit, investor.U.PublicKey, invSeed)
+	investorAssetTrustHash, err := assets.TrustAsset(invAssetCode, issuerPubkey, trustLimit, invSeed)
 	// trust upto the total value of the asset
 	if err != nil {
 		return err
@@ -94,7 +94,7 @@ func ReceiveBond(issuerPath string, recpIndex int, projIndex int, debtAssetCode 
 
 	// this investment asset is a one way asset ie the recipient need not pay this back to the platform since these funds
 	// would be used in the unit's construction
-	debtTrustHash, err := assets.TrustAsset(debtAssetCode, issuerPubkey, utils.FtoS(totalValue), recipient.U.PublicKey, recpSeed)
+	debtTrustHash, err := assets.TrustAsset(debtAssetCode, issuerPubkey, utils.FtoS(totalValue), recpSeed)
 	if err != nil {
 		log.Println("Error while trusting investment asset", err)
 		return err

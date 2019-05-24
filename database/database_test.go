@@ -7,6 +7,7 @@ import (
 	"os"
 	"testing"
 
+	assets "github.com/YaleOpenLab/openx/assets"
 	consts "github.com/YaleOpenLab/openx/consts"
 	wallet "github.com/YaleOpenLab/openx/wallet"
 	xlm "github.com/YaleOpenLab/openx/xlm"
@@ -386,17 +387,17 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	testAsset := build.CreditAsset("blah", recp.U.PublicKey)
+	build.CreditAsset("blah", recp.U.PublicKey)
 	invSeed, err := wallet.DecryptSeed(inv.U.EncryptedSeed, "blah")
 	if err != nil {
 		t.Fatal(err)
 	}
-	hash, err := inv.TrustAsset(testAsset, "100", invSeed)
+	hash, err := assets.TrustAsset("blah", recp.U.PublicKey, "100", invSeed)
 	if err != nil {
 		t.Fatal(err)
 	}
 	log.Println("HASH IS: ", hash)
-	_, err = inv.TrustAsset(testAsset, "-1", "blah")
+	_, err = assets.TrustAsset("blah", recp.U.PublicKey, "-1", "blah")
 	if err == nil {
 		t.Fatalf("can trust asset with invalid s eed!")
 	}
@@ -404,8 +405,8 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	testAsset2 := build.CreditAsset("blah2", pkSeed) // this account doesn't exist yet, so this should fail
-	_, err = inv.TrustAsset(testAsset2, "-1", "blah")
+	build.CreditAsset("blah2", pkSeed) // this account doesn't exist yet, so this should fail
+	_, err = assets.TrustAsset("blah2", "", "-1", "blah")
 	if err == nil {
 		t.Fatalf("can trust invalid asset")
 	}
@@ -477,7 +478,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	testuser, err := SearchWithEmailId("blahx@blah.com")
+	testuser, _ := SearchWithEmailId("blahx@blah.com")
 	if testuser.PublicKey != "" {
 		t.Fatalf("user with invalid email exists")
 	}

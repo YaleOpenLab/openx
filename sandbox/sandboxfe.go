@@ -254,6 +254,9 @@ func createAllStaticEntities() error {
 func populateStaticData1kw() error {
 
 	project, err := opensolar.RetrieveProject(4)
+	if err != nil {
+		return err
+	}
 
 	project.ExplorePageSummary.Solar = project.PanelSize
 	project.ExplorePageSummary.Storage = project.ExecutiveSummary.ProjectSize["storage"]
@@ -484,7 +487,7 @@ func bootstrapInvestor(invName, invDescription string) (database.Investor, strin
 	}
 	// trust the stablecoin issuer and give the investor a fixed number of stableusd to invest
 	// this helps prevent calling the exchange function that is implicitly called in the payment function
-	_, err = assets.TrustAsset(consts.Code, consts.StablecoinPublicKey, "10000000000", investor1.U.PublicKey, invSeed)
+	_, err = assets.TrustAsset(consts.Code, consts.StablecoinPublicKey, "10000000000", invSeed)
 	if err != nil {
 		return investor1, "", err
 	}

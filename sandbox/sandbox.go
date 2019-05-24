@@ -472,7 +472,7 @@ func populateAdditionalData() error {
 	}
 
 	// send the pasto school account some money so we can demo using it on the frontend
-	txhash, err := assets.TrustAsset(consts.Code, consts.StablecoinPublicKey, "10000000000", recp.U.PublicKey, seed)
+	txhash, err := assets.TrustAsset(consts.Code, consts.StablecoinPublicKey, "10000000000", seed)
 	if err != nil {
 		return err
 	}
@@ -496,7 +496,7 @@ func populateAdditionalData() error {
 	}
 
 	// send the pasto school account some money so we can demo using it on the frontend
-	txhash, err = assets.TrustAsset(consts.Code, consts.StablecoinPublicKey, "10000000000", recp.U.PublicKey, seed)
+	txhash, err = assets.TrustAsset(consts.Code, consts.StablecoinPublicKey, "10000000000", seed)
 	if err != nil {
 		return err
 	}
@@ -520,7 +520,7 @@ func populateAdditionalData() error {
 	}
 
 	// send the pasto school account some money so we can demo using it on the frontend
-	txhash, err = assets.TrustAsset(consts.Code, consts.StablecoinPublicKey, "10000000000", recp.U.SecondaryWallet.PublicKey, seed)
+	txhash, err = assets.TrustAsset(consts.Code, consts.StablecoinPublicKey, "10000000000", seed)
 	if err != nil {
 		return err
 	}
@@ -538,7 +538,7 @@ func populateAdditionalData() error {
 		log.Fatal(err)
 	}
 
-	_, err = assets.TrustAsset(consts.Code, consts.StablecoinPublicKey, "10000000000", investor1.U.PublicKey, invSeed)
+	_, err = assets.TrustAsset(consts.Code, consts.StablecoinPublicKey, "10000000000", invSeed)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -564,7 +564,7 @@ func populateAdditionalData() error {
 		log.Fatal(err)
 	}
 
-	_, err = assets.TrustAsset(consts.Code, consts.StablecoinPublicKey, "10000000000", recp1.U.PublicKey, recpSeed)
+	_, err = assets.TrustAsset(consts.Code, consts.StablecoinPublicKey, "10000000000", recpSeed)
 	if err != nil {
 		log.Fatal(err)
 	}

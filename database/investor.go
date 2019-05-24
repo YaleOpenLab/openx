@@ -3,12 +3,10 @@ package database
 import (
 	"github.com/pkg/errors"
 
-	assets "github.com/YaleOpenLab/openx/assets"
 	oracle "github.com/YaleOpenLab/openx/oracle"
 	utils "github.com/YaleOpenLab/openx/utils"
 	xlm "github.com/YaleOpenLab/openx/xlm"
 	"github.com/boltdb/bolt"
-	"github.com/stellar/go/build"
 )
 
 // the investor struct contains all the investor details such as
@@ -36,11 +34,7 @@ type Investor struct {
 	// array of asset codes this user has invested in
 	// also I think we need a username + password for logging on to the platform itself
 	// linking it here for now
-	U User // TODO: change this to a pointer to the user struct to avoid redundancy
-	// user related functions are called as an instance directly
-	// TODO: Consider other information and fields required by the investor struct,
-	// eg. like unique ID, metadata
-	// TODO: Consider the banking onboarding problem (see notes in Anchor.md and define general banking strategy)
+	U           User // TODO: change this to a pointer to the user struct to avoid redundancy
 	WeightedROI string
 	// the weightedROI for all the projects under the investor's umbrella
 	AllTimeReturns []float64
@@ -181,13 +175,6 @@ func (a *Investor) AddVotingBalance(votes int) error {
 	// an order has been finalized.
 	a.VotingBalance += votes
 	return a.Save()
-}
-
-// TrustAsset creates a trustline from the investor towards the specific asset (eg. InvestorAsset)
-// and asset issuer (i.e. the platform) with a _limit_ set on the maximum amount of assets that can be sent
-// through the trust channel. Each trustline costs 0.5XLM.
-func (a *Investor) TrustAsset(asset build.Asset, limit string, seed string) (string, error) {
-	return assets.TrustAsset(asset.Code, asset.Issuer, limit, a.U.PublicKey, seed)
 }
 
 // CanInvest checks whether an investor has the required balance to invest in a project

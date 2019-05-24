@@ -31,7 +31,7 @@ type Project struct {
 	CommBox                   string  // the comm box of the installed project
 	ACTransfer                string  // the AC transfer of the installed project
 	SolarCombiner             string  // the solar combiner of the installed project
-	Batteries                 string  // the batteries of the installed project. TODO: Batteries should also have a fixed nominal value of capacity, as well as one describing what setup it is.
+	Batteries                 string  // the batteries of the installed project
 	IoTHub                    string  // the IoT Hub installed as part of the project
 	Rating                    string  // the rating of the project (Moody's, etc)
 	Metadata                  string  // other metadata which does not have an explicit name can be stored here. Used to derive assetIDs

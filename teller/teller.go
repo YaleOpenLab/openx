@@ -35,7 +35,7 @@ import (
 // env GOOS=linux GOARCH=arm GOARM=5 go build
 // advisable to build off the pi and transport the executable since I don't think we want to be running
 // go get on a raspberry pi with the stellar dependencies.
-// TODO: also run an ipfs node on the raspberry pi to ensure we can commit to ipfs without relying
+// one should run an ipfs node on the raspberry pi to ensure the teller can commit to ipfs without relying
 // on the platform
 
 var opts struct {

@@ -9,7 +9,6 @@ import (
 	"github.com/boltdb/bolt"
 )
 
-// TODO: Consider more information
 // about recipients to add in the struct, For example, recipients should be associated
 // to sites eligible for projects (eg. a building or land where you can put panels),
 // (and eventually need to show proof of this)

@@ -567,7 +567,7 @@ func trustAsset() {
 		}
 
 		// func TrustAsset(assetCode string, assetIssuer string, limit string, PublicKey string, Seed string) (string, error) {
-		txhash, err := assets.TrustAsset(assetCode, assetIssuer, limit, prepUser.PublicKey, seed)
+		txhash, err := assets.TrustAsset(assetCode, assetIssuer, limit, seed)
 		if err != nil {
 			log.Println("did not trust asset", err)
 			responseHandler(w, r, StatusInternalServerError)
@@ -1220,7 +1220,7 @@ func sweepAsset() {
 		sweepAmt := math.Round(assetBalanceF)
 		sweepStr := utils.FtoS(sweepAmt)
 
-		_, txhash, err := assets.SendAsset(assetName, issuerPubkey, destination, sweepStr, seed, prepUser.PublicKey, "sweeping funds")
+		_, txhash, err := assets.SendAsset(assetName, issuerPubkey, destination, sweepStr, seed, "sweeping funds")
 		if err != nil {
 			log.Println(err)
 			responseHandler(w, r, StatusInternalServerError)

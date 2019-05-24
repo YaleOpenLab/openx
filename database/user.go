@@ -57,7 +57,6 @@ type User struct {
 	// auto generated timestamp
 	Kyc bool
 	// false if kyc is not accepted / reviewed, true if user has been verified.
-	// TODO: evaluate kyc providers and get a trusted partner who can do this for us (see kyc-services.md)
 	Inspector bool
 	// inspector is a kyc inspector who valdiates the data of people who would like
 	// to signup on the platform
@@ -388,8 +387,6 @@ func CheckUsernameCollision(uname string) (User, error) {
 // the inspector should have the power to set it to true.
 // the inspector itself requires kyc though, so we shall have an admin account which can
 // kickoff the kyc process.
-// TODO: what do we do with these KYC powers? what features are open and what can be
-// viewed only by going through KYC?
 
 // Authorize authorizes a user
 func (a *User) Authorize(userIndex int) error {
@@ -471,7 +468,7 @@ func IncreaseTrustLimit(userIndex int, seedpwd string, trust string) error {
 
 	trustLimit := utils.StoF(trust) + utils.StoF(consts.StablecoinTrustLimit)
 
-	_, err = assets.TrustAsset(consts.Code, consts.StableCoinAddress, utils.FtoS(trustLimit), user.PublicKey, seed)
+	_, err = assets.TrustAsset(consts.Code, consts.StableCoinAddress, utils.FtoS(trustLimit), seed)
 	if err != nil {
 		return errors.Wrap(err, "couldn't trust asset, quitting!")
 	}
