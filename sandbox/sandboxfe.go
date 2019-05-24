@@ -1,5 +1,7 @@
-package main
+package sandbox
 
+// fe sandbox contains data related to the sandbox that is displayed on the frontend. Can be updated to
+// reflect changes on the frontend. File last updated: May 2019
 import (
 	"log"
 	"time"

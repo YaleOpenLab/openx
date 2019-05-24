@@ -26,7 +26,7 @@ import (
 // go SDK docs are insufficient.
 var opts struct {
 	Port     int  `short:"p" description:"The port on which the server runs on"`
-	Simulate bool `short:"t" description:"Simulate the test database with demo values"`
+	Simulate bool `short:"t" description:"Simulate the test database with demo values (last updated: April 2019)"`
 }
 
 // ParseConfig parses CLI parameters passed

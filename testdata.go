@@ -8,6 +8,7 @@ import (
 	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
 	opzones "github.com/YaleOpenLab/openx/platforms/ozones"
 	utils "github.com/YaleOpenLab/openx/utils"
+	sandbox "github.com/YaleOpenLab/openx/sandbox"
 )
 
 func testSolarProject(index int, panelsize string, totalValue float64, location string, moneyRaised float64,
@@ -107,10 +108,11 @@ func InsertDummyData(simulate bool) error {
 	var err error
 	// populate database with dummy data
 	var recp database.Recipient
-	// simulate only if the bool is set to true
+	// simulate only if the bool is set to true. Simulates investment for three projects based on the presentation
+	// at the Spring Members' Week Demo 2019
 	if simulate {
 		log.Println("creating sandbox")
-		return CreateSandbox()
+		return sandbox.CreateSandbox()
 	}
 	allRecs, err := database.RetrieveAllRecipients()
 	if err != nil {
