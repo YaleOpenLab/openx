@@ -13,7 +13,6 @@ import (
 // package notif is used to send out notifications regarding important events that take
 // place with respect to a specific project / investment
 
-// MWTODO: Get comments on general text here
 // footerString is a common footer string that is used by all emails
 var footerString = "Have a nice day!\n\nWarm Regards, \nThe OpenSolar Team\n\n\n\n" +
 	"You're receiving this email because your contact was given" +

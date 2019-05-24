@@ -174,7 +174,7 @@ func sendPaymentNotif(recpIndex int, projIndex int, paybackPeriod int, email str
 		// sleep until the next payment is due
 		paybackTimes += 1
 		log.Println("Sent: ", email, "a notification on payments for payment cycle: ", paybackTimes)
-		time.Sleep(2 * 604800 * time.Second) // TODO: add back payback period here (instead of 2)
+		time.Sleep(2 * paybackPeriod * time.Second)
 	}
 }
 

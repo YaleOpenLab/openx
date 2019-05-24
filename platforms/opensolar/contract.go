@@ -42,12 +42,11 @@ const (
 	DisconnectionThreshold = 6   // DisconnectionThreshold is the threshold above which the user gets a notification telling that services have been disconnected.
 )
 
-// TODO: Peer-based star-rating
-// This should be the normal 5 star system that users get from other users that are involved in the same transaction.
+// TODO: Peer-based star-rating - This should be the normal 5 star system that users get from
+// other users that are involved in the same transaction.
 
-// TODO: Consider that in the family of Recipients or Investors, there are more than one actor, and sometimes signatory authorization is from only some of the actors.
-// See the Project Stages document for reference of Beneficiary or Investor families. A clear example is a Recipient that is the actual issuer of the security,
-// and another that is the actual offtaker.
+// TODO: Consider that in the family of Recipients or Investors, there is more than one actor
+// and sometimes signatory authorization is from only some of the actors.
 
 // VerifyBeforeAuthorizing verifies some information on the originator before upgrading
 // the project stage
@@ -544,7 +543,7 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 		return errors.Wrap(err, "coudln't save project")
 	}
 
-	// TODO: we need to distribute mBillFloat to all the parties involved, but we do so only for the investor here
+	// TODO: we need to distribute funds which were paid back to all the parties involved, but we do so only for the investor here
 	err = DistributePayments(recipientSeed, project.EscrowPubkey, projIndex, utils.StoI(amount))
 	if err != nil {
 		return errors.Wrap(err, "error while distributing payments")
@@ -565,8 +564,8 @@ func DistributePayments(recipientSeed string, escrowPubkey string, projIndex int
 		log.Println("project", project.Index, "'s escrow locked, can't send funds")
 		return fmt.Errorf("project escrow locked, can't send funds")
 	}
-	fixedRate := 0.05 // 5 % of the totla investment as return or something similar. Should not be hardcoded
-	// TODO: return money to the developers and other people involved
+	fixedRate := 0.05 // 5 % of the total investment as return or something similar. Should not be hardcoded
+	// and must be read from the project data. But hardcoded for now.
 	amountGivenBack := fixedRate * float64(amount)
 	for pubkey, percentage := range project.InvestorMap {
 		// send x to this pubkey
@@ -621,7 +620,8 @@ func monitorPaybacks(recpIndex int, projIndex int) {
 			period = 1 // for the test suite
 		}
 		factor := timeElapsed / period
-		// TODO: improve this to something more robust
+		// TODO: we lose a small fraction of funds due to the rounding error, we must ensure this doesn't happen and instead
+		// should account for all funds.
 		project.AmountOwed += math.Round(float64(factor)) * oracle.MonthlyBillInFloat() // add the amount owed only if the time elapsed is more than one payback period
 		if err != nil {
 			log.Println(err)

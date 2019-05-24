@@ -15,8 +15,6 @@ import (
 // must also be sigend between the originator and the recipient defining terms of agreement
 // as per legal standards
 
-// TODO: Consider any other information needed for originators that should be added
-
 // NewOriginator creates a new originator
 func NewOriginator(uname string, pwd string, seedpwd string, Name string,
 	Address string, Description string) (Entity, error) {

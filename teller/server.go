@@ -85,7 +85,8 @@ func setupRoutes() {
 }
 
 // curl https://localhost/ping --insecure {"Code":200,"Status":""}
-// TODO: have an alternative for using insecure certificates here.
+// generate your own ssl certificate from letsencrypt or something to make sure the teller API calls
+// are accessible frmo outside localhost
 func startServer(port int) {
 	setupRoutes()
 	err := http.ListenAndServeTLS(":"+utils.ItoS(port), "ssl/server.crt", "ssl/server.key", nil)
