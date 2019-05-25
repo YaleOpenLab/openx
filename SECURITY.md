@@ -1,6 +1,6 @@
 # Security
 
-![Disclose.io Logo](security/discloseio.png)  
+<img src="security/discloseio.png" width="50">  
 
 In accordance with the [disclose.io](https://disclose.io) core terms, openx defines the following:
 
