@@ -54,7 +54,12 @@ This is an open source project and everyone is invited to contribute value to it
 ![Open Contributions](docs/figures/OpenContributions.png)
 
 ## Security
-For security related issues, *DO NOT OPEN A GITHUB ISSUE!*. Please disclose the information responsibly by sending a (preferably PGP Encrypted) email to `contact@varunram.com`. [Our PGP Key](https://pgp.mit.edu/pks/lookup?op=vindex&fingerprint=on&search=0x708C606504A49970) fingerprint is `C98F 0014 9A99 36E4 E56D  2471 708C 6065 04A4 9970`
+
+![Disclose.io Logo](security/discloseio.png)  
+
+For security related issues, *DO NOT OPEN A GITHUB ISSUE!*. Please disclose the information responsibly by sending a (preferably PGP Encrypted) email to `contact@varunram.com`. [Our PGP Key](https://pgp.mit.edu/pks/lookup?op=vindex&fingerprint=on&search=0x708C606504A49970) fingerprint is `C98F 0014 9A99 36E4 E56D  2471 708C 6065 04A4 9970`  
+
+In addition to this, openx is fully fully compliant with the [disclose.io](https://disclose.io) core terms followed by [bugcrowd](https://www.bugcrowd.com/resource/what-is-responsible-disclosure/). For more info, see [SECURITY.md](SECURITY.md)
 
 ## License
 
