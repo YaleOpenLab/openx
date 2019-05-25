@@ -60,6 +60,9 @@ type User struct {
 	Inspector bool
 	// inspector is a kyc inspector who valdiates the data of people who would like
 	// to signup on the platform
+	Banned bool
+	// a field which can be used to set a ban on a user. Can be only used by inspectors in the event someone
+	// who has KYC is known to behave in a suspicious way.
 	Email string
 	// user email to send out notifications
 	Notification bool
@@ -81,9 +84,14 @@ type User struct {
 
 	EthereumWallet EthWallet
 	// EthereumWallet defines a separate wallet for ethereum which people can use to control their ERC721 RECs
+
+	PendingDocuments map[string]string
+	// a Pending documents map to keep track of documents that the user in question has to keep track of
+	// related to a specific project. The key is the same as the value of the project and the value is a description
+	// of what exactly needs to be submitted.
 }
 
-// the EthWallet s truct con tains the structures needed for an ethereum wallet
+// EthWallet contains the structures needed for an ethereum wallet
 type EthWallet struct {
 	PrivateKey string
 	PublicKey  string
@@ -590,4 +598,26 @@ func (a *User) AddEmail(email string) error {
 		return errors.Wrap(err, "error while saving investor")
 	}
 	return a.Save()
+}
+
+func (a *User) SetBan(userIndex int) error {
+	if !a.Inspector {
+		return fmt.Errorf("user not authorized to ban a user")
+	}
+
+	if a.Index == userIndex {
+		return fmt.Errorf("can't ban yourself, quitting!")
+	}
+
+	user, err := RetrieveUser(userIndex)
+	if err != nil {
+		return errors.Wrap(err, "couldn't  find user to ban, quitting")
+	}
+
+	if user.Banned {
+		return errors.Wrap(err, "user already banned, not setitng another ban")
+	}
+
+	user.Banned = true
+	return user.Save()
 }

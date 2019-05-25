@@ -55,13 +55,15 @@ func VerifyBeforeAuthorizing(projIndex int) bool {
 	if err != nil {
 		return false
 	}
-	// TODO: In the future, this would involve the kyc operator to check the originator's credentials
 	originator, err := RetrieveEntity(project.OriginatorIndex)
 	if err != nil {
 		return false
 	}
 	fmt.Printf("ORIGINATOR'S NAME IS: %s and PROJECT's METADATA IS: %s", originator.U.Name, project.Metadata)
-	return true
+	if originator.U.Kyc && !originator.U.Banned {
+		return true
+	}
+	return false
 }
 
 // RecipientAuthorize allows a recipient to authorize a specific project
@@ -526,7 +528,7 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 	if project.BalLeft == 0 {
 		log.Println("YOU HAVE PAID OFF THIS ASSET's LOAN, TRANSFERRING FUTURE PAYMENTS AS OWNERSHIP ASSETS OWNERSHIP OF ASSET TO YOU")
 		project.Stage = 9
-		// ownership shift is complete, so future payemnts will be made towards what's
+		// ownership shift is complete, so future payments will be made towards what's
 	}
 
 	if project.OwnershipShift == 1 {

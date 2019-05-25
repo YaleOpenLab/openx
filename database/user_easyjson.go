@@ -161,6 +161,8 @@ func easyjson9e1087fdDecodeGithubComYaleOpenLabOpenxDatabase1(in *jlexer.Lexer, 
 			out.Kyc = bool(in.Bool())
 		case "Inspector":
 			out.Inspector = bool(in.Bool())
+		case "Banned":
+			out.Banned = bool(in.Bool())
 		case "Email":
 			out.Email = string(in.String())
 		case "Notification":
@@ -219,6 +221,26 @@ func easyjson9e1087fdDecodeGithubComYaleOpenLabOpenxDatabase1(in *jlexer.Lexer, 
 			(out.SecondaryWallet).UnmarshalEasyJSON(in)
 		case "EthereumWallet":
 			(out.EthereumWallet).UnmarshalEasyJSON(in)
+		case "PendingDocuments":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				in.Delim('{')
+				if !in.IsDelim('}') {
+					out.PendingDocuments = make(map[string]string)
+				} else {
+					out.PendingDocuments = nil
+				}
+				for !in.IsDelim('}') {
+					key := string(in.String())
+					in.WantColon()
+					var v7 string
+					v7 = string(in.String())
+					(out.PendingDocuments)[key] = v7
+					in.WantComma()
+				}
+				in.Delim('}')
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -394,6 +416,16 @@ func easyjson9e1087fdEncodeGithubComYaleOpenLabOpenxDatabase1(out *jwriter.Write
 		out.Bool(bool(in.Inspector))
 	}
 	{
+		const prefix string = ",\"Banned\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Bool(bool(in.Banned))
+	}
+	{
 		const prefix string = ",\"Email\":"
 		if first {
 			first = false
@@ -435,11 +467,11 @@ func easyjson9e1087fdEncodeGithubComYaleOpenLabOpenxDatabase1(out *jwriter.Write
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v9, v10 := range in.LocalAssets {
-				if v9 > 0 {
+			for v10, v11 := range in.LocalAssets {
+				if v10 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v10))
+				out.String(string(v11))
 			}
 			out.RawByte(']')
 		}
@@ -456,11 +488,11 @@ func easyjson9e1087fdEncodeGithubComYaleOpenLabOpenxDatabase1(out *jwriter.Write
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v11, v12 := range in.RecoveryShares {
-				if v11 > 0 {
+			for v12, v13 := range in.RecoveryShares {
+				if v12 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v12))
+				out.String(string(v13))
 			}
 			out.RawByte(']')
 		}
@@ -494,6 +526,32 @@ func easyjson9e1087fdEncodeGithubComYaleOpenLabOpenxDatabase1(out *jwriter.Write
 			out.RawString(prefix)
 		}
 		(in.EthereumWallet).MarshalEasyJSON(out)
+	}
+	{
+		const prefix string = ",\"PendingDocuments\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		if in.PendingDocuments == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
+			out.RawString(`null`)
+		} else {
+			out.RawByte('{')
+			v14First := true
+			for v14Name, v14Value := range in.PendingDocuments {
+				if v14First {
+					v14First = false
+				} else {
+					out.RawByte(',')
+				}
+				out.String(string(v14Name))
+				out.RawByte(':')
+				out.String(string(v14Value))
+			}
+			out.RawByte('}')
+		}
 	}
 	out.RawByte('}')
 }

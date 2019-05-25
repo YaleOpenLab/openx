@@ -434,6 +434,10 @@ func TestDb(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Not able to catch inspector permission error")
 	}
+	err = user.SetBan(100)
+	if err == nil {
+		t.Fatalf("able to ban a user even though person is not an inspector, quitting")
+	}
 	err = AddInspector(user.Index)
 	if err != nil {
 		t.Fatal(err)
@@ -445,6 +449,29 @@ func TestDb(t *testing.T) {
 	err = user.Authorize(user.Index)
 	if err != nil {
 		t.Fatal(err)
+	}
+	err = user.SetBan(user.Index)
+	if err == nil {
+		t.Fatalf("able to  set a ban on self, quitting")
+	}
+	err = user.SetBan(-1)
+	if err == nil {
+		t.Fatalf("able to set ban on user who doesn't exist, quitting")
+	}
+	var banTest User
+	banTest.Index = 1000
+	err = banTest.Save()
+	if err != nil {
+		t.Fatalf("not able to save user for banning, quitting")
+	}
+	err = user.SetBan(1000)
+	if err != nil {
+		log.Println(err)
+		t.Fatalf("Not able to set ban on legitimate user, quitting")
+	}
+	err = user.SetBan(1000)
+	if err != nil {
+		t.Fatalf("Able to set ban on user even if ban is already set, quitting")
 	}
 	err = user.Authorize(user.Index)
 	if err == nil {

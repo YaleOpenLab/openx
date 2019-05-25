@@ -820,24 +820,32 @@ func addContractHash() {
 			responseHandler(w, r, StatusInternalServerError)
 			return
 		}
-		// there are in total 5 types of hashes: OriginatorMoUHash, ContractorContractHash, InvPlatformContractHash, RecPlatformContractHash, SpecSheetHash
-		// lets have a fixed set of strings that we can map on here so we have a single endpoitn for storing all these hashes
+		// there are in total 5 types of hashes: OriginatorMoUHash, ContractorContractHash,
+		// InvPlatformContractHash, RecPlatformContractHash, SpecSheetHash
+		// lets have a fixed set of strings that we can map on here so we have a single endpoint for storing all these hashes
 
-		// TODO: right now any entity can add the required hashes but in the future we must restrict adding hashes
-		// to entities that are associated with the particular hashes
-		// TODO: change this based on different stages. right now static
+		// TODO: read from the pending docs map here and store this only if we need to.
 		switch choice {
 		case "omh":
-			// update the originator mou hash
-			project.StageData = append(project.StageData, hashString)
+			if project.Stage == 0 {
+				project.StageData = append(project.StageData, hashString)
+			}
 		case "cch":
-			project.StageData = append(project.StageData, hashString)
+			if project.Stage == 2 {
+				project.StageData = append(project.StageData, hashString)
+			}
 		case "ipch":
-			project.StageData = append(project.StageData, hashString)
+			if project.Stage == 4 {
+				project.StageData = append(project.StageData, hashString)
+			}
 		case "rpch":
-			project.StageData = append(project.StageData, hashString)
+			if project.Stage == 4 {
+				project.StageData = append(project.StageData, hashString)
+			}
 		case "ssh":
-			project.StageData = append(project.StageData, hashString)
+			if project.Stage == 5 {
+				project.StageData = append(project.StageData, hashString)
+			}
 		default:
 			log.Println("invalid choice passed, quitting!")
 			responseHandler(w, r, StatusInternalServerError)
