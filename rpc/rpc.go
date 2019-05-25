@@ -11,8 +11,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-
-	database "github.com/YaleOpenLab/openx/database"
 )
 
 // API documentation over at the apidocs repo

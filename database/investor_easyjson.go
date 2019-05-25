@@ -133,7 +133,15 @@ func easyjsonA00f0bbcDecodeGithubComYaleOpenLabOpenxDatabase(in *jlexer.Lexer, o
 				in.Delim(']')
 			}
 		case "U":
-			(out.U).UnmarshalEasyJSON(in)
+			if in.IsNull() {
+				in.Skip()
+				out.U = nil
+			} else {
+				if out.U == nil {
+					out.U = new(User)
+				}
+				(*out.U).UnmarshalEasyJSON(in)
+			}
 		case "WeightedROI":
 			out.WeightedROI = string(in.String())
 		case "AllTimeReturns":
@@ -289,7 +297,11 @@ func easyjsonA00f0bbcEncodeGithubComYaleOpenLabOpenxDatabase(out *jwriter.Writer
 		} else {
 			out.RawString(prefix)
 		}
-		(in.U).MarshalEasyJSON(out)
+		if in.U == nil {
+			out.RawString("null")
+		} else {
+			(*in.U).MarshalEasyJSON(out)
+		}
 	}
 	{
 		const prefix string = ",\"WeightedROI\":"

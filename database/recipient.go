@@ -18,7 +18,7 @@ import (
 
 // Recipient defines the recipient structure
 type Recipient struct {
-	U User
+	U *User
 	// user related functions are called as an instance directly
 	ReceivedSolarProjects       []string
 	ReceivedSolarProjectIndices []int
@@ -50,25 +50,13 @@ type Recipient struct {
 func NewRecipient(uname string, pwd string, seedpwd string, Name string) (Recipient, error) {
 	var a Recipient
 	var err error
-	a.U, err = NewUser(uname, pwd, seedpwd, Name)
+	user, err := NewUser(uname, pwd, seedpwd, Name)
 	if err != nil {
 		return a, errors.Wrap(err, "failed to retrieve new user")
 	}
+	a.U = &user
 	err = a.Save()
 	return a, err
-}
-
-// AddEmail adds email to the recipient's profile
-func (a *Recipient) AddEmail(email string) error {
-	// call this function when a user wants to get notifications. Ask on frontend whether
-	// it wants to
-	a.U.Email = email
-	a.U.Notification = true
-	err := a.U.Save()
-	if err != nil {
-		return errors.Wrap(err, "Error while saving recipient")
-	}
-	return a.Save()
 }
 
 // Save saves a given recipient's details

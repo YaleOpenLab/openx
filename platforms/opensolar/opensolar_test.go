@@ -84,8 +84,7 @@ func TestDb(t *testing.T) {
 	if err == nil {
 		t.Fatalf("able to retrieve project in invalid db, quitting")
 	}
-	var xy1 database.Investor
-	err = VoteTowardsProposedProject(xy1.U.Index, 1, 1)
+	err = VoteTowardsProposedProject(-1, 1, 1)
 	if err == nil {
 		t.Fatalf("Can vote towards a non existent proposed project, quitting!")
 	}
@@ -109,10 +108,6 @@ func TestDb(t *testing.T) {
 	err = RepOriginatedProject(1, 1)
 	if err == nil {
 		t.Fatalf("Can increase reputation in database with invalid path")
-	}
-	err = ChangeReputation(1, 1)
-	if err == nil {
-		t.Fatalf("Able to change reputation with invalid db, quitting!")
 	}
 	_, err = TopReputationEntities("contractor")
 	if err == nil {
@@ -170,7 +165,6 @@ func TestDb(t *testing.T) {
 		t.Fatalf("able to retrieve user in presence of invalid db")
 	}
 	var tmpProj Project
-	var tmpRecp database.Recipient
 	err = tmpProj.updateProjectAfterInvestment("0", 1)
 	if err == nil {
 		t.Fatalf("Can updateProjectAfterAcceptance in the prsence of an invalid db")
@@ -628,11 +622,11 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = ChangeReputation(contractor2.U.Index, 5)
+	err = contractor2.U.IncreaseReputation(5)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = ChangeReputation(contractor.U.Index, 10)
+	err = contractor.U.IncreaseReputation(10)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -671,7 +665,7 @@ func TestDb(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Invalid Entity returns true")
 	}
-	err = ChangeReputation(contractor.U.Index, -10)
+	err = contractor.U.DecreaseReputation(-10)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -693,7 +687,7 @@ func TestDb(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Failed to catch stage 0 error")
 	}
-	project2.RecipientIndex = tmpRecp.U.Index
+	project2.RecipientIndex = 10
 	err = RecipientAuthorize(project2.Index, recp.U.Index)
 	if err == nil {
 		t.Fatalf("Failed to catch stage recp index error")

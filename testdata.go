@@ -126,7 +126,7 @@ func InsertDummyData(simulate bool) error {
 			return err
 		}
 		recp.U.Notification = true
-		err = recp.AddEmail("varunramganesh@gmail.com")
+		err = recp.U.AddEmail("varunramganesh@gmail.com")
 		if err != nil {
 			return err
 		}
@@ -156,7 +156,7 @@ func InsertDummyData(simulate bool) error {
 		if err != nil {
 			return err
 		}
-		inv.U = x
+		inv.U = &x
 		err = inv.Save()
 		if err != nil {
 			return err
@@ -166,7 +166,7 @@ func InsertDummyData(simulate bool) error {
 			return err
 		}
 		inv.U.Notification = true
-		err = inv.AddEmail("varunramganesh@gmail.com")
+		err = inv.U.AddEmail("varunramganesh@gmail.com")
 		if err != nil {
 			return err
 		}

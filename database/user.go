@@ -545,7 +545,7 @@ func MoveFundsFromSecondaryWallet(userIndex int, pwhash string, amount string, s
 	return nil
 }
 
-// SweepSecondaryWallet sweeps fudns from the secondary account to the primary account
+// SweepSecondaryWallet sweeps fudsd from the secondary account to the primary account
 func SweepSecondaryWallet(index int, pwhash string, seedpwd string) error {
 	// unlock secondary account
 
@@ -577,4 +577,17 @@ func SweepSecondaryWallet(index int, pwhash string, seedpwd string) error {
 
 	log.Println("transfer sec-prim tx hash: ", txhash)
 	return nil
+}
+
+// AddEmail stores the passed email as the user's email.
+func (a *User) AddEmail(email string) error {
+	// call this function when a user wants to get notifications. Ask on frontend whether
+	// it wants to
+	a.Email = email
+	a.Notification = true
+	err := a.Save()
+	if err != nil {
+		return errors.Wrap(err, "error while saving investor")
+	}
+	return a.Save()
 }

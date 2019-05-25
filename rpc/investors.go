@@ -69,7 +69,7 @@ func registerInvestor() {
 					return
 				}
 				var a database.Investor
-				a.U = duplicateUser
+				a.U = &duplicateUser
 				err = a.Save()
 				if err != nil {
 					responseHandler(w, r, StatusInternalServerError)

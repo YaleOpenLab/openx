@@ -34,7 +34,7 @@ type Investor struct {
 	// array of asset codes this user has invested in
 	// also I think we need a username + password for logging on to the platform itself
 	// linking it here for now
-	U           User // TODO: change this to a pointer to the user struct to avoid redundancy
+	U           *User // TODO: change this to a pointer to the user struct to avoid redundancy
 	WeightedROI string
 	// the weightedROI for all the projects under the investor's umbrella
 	AllTimeReturns []float64
@@ -53,26 +53,14 @@ type Investor struct {
 func NewInvestor(uname string, pwd string, seedpwd string, Name string) (Investor, error) {
 	var a Investor
 	var err error
-	a.U, err = NewUser(uname, pwd, seedpwd, Name)
+	user, err := NewUser(uname, pwd, seedpwd, Name)
 	if err != nil {
 		return a, errors.Wrap(err, "error while creating a new user")
 	}
+	a.U = &user
 	a.AmountInvested = float64(0)
 	err = a.Save()
 	return a, err
-}
-
-// AddEmail stores the passed email as the user's email.
-func (a *Investor) AddEmail(email string) error {
-	// call this function when a user wants to get notifications. Ask on frontend whether
-	// it wants to
-	a.U.Email = email
-	a.U.Notification = true
-	err := a.U.Save()
-	if err != nil {
-		return errors.Wrap(err, "error while saving investor")
-	}
-	return a.Save()
 }
 
 // Save inserts a passed Investor object into the database
