@@ -55,7 +55,7 @@ This is an open source project and everyone is invited to contribute value to it
 
 ## Security
 
-![Disclose.io Logo](security/discloseio.png)  
+<img src="security/discloseio.png" width="50">  
 
 For security related issues, *DO NOT OPEN A GITHUB ISSUE!*. Please disclose the information responsibly by sending a (preferably PGP Encrypted) email to `contact@varunram.com`. [Our PGP Key](https://pgp.mit.edu/pks/lookup?op=vindex&fingerprint=on&search=0x708C606504A49970) fingerprint is `C98F 0014 9A99 36E4 E56D  2471 708C 6065 04A4 9970`  
 
