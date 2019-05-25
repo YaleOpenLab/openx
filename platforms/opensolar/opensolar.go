@@ -106,6 +106,7 @@ type Project struct {
 	ActionsRequired     string                      // the action(s) required by the user
 	Bullets             BulletHelper                // list of bullet points to be displayed on the frontend
 	Hashes              HashHelper                  // list of hashes to be displayed on the project details page
+	PendingDocuments    map[int]string              // a map of the user id and the document he needs to follow on. This text would match the index map in the user struct
 	ContractList        []string                    // the list of contracts to be displayed on the frontend
 	Architecture        ArchitectureHelper          // the section labeled "Architecture/Project Design"
 	Context             string                      // the section titled "Context"

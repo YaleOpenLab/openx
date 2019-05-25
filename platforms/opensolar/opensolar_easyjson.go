@@ -888,6 +888,26 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(in *jlex
 			(out.Bullets).UnmarshalEasyJSON(in)
 		case "Hashes":
 			(out.Hashes).UnmarshalEasyJSON(in)
+		case "PendingDocuments":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				in.Delim('{')
+				if !in.IsDelim('}') {
+					out.PendingDocuments = make(map[int]string)
+				} else {
+					out.PendingDocuments = nil
+				}
+				for !in.IsDelim('}') {
+					key := int(in.IntStr())
+					in.WantColon()
+					var v15 string
+					v15 = string(in.String())
+					(out.PendingDocuments)[key] = v15
+					in.WantComma()
+				}
+				in.Delim('}')
+			}
 		case "ContractList":
 			if in.IsNull() {
 				in.Skip()
@@ -904,9 +924,9 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(in *jlex
 					out.ContractList = (out.ContractList)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v15 string
-					v15 = string(in.String())
-					out.ContractList = append(out.ContractList, v15)
+					var v16 string
+					v16 = string(in.String())
+					out.ContractList = append(out.ContractList, v16)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -933,9 +953,9 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(in *jlex
 					out.CommunityEngagement = (out.CommunityEngagement)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v16 CommunityEngagementHelper
-					(v16).UnmarshalEasyJSON(in)
-					out.CommunityEngagement = append(out.CommunityEngagement, v16)
+					var v17 CommunityEngagementHelper
+					(v17).UnmarshalEasyJSON(in)
+					out.CommunityEngagement = append(out.CommunityEngagement, v17)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -962,9 +982,9 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(in *jlex
 					out.OImages = (out.OImages)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v17 string
-					v17 = string(in.String())
-					out.OImages = append(out.OImages, v17)
+					var v18 string
+					v18 = string(in.String())
+					out.OImages = append(out.OImages, v18)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -985,9 +1005,9 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(in *jlex
 					out.OOImages = (out.OOImages)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v18 string
-					v18 = string(in.String())
-					out.OOImages = append(out.OOImages, v18)
+					var v19 string
+					v19 = string(in.String())
+					out.OOImages = append(out.OOImages, v19)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -1008,9 +1028,9 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(in *jlex
 					out.AImages = (out.AImages)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v19 string
-					v19 = string(in.String())
-					out.AImages = append(out.AImages, v19)
+					var v20 string
+					v20 = string(in.String())
+					out.AImages = append(out.AImages, v20)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -1031,9 +1051,9 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(in *jlex
 					out.EImages = (out.EImages)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v20 string
-					v20 = string(in.String())
-					out.EImages = append(out.EImages, v20)
+					var v21 string
+					v21 = string(in.String())
+					out.EImages = append(out.EImages, v21)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -1054,9 +1074,9 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(in *jlex
 					out.CEImages = (out.CEImages)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v21 string
-					v21 = string(in.String())
-					out.CEImages = append(out.CEImages, v21)
+					var v22 string
+					v22 = string(in.String())
+					out.CEImages = append(out.CEImages, v22)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -1077,9 +1097,9 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(in *jlex
 					out.PSImages = (out.PSImages)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v22 string
-					v22 = string(in.String())
-					out.PSImages = append(out.PSImages, v22)
+					var v23 string
+					v23 = string(in.String())
+					out.PSImages = append(out.PSImages, v23)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -1100,9 +1120,9 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(in *jlex
 					out.BNImages = (out.BNImages)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v23 string
-					v23 = string(in.String())
-					out.BNImages = append(out.BNImages, v23)
+					var v24 string
+					v24 = string(in.String())
+					out.BNImages = append(out.BNImages, v24)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -1122,15 +1142,15 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(in *jlex
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v24 interface{}
-					if m, ok := v24.(easyjson.Unmarshaler); ok {
+					var v25 interface{}
+					if m, ok := v25.(easyjson.Unmarshaler); ok {
 						m.UnmarshalEasyJSON(in)
-					} else if m, ok := v24.(json.Unmarshaler); ok {
+					} else if m, ok := v25.(json.Unmarshaler); ok {
 						_ = m.UnmarshalJSON(in.Raw())
 					} else {
-						v24 = in.Interface()
+						v25 = in.Interface()
 					}
-					(out.FEText)[key] = v24
+					(out.FEText)[key] = v25
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -1633,11 +1653,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v25, v26 := range in.InvestorIndices {
-				if v25 > 0 {
+			for v26, v27 := range in.InvestorIndices {
+				if v26 > 0 {
 					out.RawByte(',')
 				}
-				out.Int(int(v26))
+				out.Int(int(v27))
 			}
 			out.RawByte(']')
 		}
@@ -1654,11 +1674,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v27, v28 := range in.SeedInvestorIndices {
-				if v27 > 0 {
+			for v28, v29 := range in.SeedInvestorIndices {
+				if v28 > 0 {
 					out.RawByte(',')
 				}
-				out.Int(int(v28))
+				out.Int(int(v29))
 			}
 			out.RawByte(']')
 		}
@@ -1675,11 +1695,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v29, v30 := range in.RecipientIndices {
-				if v29 > 0 {
+			for v30, v31 := range in.RecipientIndices {
+				if v30 > 0 {
 					out.RawByte(',')
 				}
-				out.Int(int(v30))
+				out.Int(int(v31))
 			}
 			out.RawByte(']')
 		}
@@ -1696,11 +1716,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v31, v32 := range in.DeveloperIndices {
-				if v31 > 0 {
+			for v32, v33 := range in.DeveloperIndices {
+				if v32 > 0 {
 					out.RawByte(',')
 				}
-				out.Int(int(v32))
+				out.Int(int(v33))
 			}
 			out.RawByte(']')
 		}
@@ -1737,11 +1757,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v33, v34 := range in.DeveloperFee {
-				if v33 > 0 {
+			for v34, v35 := range in.DeveloperFee {
+				if v34 > 0 {
 					out.RawByte(',')
 				}
-				out.Float64(float64(v34))
+				out.Float64(float64(v35))
 			}
 			out.RawByte(']')
 		}
@@ -1848,11 +1868,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v35, v36 := range in.StageData {
-				if v35 > 0 {
+			for v36, v37 := range in.StageData {
+				if v36 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v36))
+				out.String(string(v37))
 			}
 			out.RawByte(']')
 		}
@@ -1869,24 +1889,24 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v37, v38 := range in.StageChecklist {
-				if v37 > 0 {
+			for v38, v39 := range in.StageChecklist {
+				if v38 > 0 {
 					out.RawByte(',')
 				}
-				if v38 == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
+				if v39 == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
 					out.RawString(`null`)
 				} else {
 					out.RawByte('{')
-					v39First := true
-					for v39Name, v39Value := range v38 {
-						if v39First {
-							v39First = false
+					v40First := true
+					for v40Name, v40Value := range v39 {
+						if v40First {
+							v40First = false
 						} else {
 							out.RawByte(',')
 						}
-						out.String(string(v39Name))
+						out.String(string(v40Name))
 						out.RawByte(':')
-						out.Bool(bool(v39Value))
+						out.Bool(bool(v40Value))
 					}
 					out.RawByte('}')
 				}
@@ -1906,16 +1926,16 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v40First := true
-			for v40Name, v40Value := range in.InvestorMap {
-				if v40First {
-					v40First = false
+			v41First := true
+			for v41Name, v41Value := range in.InvestorMap {
+				if v41First {
+					v41First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v40Name))
+				out.String(string(v41Name))
 				out.RawByte(':')
-				out.Float64(float64(v40Value))
+				out.Float64(float64(v41Value))
 			}
 			out.RawByte('}')
 		}
@@ -1932,16 +1952,16 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v41First := true
-			for v41Name, v41Value := range in.WaterfallMap {
-				if v41First {
-					v41First = false
+			v42First := true
+			for v42Name, v42Value := range in.WaterfallMap {
+				if v42First {
+					v42First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v41Name))
+				out.String(string(v42Name))
 				out.RawByte(':')
-				out.Float64(float64(v41Value))
+				out.Float64(float64(v42Value))
 			}
 			out.RawByte('}')
 		}
@@ -1958,11 +1978,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v42, v43 := range in.Terms {
-				if v42 > 0 {
+			for v43, v44 := range in.Terms {
+				if v43 > 0 {
 					out.RawByte(',')
 				}
-				(v43).MarshalEasyJSON(out)
+				(v44).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -2028,6 +2048,32 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 		(in.Hashes).MarshalEasyJSON(out)
 	}
 	{
+		const prefix string = ",\"PendingDocuments\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		if in.PendingDocuments == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
+			out.RawString(`null`)
+		} else {
+			out.RawByte('{')
+			v45First := true
+			for v45Name, v45Value := range in.PendingDocuments {
+				if v45First {
+					v45First = false
+				} else {
+					out.RawByte(',')
+				}
+				out.IntStr(int(v45Name))
+				out.RawByte(':')
+				out.String(string(v45Value))
+			}
+			out.RawByte('}')
+		}
+	}
+	{
 		const prefix string = ",\"ContractList\":"
 		if first {
 			first = false
@@ -2039,11 +2085,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v44, v45 := range in.ContractList {
-				if v44 > 0 {
+			for v46, v47 := range in.ContractList {
+				if v46 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v45))
+				out.String(string(v47))
 			}
 			out.RawByte(']')
 		}
@@ -2090,11 +2136,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v46, v47 := range in.CommunityEngagement {
-				if v46 > 0 {
+			for v48, v49 := range in.CommunityEngagement {
+				if v48 > 0 {
 					out.RawByte(',')
 				}
-				(v47).MarshalEasyJSON(out)
+				(v49).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -2141,11 +2187,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v48, v49 := range in.OImages {
-				if v48 > 0 {
+			for v50, v51 := range in.OImages {
+				if v50 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v49))
+				out.String(string(v51))
 			}
 			out.RawByte(']')
 		}
@@ -2162,11 +2208,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v50, v51 := range in.OOImages {
-				if v50 > 0 {
+			for v52, v53 := range in.OOImages {
+				if v52 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v51))
+				out.String(string(v53))
 			}
 			out.RawByte(']')
 		}
@@ -2183,11 +2229,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v52, v53 := range in.AImages {
-				if v52 > 0 {
+			for v54, v55 := range in.AImages {
+				if v54 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v53))
+				out.String(string(v55))
 			}
 			out.RawByte(']')
 		}
@@ -2204,11 +2250,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v54, v55 := range in.EImages {
-				if v54 > 0 {
+			for v56, v57 := range in.EImages {
+				if v56 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v55))
+				out.String(string(v57))
 			}
 			out.RawByte(']')
 		}
@@ -2225,11 +2271,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v56, v57 := range in.CEImages {
-				if v56 > 0 {
+			for v58, v59 := range in.CEImages {
+				if v58 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v57))
+				out.String(string(v59))
 			}
 			out.RawByte(']')
 		}
@@ -2246,11 +2292,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v58, v59 := range in.PSImages {
-				if v58 > 0 {
+			for v60, v61 := range in.PSImages {
+				if v60 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v59))
+				out.String(string(v61))
 			}
 			out.RawByte(']')
 		}
@@ -2267,11 +2313,11 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v60, v61 := range in.BNImages {
-				if v60 > 0 {
+			for v62, v63 := range in.BNImages {
+				if v62 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v61))
+				out.String(string(v63))
 			}
 			out.RawByte(']')
 		}
@@ -2298,21 +2344,21 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v62First := true
-			for v62Name, v62Value := range in.FEText {
-				if v62First {
-					v62First = false
+			v64First := true
+			for v64Name, v64Value := range in.FEText {
+				if v64First {
+					v64First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v62Name))
+				out.String(string(v64Name))
 				out.RawByte(':')
-				if m, ok := v62Value.(easyjson.Marshaler); ok {
+				if m, ok := v64Value.(easyjson.Marshaler); ok {
 					m.MarshalEasyJSON(out)
-				} else if m, ok := v62Value.(json.Marshaler); ok {
+				} else if m, ok := v64Value.(json.Marshaler); ok {
 					out.Raw(m.MarshalJSON())
 				} else {
-					out.Raw(json.Marshal(v62Value))
+					out.Raw(json.Marshal(v64Value))
 				}
 			}
 			out.RawByte('}')
@@ -2910,9 +2956,9 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar10(in *jle
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v63 string
-					v63 = string(in.String())
-					(out.Investment)[key] = v63
+					var v65 string
+					v65 = string(in.String())
+					(out.Investment)[key] = v65
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -2930,9 +2976,9 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar10(in *jle
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v64 string
-					v64 = string(in.String())
-					(out.Financials)[key] = v64
+					var v66 string
+					v66 = string(in.String())
+					(out.Financials)[key] = v66
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -2950,9 +2996,9 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar10(in *jle
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v65 string
-					v65 = string(in.String())
-					(out.ProjectSize)[key] = v65
+					var v67 string
+					v67 = string(in.String())
+					(out.ProjectSize)[key] = v67
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -2970,9 +3016,9 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar10(in *jle
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v66 string
-					v66 = string(in.String())
-					(out.SustainabilityMetrics)[key] = v66
+					var v68 string
+					v68 = string(in.String())
+					(out.SustainabilityMetrics)[key] = v68
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -3003,16 +3049,16 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar10(out *jw
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v67First := true
-			for v67Name, v67Value := range in.Investment {
-				if v67First {
-					v67First = false
+			v69First := true
+			for v69Name, v69Value := range in.Investment {
+				if v69First {
+					v69First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v67Name))
+				out.String(string(v69Name))
 				out.RawByte(':')
-				out.String(string(v67Value))
+				out.String(string(v69Value))
 			}
 			out.RawByte('}')
 		}
@@ -3029,16 +3075,16 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar10(out *jw
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v68First := true
-			for v68Name, v68Value := range in.Financials {
-				if v68First {
-					v68First = false
+			v70First := true
+			for v70Name, v70Value := range in.Financials {
+				if v70First {
+					v70First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v68Name))
+				out.String(string(v70Name))
 				out.RawByte(':')
-				out.String(string(v68Value))
+				out.String(string(v70Value))
 			}
 			out.RawByte('}')
 		}
@@ -3055,16 +3101,16 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar10(out *jw
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v69First := true
-			for v69Name, v69Value := range in.ProjectSize {
-				if v69First {
-					v69First = false
+			v71First := true
+			for v71Name, v71Value := range in.ProjectSize {
+				if v71First {
+					v71First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v69Name))
+				out.String(string(v71Name))
 				out.RawByte(':')
-				out.String(string(v69Value))
+				out.String(string(v71Value))
 			}
 			out.RawByte('}')
 		}
@@ -3081,16 +3127,16 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar10(out *jw
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v70First := true
-			for v70Name, v70Value := range in.SustainabilityMetrics {
-				if v70First {
-					v70First = false
+			v72First := true
+			for v72Name, v72Value := range in.SustainabilityMetrics {
+				if v72First {
+					v72First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v70Name))
+				out.String(string(v72Name))
 				out.RawByte(':')
-				out.String(string(v70Value))
+				out.String(string(v72Value))
 			}
 			out.RawByte('}')
 		}

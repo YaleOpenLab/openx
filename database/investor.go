@@ -34,7 +34,7 @@ type Investor struct {
 	// array of asset codes this user has invested in
 	// also I think we need a username + password for logging on to the platform itself
 	// linking it here for now
-	U           *User // TODO: change this to a pointer to the user struct to avoid redundancy
+	U           *User
 	WeightedROI string
 	// the weightedROI for all the projects under the investor's umbrella
 	AllTimeReturns []float64
