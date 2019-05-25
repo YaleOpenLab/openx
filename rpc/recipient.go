@@ -92,7 +92,7 @@ func registerRecipient() {
 					return
 				}
 				var a database.Recipient
-				a.U = duplicateUser
+				a.U = &duplicateUser
 				err = a.Save()
 				if err != nil {
 					responseHandler(w, r, StatusInternalServerError)
@@ -480,7 +480,7 @@ func addEmail() {
 		}
 
 		email := r.URL.Query()["email"][0]
-		err = recipient.AddEmail(email)
+		err = recipient.U.AddEmail(email)
 		if err != nil {
 			log.Println("did not add email", err)
 			responseHandler(w, r, StatusBadRequest)

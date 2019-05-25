@@ -37,7 +37,15 @@ func easyjson5e116a33DecodeGithubComYaleOpenLabOpenxDatabase(in *jlexer.Lexer, o
 		}
 		switch key {
 		case "U":
-			(out.U).UnmarshalEasyJSON(in)
+			if in.IsNull() {
+				in.Skip()
+				out.U = nil
+			} else {
+				if out.U == nil {
+					out.U = new(User)
+				}
+				(*out.U).UnmarshalEasyJSON(in)
+			}
 		case "ReceivedSolarProjects":
 			if in.IsNull() {
 				in.Skip()
@@ -185,7 +193,11 @@ func easyjson5e116a33EncodeGithubComYaleOpenLabOpenxDatabase(out *jwriter.Writer
 		} else {
 			out.RawString(prefix)
 		}
-		(in.U).MarshalEasyJSON(out)
+		if in.U == nil {
+			out.RawString("null")
+		} else {
+			(*in.U).MarshalEasyJSON(out)
+		}
 	}
 	{
 		const prefix string = ",\"ReceivedSolarProjects\":"

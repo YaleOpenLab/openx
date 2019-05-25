@@ -18,7 +18,7 @@ import (
 // Entity defines a common structure for contractors, developers and originators. Will be split
 // into their respective roles once they are defined in a better way.
 type Entity struct {
-	U database.User
+	U *database.User
 	// inherit the base user class
 	Contractor bool
 	// the name of the contractor / company that is contracting
@@ -213,13 +213,18 @@ func RetrieveEntity(key int) (Entity, error) {
 func newEntity(uname string, pwd string, seedpwd string, Name string, Address string, Description string, role string) (Entity, error) {
 	var a Entity
 	var err error
-	a.U, err = database.NewUser(uname, pwd, seedpwd, Name)
+	user, err := database.NewUser(uname, pwd, seedpwd, Name)
 	if err != nil {
 		return a, errors.Wrap(err, "couldn't retrieve new user from db")
 	}
 
-	a.U.Address = Address
-	a.U.Description = Description
+	user.Address = Address
+	user.Description = Description
+
+	err = user.Save()
+	if err != nil {
+		return a, err
+	}
 
 	switch role {
 	case "contractor":
@@ -234,29 +239,9 @@ func newEntity(uname string, pwd string, seedpwd string, Name string, Address st
 		return a, errors.New("invalid entity type passed!")
 	}
 
-	err = a.U.Save()
-	if err != nil {
-		return a, err
-	}
+	a.U = &user
 	err = a.Save()
 	return a, err
-}
-
-// ChangeReputation changes the reputation associated with a particular entity
-func ChangeReputation(entityIndex int, reputation float64) error {
-	a, err := RetrieveEntity(entityIndex)
-	if err != nil {
-		return errors.Wrap(err, "couldn't retrieve entity from db")
-	}
-	if reputation > 0 {
-		err = a.U.IncreaseReputation(reputation)
-	} else {
-		err = a.U.DecreaseReputation(reputation)
-	}
-	if err != nil {
-		return errors.Wrap(err, "couldn't update reputation of user")
-	}
-	return a.Save()
 }
 
 // TopReputationEntitiesWithoutRole returns the list of all the top reputed entities in descending order

@@ -25,7 +25,7 @@ func StartPlatform() (string, string, error) {
 
 	if len(allContracts) == 0 {
 		log.Println("Populating database with test values")
-		err = InsertDummyData()
+		err = InsertDummyData(false)
 		if err != nil {
 			return publicKey, seed, err
 		}

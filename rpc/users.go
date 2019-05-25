@@ -205,7 +205,7 @@ func updateUser() {
 		// check whether given user is an investor or recipient
 		investor, err := InvValidateHelper(w, r)
 		if err == nil {
-			investor.U = user
+			investor.U = &user
 			err = investor.Save()
 			if err != nil {
 				responseHandler(w, r, StatusInternalServerError)
@@ -214,7 +214,7 @@ func updateUser() {
 		}
 		recipient, err := RecpValidateHelper(w, r)
 		if err == nil {
-			recipient.U = user
+			recipient.U = &user
 			err = recipient.Save()
 			if err != nil {
 				responseHandler(w, r, StatusInternalServerError)

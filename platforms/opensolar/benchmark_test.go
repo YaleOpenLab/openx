@@ -19,14 +19,12 @@ func PopulateProjects() {
 	var dummy Project
 	dummy.PanelSize = "100 1000 sq.ft homes each with their own private spaces for luxury"
 	dummy.TotalValue = 14000
-	dummy.Location = "India Basin, San Francisco"
 	dummy.MoneyRaised = 0
 	dummy.Metadata = "India Basin is an upcoming creative project based in San Francisco that seeks to invite innovators from all around to participate"
 	dummy.InvestorAssetCode = ""
 	dummy.DebtAssetCode = ""
 	dummy.PaybackAssetCode = ""
 	dummy.DateInitiated = ""
-	dummy.Years = 3
 	dummy.Stage = 3
 
 	for i := 0; i < 1000; i++ {
@@ -135,14 +133,12 @@ func BenchmarNewProject(b *testing.B) {
 	var dummy Project
 	dummy.PanelSize = "100 1000 sq.ft homes each with their own private spaces for luxury"
 	dummy.TotalValue = 14000
-	dummy.Location = "India Basin, San Francisco"
 	dummy.MoneyRaised = 0
 	dummy.Metadata = "India Basin is an upcoming creative project based in San Francisco that seeks to invite innovators from all around to participate"
 	dummy.InvestorAssetCode = ""
 	dummy.DebtAssetCode = ""
 	dummy.PaybackAssetCode = ""
 	dummy.DateInitiated = ""
-	dummy.Years = 3
 	dummy.Stage = 3
 
 	b.ResetTimer()
@@ -183,7 +179,7 @@ func BenchmarkRetrieveAllProjects(b *testing.B) {
 func BenchmarkRetrieveProjectAtStage(b *testing.B) {
 	b.ResetTimer()
 	for i := 1; i < b.N; i++ {
-		_, _ = RetrieveProjectsAtStage(OriginProject)
+		_, _ = RetrieveProjectsAtStage(1)
 	}
 }
 
@@ -216,7 +212,7 @@ func BenchmarkSetPO(b *testing.B) {
 	}
 	b.ResetTimer()
 	for i := 1; i < b.N; i++ {
-		_ = project.SetPreOriginProject()
+		_ = project.SetStage(0)
 	}
 }
 
@@ -227,7 +223,7 @@ func BenchmarkSetFP(b *testing.B) {
 	}
 	b.ResetTimer()
 	for i := 1; i < b.N; i++ {
-		_ = project.SetFinalizedProject()
+		_ = project.SetStage(4)
 	}
 }
 
@@ -235,13 +231,6 @@ func BenchmarkDeleteKeyFromBucket(b *testing.B) {
 	b.ResetTimer()
 	for i := 1; i < b.N; i++ {
 		_ = database.DeleteKeyFromBucket(i, database.ProjectsBucket)
-	}
-}
-
-func BenchmarkChangeReputation(b *testing.B) {
-	b.ResetTimer()
-	for i := 1; i < b.N; i++ {
-		_ = ChangeReputation(i, float64(i))
 	}
 }
 

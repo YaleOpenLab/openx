@@ -112,10 +112,6 @@ func TestDb(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Able to change reputation in database with invalid path")
 	}
-	err = recp.AddEmail("blah@blah.com")
-	if err == nil {
-		t.Fatalf("Able to save recipient in database with invalid path")
-	}
 	_, err = TopReputationInvestors()
 	if err == nil {
 		t.Fatalf("able to retrieve top investors in database with invalid path")
@@ -470,7 +466,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = recp.AddEmail("blah@blah.com")
+	err = recp.U.AddEmail("blah@blah.com")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -565,12 +561,9 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = inv2.AddEmail("blah@blah.com")
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	var blah Investor
+	var blahuser User
+	blah.U = &blahuser
 	blah.U.Name = "Cool"
 	blahBytes, err := blah.MarshalJSON()
 	if err != nil {

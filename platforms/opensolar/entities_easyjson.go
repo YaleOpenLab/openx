@@ -4,6 +4,7 @@ package opensolar
 
 import (
 	json "encoding/json"
+	database "github.com/YaleOpenLab/openx/database"
 	easyjson "github.com/mailru/easyjson"
 	jlexer "github.com/mailru/easyjson/jlexer"
 	jwriter "github.com/mailru/easyjson/jwriter"
@@ -37,7 +38,15 @@ func easyjson3e8ab7adDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar(in *jlexe
 		}
 		switch key {
 		case "U":
-			(out.U).UnmarshalEasyJSON(in)
+			if in.IsNull() {
+				in.Skip()
+				out.U = nil
+			} else {
+				if out.U == nil {
+					out.U = new(database.User)
+				}
+				(*out.U).UnmarshalEasyJSON(in)
+			}
 		case "Contractor":
 			out.Contractor = bool(in.Bool())
 		case "Developer":
@@ -189,7 +198,11 @@ func easyjson3e8ab7adEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar(out *jwri
 		} else {
 			out.RawString(prefix)
 		}
-		(in.U).MarshalEasyJSON(out)
+		if in.U == nil {
+			out.RawString("null")
+		} else {
+			(*in.U).MarshalEasyJSON(out)
+		}
 	}
 	{
 		const prefix string = ",\"Contractor\":"
