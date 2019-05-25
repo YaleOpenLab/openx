@@ -658,8 +658,8 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !VerifyBeforeAuthorizing(project2.Index) {
-		t.Fatalf("Can't verify contract, quitting!")
+	if VerifyBeforeAuthorizing(project2.Index) {
+		t.Fatalf("can verify investment when not authorized by kyc, quitting")
 	}
 	_, err = RetrieveEntity(1000)
 	if err == nil {
@@ -671,6 +671,15 @@ func TestDb(t *testing.T) {
 	}
 	project2.Stage = 0
 	err = project2.Save()
+	if err != nil {
+		t.Fatal(err)
+	}
+	project2Originator, err := RetrieveEntity(project.OriginatorIndex)
+	if err != nil {
+		t.Fatalf("failed to get originator of project, quitting")
+	}
+	project2Originator.U.Kyc = true
+	err = project2Originator.Save()
 	if err != nil {
 		t.Fatal(err)
 	}
