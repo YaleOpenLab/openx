@@ -49,6 +49,7 @@ func setupUserRpcs() {
 	resetPassword()
 	sweepFunds()
 	sweepAsset()
+	validateKYC()
 }
 
 const (
@@ -1237,6 +1238,96 @@ func sweepAsset() {
 
 		log.Println("txhash: ", txhash)
 		responseHandler(w, r, StatusOK)
+	})
+}
+
+type KycResponse struct {
+	Status string // the status whether the kyc verification request was succcessful or not
+	Reason string // the reason why the person was rejected (OFAC blacklist, sanctioned individual, etc)
+}
+
+func validateKYC() {
+	http.HandleFunc("/user/verifykyc", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
+
+		// we first need to check the user params here
+		prepUser, err := UserValidateHelper(w, r)
+		if err != nil {
+			responseHandler(w, r, StatusUnauthorized)
+			return
+		}
+
+		var isId bool
+		var idType string
+		var id string
+		var verif bool
+
+		if r.URL.Query()["selfie"] == nil {
+			log.Println("selfie for kyc verification not passed, quitting")
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+
+		prepUser.KYC.PersonalPhoto = r.URL.Query()["selfie"][0]
+
+		if r.URL.Query()["passport"] != nil {
+			isId = true
+			idType = "passport"
+			id = r.URL.Query()["passport"][0]
+			prepUser.KYC.PassportPhoto = id
+		}
+
+		if r.URL.Query()["dlicense"] != nil {
+			isId = true
+			idType = "dlicense"
+			id = r.URL.Query()["dlicense"][0]
+			prepUser.KYC.DriversLicense = id
+		}
+
+		if r.URL.Query()["idcard"] != nil {
+			isId = true
+			idType = "idcard"
+			id = r.URL.Query()["idcard"][0]
+			prepUser.KYC.IDCardPhoto = id
+		}
+
+		if !isId {
+			responseHandler(w, r, StatusBadRequest)
+			return
+		}
+
+		var response KycResponse
+		var apikey = consts.KYCAPIKey
+		apiUrl := "https://api.complyadvantage.com"
+		body := apiUrl + "/" + apikey
+
+		switch idType {
+		case "passport":
+		case "dlicense":
+			verif = true // solely for testing, remove once we add the real kyc provider in
+		case "idcard":
+			// no default since we check for that earlier
+		}
+
+		log.Println("requesting api verification for: " + body)
+		// make the api request here, read response
+
+		if verif {
+			response.Status = "OK"
+			response.Reason = ""
+		} else {
+			response.Status = "NOTOK"
+			response.Reason = "Sanctioned Individual" // read the reason from the API response
+		}
+
+		err = prepUser.Save()
+		if err != nil {
+			log.Println("error while saving user credentials to database, quitting")
+			MarshalSend(w, r, StatusInternalServerError)
+			return
+		}
+		MarshalSend(w, r, response)
 	})
 }
 

@@ -89,6 +89,14 @@ type User struct {
 	// a Pending documents map to keep track of documents that the user in question has to keep track of
 	// related to a specific project. The key is the same as the value of the project and the value is a description
 	// of what exactly needs to be submitted.
+	KYC KycStruct
+}
+
+type KycStruct struct {
+	PassportPhoto  string // should be a base64 string or similar according to what the API provider wants
+	IDCardPhoto    string
+	DriversLicense string
+	PersonalPhoto  string // a selfie to verify that  the person registering on the platform is the same person whose documents have been uploaded
 }
 
 // EthWallet contains the structures needed for an ethereum wallet

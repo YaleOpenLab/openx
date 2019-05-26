@@ -82,6 +82,7 @@ func StartPlatform() error {
 		return err
 	}
 	consts.PlatformEmail = viper.Get("platformemail").(string)
+	consts.KYCAPIKey = viper.Get("kycapikey").(string)
 	log.Println("PLATFORM EMAIL: ", consts.PlatformEmail)
 	return nil
 }
