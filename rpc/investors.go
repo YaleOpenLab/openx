@@ -39,7 +39,7 @@ func registerInvestor() {
 		// to register, we need the name, username and pwhash
 		if r.URL.Query()["name"] == nil || r.URL.Query()["username"] == nil || r.URL.Query()["pwd"] == nil || r.URL.Query()["seedpwd"] == nil {
 			log.Println("missing basic set of params that can be used ot validate a user")
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -56,37 +56,37 @@ func registerInvestor() {
 				// this is the same user who wants to register as an investor now, check if encrypted seed decrypts
 				seed, err := wallet.DecryptSeed(duplicateUser.EncryptedSeed, seedpwd)
 				if err != nil {
-					responseHandler(w, r, StatusInternalServerError)
+					responseHandler(w, StatusInternalServerError)
 					return
 				}
 				pubkey, err := wallet.ReturnPubkey(seed)
 				if err != nil {
-					responseHandler(w, r, StatusInternalServerError)
+					responseHandler(w, StatusInternalServerError)
 					return
 				}
 				if pubkey != duplicateUser.PublicKey {
-					responseHandler(w, r, StatusUnauthorized)
+					responseHandler(w, StatusUnauthorized)
 					return
 				}
 				var a database.Investor
 				a.U = &duplicateUser
 				err = a.Save()
 				if err != nil {
-					responseHandler(w, r, StatusInternalServerError)
+					responseHandler(w, StatusInternalServerError)
 					return
 				}
-				MarshalSend(w, r, a)
+				MarshalSend(w, a)
 				return
 			}
 		}
 		user, err := database.NewInvestor(username, pwd, seedpwd, name)
 		if err != nil {
 			log.Println(err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
 
-		MarshalSend(w, r, user)
+		MarshalSend(w, user)
 	})
 }
 
@@ -97,16 +97,16 @@ func validateInvestor() {
 		checkGet(w, r)
 		if r.URL.Query() == nil || r.URL.Query()["username"] == nil || r.URL.Query()["pwhash"] == nil ||
 			len(r.URL.Query()["pwhash"][0]) != 128 { // sha 512 length
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 		prepInvestor, err := database.ValidateInvestor(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
 		if err != nil {
 			log.Println("did not validate investor", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
-		MarshalSend(w, r, prepInvestor)
+		MarshalSend(w, prepInvestor)
 	})
 }
 
@@ -118,10 +118,10 @@ func getAllInvestors() {
 		investors, err := database.RetrieveAllInvestors()
 		if err != nil {
 			log.Println("did not retrieve all investors", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
-		MarshalSend(w, r, investors)
+		MarshalSend(w, investors)
 	})
 }
 
@@ -138,12 +138,12 @@ func invest() {
 
 		investor, err := InvValidateHelper(w, r)
 		if err != nil {
-			responseHandler(w, r, StatusUnauthorized)
+			responseHandler(w, StatusUnauthorized)
 			return
 		}
 		if r.URL.Query()["seedpwd"] == nil || r.URL.Query()["projIndex"] == nil ||
 			r.URL.Query()["amount"] == nil { // sha 512 length
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -151,7 +151,7 @@ func invest() {
 		investorSeed, err := wallet.DecryptSeed(investor.U.EncryptedSeed, seedpwd)
 		if err != nil {
 			log.Println("did not decrypt seed", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -160,13 +160,13 @@ func invest() {
 		investorPubkey, err := wallet.ReturnPubkey(investorSeed)
 		if err != nil {
 			log.Println("did not return pubkey", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 		// splitting the conditions into two since in the future we will be returning
 		// error codes towards each type
 		if !xlm.AccountExists(investorPubkey) {
-			responseHandler(w, r, StatusNotFound)
+			responseHandler(w, StatusNotFound)
 			return
 		}
 
@@ -177,10 +177,10 @@ func invest() {
 		err = opensolar.Invest(projIndex, investor.U.Index, amount, investorSeed)
 		if err != nil {
 			log.Println("did not invest in order", err)
-			responseHandler(w, r, StatusNotFound)
+			responseHandler(w, StatusNotFound)
 			return
 		}
-		responseHandler(w, r, StatusOK)
+		responseHandler(w, StatusOK)
 	})
 }
 
@@ -210,26 +210,26 @@ func changeReputationInv() {
 	http.HandleFunc("/investor/reputation", func(w http.ResponseWriter, r *http.Request) {
 		investor, err := InvValidateHelper(w, r)
 		if err != nil {
-			responseHandler(w, r, StatusUnauthorized)
+			responseHandler(w, StatusUnauthorized)
 			return
 		}
 		if r.URL.Query()["reputation"] == nil {
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 		reputation, err := strconv.ParseFloat(r.URL.Query()["reputation"][0], 32) // same as StoI but we need to catch the error here
 		if err != nil {
 			log.Println("could not parse float", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 		err = database.ChangeInvReputation(investor.U.Index, reputation)
 		if err != nil {
 			log.Println("did not change investor reputation", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
-		responseHandler(w, r, StatusOK)
+		responseHandler(w, StatusOK)
 	})
 }
 
@@ -238,11 +238,11 @@ func voteTowardsProject() {
 	http.HandleFunc("/investor/vote", func(w http.ResponseWriter, r *http.Request) {
 		investor, err := InvValidateHelper(w, r)
 		if err != nil {
-			responseHandler(w, r, StatusUnauthorized)
+			responseHandler(w, StatusUnauthorized)
 			return
 		}
 		if r.URL.Query()["votes"] == nil || r.URL.Query()["projIndex"] == nil {
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -251,10 +251,10 @@ func voteTowardsProject() {
 		err = opensolar.VoteTowardsProposedProject(investor.U.Index, votes, projIndex)
 		if err != nil {
 			log.Println("did not vote towards proposed project", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
-		responseHandler(w, r, StatusOK)
+		responseHandler(w, StatusOK)
 	})
 }
 
@@ -266,11 +266,11 @@ func addLocalAssetInv() {
 
 		prepInvestor, err := InvValidateHelper(w, r)
 		if err != nil {
-			responseHandler(w, r, StatusUnauthorized)
+			responseHandler(w, StatusUnauthorized)
 			return
 		}
 		if r.URL.Query()["assetName"] == nil {
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -279,11 +279,11 @@ func addLocalAssetInv() {
 		err = prepInvestor.Save()
 		if err != nil {
 			log.Println("did not save investor", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
 
-		responseHandler(w, r, StatusOK)
+		responseHandler(w, StatusOK)
 	})
 }
 
@@ -292,12 +292,12 @@ func invAssetInv() {
 	http.HandleFunc("/investor/sendlocalasset", func(w http.ResponseWriter, r *http.Request) {
 		prepInvestor, err := InvValidateHelper(w, r)
 		if err != nil {
-			responseHandler(w, r, StatusUnauthorized)
+			responseHandler(w, StatusUnauthorized)
 			return
 		}
 		if r.URL.Query()["assetName"] == nil || r.URL.Query()["seedpwd"] == nil ||
 			r.URL.Query()["destination"] == nil || r.URL.Query()["amount"] == nil {
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -307,7 +307,7 @@ func invAssetInv() {
 		seed, err := wallet.DecryptSeed(prepInvestor.U.EncryptedSeed, seedpwd)
 		if err != nil {
 			log.Println("did not decrypt seed", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -322,17 +322,17 @@ func invAssetInv() {
 		}
 
 		if !found {
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
 		_, txhash, err := assets.SendAssetFromIssuer(assetName, destination, amount, seed, prepInvestor.U.PublicKey)
 		if err != nil {
 			log.Println("did not send asset from issuer", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
-		MarshalSend(w, r, txhash)
+		MarshalSend(w, txhash)
 	})
 }
 
@@ -341,11 +341,11 @@ func sendEmail() {
 	http.HandleFunc("/investor/sendemail", func(w http.ResponseWriter, r *http.Request) {
 		prepInvestor, err := InvValidateHelper(w, r)
 		if err != nil {
-			responseHandler(w, r, StatusUnauthorized)
+			responseHandler(w, StatusUnauthorized)
 			return
 		}
 		if r.URL.Query()["message"] == nil || r.URL.Query()["to"] == nil {
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -354,10 +354,10 @@ func sendEmail() {
 		err = notif.SendEmail(message, to, prepInvestor.U.Name)
 		if err != nil {
 			log.Println("did not send email", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
-		responseHandler(w, r, StatusOK)
+		responseHandler(w, StatusOK)
 	})
 }
 
@@ -371,11 +371,11 @@ func investInConstructionBond() {
 
 		prepInvestor, err := InvValidateHelper(w, r)
 		if err != nil {
-			responseHandler(w, r, StatusUnauthorized)
+			responseHandler(w, StatusUnauthorized)
 			return
 		}
 		if r.URL.Query()["amount"] == nil || r.URL.Query()["projIndex"] == nil || r.URL.Query()["seedpwd"] == nil {
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -386,17 +386,17 @@ func investInConstructionBond() {
 		invSeed, err := wallet.DecryptSeed(prepInvestor.U.EncryptedSeed, seedpwd)
 		if err != nil {
 			log.Println("did not get investor seed from password", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
 		err = opzones.InvestInConstructionBond(projIndex, prepInvestor.U.Index, invAmount, invSeed)
 		if err != nil {
 			log.Println("did not invest in bond", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
-		responseHandler(w, r, StatusOK)
+		responseHandler(w, StatusOK)
 	})
 }
 
@@ -408,12 +408,12 @@ func investInLivingUnitCoop() {
 
 		prepInvestor, err := InvValidateHelper(w, r)
 		if err != nil {
-			responseHandler(w, r, StatusUnauthorized)
+			responseHandler(w, StatusUnauthorized)
 			return
 		}
 		if r.URL.Query()["amount"] == nil || r.URL.Query()["projIndex"] == nil || r.URL.Query()["seedpwd"] == nil {
 			log.Println("couldn't validate investor", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -424,7 +424,7 @@ func investInLivingUnitCoop() {
 		invSeed, err := wallet.DecryptSeed(prepInvestor.U.EncryptedSeed, seedpwd)
 		if err != nil {
 			log.Println("did not get investor seed from password", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -432,10 +432,10 @@ func investInLivingUnitCoop() {
 		err = opzones.InvestInLivingUnitCoop(projIndex, prepInvestor.U.Index, invAmount, invSeed, recpSeed)
 		if err != nil {
 			log.Println("did not invest in the coop", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
 
-		responseHandler(w, r, StatusOK)
+		responseHandler(w, StatusOK)
 	})
 }

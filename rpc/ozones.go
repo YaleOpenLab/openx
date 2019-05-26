@@ -28,10 +28,10 @@ func GetAllCoops() {
 		allBonds, err := opzones.RetrieveAllLivingUnitCoops()
 		if err != nil {
 			log.Println("did not retrieve all bonds", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
-		MarshalSend(w, r, allBonds)
+		MarshalSend(w, allBonds)
 	})
 }
 
@@ -42,20 +42,20 @@ func getCoopDetails() {
 		checkOrigin(w, r)
 		// get the details of a specific bond by key
 		if r.URL.Query()["index"] == nil {
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 		uKey := utils.StoI(r.URL.Query()["index"][0])
 		bond, err := opzones.RetrieveLivingUnitCoop(uKey)
 		if err != nil {
 			log.Println("did not retrieve coop", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 		bondJson, err := bond.MarshalJSON()
 		if err != nil {
 			log.Println("did not marhsal json", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
 		WriteToHandler(w, bondJson)
@@ -69,17 +69,17 @@ func getBondDetails() {
 		checkOrigin(w, r)
 		// get the details of a specific bond by key
 		if r.URL.Query()["index"] == nil {
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
 		uKey := utils.StoI(r.URL.Query()["index"][0])
 		bond, err := opzones.RetrieveConstructionBond(uKey)
 		if err != nil {
 			log.Println("did not retrieve bond", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
-		MarshalSend(w, r, bond)
+		MarshalSend(w, bond)
 	})
 }
 
@@ -91,10 +91,10 @@ func GetAllBonds() {
 		allBonds, err := opzones.RetrieveAllConstructionBonds()
 		if err != nil {
 			log.Println("did not retrieve all bonds", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
-		MarshalSend(w, r, allBonds)
+		MarshalSend(w, allBonds)
 	})
 }
 
@@ -105,7 +105,7 @@ func Search() {
 		checkOrigin(w, r)
 		// search for coop / bond  and return accordingly
 		if r.URL.Query()["q"] == nil {
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 		searchString := r.URL.Query()["q"][0]
@@ -113,22 +113,22 @@ func Search() {
 			allBonds, err := opzones.RetrieveAllConstructionBonds()
 			if err != nil {
 				log.Println("did not retrieve all bonds", err)
-				responseHandler(w, r, StatusInternalServerError)
+				responseHandler(w, StatusInternalServerError)
 				return
 			}
-			MarshalSend(w, r, allBonds)
+			MarshalSend(w, allBonds)
 			// do bond stuff
 		} else if strings.Contains(searchString, "coop") {
 			// do coop stuff
 			allCoops, err := opzones.RetrieveAllLivingUnitCoops()
 			if err != nil {
 				log.Println("did not retrieve bond", err)
-				responseHandler(w, r, StatusInternalServerError)
+				responseHandler(w, StatusInternalServerError)
 				return
 			}
-			MarshalSend(w, r, allCoops)
+			MarshalSend(w, allCoops)
 		} else {
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
 	})

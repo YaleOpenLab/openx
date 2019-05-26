@@ -25,7 +25,7 @@ func getStableCoin() {
 		user, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["seedpwd"] == nil || r.URL.Query()["amount"] == nil {
 			log.Println(err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 		// we need to validate the user and check if its a part of the platform. If not,
@@ -33,22 +33,22 @@ func getStableCoin() {
 		receiverSeed, err := wallet.DecryptSeed(user.EncryptedSeed, r.URL.Query()["seedpwd"][0])
 		if err != nil {
 			log.Println(err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 		amount := r.URL.Query()["amount"][0] // in string
 		receiverPubkey, err := wallet.ReturnPubkey(receiverSeed)
 		if err != nil {
 			log.Println("did not return pubkey", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 		err = stablecoin.Exchange(receiverPubkey, receiverSeed, amount)
 		if err != nil {
 			log.Println("did not exchange for xlm", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
-		responseHandler(w, r, StatusOK)
+		responseHandler(w, StatusOK)
 	})
 }

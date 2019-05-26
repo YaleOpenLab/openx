@@ -70,16 +70,16 @@ func insertProject() {
 		prepProject, err := parseProject(r)
 		if err != nil {
 			log.Println("did not parse project", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
 		err = prepProject.Save()
 		if err != nil {
 			log.Println("did not save project", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
-		responseHandler(w, r, StatusOK)
+		responseHandler(w, StatusOK)
 	})
 }
 
@@ -95,10 +95,10 @@ func getAllProjects() {
 		allProjects, err := platform.RetrieveAllProjects()
 		if err != nil {
 			log.Println("did not retrieve all projects", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
-		MarshalSend(w, r, allProjects)
+		MarshalSend(w, allProjects)
 	})
 }
 
@@ -109,17 +109,17 @@ func getProject() {
 		checkGet(w, r)
 		checkOrigin(w, r)
 		if r.URL.Query()["index"] == nil {
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 		uKey := utils.StoI(r.URL.Query()["index"][0])
 		contract, err := platform.RetrieveProject(uKey)
 		if err != nil {
 			log.Println("did not retrieve project", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
-		MarshalSend(w, r, contract)
+		MarshalSend(w, contract)
 	})
 }
 
@@ -130,10 +130,10 @@ func projectHandler(w http.ResponseWriter, r *http.Request, stage int) {
 	allProjects, err := platform.RetrieveProjectsAtStage(stage)
 	if err != nil {
 		log.Println("did not retrieve project at specific stage", err)
-		responseHandler(w, r, StatusInternalServerError)
+		responseHandler(w, StatusInternalServerError)
 		return
 	}
-	MarshalSend(w, r, allProjects)
+	MarshalSend(w, allProjects)
 }
 
 // various handlers for fetching projects which are at different stages on the platform
@@ -141,14 +141,14 @@ func getProjectsAtIndex() {
 	http.HandleFunc("/projects", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Query()["index"] == nil {
 			log.Println("No stage number passed, not returning anything!")
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
 		index, err := utils.StoICheck(r.URL.Query()["index"][0])
 		if err != nil {
 			log.Println("Passed index not an integer, quitting!")
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 

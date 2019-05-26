@@ -28,7 +28,7 @@ func responseHandler(w http.ResponseWriter, r *http.Request, status int) {
 	case rpc.StatusInternalServerError:
 		response.Status = "Internal Server Error"
 	}
-	rpc.MarshalSend(w, r, response)
+	rpc.MarshalSend(w, response)
 }
 
 // setupDefaultHandler sets up the default handler (ie returns 404 for invalid routes)

@@ -120,17 +120,17 @@ func GetAndSendJson(w http.ResponseWriter, r *http.Request, body string, x inter
 	data, err := GetRequest(body)
 	if err != nil {
 		log.Println("did not get response", err)
-		responseHandler(w, r, StatusBadRequest)
+		responseHandler(w, StatusBadRequest)
 		return
 	}
 	// now data is in byte, we need the other structure now
 	err = json.Unmarshal(data, &x)
 	if err != nil {
 		log.Println("did not unmarshal json", err)
-		responseHandler(w, r, StatusInternalServerError)
+		responseHandler(w, StatusInternalServerError)
 		return
 	}
-	MarshalSend(w, r, x)
+	MarshalSend(w, x)
 }
 
 // GetAndSendByte is a handler that makes a get request and returns byte data. THis is used
@@ -140,7 +140,7 @@ func GetAndSendByte(w http.ResponseWriter, r *http.Request, body string) {
 	data, err := GetRequest(body)
 	if err != nil {
 		log.Println("did not get response", err)
-		responseHandler(w, r, StatusBadRequest)
+		responseHandler(w, StatusBadRequest)
 		return
 	}
 
@@ -152,17 +152,17 @@ func PutAndSend(w http.ResponseWriter, r *http.Request, body string, payload io.
 	data, err := PutRequest(body, payload)
 	if err != nil {
 		log.Println("did not receive success response", err)
-		responseHandler(w, r, StatusBadRequest)
+		responseHandler(w, StatusBadRequest)
 		return
 	}
 	var x ParticlePingResponse
 	err = json.Unmarshal(data, &x)
 	if err != nil {
 		log.Println("did not unmarshal json", err)
-		responseHandler(w, r, StatusInternalServerError)
+		responseHandler(w, StatusInternalServerError)
 		return
 	}
-	MarshalSend(w, r, x)
+	MarshalSend(w, x)
 }
 
 // listAllDevices lists all the devices registered to the user holding the specific access token
@@ -174,7 +174,7 @@ func listAllDevices() {
 		checkOrigin(w, r)
 		_, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["accessToken"] == nil {
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -192,7 +192,7 @@ func listProductInfo() {
 		checkOrigin(w, r)
 		_, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["accessToken"] == nil || r.URL.Query()["productInfo"] == nil {
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -213,7 +213,7 @@ func getDeviceInfo() {
 		checkOrigin(w, r)
 		_, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["accessToken"] == nil || r.URL.Query()["deviceId"] == nil {
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -234,7 +234,7 @@ func pingDevice() {
 		checkOrigin(w, r)
 		_, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["accessToken"] == nil || r.URL.Query()["deviceId"] == nil {
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -256,7 +256,7 @@ func signalDevice() {
 		checkOrigin(w, r)
 		_, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["signal"] == nil || r.URL.Query()["accessToken"] == nil {
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -264,7 +264,7 @@ func signalDevice() {
 		deviceId := r.URL.Query()["deviceId"][0]
 		signal := r.URL.Query()["signal"][0]
 		if signal != "on" && signal != "off" {
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -289,7 +289,7 @@ func serialNumberInfo() {
 		checkOrigin(w, r)
 		_, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["serialNumber"] == nil || r.URL.Query()["accessToken"] == nil {
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -309,7 +309,7 @@ func getDiagnosticsLast() {
 		checkOrigin(w, r)
 		_, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["accessToken"] == nil || r.URL.Query()["deviceId"] == nil {
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -329,7 +329,7 @@ func getAllDiagnostics() {
 		checkOrigin(w, r)
 		_, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["accessToken"] == nil || r.URL.Query()["deviceId"] == nil {
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -348,7 +348,7 @@ func getParticleUserInfo() {
 		checkOrigin(w, r)
 		_, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["accessToken"] == nil {
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -366,7 +366,7 @@ func getAllSims() {
 		checkOrigin(w, r)
 		_, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["accessToken"] == nil {
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
