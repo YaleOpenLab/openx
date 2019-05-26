@@ -47,10 +47,10 @@ func getAllRecipients() {
 		recipients, err := database.RetrieveAllRecipients()
 		if err != nil {
 			log.Println("did not retrieve all recipients", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
-		MarshalSend(w, r, recipients)
+		MarshalSend(w, recipients)
 	})
 }
 
@@ -62,7 +62,7 @@ func registerRecipient() {
 		// to register, we need the name, username and pwhash
 		if r.URL.Query()["name"] == nil || r.URL.Query()["username"] == nil || r.URL.Query()["pwd"] == nil || r.URL.Query()["seedpwd"] == nil {
 			log.Println("missing basic set of params that can be used ot validate a user")
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -79,26 +79,26 @@ func registerRecipient() {
 				// this is the same user who wants to register as an investor now, check if encrypted seed decrypts
 				seed, err := wallet.DecryptSeed(duplicateUser.EncryptedSeed, seedpwd)
 				if err != nil {
-					responseHandler(w, r, StatusInternalServerError)
+					responseHandler(w, StatusInternalServerError)
 					return
 				}
 				pubkey, err := wallet.ReturnPubkey(seed)
 				if err != nil {
-					responseHandler(w, r, StatusInternalServerError)
+					responseHandler(w, StatusInternalServerError)
 					return
 				}
 				if pubkey != duplicateUser.PublicKey {
-					responseHandler(w, r, StatusUnauthorized)
+					responseHandler(w, StatusUnauthorized)
 					return
 				}
 				var a database.Recipient
 				a.U = &duplicateUser
 				err = a.Save()
 				if err != nil {
-					responseHandler(w, r, StatusInternalServerError)
+					responseHandler(w, StatusInternalServerError)
 					return
 				}
-				MarshalSend(w, r, a)
+				MarshalSend(w, a)
 				return
 			}
 		}
@@ -106,11 +106,11 @@ func registerRecipient() {
 		user, err := database.NewRecipient(username, pwd, seedpwd, name)
 		if err != nil {
 			log.Println(err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
 
-		MarshalSend(w, r, user)
+		MarshalSend(w, user)
 	})
 }
 
@@ -121,17 +121,17 @@ func validateRecipient() {
 		checkOrigin(w, r)
 		if r.URL.Query() == nil || r.URL.Query()["username"] == nil ||
 			len(r.URL.Query()["pwhash"][0]) != 128 {
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
 		prepRecipient, err := database.ValidateRecipient(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
 		if err != nil {
 			log.Println("did not validate recipient", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
-		MarshalSend(w, r, prepRecipient)
+		MarshalSend(w, prepRecipient)
 	})
 }
 
@@ -145,12 +145,12 @@ func payback() {
 		// this is a get request to make things easier for the teller
 		prepRecipient, err := RecpValidateHelper(w, r)
 		if err != nil {
-			responseHandler(w, r, StatusUnauthorized)
+			responseHandler(w, StatusUnauthorized)
 			return
 		}
 		if r.URL.Query()["assetName"] == nil || r.URL.Query()["amount"] == nil ||
 			r.URL.Query()["seedpwd"] == nil || r.URL.Query()["projIndex"] == nil {
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -163,7 +163,7 @@ func payback() {
 		recipientSeed, err := wallet.DecryptSeed(prepRecipient.U.EncryptedSeed, seedpwd)
 		if err != nil {
 			log.Println("did not decrypt seed", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -171,10 +171,10 @@ func payback() {
 		err = opensolar.Payback(recpIndex, projIndex, assetName, amount, recipientSeed)
 		if err != nil {
 			log.Println("did not payback", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
-		responseHandler(w, r, StatusOK)
+		responseHandler(w, StatusOK)
 	})
 }
 
@@ -207,11 +207,11 @@ func storeDeviceId() {
 		checkOrigin(w, r)
 		prepRecipient, err := RecpValidateHelper(w, r)
 		if err != nil {
-			responseHandler(w, r, StatusUnauthorized)
+			responseHandler(w, StatusUnauthorized)
 			return
 		}
 		if r.URL.Query()["deviceid"] == nil {
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -220,10 +220,10 @@ func storeDeviceId() {
 		err = prepRecipient.Save()
 		if err != nil {
 			log.Println("did not save recipient", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
-		responseHandler(w, r, StatusOK)
+		responseHandler(w, StatusOK)
 	})
 }
 
@@ -236,11 +236,11 @@ func storeStartTime() {
 		// first validate the recipient or anyone would be able to set device ids
 		prepRecipient, err := RecpValidateHelper(w, r)
 		if err != nil {
-			responseHandler(w, r, StatusUnauthorized)
+			responseHandler(w, StatusUnauthorized)
 			return
 		}
 		if r.URL.Query()["start"] == nil {
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -248,10 +248,10 @@ func storeStartTime() {
 		err = prepRecipient.Save()
 		if err != nil {
 			log.Println("did not save recipient", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
-		responseHandler(w, r, StatusOK)
+		responseHandler(w, StatusOK)
 	})
 }
 
@@ -263,11 +263,11 @@ func storeDeviceLocation() {
 		// first validate the recipient or anyone would be able to set device ids
 		prepRecipient, err := RecpValidateHelper(w, r)
 		if err != nil {
-			responseHandler(w, r, StatusUnauthorized)
+			responseHandler(w, StatusUnauthorized)
 			return
 		}
 		if r.URL.Query()["location"] == nil {
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -275,10 +275,10 @@ func storeDeviceLocation() {
 		err = prepRecipient.Save()
 		if err != nil {
 			log.Println("did not save recipient", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
-		responseHandler(w, r, StatusOK)
+		responseHandler(w, StatusOK)
 	})
 }
 
@@ -289,26 +289,26 @@ func changeReputationRecp() {
 		checkOrigin(w, r)
 		recipient, err := RecpValidateHelper(w, r)
 		if err != nil {
-			responseHandler(w, r, StatusUnauthorized)
+			responseHandler(w, StatusUnauthorized)
 			return
 		}
 		if r.URL.Query()["reputation"] == nil {
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 		reputation, err := strconv.ParseFloat(r.URL.Query()["reputation"][0], 32) // same as StoI but we need to catch the error here
 		if err != nil {
 			log.Println("did not parse float", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 		err = database.ChangeRecpReputation(recipient.U.Index, reputation)
 		if err != nil {
 			log.Println("did not cahnge reputation", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
-		responseHandler(w, r, StatusOK)
+		responseHandler(w, StatusOK)
 	})
 }
 
@@ -321,32 +321,32 @@ func chooseBlindAuction() {
 		recipient, err := RecpValidateHelper(w, r)
 		if err != nil {
 			log.Println("did not validate recipient", err)
-			responseHandler(w, r, StatusUnauthorized)
+			responseHandler(w, StatusUnauthorized)
 			return
 		}
 
 		allContracts, err := opensolar.RetrieveRecipientProjects(opensolar.Stage2.Number, recipient.U.Index)
 		if err != nil {
 			log.Println("did not validate recipient projects", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
 
 		bestContract, err := opensolar.SelectContractBlind(allContracts)
 		if err != nil {
 			log.Println("did not select contract", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
 
 		err = bestContract.SetStage(4) // TODO: change to 3
 		if err != nil {
 			log.Println("did not set final project", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
 
-		responseHandler(w, r, StatusOK)
+		responseHandler(w, StatusOK)
 	})
 }
 
@@ -359,14 +359,14 @@ func chooseVickreyAuction() {
 		recipient, err := RecpValidateHelper(w, r)
 		if err != nil {
 			log.Println("did not validate recipient", err)
-			responseHandler(w, r, StatusUnauthorized)
+			responseHandler(w, StatusUnauthorized)
 			return
 		}
 
 		allContracts, err := opensolar.RetrieveRecipientProjects(opensolar.Stage2.Number, recipient.U.Index)
 		if err != nil {
 			log.Println("did not retrieve recipient projects", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
 
@@ -375,18 +375,18 @@ func chooseVickreyAuction() {
 		bestContract, err := opensolar.SelectContractVickrey(allContracts)
 		if err != nil {
 			log.Println("did not select contract", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
 
 		err = bestContract.SetStage(4) // change to 3 once done
 		if err != nil {
 			log.Println("did not set final project", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
 
-		responseHandler(w, r, StatusOK)
+		responseHandler(w, StatusOK)
 	})
 }
 
@@ -398,14 +398,14 @@ func chooseTimeAuction() {
 		recipient, err := RecpValidateHelper(w, r)
 		if err != nil {
 			log.Println("did not validate recipient", err)
-			responseHandler(w, r, StatusUnauthorized)
+			responseHandler(w, StatusUnauthorized)
 			return
 		}
 
 		allContracts, err := opensolar.RetrieveRecipientProjects(opensolar.Stage2.Number, recipient.U.Index)
 		if err != nil {
 			log.Println("did not retrieve recipient projects", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
 
@@ -414,18 +414,18 @@ func chooseTimeAuction() {
 		bestContract, err := opensolar.SelectContractTime(allContracts)
 		if err != nil {
 			log.Println("did not select contract", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
 
 		err = bestContract.SetStage(4) // TODO: change to 3
 		if err != nil {
 			log.Println("did not set final project", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
 
-		responseHandler(w, r, StatusOK)
+		responseHandler(w, StatusOK)
 	})
 }
 
@@ -437,11 +437,11 @@ func unlockOpenSolar() {
 		checkOrigin(w, r)
 		recipient, err := RecpValidateHelper(w, r)
 		if err != nil {
-			responseHandler(w, r, StatusUnauthorized)
+			responseHandler(w, StatusUnauthorized)
 			return
 		}
 		if r.URL.Query()["seedpwd"] == nil {
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -449,18 +449,18 @@ func unlockOpenSolar() {
 		projIndex, err := utils.StoICheck(r.URL.Query()["projIndex"][0])
 		if err != nil {
 			log.Println("did not parse to integer", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
 		err = opensolar.UnlockProject(recipient.U.Username, recipient.U.Pwhash, projIndex, seedpwd)
 		if err != nil {
 			log.Println("did not unlock project", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
 
-		responseHandler(w, r, StatusOK)
+		responseHandler(w, StatusOK)
 	})
 }
 
@@ -471,11 +471,11 @@ func addEmail() {
 		checkOrigin(w, r)
 		recipient, err := RecpValidateHelper(w, r)
 		if err != nil {
-			responseHandler(w, r, StatusUnauthorized)
+			responseHandler(w, StatusUnauthorized)
 			return
 		}
 		if r.URL.Query()["email"] == nil {
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -483,10 +483,10 @@ func addEmail() {
 		err = recipient.U.AddEmail(email)
 		if err != nil {
 			log.Println("did not add email", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
-		responseHandler(w, r, StatusOK)
+		responseHandler(w, StatusOK)
 	})
 }
 
@@ -499,11 +499,11 @@ func finalizeProject() {
 		checkOrigin(w, r)
 		_, err := RecpValidateHelper(w, r)
 		if err != nil {
-			responseHandler(w, r, StatusUnauthorized)
+			responseHandler(w, StatusUnauthorized)
 			return
 		}
 		if r.URL.Query()["projIndex"] == nil {
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -511,18 +511,18 @@ func finalizeProject() {
 		project, err := opensolar.RetrieveProject(projIndex)
 		if err != nil {
 			log.Println("did not retrieve project", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
 		err = project.SetStage(4) // TODO: in the future once this is defined well enough, this must be set to stage 3
 		if err != nil {
 			log.Println("did not set final project", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
 
-		responseHandler(w, r, StatusOK)
+		responseHandler(w, StatusOK)
 	})
 }
 
@@ -533,11 +533,11 @@ func originateProject() {
 		checkOrigin(w, r)
 		recipient, err := RecpValidateHelper(w, r)
 		if err != nil {
-			responseHandler(w, r, StatusUnauthorized)
+			responseHandler(w, StatusUnauthorized)
 			return
 		}
 		if r.URL.Query()["projIndex"] == nil {
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -545,11 +545,11 @@ func originateProject() {
 		err = opensolar.RecipientAuthorize(projIndex, recipient.U.Index)
 		if err != nil {
 			log.Println("did not authorize project", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
 
-		responseHandler(w, r, StatusOK)
+		responseHandler(w, StatusOK)
 	})
 }
 
@@ -560,11 +560,11 @@ func calculateTrustLimit() {
 		checkOrigin(w, r)
 		recipient, err := RecpValidateHelper(w, r)
 		if err != nil {
-			responseHandler(w, r, StatusUnauthorized)
+			responseHandler(w, StatusUnauthorized)
 			return
 		}
 		if r.URL.Query()["assetName"] == nil {
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -572,11 +572,11 @@ func calculateTrustLimit() {
 		trustLimit, err := xlm.GetAssetTrustLimit(recipient.U.PublicKey, assetName)
 		if err != nil {
 			log.Println("did not get trust limit", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
 
-		MarshalSend(w, r, trustLimit)
+		MarshalSend(w, trustLimit)
 	})
 }
 
@@ -588,11 +588,11 @@ func unlockCBond() {
 		checkOrigin(w, r)
 		recipient, err := RecpValidateHelper(w, r)
 		if err != nil {
-			responseHandler(w, r, StatusUnauthorized)
+			responseHandler(w, StatusUnauthorized)
 			return
 		}
 		if r.URL.Query()["seedpwd"] == nil {
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -600,18 +600,18 @@ func unlockCBond() {
 		projIndex, err := utils.StoICheck(r.URL.Query()["projIndex"][0])
 		if err != nil {
 			log.Println("did not parse to integer", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
 		err = opzones.UnlockProject(recipient.U.Username, recipient.U.Pwhash, projIndex, seedpwd, "constructionbond")
 		if err != nil {
 			log.Println("did not unlock project", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
 
-		responseHandler(w, r, StatusOK)
+		responseHandler(w, StatusOK)
 	})
 }
 
@@ -624,11 +624,11 @@ func storeStateHash() {
 		// first validate the recipient or anyone would be able to set device ids
 		prepRecipient, err := RecpValidateHelper(w, r)
 		if err != nil {
-			responseHandler(w, r, StatusUnauthorized)
+			responseHandler(w, StatusUnauthorized)
 			return
 		}
 		if r.URL.Query()["hash"] == nil {
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -636,9 +636,9 @@ func storeStateHash() {
 		err = prepRecipient.Save()
 		if err != nil {
 			log.Println("did not save recipient", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
-		responseHandler(w, r, StatusOK)
+		responseHandler(w, StatusOK)
 	})
 }

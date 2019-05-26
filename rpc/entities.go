@@ -49,10 +49,10 @@ func validateEntity() {
 		prepEntity, err := EntityValidateHelper(w, r)
 		if err != nil {
 			log.Println("Error while validating entity", err)
-			responseHandler(w, r, StatusUnauthorized)
+			responseHandler(w, StatusUnauthorized)
 			return
 		}
-		MarshalSend(w, r, prepEntity)
+		MarshalSend(w, prepEntity)
 	})
 }
 
@@ -63,17 +63,17 @@ func getStage0Contracts() {
 		prepEntity, err := EntityValidateHelper(w, r)
 		if err != nil {
 			log.Println("Error while validating entity", err)
-			responseHandler(w, r, StatusUnauthorized)
+			responseHandler(w, StatusUnauthorized)
 			return
 		}
 
 		x, err := opensolar.RetrieveOriginatorProjects(opensolar.Stage0.Number, prepEntity.U.Index)
 		if err != nil {
 			log.Println("Error while retrieving originator project", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
-		MarshalSend(w, r, x)
+		MarshalSend(w, x)
 	})
 }
 
@@ -84,17 +84,17 @@ func getStage1Contracts() {
 		prepEntity, err := EntityValidateHelper(w, r)
 		if err != nil {
 			log.Println("Error while validating entity", err)
-			responseHandler(w, r, StatusUnauthorized)
+			responseHandler(w, StatusUnauthorized)
 			return
 		}
 
 		x, err := opensolar.RetrieveOriginatorProjects(opensolar.Stage1.Number, prepEntity.U.Index)
 		if err != nil {
 			log.Println("Error while retrieving originator projects", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
-		MarshalSend(w, r, x)
+		MarshalSend(w, x)
 	})
 }
 
@@ -105,17 +105,17 @@ func getStage2Contracts() {
 		prepEntity, err := EntityValidateHelper(w, r)
 		if err != nil {
 			log.Println("Error while validating entity", err)
-			responseHandler(w, r, StatusUnauthorized)
+			responseHandler(w, StatusUnauthorized)
 			return
 		}
 
 		x, err := opensolar.RetrieveContractorProjects(opensolar.Stage2.Number, prepEntity.U.Index)
 		if err != nil {
 			log.Println("Error while retrieving contractor projects", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
-		MarshalSend(w, r, x)
+		MarshalSend(w, x)
 	})
 }
 
@@ -127,19 +127,19 @@ func addCollateral() {
 		checkGet(w, r)
 		prepEntity, err := EntityValidateHelper(w, r)
 		if err != nil {
-			responseHandler(w, r, StatusUnauthorized)
+			responseHandler(w, StatusUnauthorized)
 			return
 		}
 		if r.URL.Query()["amount"] == nil || r.URL.Query()["collateral"] == nil {
 			log.Println("Error while validating entity", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
 		collateralAmount, err := utils.StoFWithCheck(r.URL.Query()["amount"][0])
 		if err != nil {
 			log.Println("Error while converting string to float", err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -147,11 +147,11 @@ func addCollateral() {
 		err = prepEntity.AddCollateral(collateralAmount, collateralData)
 		if err != nil {
 			log.Println("Error while adding collateral", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
 
-		responseHandler(w, r, StatusOK)
+		responseHandler(w, StatusOK)
 	})
 }
 
@@ -167,7 +167,7 @@ func createOpensolarProject() {
 		prepEntity, err := EntityValidateHelper(w, r)
 		if err != nil {
 			log.Println("Error while validating entity", err)
-			responseHandler(w, r, StatusUnauthorized)
+			responseHandler(w, StatusUnauthorized)
 			return
 		}
 
@@ -182,13 +182,13 @@ func createOpensolarProject() {
 			r.URL.Query()["IoTHub"] == nil || r.URL.Query()["Metadata"] == nil || r.URL.Query()["OriginatorFee"] == nil ||
 			r.URL.Query()["recpIndex"] == nil || r.URL.Query()["AuctionType"] == nil || r.URL.Query()["PaybackPeriod"] == nil {
 			log.Println("Bad request, required params missing!")
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
 		allProjects, err := opensolar.RetrieveAllProjects()
 		if err != nil {
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
 
@@ -198,39 +198,39 @@ func createOpensolarProject() {
 		x.TotalValue, err = utils.StoFWithCheck(r.URL.Query()["TotalValue"][0])
 		if err != nil {
 			log.Println("param passed not float, quitting!")
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 		x.EstimatedAcquisition, err = utils.StoICheck(r.URL.Query()["Years"][0])
 		if err != nil {
 			log.Println("param passed not int, quitting!")
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 		x.InterestRate, err = utils.StoFWithCheck(r.URL.Query()["InterestRate"][0])
 		if err != nil {
 			log.Println("param passed not int, quitting!")
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 		x.OriginatorFee, err = utils.StoFWithCheck(r.URL.Query()["OriginatorFee"][0])
 		if err != nil {
 			log.Println("ORiginator fee not float, quitting!")
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
 		x.RecipientIndex, err = utils.StoICheck(r.URL.Query()["recpIndex"][0])
 		if err != nil {
 			log.Println("passed recipient index not int, quitting!")
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
 		_, err = database.RetrieveRecipient(x.RecipientIndex)
 		if err != nil {
 			log.Println("could not retrieve recipient, quitting!")
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -238,7 +238,7 @@ func createOpensolarProject() {
 		x.PaybackPeriod, err = utils.StoICheck(r.URL.Query()["PaybackPeriod"][0])
 		if err != nil {
 			log.Println("payback period not integer, quitting!")
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -268,11 +268,11 @@ func createOpensolarProject() {
 
 		err = x.Save()
 		if err != nil {
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
 
-		MarshalSend(w, r, x)
+		MarshalSend(w, x)
 	})
 }
 
@@ -287,13 +287,13 @@ func proposeOpensolarProject() {
 		prepEntity, err := EntityValidateHelper(w, r)
 		if err != nil {
 			log.Println("Error while validating entity", err)
-			responseHandler(w, r, StatusUnauthorized)
+			responseHandler(w, StatusUnauthorized)
 			return
 		}
 
 		if r.URL.Query()["projIndex"] == nil || r.URL.Query()["fee"] == nil {
 			log.Println("missing required params, quitting!")
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -306,13 +306,13 @@ func proposeOpensolarProject() {
 		x, err := opensolar.RetrieveProject(projIndex)
 		if err != nil {
 			log.Println("couldn't retrieve project with index")
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 		}
 
 		fee, err := utils.StoFWithCheck(r.URL.Query()["fee"][0])
 		if err != nil {
 			log.Println("fee passed not integer, quitting!")
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 		}
 
 		// the below are the parameters we need to change. Add more here after consulting
@@ -324,11 +324,11 @@ func proposeOpensolarProject() {
 
 		err = x.Save()
 		if err != nil {
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
 
-		MarshalSend(w, r, x)
+		MarshalSend(w, x)
 	})
 }
 
@@ -341,7 +341,7 @@ func createOpzonesCBond() {
 		_, err := EntityValidateHelper(w, r)
 		if err != nil {
 			log.Println("Error while validating entity", err)
-			responseHandler(w, r, StatusUnauthorized)
+			responseHandler(w, StatusUnauthorized)
 			return
 		}
 
@@ -351,7 +351,7 @@ func createOpzonesCBond() {
 			r.URL.Query()["MaturationDate"] == nil || r.URL.Query()["InterestRate"] == nil || r.URL.Query()["Rating"] == nil ||
 			r.URL.Query()["BondIssuer"] == nil || r.URL.Query()["BondHolders"] == nil || r.URL.Query()["Underwriter"] == nil {
 			log.Println("required params missing, quitting!")
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 		}
 
 		var x opzones.ConstructionBond
@@ -359,25 +359,25 @@ func createOpzonesCBond() {
 		x.CostOfUnit, err = utils.StoFWithCheck(r.URL.Query()["CostOfUnit"][0])
 		if err != nil {
 			log.Println("param passed not float, quitting!")
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 		x.NoOfUnits, err = utils.StoICheck(r.URL.Query()["NoOfUnits"][0])
 		if err != nil {
 			log.Println("param passed not int, quitting!")
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 		x.InterestRate, err = utils.StoFWithCheck(r.URL.Query()["InterestRate"][0])
 		if err != nil {
 			log.Println("param passed not float, quitting!")
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 		allCBonds, err := opzones.RetrieveAllConstructionBonds()
 		if err != nil {
 			log.Println("error while retreiveing all construction bonds, quitting!")
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
 		x.Index = len(allCBonds) + 1
@@ -400,11 +400,11 @@ func createOpzonesCBond() {
 		err = x.Save()
 		if err != nil {
 			log.Println("error while saving project")
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
 
-		MarshalSend(w, r, x)
+		MarshalSend(w, x)
 	})
 }
 
@@ -417,7 +417,7 @@ func createOpzonesLuCoop() {
 		_, err := EntityValidateHelper(w, r)
 		if err != nil {
 			log.Println("Error while validating entity", err)
-			responseHandler(w, r, StatusUnauthorized)
+			responseHandler(w, StatusUnauthorized)
 			return
 		}
 
@@ -428,7 +428,7 @@ func createOpzonesLuCoop() {
 			r.URL.Query()["MemberRights"] == nil || r.URL.Query()["InterestRate"] == nil || r.URL.Query()["Rating"] == nil ||
 			r.URL.Query()["BondIssuer"] == nil || r.URL.Query()["Underwriter"] == nil || r.URL.Query()["recpIndex"] == nil {
 			log.Println("required params not passed, quitting!")
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -439,7 +439,7 @@ func createOpzonesLuCoop() {
 		x.Amount, err = utils.StoFWithCheck(r.URL.Query()["Amount"][0])
 		if err != nil {
 			log.Println("param passed not float, quitting!")
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 		x.SecurityType = r.URL.Query()["SecurityType"][0]
@@ -447,14 +447,14 @@ func createOpzonesLuCoop() {
 		x.MonthlyPayment, err = utils.StoFWithCheck(r.URL.Query()["MonthlyPayment"][0])
 		if err != nil {
 			log.Println("param passed not float, quitting!")
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 		x.MemberRights = r.URL.Query()["MemberRights"][0]
 		x.InterestRate, err = utils.StoFWithCheck(r.URL.Query()["InterestRate"][0])
 		if err != nil {
 			log.Println("param passed not float, quitting!")
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 		x.Rating = r.URL.Query()["Rating"][0]
@@ -464,14 +464,14 @@ func createOpzonesLuCoop() {
 		x.RecipientIndex, err = utils.StoICheck(r.URL.Query()["recpIndex"][0])
 		if err != nil {
 			log.Println("recpIndex not int, quitting!")
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
 		allLuCoops, err := opzones.RetrieveAllLivingUnitCoops()
 		if err != nil {
 			log.Println("Couldn't retriev all living unit coops, quitting!")
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
 
@@ -482,10 +482,10 @@ func createOpzonesLuCoop() {
 		err = x.Save()
 		if err != nil {
 			log.Println("error while saving project")
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
 
-		MarshalSend(w, r, x)
+		MarshalSend(w, x)
 	})
 }

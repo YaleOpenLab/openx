@@ -121,11 +121,11 @@ func getAllInvestorsPublic() {
 		investors, err := database.RetrieveAllInvestors()
 		if err != nil {
 			log.Println("did not retrieve all investors", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
 		sInvestors := sanitizeAllInvestors(investors)
-		MarshalSend(w, r, sInvestors)
+		MarshalSend(w, sInvestors)
 	})
 }
 
@@ -138,11 +138,11 @@ func getAllRecipientsPublic() {
 		recipients, err := database.RetrieveAllRecipients()
 		if err != nil {
 			log.Println("did not retrieve all recipients", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
 		sRecipients := sanitizeAllRecipients(recipients)
-		MarshalSend(w, r, sRecipients)
+		MarshalSend(w, sRecipients)
 	})
 }
 
@@ -155,11 +155,11 @@ func getTopReputationPublic() {
 		allUsers, err := database.TopReputationUsers()
 		if err != nil {
 			log.Println("did not retrive all top reputation users", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
 		sUsers := sanitizeAllUsers(allUsers)
-		MarshalSend(w, r, sUsers)
+		MarshalSend(w, sUsers)
 	})
 }
 
@@ -171,11 +171,11 @@ func getRecpTopReputationPublic() {
 		allRecps, err := database.TopReputationRecipient()
 		if err != nil {
 			log.Println("did not retrieve all top reputaiton recipients", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
 		sRecipients := sanitizeAllRecipients(allRecps)
-		MarshalSend(w, r, sRecipients)
+		MarshalSend(w, sRecipients)
 	})
 }
 
@@ -187,11 +187,11 @@ func getInvTopReputationPublic() {
 		allInvs, err := database.TopReputationInvestors()
 		if err != nil {
 			log.Println("did not retrieve all top reputation investors", err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
 		sInvestors := sanitizeAllInvestors(allInvs)
-		MarshalSend(w, r, sInvestors)
+		MarshalSend(w, sInvestors)
 	})
 }
 
@@ -202,25 +202,25 @@ func getUserInfo() {
 
 		if r.URL.Query()["index"] == nil {
 			log.Println("no index retrieved, quitting!")
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
 		index, err := utils.StoICheck(r.URL.Query()["index"][0])
 		if err != nil {
 			log.Println(err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
 		user, err := database.RetrieveUser(index)
 		if err != nil {
 			log.Println(err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
 
 		sUser := sanitizeUser(user)
-		MarshalSend(w, r, sUser)
+		MarshalSend(w, sUser)
 	})
 }

@@ -26,7 +26,7 @@ func returnAllStages() {
 		arr = append(arr, opensolar.Stage0, opensolar.Stage1, opensolar.Stage2, opensolar.Stage3, opensolar.Stage4,
 			opensolar.Stage5, opensolar.Stage6, opensolar.Stage7, opensolar.Stage8, opensolar.Stage9)
 
-		MarshalSend(w, r, arr)
+		MarshalSend(w, arr)
 	})
 }
 
@@ -38,14 +38,14 @@ func returnSpecificStage() {
 
 		if r.URL.Query()["index"] == nil {
 			log.Println("User did not pass index to retrieve stage for, quitting!")
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
 		index, err := utils.StoICheck(r.URL.Query()["index"][0])
 		if err != nil {
 			log.Println("Passed index not an integer, quitting!")
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
@@ -74,7 +74,7 @@ func returnSpecificStage() {
 			x = opensolar.Stage0
 		}
 
-		MarshalSend(w, r, x)
+		MarshalSend(w, x)
 	})
 }
 
@@ -86,22 +86,22 @@ func promoteStage() {
 
 		if r.URL.Query()["index"] == nil {
 			log.Println("some fields missing to promote from stage x to y, quitting!")
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 
 		index, err := utils.StoICheck(r.URL.Query()["index"][0])
 		if err != nil {
 			log.Println(err)
-			responseHandler(w, r, StatusBadRequest)
+			responseHandler(w, StatusBadRequest)
 			return
 		}
 		err = opensolar.StageXtoY(index)
 		if err != nil {
 			log.Println(err)
-			responseHandler(w, r, StatusInternalServerError)
+			responseHandler(w, StatusInternalServerError)
 			return
 		}
-		responseHandler(w, r, StatusOK)
+		responseHandler(w, StatusOK)
 	})
 }

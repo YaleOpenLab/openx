@@ -25,7 +25,7 @@ const (
 
 // responseHandler is the default response handler that sends out response codes on successful
 // completion of certain calls
-func responseHandler(w http.ResponseWriter, r *http.Request, status int) {
+func responseHandler(w http.ResponseWriter, status int) {
 	var response StatusResponse
 	response.Code = status
 	switch status {
@@ -60,5 +60,5 @@ func responseHandler(w http.ResponseWriter, r *http.Request, status int) {
 	default:
 		response.Status = "404 Page Not Found"
 	}
-	MarshalSend(w, r, response)
+	MarshalSend(w, response)
 }

@@ -36,7 +36,7 @@ func getAccessToken() {
 
 		if r.URL.Query()["clientId"] == nil || r.URL.Query()["clientSecret"] == nil ||
 			r.URL.Query()["username"] == nil || r.URL.Query()["password"] == nil {
-			MarshalSend(w, r, StatusBadRequest)
+			MarshalSend(w, StatusBadRequest)
 			return
 		}
 		url := "https://platformapi-staging.swytch.io/v1/oauth/token"
@@ -59,7 +59,7 @@ func getAccessToken() {
 		req, err := http.NewRequest("POST", url, reqbody)
 		if err != nil {
 			log.Println(err)
-			MarshalSend(w, r, StatusInternalServerError)
+			MarshalSend(w, StatusInternalServerError)
 			return
 		}
 
@@ -68,7 +68,7 @@ func getAccessToken() {
 		res, err := http.DefaultClient.Do(req)
 		if err != nil {
 			log.Println(err)
-			MarshalSend(w, r, StatusInternalServerError)
+			MarshalSend(w, StatusInternalServerError)
 			return
 		}
 
@@ -79,11 +79,11 @@ func getAccessToken() {
 		err = json.Unmarshal(body, &x)
 		if err != nil {
 			log.Println(err)
-			MarshalSend(w, r, StatusInternalServerError)
+			MarshalSend(w, StatusInternalServerError)
 			return
 		}
 
-		MarshalSend(w, r, x)
+		MarshalSend(w, x)
 	})
 }
 
@@ -94,7 +94,7 @@ func getRefreshToken() {
 
 		if r.URL.Query()["clientId"] == nil || r.URL.Query()["clientSecret"] == nil ||
 			r.URL.Query()["refreshToken"] == nil {
-			MarshalSend(w, r, StatusBadRequest)
+			MarshalSend(w, StatusBadRequest)
 			return
 		}
 
@@ -117,7 +117,7 @@ func getRefreshToken() {
 		req, err := http.NewRequest("POST", url, reqbody)
 		if err != nil {
 			log.Println(err)
-			MarshalSend(w, r, StatusInternalServerError)
+			MarshalSend(w, StatusInternalServerError)
 			return
 		}
 
@@ -126,7 +126,7 @@ func getRefreshToken() {
 		res, err := http.DefaultClient.Do(req)
 		if err != nil {
 			log.Println(err)
-			MarshalSend(w, r, StatusInternalServerError)
+			MarshalSend(w, StatusInternalServerError)
 			return
 		}
 
@@ -137,11 +137,11 @@ func getRefreshToken() {
 		err = json.Unmarshal(body, &x)
 		if err != nil {
 			log.Println(err)
-			MarshalSend(w, r, StatusInternalServerError)
+			MarshalSend(w, StatusInternalServerError)
 			return
 		}
 
-		MarshalSend(w, r, x)
+		MarshalSend(w, x)
 	})
 }
 
@@ -173,7 +173,7 @@ func getSwytchUser() {
 		checkOrigin(w, r)
 
 		if r.URL.Query()["authToken"] == nil {
-			MarshalSend(w, r, StatusBadRequest)
+			MarshalSend(w, StatusBadRequest)
 			return
 		}
 
@@ -183,7 +183,7 @@ func getSwytchUser() {
 		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {
 			log.Println(err)
-			MarshalSend(w, r, StatusInternalServerError)
+			MarshalSend(w, StatusInternalServerError)
 		}
 
 		req.Header.Add("authorization", "Bearer "+auth_token)
@@ -192,14 +192,14 @@ func getSwytchUser() {
 		res, err := http.DefaultClient.Do(req)
 		if err != nil {
 			log.Println(err)
-			MarshalSend(w, r, StatusInternalServerError)
+			MarshalSend(w, StatusInternalServerError)
 		}
 
 		defer res.Body.Close()
 		body, err := ioutil.ReadAll(res.Body)
 		if err != nil {
 			log.Println(err)
-			MarshalSend(w, r, StatusInternalServerError)
+			MarshalSend(w, StatusInternalServerError)
 		}
 
 		log.Println(res)
@@ -208,10 +208,10 @@ func getSwytchUser() {
 		err = json.Unmarshal(body, &x)
 		if err != nil {
 			log.Println(err)
-			MarshalSend(w, r, StatusInternalServerError)
+			MarshalSend(w, StatusInternalServerError)
 		}
 
-		MarshalSend(w, r, x)
+		MarshalSend(w, x)
 	})
 }
 
@@ -258,7 +258,7 @@ func getAssets() {
 		checkOrigin(w, r)
 
 		if r.URL.Query()["authToken"] == nil || r.URL.Query()["userId"] == nil {
-			MarshalSend(w, r, StatusBadRequest)
+			MarshalSend(w, StatusBadRequest)
 			return
 		}
 
@@ -270,7 +270,7 @@ func getAssets() {
 		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {
 			log.Println(err)
-			MarshalSend(w, r, StatusInternalServerError)
+			MarshalSend(w, StatusInternalServerError)
 		}
 
 		req.Header.Add("authorization", "Bearer "+auth_token)
@@ -278,14 +278,14 @@ func getAssets() {
 		res, err := http.DefaultClient.Do(req)
 		if err != nil {
 			log.Println(err)
-			MarshalSend(w, r, StatusInternalServerError)
+			MarshalSend(w, StatusInternalServerError)
 		}
 
 		defer res.Body.Close()
 		body, err := ioutil.ReadAll(res.Body)
 		if err != nil {
 			log.Println(err)
-			MarshalSend(w, r, StatusInternalServerError)
+			MarshalSend(w, StatusInternalServerError)
 		}
 
 		log.Println(string(body))
@@ -293,10 +293,10 @@ func getAssets() {
 		err = json.Unmarshal(body, &x)
 		if err != nil {
 			log.Println(err)
-			MarshalSend(w, r, StatusInternalServerError)
+			MarshalSend(w, StatusInternalServerError)
 		}
 
-		MarshalSend(w, r, x)
+		MarshalSend(w, x)
 	})
 }
 
@@ -354,7 +354,7 @@ func getEnergy() {
 		checkOrigin(w, r)
 
 		if r.URL.Query()["authToken"] == nil || r.URL.Query()["assetId"] == nil {
-			MarshalSend(w, r, StatusBadRequest)
+			MarshalSend(w, StatusBadRequest)
 			return
 		}
 
@@ -366,7 +366,7 @@ func getEnergy() {
 		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {
 			log.Println(err)
-			MarshalSend(w, r, StatusInternalServerError)
+			MarshalSend(w, StatusInternalServerError)
 		}
 
 		req.Header.Add("authorization", "Bearer "+auth_token)
@@ -374,24 +374,24 @@ func getEnergy() {
 		res, err := http.DefaultClient.Do(req)
 		if err != nil {
 			log.Println(err)
-			MarshalSend(w, r, StatusInternalServerError)
+			MarshalSend(w, StatusInternalServerError)
 		}
 
 		defer res.Body.Close()
 		body, err := ioutil.ReadAll(res.Body)
 		if err != nil {
 			log.Println(err)
-			MarshalSend(w, r, StatusInternalServerError)
+			MarshalSend(w, StatusInternalServerError)
 		}
 
 		var x GetEnergyStruct
 		err = json.Unmarshal(body, &x)
 		if err != nil {
 			log.Println(err)
-			MarshalSend(w, r, StatusInternalServerError)
+			MarshalSend(w, StatusInternalServerError)
 		}
 
-		MarshalSend(w, r, x)
+		MarshalSend(w, x)
 	})
 }
 
@@ -452,7 +452,7 @@ func getEnergyAttribution() {
 		checkOrigin(w, r)
 
 		if r.URL.Query()["authToken"] == nil || r.URL.Query()["assetId"] == nil {
-			MarshalSend(w, r, StatusBadRequest)
+			MarshalSend(w, StatusBadRequest)
 			return
 		}
 
@@ -464,7 +464,7 @@ func getEnergyAttribution() {
 		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {
 			log.Println(err)
-			MarshalSend(w, r, StatusInternalServerError)
+			MarshalSend(w, StatusInternalServerError)
 		}
 
 		req.Header.Add("authorization", "Bearer "+auth_token)
@@ -472,14 +472,14 @@ func getEnergyAttribution() {
 		res, err := http.DefaultClient.Do(req)
 		if err != nil {
 			log.Println(err)
-			MarshalSend(w, r, StatusInternalServerError)
+			MarshalSend(w, StatusInternalServerError)
 		}
 
 		defer res.Body.Close()
 		body, err := ioutil.ReadAll(res.Body)
 		if err != nil {
 			log.Println(err)
-			MarshalSend(w, r, StatusInternalServerError)
+			MarshalSend(w, StatusInternalServerError)
 		}
 
 		log.Println(string(body))
@@ -487,9 +487,9 @@ func getEnergyAttribution() {
 		err = json.Unmarshal(body, &x)
 		if err != nil {
 			log.Println(err)
-			MarshalSend(w, r, StatusInternalServerError)
+			MarshalSend(w, StatusInternalServerError)
 		}
 
-		MarshalSend(w, r, x)
+		MarshalSend(w, x)
 	})
 }

@@ -41,11 +41,12 @@ func WriteToHandler(w http.ResponseWriter, jsonString []byte) {
 }
 
 // MarshalSend marshals and writes a json string into the writer
-func MarshalSend(w http.ResponseWriter, r *http.Request, x interface{}) {
+func MarshalSend(w http.ResponseWriter, x interface{}) {
 	xJson, err := json.Marshal(x)
 	if err != nil {
 		log.Println("did not marshal json", err)
-		responseHandler(w, r, StatusInternalServerError)
+		errString := "Internal Server Error"
+		WriteToHandler(w, []byte(errString))
 		return
 	}
 	WriteToHandler(w, xJson)
@@ -63,7 +64,8 @@ func checkOrigin(w http.ResponseWriter, r *http.Request) {
 func checkGet(w http.ResponseWriter, r *http.Request) {
 	checkOrigin(w, r)
 	if r.Method != "GET" {
-		http.Error(w, "404 page not found", http.StatusNotFound)
+		responseHandler(w, StatusNotFound)
+		return
 	}
 }
 
@@ -71,7 +73,8 @@ func checkGet(w http.ResponseWriter, r *http.Request) {
 func checkPost(w http.ResponseWriter, r *http.Request) {
 	checkOrigin(w, r)
 	if r.Method != "POST" {
-		http.Error(w, "404 page not found", http.StatusNotFound)
+		responseHandler(w, StatusNotFound)
+		return
 	}
 }
 
@@ -131,7 +134,7 @@ func setupDefaultHandler() {
 		// default to 404 for every application not running on localhost
 		checkGet(w, r)
 		checkOrigin(w, r)
-		responseHandler(w, r, StatusNotFound)
+		responseHandler(w, StatusNotFound)
 	})
 }
 
@@ -140,7 +143,7 @@ func setupPingHandler() {
 	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
 		checkOrigin(w, r)
-		responseHandler(w, r, StatusOK)
+		responseHandler(w, StatusOK)
 	})
 }
 
