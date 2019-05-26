@@ -31,4 +31,8 @@ func TestOracle(t *testing.T) {
 	if exchangeFloat != 10000000 {
 		t.Fatalf("Exchange value does not match")
 	}
+	_, err = XLMUSD()
+	if err != nil {
+		t.Fatalf("unable to call exchange API for response")
+	}
 }
