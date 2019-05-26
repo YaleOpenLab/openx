@@ -50,6 +50,7 @@ func setupUserRpcs() {
 	sweepFunds()
 	sweepAsset()
 	validateKYC()
+	giveStarRating()
 }
 
 const (
@@ -243,45 +244,33 @@ func ValidateUser() {
 		var prepInvestor database.Investor
 		var prepRecipient database.Recipient
 		var prepEntity opensolar.Entity
-		rec := false
-		entity := false
-		prepInvestor, err = database.RetrieveInvestor(prepUser.Index)
-		if err != nil {
-			log.Println("did not retrieve investor", err)
-			// means the user is a recipient, retrieve recipient credentials
-			prepRecipient, err = database.ValidateRecipient(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
-			if err != nil {
-				log.Println("did not validate recipient", err)
-				// it is not a recipient either
-				prepEntity, err = opensolar.ValidateEntity(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
-				if err != nil {
-					log.Println("did not validate entity", err)
-					// not an investor, recipient or entity, must be a normal user
-					MarshalSend(w, prepUser)
-					return
-				} else {
-					entity = true
-				}
-			} else {
-				rec = true
-			}
-		}
 
-		// the frontend should read the received response and figure out the role of the person
 		var x ValidateParams
-		if rec {
-			x.Role = "Recipient"
-			x.Entity = removeSeedRecp(prepRecipient)
-			MarshalSend(w, x)
-		} else if entity {
-			x.Role = "Entity"
-			x.Entity = removeSeedEntity(prepEntity)
-			MarshalSend(w, x)
-		} else {
+
+		prepInvestor, err = database.RetrieveInvestor(prepUser.Index)
+		if err == nil {
 			x.Role = "Investor"
 			x.Entity = removeSeedInv(prepInvestor)
 			MarshalSend(w, x)
+			return
 		}
+
+		prepRecipient, err = database.RetrieveRecipient(prepUser.Index)
+		if err == nil {
+			x.Role = "Recipient"
+			x.Entity = removeSeedRecp(prepRecipient)
+			MarshalSend(w, x)
+			return
+		}
+
+		prepEntity, err = opensolar.RetrieveEntity(prepUser.Index)
+		if err == nil {
+			x.Role = "Entity"
+			x.Entity = removeSeedEntity(prepEntity)
+			MarshalSend(w, x)
+			return
+		}
+
 	})
 }
 
@@ -1328,6 +1317,47 @@ func validateKYC() {
 			return
 		}
 		MarshalSend(w, response)
+	})
+}
+
+func giveStarRating() {
+	http.HandleFunc("/user/giverating", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
+
+		prepUser, err := UserValidateHelper(w, r)
+		if err != nil {
+			responseHandler(w, StatusUnauthorized)
+			return
+		}
+
+		if r.URL.Query()["feedback"] == nil || r.URL.Query()["userIndex"] == nil {
+			responseHandler(w, StatusBadRequest)
+			return
+		}
+
+		feedbackStr := r.URL.Query()["feedback"][0]
+		uIndex := r.URL.Query()["userIndex"][0]
+
+		feedback, err := utils.StoICheck(feedbackStr)
+		if err != nil {
+			responseHandler(w, StatusBadRequest)
+			return
+		}
+
+		userIndex, err := utils.StoICheck(uIndex)
+		if err != nil {
+			responseHandler(w, StatusBadRequest)
+			return
+		}
+
+		err = prepUser.GiveFeedback(userIndex, feedback)
+		if err != nil {
+			responseHandler(w, StatusInternalServerError)
+			return
+		}
+
+		responseHandler(w, StatusOK)
 	})
 }
 

@@ -254,3 +254,86 @@ func (v *PlatformEmailResponse) UnmarshalJSON(data []byte) error {
 func (v *PlatformEmailResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjson84c0690eDecodeGithubComYaleOpenLabOpenxRpc2(l, v)
 }
+func easyjson84c0690eDecodeGithubComYaleOpenLabOpenxRpc3(in *jlexer.Lexer, out *KycResponse) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeString()
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "Status":
+			out.Status = string(in.String())
+		case "Reason":
+			out.Reason = string(in.String())
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson84c0690eEncodeGithubComYaleOpenLabOpenxRpc3(out *jwriter.Writer, in KycResponse) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	{
+		const prefix string = ",\"Status\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Status))
+	}
+	{
+		const prefix string = ",\"Reason\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Reason))
+	}
+	out.RawByte('}')
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v KycResponse) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjson84c0690eEncodeGithubComYaleOpenLabOpenxRpc3(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v KycResponse) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjson84c0690eEncodeGithubComYaleOpenLabOpenxRpc3(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *KycResponse) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjson84c0690eDecodeGithubComYaleOpenLabOpenxRpc3(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *KycResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjson84c0690eDecodeGithubComYaleOpenLabOpenxRpc3(l, v)
+}
