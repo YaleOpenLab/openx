@@ -47,3 +47,6 @@ const CutDownPeriod = 4838400                                                   
 const TellerPollInterval = 30000                                                     // this is in seconds, MW: What unit is the 300 interval on? Seconds?
 const TellerMaxLocalStorageSize = 2000                                               // in bvy bytes, tweak this later to something like 10M after testing
 var KYCAPIKey = ""                                                                   // the API key to call the KYC provider's API
+var AnchorUSDCode = ""                                                               // The code for the AnchorUSD stablecoin
+var AnchorUSDAddress = ""                                                            // The Address issuing AnchorUSD
+var AnchorUSDTrustLimit = "1000000"                                                  // The Trust limit towards which a person can trust AnchorUSD
