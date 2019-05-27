@@ -19,11 +19,9 @@ import (
 
 // Investor defines the investor structure
 type Investor struct {
-	VotingBalance int // this will be equal to the amount of stablecoins that the
-	// investor possesses, should update this every once in a while to ensure voting
-	// consistency.
+	VotingBalance int // this will be equal to the amount of stablecoins that the investor possesses,
+	// should update this every once in a while to ensure voting consistency.
 	// These are votes to show opinions about bids done by contractors on the specific projects that investors invested in.
-	// These opinions can be considered by recipients, and any deciding agent.
 	AmountInvested float64
 	// total amount, would be nice to track to contact them,
 	// give them some kind of medals or something
@@ -32,8 +30,6 @@ type Investor struct {
 	InvestedBonds                []string
 	InvestedCoops                []string
 	// array of asset codes this user has invested in
-	// also I think we need a username + password for logging on to the platform itself
-	// linking it here for now
 	U           *User
 	WeightedROI string
 	// the weightedROI for all the projects under the investor's umbrella
@@ -81,8 +77,7 @@ func (a *Investor) Save() error {
 	return err
 }
 
-// RetrieveInvestor retrieves a particular investor indexed by key from the database
-func RetrieveInvestor(key int) (Investor, error) {
+func RetrieveInvestorHelper(key int) (Investor, error) {
 	var inv Investor
 	db, err := OpenDB()
 	if err != nil {
@@ -99,6 +94,20 @@ func RetrieveInvestor(key int) (Investor, error) {
 		return inv.UnmarshalJSON(x)
 	})
 	return inv, err
+}
+// RetrieveInvestor retrieves a particular investor indexed by key from the database
+func RetrieveInvestor(key int) (Investor, error) {
+	var inv Investor
+	user, err := RetrieveUser(key)
+	if err != nil {
+		return inv, err
+	}
+	inv, err = RetrieveInvestorHelper(key)
+	if err != nil {
+		return inv, err
+	}
+	inv.U = &user
+	return inv, inv.Save()
 }
 
 // RetrieveAllInvestors gets a list of all investors in the database

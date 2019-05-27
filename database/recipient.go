@@ -114,8 +114,7 @@ func RetrieveAllRecipients() ([]Recipient, error) {
 	return arr, err
 }
 
-// RetrieveRecipient retrieves a specific recipient from the database
-func RetrieveRecipient(key int) (Recipient, error) {
+func RetrieveRecipientHelper(key int) (Recipient, error) {
 	var rec Recipient
 	db, err := OpenDB()
 	if err != nil {
@@ -132,6 +131,20 @@ func RetrieveRecipient(key int) (Recipient, error) {
 		return rec.UnmarshalJSON(x)
 	})
 	return rec, err
+}
+// RetrieveRecipient retrieves a specific recipient from the database
+func RetrieveRecipient(key int) (Recipient, error) {
+	var rec Recipient
+	user, err := RetrieveUser(key)
+	if err != nil {
+		return rec, err
+	}
+	rec, err = RetrieveRecipientHelper(key)
+	if err != nil {
+		return rec, err
+	}
+	rec.U = &user
+	return rec, rec.Save()
 }
 
 // ValidateRecipient validates a particular recipient

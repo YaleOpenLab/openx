@@ -90,6 +90,11 @@ type User struct {
 	// related to a specific project. The key is the same as the value of the project and the value is a description
 	// of what exactly needs to be submitted.
 	KYC KycStruct
+
+	StarRating map[int]int // peer bases tarr rating that users can give of each other. Can be gamed, but this is complemented by
+	// the automated feedback system, so we should be good.
+
+	GivenStarRating map[int]int // to keep track of users for whom you've given feedback
 }
 
 type KycStruct struct {
@@ -628,4 +633,31 @@ func (a *User) SetBan(userIndex int) error {
 
 	user.Banned = true
 	return user.Save()
+}
+
+func (a *User) GiveFeedback(userIndex int, feedback int) error {
+	user, err := RetrieveUser(userIndex)
+	if err != nil {
+		return errors.Wrap(err, "couldn't retrieve user from db while giving feedback")
+	}
+
+	if len(user.StarRating) == 0 {
+		// no one has given t3his user a starr rating before, so create a new map
+		user.StarRating = make(map[int]int)
+	}
+
+	user.StarRating[a.Index] = feedback
+	log.Println("STARRATING: ", user.StarRating, user.Name)
+	err = user.Save()
+	if err != nil {
+		return errors.Wrap(err, "couldn't save feedback provided on user")
+	}
+
+	if len(a.GivenStarRating) == 0 {
+		// no one has given t3his user a starr rating before, so create a new map
+		a.GivenStarRating = make(map[int]int)
+	}
+
+	a.GivenStarRating[user.Index] = feedback
+	return a.Save()
 }

@@ -62,10 +62,8 @@ type Entity struct {
 	PresentContracts []Project
 	// list of all contracts that the contractor is presently undertaking1
 	PastFeedback []Feedback
-	// feedback received on the contractor from parties involved in the past
-	// What kind of proof do we want from the company? KYC?
-	// maybe we could have a photo op like exchanges do these days, with the owner
-	// holding up his drivers' license or similar
+	// feedback received on the contractor from parties involved in the past. This is an automated
+	// feedback system which falls backto a manual one in the event of disputes
 	Collateral float64
 	// the amount of collateral that the entity is willing to hold in case it reneges
 	// on a specific contract's details. This is an optional parameter but having collateral
@@ -190,8 +188,7 @@ func RetrieveAllEntities(role string) ([]Entity, error) {
 	return arr, err
 }
 
-// RetrieveEntity retrieves a specific entity from the database
-func RetrieveEntity(key int) (Entity, error) {
+func RetrieveEntityHelper(key int) (Entity, error) {
 	var a Entity
 	db, err := database.OpenDB()
 	if err != nil {
@@ -207,6 +204,23 @@ func RetrieveEntity(key int) (Entity, error) {
 		return a.UnmarshalJSON(x)
 	})
 	return a, err
+}
+
+// RetrieveEntity retrieves a specific entity from the database
+func RetrieveEntity(key int) (Entity, error) {
+	var entity Entity
+	user, err := database.RetrieveUser(key)
+	if err != nil {
+		return entity, err
+	}
+
+	entity, err = RetrieveEntityHelper(key)
+	if err != nil {
+		return entity, err
+	}
+
+	entity.U = &user
+	return entity, entity.Save()
 }
 
 // newEntity creates a new entity based on the role passed

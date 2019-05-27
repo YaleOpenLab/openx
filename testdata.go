@@ -156,7 +156,7 @@ func InsertDummyData(simulate bool) error {
 		if err != nil {
 			return err
 		}
-		inv.U = &x
+		inv.U = &(x)
 		err = inv.Save()
 		if err != nil {
 			return err
