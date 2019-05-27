@@ -11,7 +11,7 @@ import (
 )
 
 func CleanDB() {
-	os.Remove(os.Getenv("HOME") + "/.openx/database/" + "/yol.db")
+	os.Remove(os.Getenv("HOME") + "/.openx/database/" + "/openx.db")
 	os.MkdirAll(os.Getenv("HOME")+"/.openx/database", os.ModePerm)
 }
 
