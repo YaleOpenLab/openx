@@ -470,7 +470,7 @@ func populateStaticData100KW() error {
 
 func bootstrapInvestor(invName, invDescription string) (database.Investor, string, error) {
 	// setup investor account
-	log.Println(consts.StablecoinSeed, consts.StablecoinPublicKey, consts.Code)
+	log.Println(consts.StablecoinSeed, consts.StablecoinPublicKey, consts.StablecoinCode)
 	passwd := "password"
 	seedpwd := "x"
 	investor1, err := database.NewInvestor(invName, passwd, seedpwd, invDescription)
@@ -487,11 +487,11 @@ func bootstrapInvestor(invName, invDescription string) (database.Investor, strin
 	}
 	// trust the stablecoin issuer and give the investor a fixed number of stableusd to invest
 	// this helps prevent calling the exchange function that is implicitly called in the payment function
-	_, err = assets.TrustAsset(consts.Code, consts.StablecoinPublicKey, "10000000000", invSeed)
+	_, err = assets.TrustAsset(consts.StablecoinCode, consts.StablecoinPublicKey, "10000000000", invSeed)
 	if err != nil {
 		return investor1, "", err
 	}
-	_, _, err = assets.SendAssetFromIssuer(consts.Code, investor1.U.PublicKey, "1000000", consts.StablecoinSeed, consts.StablecoinPublicKey)
+	_, _, err = assets.SendAssetFromIssuer(consts.StablecoinCode, investor1.U.PublicKey, "1000000", consts.StablecoinSeed, consts.StablecoinPublicKey)
 	if err != nil {
 		return investor1, "", err
 	}

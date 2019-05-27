@@ -274,7 +274,7 @@ func MonitorTeller(projIndex int) {
 		if err != nil {
 			log.Println("did not create new GET request", err)
 			notif.SendTellerDownEmail(project.Index, project.RecipientIndex)
-			time.Sleep(consts.TellerPollInterval * time.Second)
+			time.Sleep(consts.TellerPollInterval)
 			continue
 		}
 
@@ -283,14 +283,14 @@ func MonitorTeller(projIndex int) {
 		if err != nil {
 			log.Println("did not make request", err)
 			notif.SendTellerDownEmail(project.Index, project.RecipientIndex)
-			time.Sleep(consts.TellerPollInterval * time.Second)
+			time.Sleep(consts.TellerPollInterval)
 			continue
 		}
 		data, err := ioutil.ReadAll(res.Body)
 		if err != nil {
 			log.Println("error while reading response body", err)
 			notif.SendTellerDownEmail(project.Index, project.RecipientIndex)
-			time.Sleep(consts.TellerPollInterval * time.Second)
+			time.Sleep(consts.TellerPollInterval)
 			continue
 		}
 
@@ -300,7 +300,7 @@ func MonitorTeller(projIndex int) {
 		if err != nil {
 			log.Println("error while unmarshalling data", err)
 			notif.SendTellerDownEmail(project.Index, project.RecipientIndex)
-			time.Sleep(consts.TellerPollInterval * time.Second)
+			time.Sleep(consts.TellerPollInterval)
 			continue
 		}
 
@@ -309,6 +309,6 @@ func MonitorTeller(projIndex int) {
 		}
 
 		res.Body.Close()
-		time.Sleep(consts.TellerPollInterval * time.Second)
+		time.Sleep(consts.TellerPollInterval)
 	}
 }

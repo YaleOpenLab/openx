@@ -167,7 +167,7 @@ func RefillAccount(publicKey string, platformSeed string) error {
 		// there is no account under the user's name
 		// means we need to setup an account first
 		log.Println("Account does not exist, creating: ", publicKey)
-		_, _, err = SendXLMCreateAccount(publicKey, consts.DonateBalance, platformSeed)
+		_, _, err = SendXLMCreateAccount(publicKey, consts.RefillAmount, platformSeed)
 		if err != nil {
 			log.Println("Account Could not be created")
 			return errors.New("Account Could not be created")
@@ -180,7 +180,7 @@ func RefillAccount(publicKey string, platformSeed string) error {
 	}
 	balanceI := utils.StoF(balance)
 	if balanceI < 3 { // to setup trustlines
-		_, _, err = SendXLM(publicKey, consts.DonateBalance, platformSeed, "Sending XLM to refill")
+		_, _, err = SendXLM(publicKey, consts.RefillAmount, platformSeed, "Sending XLM to refill")
 		if err != nil {
 			return errors.New("Account doesn't have funds or invalid seed")
 		}

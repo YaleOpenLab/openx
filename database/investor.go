@@ -95,6 +95,7 @@ func RetrieveInvestorHelper(key int) (Investor, error) {
 	})
 	return inv, err
 }
+
 // RetrieveInvestor retrieves a particular investor indexed by key from the database
 func RetrieveInvestor(key int) (Investor, error) {
 	var inv Investor

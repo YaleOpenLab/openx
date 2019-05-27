@@ -132,6 +132,7 @@ func RetrieveRecipientHelper(key int) (Recipient, error) {
 	})
 	return rec, err
 }
+
 // RetrieveRecipient retrieves a specific recipient from the database
 func RetrieveRecipient(key int) (Recipient, error) {
 	var rec Recipient

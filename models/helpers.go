@@ -22,13 +22,13 @@ func SendUSDToPlatform(invSeed string, invAmount string, memo string) (string, e
 
 	var oldPlatformBalance string
 	var err error
-	oldPlatformBalance, err = xlm.GetAssetBalance(consts.PlatformPublicKey, consts.Code)
+	oldPlatformBalance, err = xlm.GetAssetBalance(consts.PlatformPublicKey, consts.StablecoinCode)
 	if err != nil {
 		// platform does not have stablecoin, shouldn't arrive here ideally
 		oldPlatformBalance = "0"
 	}
 
-	_, txhash, err := assets.SendAsset(consts.Code, consts.StablecoinPublicKey, consts.PlatformPublicKey, invAmount, invSeed, memo)
+	_, txhash, err := assets.SendAsset(consts.StablecoinCode, consts.StablecoinPublicKey, consts.PlatformPublicKey, invAmount, invSeed, memo)
 	if err != nil {
 		return txhash, errors.Wrap(err, "sending stableusd to platform failed")
 	}
@@ -36,7 +36,7 @@ func SendUSDToPlatform(invSeed string, invAmount string, memo string) (string, e
 	log.Println("Sent STABLEUSD to platform, confirmation: ", txhash)
 	time.Sleep(5 * time.Second) // wait for a block
 
-	newPlatformBalance, err := xlm.GetAssetBalance(consts.PlatformPublicKey, consts.Code)
+	newPlatformBalance, err := xlm.GetAssetBalance(consts.PlatformPublicKey, consts.StablecoinCode)
 	if err != nil {
 		return txhash, errors.Wrap(err, "error while getting asset balance")
 	}
