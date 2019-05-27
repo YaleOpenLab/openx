@@ -18,7 +18,7 @@ import (
 func TestDb(t *testing.T) {
 	var err error
 	CreateHomeDir()                     // create home directory if it doesn't exist yet
-	os.Remove(consts.DbDir + "/yol.db") // remove the database file, if it exists
+	os.Remove(consts.DbDir + "/openx.db") // remove the database file, if it exists
 	consts.DbDir = "blah"               // set to a false db so that we can test errors arising from OpenDB()
 	_, err = OpenDB()
 	if err == nil { // wrong dir, so should error out
@@ -603,5 +603,5 @@ func TestDb(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	os.Remove(consts.DbDir + "/yol.db")
+	os.Remove(consts.DbDir + "/openx.db")
 }

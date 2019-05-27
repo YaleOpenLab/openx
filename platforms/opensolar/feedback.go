@@ -25,8 +25,6 @@ package opensolar
 
 // TODO: add additional fields here based on what feedback we collect, would depend
 // on the frontend design and implementation as well
-// TODO: complete this area once we have a rudimentary frontend so that we can test stuff
-// more easily and link it with the reputation system
 
 // Feedback defines a structure that can be used for providing feedback about entities
 type Feedback struct {

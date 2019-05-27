@@ -44,8 +44,7 @@ const (
 // TODO: Consider that in the family of Recipients or Investors, there is more than one actor
 // and sometimes signatory authorization is from only some of the actors.
 
-// VerifyBeforeAuthorizing verifies some information on the originator before upgrading
-// the project stage
+// VerifyBeforeAuthorizing verifies some information on the originator before upgrading the project stage
 func VerifyBeforeAuthorizing(projIndex int) bool {
 	project, err := RetrieveProject(projIndex)
 	if err != nil {
@@ -576,7 +575,6 @@ func DistributePayments(recipientSeed string, escrowPubkey string, projIndex int
 		}
 	}
 	return nil
-	// we have the projects, we need to find the percentages donated by investors
 }
 
 // CalculatePayback calculates the amount of payback assets that must be issued in relation

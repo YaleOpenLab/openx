@@ -18,9 +18,6 @@ import (
 	crypto "github.com/ethereum/go-ethereum/crypto"
 )
 
-// the user structure houses all entities that are of type "User". This contains
-// commonly used functions so that we need not repeat the ssame thing for every instance.
-
 // User is a metastrucutre that contains commonly used keys within a single umbrella
 // so that we can import it wherever needed.
 type User struct {
@@ -397,18 +394,6 @@ func CheckUsernameCollision(uname string) (User, error) {
 	return dummy, err
 }
 
-// Everything above this is exactly the same as the investor class. Need to replicate
-// because of bucket issues, hopefully there's a nicer way
-// package kyc is designed to emulate the working of a kyc entity in the system
-// when someone signs up on the system, they appear in they KYC reviewer's panel
-// and the inspector has to approve them for them to  be able to go on the platform.
-// iF rejected, they can choose to submit additional information that they are indeed
-// compliant and in that case we can allow them unto the platform
-// Roughly this should involve a new bool in the user bucket which says kyc and only
-// the inspector should have the power to set it to true.
-// the inspector itself requires kyc though, so we shall have an admin account which can
-// kickoff the kyc process.
-
 // Authorize authorizes a user
 func (a *User) Authorize(userIndex int) error {
 	// we don't really mind who this user is since all we need to verify is his identity
@@ -567,10 +552,10 @@ func MoveFundsFromSecondaryWallet(userIndex int, pwhash string, amount string, s
 }
 
 // SweepSecondaryWallet sweeps fudsd from the secondary account to the primary account
-func SweepSecondaryWallet(index int, pwhash string, seedpwd string) error {
+func SweepSecondaryWallet(userIndex int, pwhash string, seedpwd string) error {
 	// unlock secondary account
 
-	user, err := RetrieveUser(index)
+	user, err := RetrieveUser(userIndex)
 	if err != nil {
 		return errors.Wrap(err, "could not retrieve user, quitting")
 	}
@@ -578,6 +563,7 @@ func SweepSecondaryWallet(index int, pwhash string, seedpwd string) error {
 	if user.Pwhash != pwhash {
 		return fmt.Errorf("pw hashes don't match, quitting")
 	}
+
 	secSeed, err := wallet.DecryptSeed(user.SecondaryWallet.EncryptedSeed, seedpwd)
 	if err != nil {
 		return errors.Wrap(err, "could not unlock primary seed, quitting")

@@ -53,7 +53,7 @@ func CreateHomeDir() {
 // OpenDB opens the db
 func OpenDB() (*bolt.DB, error) {
 	// we need to check and create this directory if it doesn't exist
-	db, err := bolt.Open(consts.DbDir+"/yol.db", 0600, nil) // store this in its ownd database
+	db, err := bolt.Open(consts.DbDir+"/openx.db", 0600, nil) // store this in its ownd database
 	if err != nil {
 		log.Println("Couldn't open database, exiting!")
 		return db, err
