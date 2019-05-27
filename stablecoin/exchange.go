@@ -30,7 +30,7 @@ func Exchange(recipientPK string, recipientSeed string, convAmount string) error
 	}
 
 	var trustLimit string
-	trustLimit, err = xlm.GetAssetTrustLimit(recipientPK, consts.Code)
+	trustLimit, err = xlm.GetAssetTrustLimit(recipientPK, consts.StablecoinCode)
 	if err != nil {
 		// asset doesn't exist
 		trustLimit = "0"
@@ -40,7 +40,7 @@ func Exchange(recipientPK string, recipientSeed string, convAmount string) error
 		return errors.Wrap(err, "trust limit doesn't warrant investment, please contact platform admin")
 	}
 
-	hash, err := assets.TrustAsset(consts.Code, consts.StableCoinAddress, consts.StablecoinTrustLimit, recipientSeed)
+	hash, err := assets.TrustAsset(consts.StablecoinCode, consts.StableCoinAddress, consts.StablecoinTrustLimit, recipientSeed)
 	if err != nil {
 		return errors.Wrap(err, "couldn't trust asset")
 	}
@@ -59,7 +59,7 @@ func Exchange(recipientPK string, recipientSeed string, convAmount string) error
 // stableUSD to complete the payment
 func OfferExchange(publicKey string, seed string, invAmount string) error {
 
-	balance, err := xlm.GetAssetBalance(publicKey, consts.Code)
+	balance, err := xlm.GetAssetBalance(publicKey, consts.StablecoinCode)
 	if err != nil {
 		// the user does not have a balance in STABLEUSD
 		balance = "0"

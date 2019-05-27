@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"log"
-	"math"
 	"time"
 
 	assets "github.com/YaleOpenLab/openx/assets"
@@ -41,9 +40,6 @@ const (
 	SternAlertThreshold    = 4   // SternAlertThreshold is the threshold above when the user gets a warning that services will be disconnected if the user doesn't payback soon.
 	DisconnectionThreshold = 6   // DisconnectionThreshold is the threshold above which the user gets a notification telling that services have been disconnected.
 )
-
-// TODO: Peer-based star-rating - This should be the normal 5 star system that users get from
-// other users that are involved in the same transaction.
 
 // TODO: Consider that in the family of Recipients or Investors, there is more than one actor
 // and sometimes signatory authorization is from only some of the actors.
@@ -599,35 +595,29 @@ func monitorPaybacks(recpIndex int, projIndex int) {
 		project, err := RetrieveProject(projIndex)
 		if err != nil {
 			log.Println("Couldn't retrieve project")
-			time.Sleep(6000000 * time.Second)
+			time.Sleep(consts.OneWeekInSecond)
 		}
 
 		recipient, err := database.RetrieveRecipient(recpIndex)
 		if err != nil {
 			log.Println("Couldn't retrieve recipient")
-			time.Sleep(6000000 * time.Second)
+			time.Sleep(consts.OneWeekInSecond)
 		}
 
 		guarantor, err := RetrieveEntity(project.GuarantorIndex)
 		if err != nil {
 			log.Println("couldn't retrieve guarantor")
-			time.Sleep(6000000 * time.Second)
+			time.Sleep(consts.OneWeekInSecond)
 		}
 		// this will be our payback period and we need to check if the user pays us back
 
-		nowTime := utils.Unix()
-		timeElapsed := nowTime - project.DateLastPaid                   // this would be in seconds (unix time)
-		period := int64(project.PaybackPeriod * consts.OneWeekInSecond) // in seconds due to the const
+		period := float64(time.Duration(project.PaybackPeriod) * consts.OneWeekInSecond) // in seconds due to the const
 		if period == 0 {
 			period = 1 // for the test suite
 		}
+		timeElapsed := float64(utils.Unix() - project.DateLastPaid) // this would be in seconds (unix time)
 		factor := timeElapsed / period
-		// TODO: we lose a small fraction of funds due to the rounding error, we must ensure this doesn't happen and instead
-		// should account for all funds.
-		project.AmountOwed += math.Round(float64(factor)) * oracle.MonthlyBillInFloat() // add the amount owed only if the time elapsed is more than one payback period
-		if err != nil {
-			log.Println(err)
-		}
+		project.AmountOwed += factor * oracle.MonthlyBillInFloat() // add the amount owed only if the time elapsed is more than one payback period
 		// Reputation adjustments based on payback history:
 		if factor <= 1 {
 			// don't do anything since the user has been paying back regularly
@@ -636,7 +626,7 @@ func monitorPaybacks(recpIndex int, projIndex int) {
 		} else if factor > NormalThreshold && factor < AlertThreshold {
 			// person has not paid back for one-two consecutive period, send gentle reminder
 			notif.SendNicePaybackAlertEmail(projIndex, recipient.U.Email)
-			time.Sleep(6000000 * time.Second)
+			time.Sleep(consts.OneWeekInSecond)
 		} else if factor >= SternAlertThreshold && factor < DisconnectionThreshold {
 			// person has not paid back for four consecutive cycles, send reminder
 			notif.SendSternPaybackAlertEmail(projIndex, recipient.U.Email)
@@ -653,7 +643,7 @@ func monitorPaybacks(recpIndex int, projIndex int) {
 				}
 			}
 			notif.SendSternPaybackAlertEmailG(projIndex, guarantor.U.Email)
-			time.Sleep(6000000 * time.Second)
+			time.Sleep(consts.OneWeekInSecond)
 		} else if factor >= DisconnectionThreshold {
 			// send a disconnection notice to the recipient and let them know we have redirected
 			// power towards the grid. Also maybe email ourselves in this case so that we can
@@ -665,7 +655,7 @@ func monitorPaybacks(recpIndex int, projIndex int) {
 				investor, err := database.RetrieveInvestor(i)
 				if err != nil {
 					log.Println(err)
-					time.Sleep(6000000 * time.Second)
+					time.Sleep(consts.OneWeekInSecond)
 					continue
 				}
 				if investor.U.Notification {
@@ -677,12 +667,12 @@ func monitorPaybacks(recpIndex int, projIndex int) {
 			err = CoverFirstLoss(project.Index, guarantor.U.Index, utils.FtoS(project.AmountOwed))
 			if err != nil {
 				log.Println(err)
-				time.Sleep(6000000 * time.Second)
+				time.Sleep(consts.OneWeekInSecond)
 				continue
 			}
 		}
 
-		time.Sleep(6000000 * time.Second) // poll every week to check progress on payments
+		time.Sleep(consts.OneWeekInSecond) // poll every week to check progress on payments
 	}
 }
 
@@ -727,7 +717,7 @@ func CoverFirstLoss(projIndex int, entityIndex int, amount string) error {
 	}
 
 	// we have the escrow's pubkey, transfer funds to the escrow
-	_, txhash, err := assets.SendAsset(consts.Code, consts.StableCoinAddress, project.EscrowPubkey, amount, seed, "first loss guarantee")
+	_, txhash, err := assets.SendAsset(consts.StablecoinCode, consts.StableCoinAddress, project.EscrowPubkey, amount, seed, "first loss guarantee")
 	if err != nil {
 		return errors.Wrap(err, "could not transfer asset to escrow, quitting")
 	}

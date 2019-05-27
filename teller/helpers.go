@@ -35,7 +35,7 @@ func RefreshLogin(username string, pwhash string) error {
 			log.Println(err)
 		}
 
-		time.Sleep(consts.TellerPollInterval * time.Second)
+		time.Sleep(consts.TellerPollInterval)
 	}
 }
 
@@ -109,7 +109,7 @@ func checkPayback() {
 			log.Println("Error while paying amount back", err)
 			SendDevicePaybackFailedEmail()
 		}
-		time.Sleep(time.Duration(LocalProject.PaybackPeriod*consts.OneWeekInSecond) * time.Second)
+		time.Sleep(time.Duration(time.Duration(LocalProject.PaybackPeriod) * consts.OneWeekInSecond))
 	}
 }
 
@@ -125,7 +125,7 @@ func updateState() {
 		ipfsHash, err := ipfs.AddStringToIpfs("Device ID: " + DeviceId + " UPDATESTATE" + subcommand)
 		if err != nil {
 			log.Println("Error while fetching ipfs hash", err)
-			time.Sleep(consts.TellerPollInterval * time.Second)
+			time.Sleep(consts.TellerPollInterval)
 		}
 
 		ipfsHash = "STATUPD: " + ipfsHash
@@ -156,7 +156,7 @@ func updateState() {
 		// send email to the platform for this?  maybe overkill
 		// TODO: Define structures on the backend that would keep track of this state change
 		ColorOutput("Updated State: "+hash1+" "+hash2, MagentaColor)
-		time.Sleep(consts.TellerPollInterval * time.Second)
+		time.Sleep(consts.TellerPollInterval)
 	}
 }
 
@@ -231,7 +231,7 @@ func storeDataLocal() {
 		}
 		// comment since this would fill console out and we can't read anything
 		// log.Println("File size is: ", size.Size())
-		if size.Size() >= consts.TellerMaxLocalStorageSize {
+		if size.Size() >= int64(consts.TellerMaxLocalStorageSize) {
 			// close the file, store in ipfs, get hash, delete file and create same file again
 			// with the previous file's hash (so people can verify)
 			// we need to store this in ipfs, delete this file and then commit the ipfs hash as

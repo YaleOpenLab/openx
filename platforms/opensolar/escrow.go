@@ -39,7 +39,7 @@ func InitEscrow(projIndex int, seedpwd string, recpPubkey string, mySeed string)
 	}
 
 	log.Println("set auth immutable on account successfully")
-	multisig.TrustAssetTx(consts.Code, consts.StablecoinPublicKey, "10000000000", pubkey, seed1, seed2)
+	multisig.TrustAssetTx(consts.StablecoinCode, consts.StablecoinPublicKey, "10000000000", pubkey, seed1, seed2)
 	if err != nil {
 		return pubkey, errors.Wrap(err, "could not trust stablecoin, quitting!")
 	}
@@ -49,7 +49,7 @@ func InitEscrow(projIndex int, seedpwd string, recpPubkey string, mySeed string)
 
 func TransferFundsToEscrow(amount float64, projIndex int, escrowPubkey string) error {
 	// we have the wallet pubkey, transfer funds to the escrow now
-	_, txhash, err := assets.SendAsset(consts.Code, consts.StablecoinPublicKey, escrowPubkey,
+	_, txhash, err := assets.SendAsset(consts.StablecoinCode, consts.StablecoinPublicKey, escrowPubkey,
 		utils.FtoS(amount), consts.PlatformSeed, "escrow init")
 	if err != nil {
 		return errors.Wrap(err, "could not fund escrow, quitting!")

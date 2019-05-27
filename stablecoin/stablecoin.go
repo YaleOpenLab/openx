@@ -114,7 +114,7 @@ func ListenForPayments() {
 			xlmWorth := oracle.ExchangeXLMforUSD(amount)
 			log.Println("The deposited amount is worth: ", xlmWorth)
 			// now send the stableusd asset over to this guy
-			_, hash, err := assets.SendAssetFromIssuer(consts.Code, payee, utils.FtoS(xlmWorth), consts.StablecoinSeed, consts.StablecoinPublicKey)
+			_, hash, err := assets.SendAssetFromIssuer(consts.StablecoinCode, payee, utils.FtoS(xlmWorth), consts.StablecoinSeed, consts.StablecoinPublicKey)
 			if err != nil {
 				log.Println("Error while sending USD Assets back to payee: ", payee, err)
 				//  don't skip here, there's technically nothing we can do
