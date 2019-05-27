@@ -134,7 +134,7 @@ type Project struct {
 	MapLink               string                 // the google maps link to the installation site
 }
 
-//easyjson:json
+// ExplorePageSummaryHelper defines the params that will appear on the frontend's explore page
 type ExplorePageSummaryHelper struct {
 	Solar   string
 	Storage string
@@ -146,7 +146,7 @@ type ExplorePageSummaryHelper struct {
 	ETA     int
 }
 
-//easyjson:json
+// HashHelper defines the hashes that will appear on the project documents page
 type HashHelper struct {
 	LegalProjectOverviewHash string
 	LegalPPAHash             string
@@ -158,14 +158,14 @@ type HashHelper struct {
 	FinancialReportingHash   string
 }
 
-//easyjson:json
+// BulletHelper is a list of hashes that will appear on the project info page on the frontend
 type BulletHelper struct {
 	Bullet1 string
 	Bullet2 string
 	Bullet3 string
 }
 
-//easyjson:json
+// ArchitectureHelper defines the content that goes into the architecture section of the frontend
 type ArchitectureHelper struct {
 	SpaceLayoutImage   string
 	SolarOutputImage   string
@@ -176,7 +176,7 @@ type ArchitectureHelper struct {
 	DesignDescription  string
 }
 
-//easyjson:json
+// CommunityEngagementHelper defines the content that goes into the community engagement section of the frontend
 type CommunityEngagementHelper struct {
 	Width    int
 	Title    string
@@ -185,7 +185,7 @@ type CommunityEngagementHelper struct {
 	Link     string
 }
 
-//easyjson:json
+// TermsHelper is an object containing the various terms associated with the project
 type TermsHelper struct {
 	Variable      string
 	Value         string
@@ -195,7 +195,7 @@ type TermsHelper struct {
 	SupportDoc    string
 }
 
-//easyjson:json
+// ExecutiveSummaryHelper defines the content that goes into the executive summary section
 type ExecutiveSummaryHelper struct {
 	Investment            map[string]string
 	Financials            map[string]string
@@ -203,7 +203,7 @@ type ExecutiveSummaryHelper struct {
 	SustainabilityMetrics map[string]string
 }
 
-//easyjson:json
+// InvestmentHelper defines the investment specifics of the project
 type InvestmentHelper struct {
 	Capex              string
 	Hardware           float64
@@ -211,7 +211,7 @@ type InvestmentHelper struct {
 	CertificationCosts string
 }
 
-//easyjson:json
+// FinancialHelper defines the financial specifics of the project
 type FinancialHelper struct {
 	Return    float64
 	Insurance string
@@ -219,7 +219,7 @@ type FinancialHelper struct {
 	Maturity  string
 }
 
-//easyjson:json
+// ProjectSizeHelper defines size, storage and other params that are part of the project size section
 type ProjectSizeHelper struct {
 	PVSolar          string
 	Storage          string
@@ -227,7 +227,7 @@ type ProjectSizeHelper struct {
 	InverterCapacity string
 }
 
-//easyjson:json
+// SustainabilityHelper defines parameters relevant to sustainability that ae important to the project
 type SustainabilityHelper struct {
 	CarbonDrawdown string
 	CommunityValue string

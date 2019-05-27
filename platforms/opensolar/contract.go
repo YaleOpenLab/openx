@@ -182,7 +182,6 @@ func preInvestmentCheck(projIndex int, invIndex int, invAmount string) (Project,
 	return project, nil
 }
 
-// --SEED INVESTMENT--
 // SeedInvest is the seed investment function of the opensolar platform
 func SeedInvest(projIndex int, invIndex int, invAmount string, invSeed string) error {
 
@@ -223,7 +222,6 @@ func SeedInvest(projIndex int, invIndex int, invAmount string, invSeed string) e
 	return err
 }
 
-// -- INVEST --
 // Invest is the main invest function of the opensolar platform
 func Invest(projIndex int, invIndex int, invAmount string, invSeed string) error {
 	var err error
@@ -488,14 +486,14 @@ func (project *Project) updateProjectAfterAcceptance() error {
 	return nil
 }
 
-// MW: Here, the project jumps from stage 5, the end to the raise, to stage 7, the payback period. What happens to everything in between?
-
 // -- SOLAR OFFTAKING PAYMENTS IN STAGE 7 --
 // Payback pays the platform back in STABLEUSD and DebtAsset and receives PaybackAssets
 // in return. Price to be paid per month depends on the electricity consumed by the recipient
 // in the particular time frame
 // If we allow a user to hold balances in btc / xlm, we could direct them to exchange the coin for STABLEUSD
 // (or we could setup a payment provider which accepts fiat + crypto and do this ourselves)
+
+// Payback is called by the recipient when he chooses to pay towards the project according to the payback interval
 func Payback(recpIndex int, projIndex int, assetName string, amount string, recipientSeed string) error {
 
 	project, err := RetrieveProject(projIndex)
@@ -549,6 +547,7 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 	return nil
 }
 
+// DistributePayments distributes the return promised as part of the project back to investors and pays the other entities involved in the project
 func DistributePayments(recipientSeed string, escrowPubkey string, projIndex int, amount int) error {
 	// this should act as the service which redistributes payments received out to the parties involved
 	// amount is the amount that we want to give back to the investors and other entities involved

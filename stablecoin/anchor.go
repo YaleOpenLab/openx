@@ -12,6 +12,7 @@ import (
 	xlm "github.com/YaleOpenLab/openx/xlm"
 )
 
+// GetAnchorUSD gets anchorUSD from Anchor
 func GetAnchorUSD(recpSeed string, amountUSDs string) (string, error) {
 	txhash, err := assets.TrustAsset(consts.AnchorUSDCode, consts.AnchorUSDAddress, consts.AnchorUSDTrustLimit, recpSeed)
 	// txhash, err := assets.TrustAsset(consts.Code, consts.StableCoinAddress, consts.StablecoinTrustLimit, recpSeed)

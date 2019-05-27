@@ -77,6 +77,7 @@ func (a *Investor) Save() error {
 	return err
 }
 
+// RetrieveInvestorHelper is a helper function associated with the RetrieveInvestor function
 func RetrieveInvestorHelper(key int) (Investor, error) {
 	var inv Investor
 	db, err := OpenDB()

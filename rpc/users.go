@@ -1345,6 +1345,12 @@ func giveStarRating() {
 			return
 		}
 
+		if feedback > 5 || feedback < 0 {
+			log.Println("given feedback doesn't fall witin prescribed limits, quitting")
+			responseHandler(w, StatusBadRequest)
+			return
+		}
+
 		userIndex, err := utils.StoICheck(uIndex)
 		if err != nil {
 			responseHandler(w, StatusBadRequest)

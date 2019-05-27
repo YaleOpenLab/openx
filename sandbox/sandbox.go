@@ -353,7 +353,7 @@ func populateDynamicData() error {
 	return nil
 }
 
-// Create Sandbox populates the database with test values
+// CreateSandbox populates the database with test values
 func CreateSandbox() error {
 	var err error
 	err = populateStaticData()
