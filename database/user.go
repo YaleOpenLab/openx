@@ -94,6 +94,7 @@ type User struct {
 	GivenStarRating map[int]int // to keep track of users for whom you've given feedback
 }
 
+// KycStruct contains the parameters required by the kyc partner for querynig kyc compliance
 type KycStruct struct {
 	PassportPhoto  string // should be a base64 string or similar according to what the API provider wants
 	IDCardPhoto    string
@@ -457,6 +458,7 @@ func TopReputationUsers() ([]User, error) {
 	return allUsers, nil
 }
 
+// IncreaseTrustLimit increases the trustl imit of a specific user towards the STABLEUSD asset
 func IncreaseTrustLimit(userIndex int, seedpwd string, trust string) error {
 
 	user, err := RetrieveUser(userIndex)
@@ -599,13 +601,14 @@ func (a *User) AddEmail(email string) error {
 	return a.Save()
 }
 
+// SetBan can be used by an inspector to se a ban on any user for violating certain terms and conditions
 func (a *User) SetBan(userIndex int) error {
 	if !a.Inspector {
 		return fmt.Errorf("user not authorized to ban a user")
 	}
 
 	if a.Index == userIndex {
-		return fmt.Errorf("can't ban yourself, quitting!")
+		return fmt.Errorf("can't ban yourself, quitting")
 	}
 
 	user, err := RetrieveUser(userIndex)
@@ -621,6 +624,7 @@ func (a *User) SetBan(userIndex int) error {
 	return user.Save()
 }
 
+// GiveFeedback is used by a user to give a star based feedback about the other user
 func (a *User) GiveFeedback(userIndex int, feedback int) error {
 	user, err := RetrieveUser(userIndex)
 	if err != nil {
@@ -630,6 +634,11 @@ func (a *User) GiveFeedback(userIndex int, feedback int) error {
 	if len(user.StarRating) == 0 {
 		// no one has given t3his user a starr rating before, so create a new map
 		user.StarRating = make(map[int]int)
+	}
+
+	if feedback > 5 || feedback < 0 {
+		log.Println("feedback greater than 5 or less than 0, quitting")
+		return fmt.Errorf("feedback greater than 5, quitting")
 	}
 
 	user.StarRating[a.Index] = feedback

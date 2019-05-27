@@ -16,6 +16,8 @@ const (
  * created by Shamir's Secret Sharing Algorithm requring a minimum number of
  * share to recreate, of length shares, from the input secret raw as a string
 **/
+
+// Create creates a new set of shares
 func Create(minimum int, shares int, raw string) ([]string, error) {
 	// Verify minimum isn't greater than shares; there is no way to recreate
 	// the original polynomial in our current setup, therefore it doesn't make
@@ -122,6 +124,8 @@ func Create(minimum int, shares int, raw string) ([]string, error) {
  *       or more are passed to this function. Passing thus does not affect it
  *       Passing fewer however, simply means that the returned secret is wrong.
 **/
+
+// Combine combines a set of shares
 func Combine(shares []string) (string, error) {
 	// Recreate the original object of x, y points, based upon number of shares
 	// and size of each share (number of parts in the secret).
@@ -219,6 +223,8 @@ func Combine(shares []string) (string, error) {
  *
  * Returns only success/failure (bool)
 **/
+
+// IsValidShare checks whether a given share is valid or not
 func IsValidShare(candidate string) bool {
 	// Set constant prime across the package
 	prime, _ = big.NewInt(0).SetString(DefaultPrimeStr, 10)

@@ -44,7 +44,7 @@ func RetrieveInvestor2(key int) (Investor, error) {
 
 func PopulateDB() {
 	// populate the db with artificial values
-	CreateHomeDir()                     // create home directory if it doesn't exist yet
+	CreateHomeDir()                       // create home directory if it doesn't exist yet
 	os.Remove(consts.DbDir + "/openx.db") // remove the database file, if it exists
 	db, err := OpenDB()
 	if err != nil {

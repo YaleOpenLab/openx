@@ -114,6 +114,7 @@ func RetrieveAllRecipients() ([]Recipient, error) {
 	return arr, err
 }
 
+// RetrieveRecipientHelper is a helper associated with the RetrieveRecipient function
 func RetrieveRecipientHelper(key int) (Recipient, error) {
 	var rec Recipient
 	db, err := OpenDB()

@@ -130,14 +130,17 @@ func Newxofy(x int, y int, signers ...string) (string, error) {
 	return pubkey, nil
 }
 
+// New1of2 creates a new 1 of 2 multisig
 func New1of2(cosigner1Pubkey string, cosigner2Pubkey string) (string, error) {
 	return Newxofy(1, 2, cosigner1Pubkey, cosigner2Pubkey)
 }
 
+// New2of2 creates a new 2 of 2 multisig
 func New2of2(cosigner1Pubkey string, cosigner2Pubkey string) (string, error) {
 	return Newxofy(2, 2, cosigner1Pubkey, cosigner2Pubkey)
 }
 
+// SendTx sends the multisig tx. Copied from xlm/ to  avoid import cycles
 func SendTx(txe build.TransactionEnvelopeBuilder) error {
 	txeB64, err := txe.Base64()
 	if err != nil {
@@ -153,8 +156,7 @@ func SendTx(txe build.TransactionEnvelopeBuilder) error {
 	return nil
 }
 
-// Construct2of2Tx constructs a tx where the source account pubkey1 is the 2of2 account
-// we need 2 signers for this tx
+// Tx2of2 constructs a tx where the source account pubkey1 is the 2of2 account, we need 2 signers for this tx
 func Tx2of2(pubkey1 string, destination string, signer1 string, signer2 string, amount string, memo string) error {
 	// construct a tx sending coins from account 1 to account 1
 	tx, err := build.Transaction(
@@ -204,6 +206,7 @@ func AuthImmutable2of2(pubkey1 string, signer1 string, signer2 string) error {
 	return SendTx(txe)
 }
 
+// TrustAssetTx trusts a specific asset
 func TrustAssetTx(assetCode string, assetIssuer string, limit string, pubkey string, signer1 string, signer2 string) error {
 	tx, err := build.Transaction(
 		build.SourceAccount{pubkey},

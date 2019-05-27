@@ -14,6 +14,7 @@ import (
 // All tickers are requested from Binance due to it being the largest exchange by volume
 var XLMUSDReq = "https://api.binance.com/api/v1/ticker/price?symbol=XLMUSDT"
 
+// BinanceTickerResponse defines the ticker API response from Binanace
 type BinanceTickerResponse struct {
 	Symbol string `json:"symbol"`
 	Price  string `json:"price"`
@@ -38,6 +39,7 @@ func GetRequest(url string) ([]byte, error) {
 	return ioutil.ReadAll(res.Body)
 }
 
+// XLMUSD returns the XLMUSD ticker from Binance
 func XLMUSD() (float64, error) {
 	data, err := GetRequest(XLMUSDReq)
 	if err != nil {

@@ -20,6 +20,7 @@ import (
 // issuance so that anybody who hacks us can not print more tokens.
 
 // In financial terms, an escrow is a special purpose vehicle (kind of cool that we have SPV in finance)
+
 // InitEscrow creates a new keypair and stores it in a file
 func InitEscrow(projIndex int, seedpwd string, recpPubkey string, mySeed string) (string, error) {
 	pubkey, err := initMultisigEscrow(recpPubkey)
@@ -47,6 +48,7 @@ func InitEscrow(projIndex int, seedpwd string, recpPubkey string, mySeed string)
 	return pubkey, nil
 }
 
+// TransferFundsToEscrow transfers a specific amount of currency to the escrow. Usually called by the platform or recipient
 func TransferFundsToEscrow(amount float64, projIndex int, escrowPubkey string) error {
 	// we have the wallet pubkey, transfer funds to the escrow now
 	_, txhash, err := assets.SendAsset(consts.StablecoinCode, consts.StablecoinPublicKey, escrowPubkey,
@@ -68,6 +70,7 @@ func initMultisigEscrow(pubkey1 string) (string, error) {
 	return multisig.New2of2(pubkey1, pubkey2)
 }
 
+// SendFundsFromEscrow sends funds to a destination address from the project escrow
 func SendFundsFromEscrow(escrowPubkey string, destination string, signer1 string, amount string, memo string) error {
 	return multisig.Tx2of2(escrowPubkey, destination, signer1, consts.PlatformSeed, amount, memo)
 }

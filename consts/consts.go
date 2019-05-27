@@ -47,7 +47,7 @@ var StablecoinTrustLimit = "1000000000"                                         
 // teller related consts
 var TellerHomeDir = os.Getenv("HOME") + "/.openx/teller"       // the home directory of the teller executable
 var TellerMaxLocalStorageSize = 2000                           // in bytes, tweak this later to something like 10M after testing
-var TellerPollInterval = time.Duration(30000 * time.Second)    // frequence with which the teller of a particular system is polled
+var TellerPollInterval = time.Duration(30000 * time.Second)    // frequency with which the teller of a particular system is polled
 var LoginRefreshInterval = time.Duration(5 * 60 * time.Second) // every 5 minutes we refresh the teller to import the changes on the platform
 
 // third party consts

@@ -8,6 +8,7 @@ func NewGuarantor(uname string, pwd string, seedpwd string, Name string,
 	return newEntity(uname, pwd, seedpwd, Name, Address, Description, "guarantor")
 }
 
+// AddFirstLossGuarantee adds the given entity as a first loss guarantor
 func (a *Entity) AddFirstLossGuarantee(seedpwd string, amount float64) error {
 	a.FirstLossGuarantee = seedpwd
 	a.FirstLossGuaranteeAmt = amount

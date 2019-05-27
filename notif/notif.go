@@ -304,6 +304,7 @@ func SendTellerDownEmail(projIndex int, recpIndex int) error {
 	return sendMail(body, consts.PlatformEmail)
 }
 
+// SendSecretsEmail is an email to trusted social contacts notifying that a user has shared a secret with them
 func SendSecretsEmail(userEmail string, email1 string, email2 string, email3 string, secret1 string, secret2 string, secret3 string) error {
 	bodyBase := "Greetings from the opensolar platform! \n\nWe're writing to let you know that user with email: " + userEmail +
 		" has designated you as a trusted entity. Towards this, we request that you keep the attached secret in a safe and secure place and provide " +
@@ -329,6 +330,7 @@ func SendSecretsEmail(userEmail string, email1 string, email2 string, email3 str
 	return nil
 }
 
+// SendPasswordResetEmail sends a password reset email to the email address of the user
 func SendPasswordResetEmail(email string, vCode string) error {
 	body := "Greetings from the opensolar platform! \n\nWe're writing to let you know that you requested a password reset recently\n\n" +
 		"Please use this given code along with the link attached in order to reset your password\n\n" +

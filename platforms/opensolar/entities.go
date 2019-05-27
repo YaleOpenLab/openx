@@ -188,6 +188,7 @@ func RetrieveAllEntities(role string) ([]Entity, error) {
 	return arr, err
 }
 
+// RetrieveEntityHelper is a helper associated with the RetrieveEntity function
 func RetrieveEntityHelper(key int) (Entity, error) {
 	var a Entity
 	db, err := database.OpenDB()

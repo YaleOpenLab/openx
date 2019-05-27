@@ -61,7 +61,7 @@ func main() {
 	}
 }
 
-// SendTellerDownEmail is an email to the platform notifying that the teller for a particular project is down.
+// SendIoTHubDownEmail is an email to the platform notifying that the IoT device for a particular project is down.
 func SendIoTHubDownEmail(location string, email1 string, email2 string) error {
 	body := "Greetings from your remote notifier! \n\nWe're writing to let you know that your remote IoT Hub in: " + location +
 		" has not been responding to pings for a while. The timestamp of this alert is: " + utils.Timestamp() + " Please take action at the earliest." + "\n\n\n" +
