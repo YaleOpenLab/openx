@@ -684,7 +684,7 @@ func TestDb(t *testing.T) {
 		t.Fatal(err)
 	}
 	err = RecipientAuthorize(project2.Index, recp.U.Index)
-	if err != nil {
+	if err == nil {
 		t.Fatal(err)
 	}
 	project2.Stage = 1
