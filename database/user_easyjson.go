@@ -283,6 +283,8 @@ func easyjson9e1087fdDecodeGithubComYaleOpenLabOpenxDatabase1(in *jlexer.Lexer, 
 				}
 				in.Delim('}')
 			}
+		case "TwoFASecret":
+			out.TwoFASecret = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -656,6 +658,16 @@ func easyjson9e1087fdEncodeGithubComYaleOpenLabOpenxDatabase1(out *jwriter.Write
 			}
 			out.RawByte('}')
 		}
+	}
+	{
+		const prefix string = ",\"TwoFASecret\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.TwoFASecret))
 	}
 	out.RawByte('}')
 }
