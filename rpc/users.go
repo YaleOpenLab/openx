@@ -1384,6 +1384,27 @@ func new2fa() {
 			return
 		}
 
+		if len(prepUser.TwoFASecret) != 0 {
+			// user already has a 2fa secret, we need that in order to generate a new one
+			if r.URL.Query()["password"] == nil {
+				responseHandler(w, StatusBadRequest)
+				return
+			}
+
+			password := r.URL.Query()["password"][0]
+			result, err := prepUser.Authenticate2FA(password)
+			if err != nil {
+				responseHandler(w, StatusInternalServerError)
+				return
+			}
+
+			if !result {
+				responseHandler(w, StatusUnauthorized)
+				return
+			}
+			// now the old 2fa account is verified, we can proceed with creating a new 2fa secret
+		}
+
 		otpString, err := prepUser.Generate2FA()
 		if err != nil {
 			responseHandler(w, StatusInternalServerError)
