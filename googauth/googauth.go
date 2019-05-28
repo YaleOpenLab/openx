@@ -25,13 +25,10 @@ import (
 	"encoding/base32"
 	"encoding/binary"
 	"fmt"
-	"io/ioutil"
 	"net/url"
 	"sort"
 	"strconv"
 	"time"
-
-	qr "rsc.io/qr"
 )
 
 // ComputeCode computes the response code for a 64-bit challenge 'value' using the secret 'secret'.
@@ -138,7 +135,7 @@ func (c *OTPConfig) Authenticate(password string) (bool, error) {
 // on how to avoid conflicting accounts.
 //
 // See https://github.com/google/google-authenticator/wiki/Conflicting-Accounts
-func (c *OTPConfig) GenerateURI(user string) error {
+func (c *OTPConfig) GenerateURI(user string) (string, error) {
 	auth := "totp/"
 	issuer := "OpenX"
 	q := make(url.Values)
@@ -147,17 +144,5 @@ func (c *OTPConfig) GenerateURI(user string) error {
 	auth += issuer + ":"
 
 	otpString := "otpauth://" + auth + user + "?" + q.Encode()
-	qrFilename := "2fa.png"
-
-	qrcode, err := qr.Encode(otpString, qr.Q)
-	if err != nil {
-		return err
-	}
-	b := qrcode.PNG()
-	err = ioutil.WriteFile(qrFilename, b, 0600)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return otpString, nil
 }

@@ -661,7 +661,7 @@ func (a *User) GiveFeedback(userIndex int, feedback int) error {
 	return a.Save()
 }
 
-func (a *User) Generate2FA() error {
+func (a *User) Generate2FA() (string, error) {
 	secret := utils.GetRandomString(35) // multiples of 5 to  prevent the = padding at the end
 	secretBase32 := base32.StdEncoding.EncodeToString([]byte(secret))
 	otpc := &googauth.OTPConfig{
@@ -669,12 +669,19 @@ func (a *User) Generate2FA() error {
 		WindowSize: 1,
 		UTC:        true,
 	}
-	err := otpc.GenerateURI(a.Name)
+	otpString, err := otpc.GenerateURI(a.Name)
 	if err != nil {
-		return err
+		return otpString, err
+	}
+	if err != nil {
+		return otpString, err
 	}
 	a.TwoFASecret = secret
-	return a.Save()
+	err = a.Save()
+	if err != nil {
+		return otpString, err
+	}
+	return otpString, nil
 }
 
 func (a *User) Authenticate2FA(password string) (bool, error) {
