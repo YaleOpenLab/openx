@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"log"
+	"encoding/base32"
 
 	aes "github.com/YaleOpenLab/openx/aes"
 	assets "github.com/YaleOpenLab/openx/assets"
 	consts "github.com/YaleOpenLab/openx/consts"
+	googauth "github.com/YaleOpenLab/openx/googauth"
 	recovery "github.com/YaleOpenLab/openx/recovery"
 	utils "github.com/YaleOpenLab/openx/utils"
 	wallet "github.com/YaleOpenLab/openx/wallet"
@@ -92,6 +94,8 @@ type User struct {
 	// the automated feedback system, so we should be good.
 
 	GivenStarRating map[int]int // to keep track of users for whom you've given feedback
+
+	TwoFASecret string
 }
 
 // KycStruct contains the parameters required by the kyc partner for querynig kyc compliance
@@ -655,4 +659,38 @@ func (a *User) GiveFeedback(userIndex int, feedback int) error {
 
 	a.GivenStarRating[user.Index] = feedback
 	return a.Save()
+}
+
+func (a *User) Generate2FA() (string, error) {
+	secret := utils.GetRandomString(35) // multiples of 5 to  prevent the = padding at the end
+	secretBase32 := base32.StdEncoding.EncodeToString([]byte(secret))
+	otpc := &googauth.OTPConfig{
+		Secret:     secretBase32,
+		WindowSize: 1,
+		UTC:        true,
+	}
+	otpString, err := otpc.GenerateURI(a.Name)
+	if err != nil {
+		return otpString, err
+	}
+	if err != nil {
+		return otpString, err
+	}
+	a.TwoFASecret = secret
+	err = a.Save()
+	if err != nil {
+		return otpString, err
+	}
+	return otpString, nil
+}
+
+func (a *User) Authenticate2FA(password string) (bool, error) {
+	secretBase32 := base32.StdEncoding.EncodeToString([]byte(a.TwoFASecret))
+	otpc := &googauth.OTPConfig{
+		Secret:     secretBase32,
+		WindowSize: 1,
+		UTC:        true,
+	}
+
+	return otpc.Authenticate(password)
 }

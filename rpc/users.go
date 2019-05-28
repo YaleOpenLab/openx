@@ -51,6 +51,8 @@ func setupUserRpcs() {
 	sweepAsset()
 	validateKYC()
 	giveStarRating()
+	new2fa()
+	auth2fa()
 }
 
 const (
@@ -1364,6 +1366,87 @@ func giveStarRating() {
 		}
 
 		responseHandler(w, StatusOK)
+	})
+}
+
+type TwoFAResponse struct {
+	ImageData string
+}
+
+func new2fa() {
+	http.HandleFunc("/user/2fa/generate", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
+
+		prepUser, err := UserValidateHelper(w, r)
+		if err != nil {
+			responseHandler(w, StatusUnauthorized)
+			return
+		}
+
+		if len(prepUser.TwoFASecret) != 0 {
+			// user already has a 2fa secret, we need that in order to generate a new one
+			if r.URL.Query()["password"] == nil {
+				responseHandler(w, StatusBadRequest)
+				return
+			}
+
+			password := r.URL.Query()["password"][0]
+			result, err := prepUser.Authenticate2FA(password)
+			if err != nil {
+				responseHandler(w, StatusInternalServerError)
+				return
+			}
+
+			if !result {
+				responseHandler(w, StatusUnauthorized)
+				return
+			}
+			// now the old 2fa account is verified, we can proceed with creating a new 2fa secret
+		}
+
+		otpString, err := prepUser.Generate2FA()
+		if err != nil {
+			responseHandler(w, StatusInternalServerError)
+			return
+		}
+
+		var x TwoFAResponse
+		x.ImageData = otpString
+
+		MarshalSend(w, x)
+	})
+}
+
+func auth2fa() {
+	http.HandleFunc("/user/2fa/authenticate", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
+
+		prepUser, err := UserValidateHelper(w, r)
+		if err != nil {
+			responseHandler(w, StatusUnauthorized)
+			return
+		}
+
+		if r.URL.Query()["password"] == nil {
+			responseHandler(w, StatusBadRequest)
+			return
+		}
+
+		password := r.URL.Query()["password"][0]
+		result, err := prepUser.Authenticate2FA(password)
+		if err != nil {
+			responseHandler(w, StatusInternalServerError)
+			return
+		}
+
+		if !result {
+			responseHandler(w, StatusUnauthorized)
+			return
+		} else {
+			responseHandler(w, StatusOK)
+		}
 	})
 }
 

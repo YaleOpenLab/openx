@@ -13,6 +13,7 @@ import (
 	// scan "github.com/YaleOpenLab/openx/scan"
 	stablecoin "github.com/YaleOpenLab/openx/stablecoin"
 	utils "github.com/YaleOpenLab/openx/utils"
+	// scan "github.com/YaleOpenLab/openx/scan"
 	// wallet "github.com/YaleOpenLab/openx/wallet"
 	// xlm "github.com/YaleOpenLab/openx/xlm"
 	// assets "github.com/YaleOpenLab/openx/assets"
