@@ -99,7 +99,7 @@ func GetRequest(url string) ([]byte, error) {
 	return ioutil.ReadAll(res.Body)
 }
 
-// PutRequest is a handler that makes it easy to send out POST requests
+// PutRequest is a handler that makes it easy to send out PUT requests
 func PutRequest(body string, payload io.Reader) ([]byte, error) {
 
 	// the body must be the param that you usually pass to curl's -d option
@@ -111,6 +111,33 @@ func PutRequest(body string, payload io.Reader) ([]byte, error) {
 	}
 	// need to add this header or we'll get a negative response
 	req.Header.Add("content-type", "application/x-www-form-urlencoded")
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		log.Println("did not make request", err)
+		return dummy, err
+	}
+
+	defer res.Body.Close()
+	x, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		log.Println("did not read from ioutil", err)
+		return dummy, err
+	}
+
+	return x, nil
+}
+
+// PostRequest is a handler that makes it easy to send out POST requests
+func PostRequest(body string, payload io.Reader) ([]byte, error) {
+
+	// the body must be the param that you usually pass to curl's -d option
+	var dummy []byte
+	req, err := http.NewRequest("POST", body, payload)
+	if err != nil {
+		log.Println("did not create new POST request", err)
+		return dummy, err
+	}
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -176,6 +203,7 @@ func StartServer(port string, insecure bool) {
 	setupParticleHandlers()
 	setupSwytchApis()
 	setupStagesHandlers()
+	setupAnchorHandlers()
 	log.Println("Starting RPC Server on Port: ", port)
 	if insecure {
 		log.Fatal(http.ListenAndServe(":"+port, nil))

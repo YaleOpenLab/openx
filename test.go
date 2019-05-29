@@ -11,7 +11,7 @@ import (
 	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
 	rpc "github.com/YaleOpenLab/openx/rpc"
 	// scan "github.com/YaleOpenLab/openx/scan"
-	oracle "github.com/YaleOpenLab/openx/oracle"
+	// oracle "github.com/YaleOpenLab/openx/oracle"
 	stablecoin "github.com/YaleOpenLab/openx/stablecoin"
 	utils "github.com/YaleOpenLab/openx/utils"
 	// scan "github.com/YaleOpenLab/openx/scan"
@@ -91,11 +91,6 @@ func StartPlatform() error {
 
 func main() {
 	var err error
-	price, err := oracle.XLMUSD()
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println(price)
 	insecure, port, err := ParseConfig(os.Args)
 	if err != nil {
 		log.Fatal(err)
