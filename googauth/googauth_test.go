@@ -121,8 +121,8 @@ func TestTotpCode(t *testing.T) {
 func TestAuthenticate(t *testing.T) {
 
 	otpconf := &OTPConfig{
-		Secret:       "2SH3V3GDW7ZNMGYE",
-		WindowSize:   1,
+		Secret:     "2SH3V3GDW7ZNMGYE",
+		WindowSize: 1,
 	}
 
 	type attempt struct {
@@ -131,9 +131,9 @@ func TestAuthenticate(t *testing.T) {
 	}
 
 	var attempts = []attempt{
-		{"foobar", false},          // not digits
-		{"1fooba", false},          // not valid number
-		{"1111111", false},         // bad length
+		{"foobar", false},  // not digits
+		{"1fooba", false},  // not valid number
+		{"1111111", false}, // bad length
 	}
 
 	for _, a := range attempts {
@@ -181,7 +181,7 @@ func TestGenerateURI(t *testing.T) {
 
 	cases := []struct {
 		user string
-		out       string
+		out  string
 	}{
 		{"test", "otpauth://totp/OpenX:test?issuer=OpenX&secret=x"},
 		{"blah", "otpauth://totp/OpenX:blah?issuer=OpenX&secret=x"},
