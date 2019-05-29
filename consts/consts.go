@@ -51,7 +51,7 @@ var TellerPollInterval = time.Duration(30000 * time.Second)    // frequency with
 var LoginRefreshInterval = time.Duration(5 * 60 * time.Second) // every 5 minutes we refresh the teller to import the changes on the platform
 
 // third party consts
-var KYCAPIKey = ""                  // API key to call the KYC provider's API
-var AnchorUSDCode = ""              // code for the AnchorUSD stablecoin
-var AnchorUSDAddress = ""           // address issuing AnchorUSD
-var AnchorUSDTrustLimit = "1000000" // the limit that the investor trusts AnchorUSD for / the max amount of AnchorUSD that a person can be given.
+var KYCAPIKey = ""                                                                // API key to call the KYC provider's API
+var AnchorUSDCode = "USD"                                                         // code for the AnchorUSD stablecoin (ref: https://www.anchorusd.com/docs/api#introduction)
+var AnchorUSDAddress = "GCKFBEIYV2U22IO2BJ4KVJOIP7XPWQGQFKKWXR6DOSJBV7STMAQSMTGG" // address issuing AnchorUSD (ref: https://www.anchorusd.com/.well-known/stellar.toml)
+var AnchorUSDTrustLimit = "1000000"                                               // the limit that the investor trusts AnchorUSD for / the max amount of AnchorUSD that a person can be given.
