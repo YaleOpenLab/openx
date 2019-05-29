@@ -2,10 +2,10 @@ package database
 
 import (
 	"crypto/ecdsa"
+	"encoding/base32"
 	"fmt"
 	"github.com/pkg/errors"
 	"log"
-	"encoding/base32"
 
 	aes "github.com/YaleOpenLab/openx/aes"
 	assets "github.com/YaleOpenLab/openx/assets"
