@@ -1,0 +1,78 @@
+{
+  "code": 200,
+  "status": "success",
+  "content": {
+    "data": {
+      "id": 149533590,
+      "ref": "1559244379-w7TGLkAI",
+      "searcher_id": 6273,
+      "assignee_id": 6273,
+      "filters": {
+        "birth_year": 1957,
+        "country_codes": [],
+        "remove_deceased": 0,
+        "types": [],
+        "exact_match": false,
+        "fuzziness": 0.8
+      },
+      "match_status": "potential_match",
+      "risk_level": "unknown",
+      "search_term": "El Chapo",
+      "submitted_term": "El Chapo",
+      "client_ref": "testnet+ElChapo",
+      "total_hits": 1,
+      "updated_at": "2019-05-30 19:26:20",
+      "created_at": "2019-05-30 19:26:20",
+      "tags": [],
+      "limit": 5,
+      "offset": 0,
+      "share_url": "https:\/\/app.complyadvantage.com\/public\/search\/1559244379-w7TGLkAI\/76c819e54209",
+      "hits": [{
+        "doc": {
+          "aka": [{
+            "name": "Joaqu\u00edn Chapo Guzm\u00e1n Loera"
+          }, {
+            "name": "Guzman Loesa Joaquin"
+          }],
+          "assets": [{
+            "public_url": "http:\/\/complyadvantage-asset.s3.amazonaws.com\/c78edad5-777a-47c9-9a68-148bb9d5a05e.pdf",
+            "source": "dea-fugitives",
+            "type": "pdf"
+          }],
+          "entity_type": "person",
+          "fields": [{
+            "name": "Active Start Date",
+            "source": "united-states-system-for-award-management-exclusions",
+            "tag": "active_start_date",
+            "value": "2014-10-24"
+          }, {
+            "name": "Country",
+            "source": "complyadvantage-adverse-media",
+            "value": "Argentina"
+          }],
+          "id": "1R20MX39RZSSLKL",
+          "keywords": [],
+          "last_updated_utc": "2019-05-29T20:31:57Z",
+          "media": [{
+            "date": "2019-05-25T00:00:00Z",
+            "snippet": "\"Tengo miedo del gobierno mexicano\". La actriz habla de su pol\u00e9mica relaci\u00f3n con Joaqu\u00edn El Chapo Guzm\u00e1n, preso en el penal del Altiplano. Tambi\u00e9n te recomendamos En el promocional de la entrevista, se observa que Aristegui le pregunta a Kate si Sean Penn result\u00f3 una \"caja de sorpresas\" y si consideraba eso una \"traici\u00f3n\".",
+            "title": "\"Tengo miedo del gobierno mexicano\": Kate del Castillo",
+            "url": "https:\/\/www.proceso.com.mx\/434140\/tengo-miedo-del-gobierno-mexicano-kate-del-castillo"
+          }, {
+            "date": "2019-05-25T00:00:00Z",
+            "snippet": "According to new court filings obtained by CNN, the government opposed all of the above and alleged the request was part of a ploy to escape from prison or silence cooperating witnesses. Jeffrey Lichtman, one of the lawyers on Guzman's defense team, called the prosecution's response, due Thursday, \"literally hysterical.\" The high-profile prisoner has had no prison infractions since his arrest, he said, \"yet now, by simply asking for some bottled water and some fresh air he is accused of plotting a daring prison escape despite zero supporting evidence.\"",
+            "title": "'El Chapo' made an unusual prison request. Authorities fear it's another ploy to escape. - Houston Chronicle",
+            "url": "https:\/\/www.chron.com\/news\/article\/El-Chapo-made-an-unusual-prison-request-13896814.php"
+          }],
+          "name": "Guzman Loera Joaquin",
+          "sources": ["ofac-sdn-list", "united-states-system-for-award-management-exclusions", "company-am", "dea-fugitives", "mexico-procuradoria-general-most-wanted", "complyadvantage-adverse-media"],
+          "types": ["adverse-media", "adverse-media-financial-crime", "adverse-media-fraud", "adverse-media-general", "adverse-media-narcotics", "adverse-media-sexual-crime", "adverse-media-terrorism", "adverse-media-violent-crime", "fitness-probity", "sanction", "warning"]
+        },
+        "match_types": ["aka_exact", "year_of_birth"],
+        "score": 120.75994,
+        "match_status": "potential_match",
+        "is_whitelisted": false
+      }]
+    }
+  }
+}

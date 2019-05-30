@@ -204,6 +204,7 @@ func StartServer(port string, insecure bool) {
 	setupSwytchApis()
 	setupStagesHandlers()
 	setupAnchorHandlers()
+	setupCAHandlers()
 	log.Println("Starting RPC Server on Port: ", port)
 	if insecure {
 		log.Fatal(http.ListenAndServe(":"+port, nil))

@@ -110,26 +110,26 @@ type KycStruct struct {
 
 // AAnchorKYC defines the list of fields that AnchorUSD requires us to provide for getting AnchorUSD
 type AnchorKYCHelper struct {
-	Name string
+	Name     string
 	Birthday struct {
 		Month string
-		Day string
-		Year string
+		Day   string
+		Year  string
 	}
 	Tax struct {
 		Country string
-		Id string
+		Id      string
 	}
 	Address struct {
-		Street string
-		City string
-		Postal string
-		Region string
+		Street  string
+		City    string
+		Postal  string
+		Region  string
 		Country string
-		Phone string
+		Phone   string
 	}
 	PrimaryPhone string
-	Gender string
+	Gender       string
 }
 
 // EthWallet contains the structures needed for an ethereum wallet
