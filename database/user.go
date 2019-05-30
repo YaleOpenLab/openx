@@ -95,7 +95,9 @@ type User struct {
 
 	GivenStarRating map[int]int // to keep track of users for whom you've given feedback
 
-	TwoFASecret string
+	TwoFASecret string // the 2FA secret that users can use to authenticate wiht something like Google Authenticator
+
+	AnchorKYC AnchorKYCHelper // kyc stuff required by AnchorUSD
 }
 
 // KycStruct contains the parameters required by the kyc partner for querynig kyc compliance
@@ -104,6 +106,30 @@ type KycStruct struct {
 	IDCardPhoto    string
 	DriversLicense string
 	PersonalPhoto  string // a selfie to verify that  the person registering on the platform is the same person whose documents have been uploaded
+}
+
+// AAnchorKYC defines the list of fields that AnchorUSD requires us to provide for getting AnchorUSD
+type AnchorKYCHelper struct {
+	Name string
+	Birthday struct {
+		Month string
+		Day string
+		Year string
+	}
+	Tax struct {
+		Country string
+		Id string
+	}
+	Address struct {
+		Street string
+		City string
+		Postal string
+		Region string
+		Country string
+		Phone string
+	}
+	PrimaryPhone string
+	Gender string
 }
 
 // EthWallet contains the structures needed for an ethereum wallet

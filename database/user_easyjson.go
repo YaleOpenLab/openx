@@ -285,6 +285,8 @@ func easyjson9e1087fdDecodeGithubComYaleOpenLabOpenxDatabase1(in *jlexer.Lexer, 
 			}
 		case "TwoFASecret":
 			out.TwoFASecret = string(in.String())
+		case "AnchorKYC":
+			(out.AnchorKYC).UnmarshalEasyJSON(in)
 		default:
 			in.SkipRecursive()
 		}
@@ -669,6 +671,16 @@ func easyjson9e1087fdEncodeGithubComYaleOpenLabOpenxDatabase1(out *jwriter.Write
 		}
 		out.String(string(in.TwoFASecret))
 	}
+	{
+		const prefix string = ",\"AnchorKYC\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		(in.AnchorKYC).MarshalEasyJSON(out)
+	}
 	out.RawByte('}')
 }
 
@@ -896,4 +908,400 @@ func (v *EthWallet) UnmarshalJSON(data []byte) error {
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *EthWallet) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjson9e1087fdDecodeGithubComYaleOpenLabOpenxDatabase3(l, v)
+}
+func easyjson9e1087fdDecodeGithubComYaleOpenLabOpenxDatabase4(in *jlexer.Lexer, out *AnchorKYCHelper) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeString()
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "Name":
+			out.Name = string(in.String())
+		case "Birthday":
+			easyjson9e1087fdDecode(in, &out.Birthday)
+		case "Tax":
+			easyjson9e1087fdDecode1(in, &out.Tax)
+		case "Address":
+			easyjson9e1087fdDecode2(in, &out.Address)
+		case "PrimaryPhone":
+			out.PrimaryPhone = string(in.String())
+		case "Gender":
+			out.Gender = string(in.String())
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson9e1087fdEncodeGithubComYaleOpenLabOpenxDatabase4(out *jwriter.Writer, in AnchorKYCHelper) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	{
+		const prefix string = ",\"Name\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Name))
+	}
+	{
+		const prefix string = ",\"Birthday\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		easyjson9e1087fdEncode(out, in.Birthday)
+	}
+	{
+		const prefix string = ",\"Tax\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		easyjson9e1087fdEncode1(out, in.Tax)
+	}
+	{
+		const prefix string = ",\"Address\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		easyjson9e1087fdEncode2(out, in.Address)
+	}
+	{
+		const prefix string = ",\"PrimaryPhone\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.PrimaryPhone))
+	}
+	{
+		const prefix string = ",\"Gender\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Gender))
+	}
+	out.RawByte('}')
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v AnchorKYCHelper) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjson9e1087fdEncodeGithubComYaleOpenLabOpenxDatabase4(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v AnchorKYCHelper) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjson9e1087fdEncodeGithubComYaleOpenLabOpenxDatabase4(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *AnchorKYCHelper) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjson9e1087fdDecodeGithubComYaleOpenLabOpenxDatabase4(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *AnchorKYCHelper) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjson9e1087fdDecodeGithubComYaleOpenLabOpenxDatabase4(l, v)
+}
+func easyjson9e1087fdDecode2(in *jlexer.Lexer, out *struct {
+	Street  string
+	City    string
+	Postal  string
+	Region  string
+	Country string
+	Phone   string
+}) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeString()
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "Street":
+			out.Street = string(in.String())
+		case "City":
+			out.City = string(in.String())
+		case "Postal":
+			out.Postal = string(in.String())
+		case "Region":
+			out.Region = string(in.String())
+		case "Country":
+			out.Country = string(in.String())
+		case "Phone":
+			out.Phone = string(in.String())
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson9e1087fdEncode2(out *jwriter.Writer, in struct {
+	Street  string
+	City    string
+	Postal  string
+	Region  string
+	Country string
+	Phone   string
+}) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	{
+		const prefix string = ",\"Street\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Street))
+	}
+	{
+		const prefix string = ",\"City\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.City))
+	}
+	{
+		const prefix string = ",\"Postal\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Postal))
+	}
+	{
+		const prefix string = ",\"Region\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Region))
+	}
+	{
+		const prefix string = ",\"Country\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Country))
+	}
+	{
+		const prefix string = ",\"Phone\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Phone))
+	}
+	out.RawByte('}')
+}
+func easyjson9e1087fdDecode1(in *jlexer.Lexer, out *struct {
+	Country string
+	Id      string
+}) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeString()
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "Country":
+			out.Country = string(in.String())
+		case "Id":
+			out.Id = string(in.String())
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson9e1087fdEncode1(out *jwriter.Writer, in struct {
+	Country string
+	Id      string
+}) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	{
+		const prefix string = ",\"Country\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Country))
+	}
+	{
+		const prefix string = ",\"Id\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Id))
+	}
+	out.RawByte('}')
+}
+func easyjson9e1087fdDecode(in *jlexer.Lexer, out *struct {
+	Month string
+	Day   string
+	Year  string
+}) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeString()
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "Month":
+			out.Month = string(in.String())
+		case "Day":
+			out.Day = string(in.String())
+		case "Year":
+			out.Year = string(in.String())
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson9e1087fdEncode(out *jwriter.Writer, in struct {
+	Month string
+	Day   string
+	Year  string
+}) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	{
+		const prefix string = ",\"Month\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Month))
+	}
+	{
+		const prefix string = ",\"Day\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Day))
+	}
+	{
+		const prefix string = ",\"Year\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Year))
+	}
+	out.RawByte('}')
 }
