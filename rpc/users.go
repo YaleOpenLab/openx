@@ -53,6 +53,7 @@ func setupUserRpcs() {
 	giveStarRating()
 	new2fa()
 	auth2fa()
+	addAnchorKYCInfo()
 }
 
 const (
@@ -1447,6 +1448,50 @@ func auth2fa() {
 		} else {
 			responseHandler(w, StatusOK)
 		}
+	})
+}
+
+func addAnchorKYCInfo() {
+	http.HandleFunc("/user/anchorusd/kyc", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
+
+		prepUser, err := UserValidateHelper(w, r)
+		if err != nil {
+			responseHandler(w, StatusUnauthorized)
+			return
+		}
+
+		if r.URL.Query()["name"] == nil || r.URL.Query()["bdaymonth"] == nil || r.URL.Query()["bdayday"] == nil ||
+			r.URL.Query()["bdayyear"] == nil || r.URL.Query()["taxcountry"] == nil || r.URL.Query()["taxid"] == nil ||
+			r.URL.Query()["addrstreet"] == nil || r.URL.Query()["addrcity"] == nil || r.URL.Query()["addrpostal"] == nil ||
+			r.URL.Query()["addrregion"] == nil || r.URL.Query()["addrcountry"] == nil || r.URL.Query()["addrphone"] == nil ||
+			r.URL.Query()["primaryphone"] == nil || r.URL.Query()["gender"] == nil {
+			responseHandler(w, StatusBadRequest)
+			return
+		}
+
+		prepUser.AnchorKYC.Name = r.URL.Query()["name"][0]
+		prepUser.AnchorKYC.Birthday.Month = r.URL.Query()["bdaymonth"][0]
+		prepUser.AnchorKYC.Birthday.Day = r.URL.Query()["bdayday"][0]
+		prepUser.AnchorKYC.Birthday.Year = r.URL.Query()["bdayyear"][0]
+		prepUser.AnchorKYC.Tax.Country = r.URL.Query()["taxcountry"][0]
+		prepUser.AnchorKYC.Tax.Id = r.URL.Query()["taxid"][0]
+		prepUser.AnchorKYC.Address.Street = r.URL.Query()["addrstreet"][0]
+		prepUser.AnchorKYC.Address.City = r.URL.Query()["addrcity"][0]
+		prepUser.AnchorKYC.Address.Postal = r.URL.Query()["addrpostal"][0]
+		prepUser.AnchorKYC.Address.Region = r.URL.Query()["addrregion"][0]
+		prepUser.AnchorKYC.Address.Country = r.URL.Query()["addrcountry"][0]
+		prepUser.AnchorKYC.Address.Phone = r.URL.Query()["addrphone"][0]
+		prepUser.AnchorKYC.PrimaryPhone = r.URL.Query()["primaryphone"][0]
+		prepUser.AnchorKYC.Gender = r.URL.Query()["gender"][0]
+
+		err = prepUser.Save()
+		if err != nil {
+			responseHandler(w, StatusInternalServerError)
+		}
+
+		responseHandler(w, StatusOK)
 	})
 }
 
