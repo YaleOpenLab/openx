@@ -28,6 +28,23 @@ type kycDepositResponse struct {
 	Url    string
 }
 
+// GetAndReturnIdentifier is a handler that makes a get request and returns json data
+func GetAndReturnIdentifier(w http.ResponseWriter, r *http.Request, body string) (AnchorIntentResponse, error) {
+	var x AnchorIntentResponse
+	data, err := GetRequest(body)
+	if err != nil {
+		log.Println("did not get response", err)
+		return x, err
+	}
+	// now data is in byte, we need the other structure now
+	err = json.Unmarshal(data, &x)
+	if err != nil {
+		log.Println("did not unmarshal json", err)
+		return x, err
+	}
+	return x, nil
+}
+
 // PostAndSend is a handler that POSTs data and returns the response
 func PostAndSend(w http.ResponseWriter, r *http.Request, body string, payload io.Reader) {
 	data, err := PostRequest(body, payload)
@@ -60,8 +77,20 @@ func intentDeposit() {
 
 		body := "https://sandbox-api.anchorusd.com/transfer/deposit?account=" + prepUser.PublicKey +
 			"&asset_code=USD&email_address=" + prepUser.Email
-		var x AnchorIntentResponse
-		GetAndSendJson(w, r, body, x) // we could return the identifier and save it if we have to. But the user has to click through anyawy and we could call the other endpoint from the frontend, so would need to discuss before we do that here
+		x, err := GetAndReturnIdentifier(w, r, body) // we could return the identifier and save it if we have to. But the user has to click through anyawy and we could call the other endpoint from the frontend, so would need to discuss before we do that here
+		if err != nil {
+			responseHandler(w, StatusInternalServerError)
+			return
+		}
+
+		prepUser.AnchorKYC.DepositIdentifier = x.Identifier
+		err = prepUser.Save()
+		if err != nil {
+			responseHandler(w, StatusInternalServerError)
+			return
+		}
+
+		MarshalSend(w, x)
 	})
 }
 
@@ -70,7 +99,7 @@ func kycDeposit() {
 		checkGet(w, r)
 		checkOrigin(w, r)
 
-		_, err := UserValidateHelper(w, r)
+		prepUser, err := UserValidateHelper(w, r)
 		if err != nil {
 			responseHandler(w, StatusUnauthorized)
 			return
@@ -78,7 +107,7 @@ func kycDeposit() {
 
 		body := "https://sandbox-api.anchorusd.com/api/register"
 		data := url.Values{}
-		data.Set("identifier", "b5836f518685c372fe5a013475ccbf37")
+		data.Set("identifier", prepUser.AnchorKYC.DepositIdentifier)
 		data.Set("name", "Test User")
 		data.Set("birthday[month]", "6")
 		data.Set("birthday[day]", "8")
@@ -114,8 +143,21 @@ func intentWithdraw() {
 		// amount can be chosen by the user in the flow on anchor, so no need to handle that here
 		body := "https://sandbox-api.anchorusd.com/transfer/withdraw?type=bank_account&asset_code=USD&account=" + prepUser.PublicKey +
 			"&email_address=" + prepUser.Email
-		var x AnchorIntentResponse
-		GetAndSendJson(w, r, body, x)
+
+		x, err := GetAndReturnIdentifier(w, r, body) // we could return the identifier and save it if we have to. But the user has to click through anyawy and we could call the other endpoint from the frontend, so would need to discuss before we do that here
+		if err != nil {
+			responseHandler(w, StatusInternalServerError)
+			return
+		}
+
+		prepUser.AnchorKYC.WithdrawIdentifier = x.Identifier
+		err = prepUser.Save()
+		if err != nil {
+			responseHandler(w, StatusInternalServerError)
+			return
+		}
+
+		MarshalSend(w, x)
 	})
 }
 
@@ -124,7 +166,7 @@ func kycWithdraw() {
 		checkGet(w, r)
 		checkOrigin(w, r)
 
-		_, err := UserValidateHelper(w, r)
+		prepUser, err := UserValidateHelper(w, r)
 		if err != nil {
 			responseHandler(w, StatusUnauthorized)
 			return
@@ -132,7 +174,7 @@ func kycWithdraw() {
 
 		body := "https://sandbox-api.anchorusd.com/api/register"
 		data := url.Values{}
-		data.Set("identifier", "54071eb5789afa0af61d126559dcd6a6") // TODO: the deposit API doesn't parse identifiers. Should be fixed on AnchorUSD's end.
+		data.Set("identifier", prepUser.AnchorKYC.WithdrawIdentifier) // TODO: the deposit API doesn't parse identifiers. Should be fixed on AnchorUSD's end.
 		data.Set("name", "Test User")
 		data.Set("birthday[month]", "6")
 		data.Set("birthday[day]", "8")

@@ -130,6 +130,8 @@ type AnchorKYCHelper struct {
 	}
 	PrimaryPhone string
 	Gender       string
+	DepositIdentifier string
+	WithdrawIdentifier string
 }
 
 // EthWallet contains the structures needed for an ethereum wallet
