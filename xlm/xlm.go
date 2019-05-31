@@ -1,14 +1,11 @@
 package xlm
 
-// the xlm package is a package that interacts with the stellar testnet
-// API and fetches testnet coins for the user
-// right now, there are multiple functions which are not used through the program,
-// would be nice to use them when we require so.
+// the xlm package provides all the necessary handlers in order to interact with the
+// Stellar blockchain
 import (
 	"fmt"
 	"github.com/pkg/errors"
 	"log"
-	"net/http"
 
 	consts "github.com/YaleOpenLab/openx/consts"
 	utils "github.com/YaleOpenLab/openx/utils"
@@ -21,27 +18,6 @@ import (
 func GetKeyPair() (string, string, error) {
 	pair, err := keypair.Random()
 	return pair.Seed(), pair.Address(), err
-}
-
-// GetXLM makes an API call to the friendbot on stellar testnet, which gives
-// us 10000 testnet XLM
-func GetXLM(PublicKey string) error {
-	// get some coins from the stellar robot for testing
-	// gives only a constant amount of stellar, so no need to pass it a coin param
-	// send stabelcoin from the platform instead of friendbot since it seems to be unstable
-
-	resp, err := http.Get("https://friendbot.stellar.org/?addr=" + PublicKey)
-	if err != nil || resp.Status != "200 OK" {
-		return errors.New("API Request did not succeed") // need this separately
-	}
-
-	// _, txhash, err := SendXLMCreateAccount(PublicKey, "6", consts.PlatformSeed)
-
-	// log.Println("txhash for setting up account: ", txhash)
-	// if err != nil {
-	// return errors.New("Platform could not send XLM to account, quitting!")
-	// }
-	return nil
 }
 
 // AccountExists checks whether an accoutn exists, not needed now since we do the check ourselves

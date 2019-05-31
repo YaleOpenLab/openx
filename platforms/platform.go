@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	assets "github.com/YaleOpenLab/openx/assets"
+	assets "github.com/YaleOpenLab/openx/xlm/assets"
 	consts "github.com/YaleOpenLab/openx/consts"
 	scan "github.com/YaleOpenLab/openx/scan"
 	utils "github.com/YaleOpenLab/openx/utils"

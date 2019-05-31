@@ -21,7 +21,7 @@ import (
 	"log"
 	"os"
 
-	assets "github.com/YaleOpenLab/openx/assets"
+	assets "github.com/YaleOpenLab/openx/xlm/assets"
 	consts "github.com/YaleOpenLab/openx/consts"
 	oracle "github.com/YaleOpenLab/openx/oracle"
 	scan "github.com/YaleOpenLab/openx/scan"

@@ -3,7 +3,7 @@ package opensolar
 import (
 	"log"
 
-	assets "github.com/YaleOpenLab/openx/assets"
+	assets "github.com/YaleOpenLab/openx/xlm/assets"
 	consts "github.com/YaleOpenLab/openx/consts"
 	multisig "github.com/YaleOpenLab/openx/multisig"
 	utils "github.com/YaleOpenLab/openx/utils"
