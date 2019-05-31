@@ -175,20 +175,6 @@ func kycWithdraw() {
 		body := "https://sandbox-api.anchorusd.com/api/register"
 		data := url.Values{}
 		data.Set("identifier", prepUser.AnchorKYC.WithdrawIdentifier) // TODO: the deposit API doesn't parse identifiers. Should be fixed on AnchorUSD's end.
-		data.Set("name", "Test User")
-		data.Set("birthday[month]", "6")
-		data.Set("birthday[day]", "8")
-		data.Set("birthday[year]", "1993")
-		data.Set("tax-country", "US")
-		data.Set("tax-id-number", "111111111")
-		data.Set("address[street-1]", "123 4 Street")
-		data.Set("address[city]", "Anytown")
-		data.Set("address[postal-code]", "94107")
-		data.Set("address[region]", "CA")
-		data.Set("address[country]", "US")
-		data.Set("primary-phone-number", "+14151111111")
-		data.Set("gender", "male")
-
 		payload := strings.NewReader(data.Encode())
 		PostAndSend(w, r, body, payload)
 	})
