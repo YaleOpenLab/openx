@@ -9,7 +9,7 @@ import (
 	"math"
 	"net/http"
 
-	assets "github.com/YaleOpenLab/openx/assets"
+	assets "github.com/YaleOpenLab/openx/xlm/assets"
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
 	ipfs "github.com/YaleOpenLab/openx/ipfs"

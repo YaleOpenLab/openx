@@ -23,7 +23,7 @@ The entities in the platform are described in the main README file, but this exp
 // that one project's payback asset is not worth the same as the other project's PaybackAsset.
 // the other two assets are fungible - each InvestorAsset is worth +1USD and each DebtAsset
 // is worth -1 USD and can be transferred to other peers willing to take profit / debt
-// on behalf of the above entities. SInce PaybackAsset is not fungible, the flag
+// on behalf of the above entities. Since PaybackAsset is not fungible, the flag
 // authorization_required needs to be set and a party without a trustline with
 // the issuer can not trade in this asset (and ideally, the issuer will not accept
 // trustlines in this new asset)

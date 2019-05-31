@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	assets "github.com/YaleOpenLab/openx/assets"
+	assets "github.com/YaleOpenLab/openx/xlm/assets"
 	consts "github.com/YaleOpenLab/openx/consts"
 	utils "github.com/YaleOpenLab/openx/utils"
 	xlm "github.com/YaleOpenLab/openx/xlm"

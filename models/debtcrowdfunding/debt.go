@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	assets "github.com/YaleOpenLab/openx/assets"
+	assets "github.com/YaleOpenLab/openx/xlm/assets"
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
 	issuer "github.com/YaleOpenLab/openx/issuer"

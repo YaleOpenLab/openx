@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	assets "github.com/YaleOpenLab/openx/assets"
+	assets "github.com/YaleOpenLab/openx/xlm/assets"
 	database "github.com/YaleOpenLab/openx/database"
 	notif "github.com/YaleOpenLab/openx/notif"
 	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"

@@ -8,7 +8,7 @@ import (
 	"log"
 
 	aes "github.com/YaleOpenLab/openx/aes"
-	assets "github.com/YaleOpenLab/openx/assets"
+	assets "github.com/YaleOpenLab/openx/xlm/assets"
 	consts "github.com/YaleOpenLab/openx/consts"
 	googauth "github.com/YaleOpenLab/openx/googauth"
 	recovery "github.com/YaleOpenLab/openx/recovery"
