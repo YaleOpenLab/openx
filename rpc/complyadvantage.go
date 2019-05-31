@@ -13,6 +13,7 @@ import (
 
 func setupCAHandlers() {
 	searchComplyAdvantage()
+	getAllCAUsers()
 }
 
 type CAResponse struct {
@@ -152,5 +153,48 @@ func searchComplyAdvantage() {
 }`
 		payload := bytes.NewBuffer([]byte(data))
 		PostAndSendCA(w, r, body, payload)
+	})
+}
+
+type caAllUserResponse struct {
+	Code int `json:"code"`
+	Status string `json:"status"`
+	Content struct {
+		Data []struct {
+			Id int `json:"id"`
+			Email string `json:"email"`
+			Name string `json:"name"`
+			Phone string `json:"phone"`
+			Updated_at string `json:"updated_at"`
+			Created_at string `json:"created_at"`
+		} `json:"data"`
+	} `json:"content"`
+}
+
+func getAllCAUsers() {
+	http.HandleFunc("/admin/ca/users/all", func(w http.ResponseWriter, r *http.Request) {
+		checkGet(w, r)
+		checkOrigin(w, r)
+
+		_, err := UserValidateHelper(w, r)
+		if err != nil {
+			responseHandler(w, StatusUnauthorized)
+			return
+		}
+
+		body := "https://api.complyadvantage.com/users?api_key=" + consts.KYCAPIKey
+		data, err := GetRequest(body)
+		if err != nil {
+			responseHandler(w, StatusInternalServerError)
+			return
+		}
+
+		var x caAllUserResponse
+		err = x.UnmarshalJSON(data)
+		if err != nil {
+			responseHandler(w, StatusInternalServerError)
+			return
+		}
+		MarshalSend(w, x)
 	})
 }
