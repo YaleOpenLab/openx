@@ -7,18 +7,19 @@ import (
 	"github.com/algorand/go-algorand-sdk/client/algod"
 	"github.com/algorand/go-algorand-sdk/client/algod/models"
 	"github.com/algorand/go-algorand-sdk/client/kmd"
+	"github.com/algorand/go-algorand-sdk/transaction"
 	"github.com/algorand/go-algorand-sdk/types"
 )
 
 // These constants represent the algod REST endpoint and the corresponding
 // API token. You can retrieve these from the `algod.net` and `algod.token`
 // files in the algod data directory.
-var algodAddress = "http://localhost:49809"
-var algodToken = "57724c8fd1146e26d8f9805734414c4374f3528fc1201796feb701a2358bdd55"
+const algodAddress = "http://localhost:50435"
+const algodToken = "df6740f7618f699b0417f764b6447fa7e690f9514c73cd60184314ae16141030"
 var Client algod.Client
 
-const kmdAddress = "http://localhost:7833"
-const kmdToken = "a91d47703ce61823872df82d072470d2ceb203f5c27cea1012dea3d8d7eacaf7"
+const kmdAddress = "http://localhost:50559"
+const kmdToken = "0f87122a1b376c7f357f63c59a83b650044f91597622d70926df8e370a4c6ce6"
 
 var KmdClient kmd.Client
 
@@ -44,8 +45,16 @@ func InitClient() (algod.Client, error) {
 	return Client, nil
 }
 
+func InitKmdClient() (kmd.Client, error) {
+	return kmd.MakeClient(kmdAddress, kmdToken)
+}
+
 func GetLatestBlock(status models.NodeStatus) (models.Block, error) {
 	return Client.Block(status.LastRound)
+}
+
+func GetBlock(blockNumber uint64) (models.Block, error) {
+	return Client.Block(blockNumber)
 }
 
 func CreateNewWalletHandle(walletID string, password string) (string, error) {
@@ -70,6 +79,87 @@ func GenerateAddress(walletHandleToken string) (string, error) {
 	}
 	fmt.Printf("Generated address %s\n", genResponse.Address)
 	return genResponse.Address, nil
+}
+
+func SignTransaction(walletName string, password string, amount uint64) {
+	// Get the list of wallets
+	listResponse, err := KmdClient.ListWallets()
+	if err != nil {
+		fmt.Printf("error listing wallets: %s\n", err)
+		return
+	}
+	log.Println("response: ", listResponse)
+	// Find our wallet name in the list
+	var ourWalletId string
+	fmt.Printf("Got %d wallet(s):\n", len(listResponse.Wallets))
+	for _, wallet := range listResponse.Wallets {
+		fmt.Printf("ID: %s\tName: %s\n", wallet.ID, wallet.Name)
+		if wallet.Name == walletName {
+			fmt.Printf("found wallet '%s' with ID: %s\n", wallet.Name, wallet.ID)
+			ourWalletId = wallet.ID
+		}
+	}
+
+	exampleWalletHandleToken, err := CreateNewWalletHandle(ourWalletId, password)
+	if err != nil {
+		fmt.Printf("Error initializing wallet handle: %s\n", err)
+		return
+	}
+
+	fromAddr, err := GenerateAddress(exampleWalletHandleToken)
+	if err != nil {
+		fmt.Printf("Error generating key: %s\n", err)
+		return
+	}
+	fmt.Printf("Generated address 1 %s\n", fromAddr)
+
+	// Generate a new address from the wallet handle
+	toAddr, err := GenerateAddress(exampleWalletHandleToken)
+	if err != nil {
+		fmt.Printf("Error generating key: %s\n", err)
+		return
+	}
+	fmt.Printf("Generated address 2 %s\n", toAddr)
+
+	// Get the suggested transaction parameters
+	txParams, err := Client.SuggestedParams()
+	if err != nil {
+		fmt.Printf("error getting suggested tx params: %s\n", err)
+		return
+	}
+
+	log.Println("LASTROND:" , txParams.LastRound)
+	// Make transaction
+	genID := txParams.GenesisID
+	genHash := txParams.GenesisHash
+	fee := txParams.Fee
+	lastRound := txParams.LastRound
+	// (from, to string, fee, amount, firstRound, lastRound uint64, note []byte,
+	// closeRemainderTo, genesisID string, genesisHash []byte) (types.Transaction, error)
+	tx, err := transaction.MakePaymentTxn(fromAddr, toAddr, fee, amount, 300, lastRound, nil, "", genID, genHash)
+	if err != nil {
+		fmt.Printf("Error creating transaction: %s\n", err)
+		return
+	}
+
+	// Sign the transaction
+	signResponse, err := KmdClient.SignTransaction(exampleWalletHandleToken, password, tx)
+	if err != nil {
+		fmt.Printf("Failed to sign transaction with kmd: %s\n", err)
+		return
+	}
+
+	fmt.Printf("kmd made signed transaction with bytes: %x\n", signResponse.SignedTransaction)
+
+	// Broadcast the transaction to the network
+	// Note that this transaction will get rejected because the accounts do not have any tokens
+	sendResponse, err := Client.SendRawTransaction(signResponse.SignedTransaction)
+	if err != nil {
+		fmt.Printf("failed to send transaction: %s\n", err)
+		return
+	}
+
+	fmt.Printf("Transaction ID: %s\n", sendResponse.TxID)
 }
 
 func CreateNewWallet(name string, password string) (string, error) {
@@ -111,12 +201,19 @@ func CreateNewWallet(name string, password string) (string, error) {
 func main() {
 	// Create an algod client
 	var err error
-	Client, err = algod.MakeClient(algodAddress, algodToken)
+	Client, err = InitClient()
 	if err != nil {
 		fmt.Printf("failed to make algod client: %s\n", err)
 		return
 	}
 
+	KmdClient, err = InitKmdClient()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	/*
 	// Print algod status
 	nodeStatus, err := GetStatus(Client)
 	if err != nil {
@@ -124,6 +221,7 @@ func main() {
 		return
 	}
 
+	log.Println("NODE STATUS: ", nodeStatus)
 	// Fetch block information
 	block, err := GetLatestBlock(nodeStatus)
 	if err != nil {
@@ -131,13 +229,15 @@ func main() {
 		return
 	}
 
-	log.Println("BLOCK: ", block)
+	log.Println("BLOCK: ", block.Hash)
 
 	address, err := CreateNewWallet("blah", "x")
 	if err != nil {
-		log.Println("error while creating a new walelt, exiting")
+		log.Println("error while creating a new wallet, exiting")
 		return
 	}
 
 	log.Println("New address generated: ", address)
+	*/
+	SignTransaction("blah", "x", 500)
 }
