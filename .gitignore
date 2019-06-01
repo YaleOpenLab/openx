@@ -20,3 +20,4 @@ openx-frontend.pem
 openx-react
 server.crt
 server.key
+algorand/chain
