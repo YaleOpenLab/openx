@@ -7,14 +7,14 @@ import (
 	"math"
 	"time"
 
-	assets "github.com/YaleOpenLab/openx/xlm/assets"
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
-	issuer "github.com/YaleOpenLab/openx/issuer"
 	model "github.com/YaleOpenLab/openx/models/debtcrowdfunding"
 	notif "github.com/YaleOpenLab/openx/notif"
 	utils "github.com/YaleOpenLab/openx/utils"
-	wallet "github.com/YaleOpenLab/openx/wallet"
+	assets "github.com/YaleOpenLab/openx/xlm/assets"
+	issuer "github.com/YaleOpenLab/openx/xlm/issuer"
+	wallet "github.com/YaleOpenLab/openx/xlm/wallet"
 )
 
 // preInvestmentConstructionBonds defines the pre investment conditions pertaining to construction bonds

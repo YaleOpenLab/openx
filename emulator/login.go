@@ -8,7 +8,7 @@ import (
 	solar "github.com/YaleOpenLab/openx/platforms/opensolar"
 	rpc "github.com/YaleOpenLab/openx/rpc"
 	scan "github.com/YaleOpenLab/openx/scan"
-	wallet "github.com/YaleOpenLab/openx/wallet"
+	wallet "github.com/YaleOpenLab/openx/xlm/wallet"
 )
 
 // Login logs on to the platform

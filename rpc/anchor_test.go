@@ -3,11 +3,11 @@
 package rpc
 
 import (
-	"log"
-	"testing"
 	"encoding/json"
+	"log"
 	"net/url"
 	"strings"
+	"testing"
 
 	xlm "github.com/YaleOpenLab/openx/xlm"
 )
@@ -67,7 +67,7 @@ func TestAnchorEndpoints(t *testing.T) {
 	// if we fall down till here, deposit functions should be fine
 
 	body = "https://sandbox-api.anchorusd.com/transfer/withdraw?type=bank_account&asset_code=USD&account=" + pubkey +
-	"&email_address=" + email
+		"&email_address=" + email
 
 	dataJson, err = GetRequest(body)
 	if err != nil {

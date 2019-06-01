@@ -5,17 +5,17 @@ import (
 	"log"
 	"time"
 
-	assets "github.com/YaleOpenLab/openx/xlm/assets"
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
-	issuer "github.com/YaleOpenLab/openx/issuer"
 	models "github.com/YaleOpenLab/openx/models"
 	notif "github.com/YaleOpenLab/openx/notif"
 	oracle "github.com/YaleOpenLab/openx/oracle"
 	stablecoin "github.com/YaleOpenLab/openx/stablecoin"
 	utils "github.com/YaleOpenLab/openx/utils"
-	wallet "github.com/YaleOpenLab/openx/wallet"
 	xlm "github.com/YaleOpenLab/openx/xlm"
+	assets "github.com/YaleOpenLab/openx/xlm/assets"
+	issuer "github.com/YaleOpenLab/openx/xlm/issuer"
+	wallet "github.com/YaleOpenLab/openx/xlm/wallet"
 	"github.com/pkg/errors"
 )
 

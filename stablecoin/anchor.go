@@ -5,11 +5,11 @@ import (
 	"log"
 	// "time"
 
-	assets "github.com/YaleOpenLab/openx/xlm/assets"
 	consts "github.com/YaleOpenLab/openx/consts"
 	oracle "github.com/YaleOpenLab/openx/oracle"
 	utils "github.com/YaleOpenLab/openx/utils"
 	xlm "github.com/YaleOpenLab/openx/xlm"
+	assets "github.com/YaleOpenLab/openx/xlm/assets"
 )
 
 // GetAnchorUSD gets anchorUSD from Anchor

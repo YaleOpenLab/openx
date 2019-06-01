@@ -8,13 +8,13 @@ import (
 	"log"
 
 	aes "github.com/YaleOpenLab/openx/aes"
-	assets "github.com/YaleOpenLab/openx/xlm/assets"
 	consts "github.com/YaleOpenLab/openx/consts"
 	googauth "github.com/YaleOpenLab/openx/googauth"
 	recovery "github.com/YaleOpenLab/openx/recovery"
 	utils "github.com/YaleOpenLab/openx/utils"
-	wallet "github.com/YaleOpenLab/openx/wallet"
 	xlm "github.com/YaleOpenLab/openx/xlm"
+	assets "github.com/YaleOpenLab/openx/xlm/assets"
+	wallet "github.com/YaleOpenLab/openx/xlm/wallet"
 	"github.com/boltdb/bolt"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	crypto "github.com/ethereum/go-ethereum/crypto"
@@ -128,9 +128,9 @@ type AnchorKYCHelper struct {
 		Country string
 		Phone   string
 	}
-	PrimaryPhone string
-	Gender       string
-	DepositIdentifier string
+	PrimaryPhone       string
+	Gender             string
+	DepositIdentifier  string
 	WithdrawIdentifier string
 }
 

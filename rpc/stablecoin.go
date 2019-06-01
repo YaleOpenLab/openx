@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	stablecoin "github.com/YaleOpenLab/openx/stablecoin"
-	wallet "github.com/YaleOpenLab/openx/wallet"
+	wallet "github.com/YaleOpenLab/openx/xlm/wallet"
 )
 
 // this file handles the RPCs necessary for converting a fixed amount of XLM into

@@ -15,7 +15,7 @@ import (
 	scan "github.com/YaleOpenLab/openx/scan"
 	stablecoin "github.com/YaleOpenLab/openx/stablecoin"
 	utils "github.com/YaleOpenLab/openx/utils"
-	wallet "github.com/YaleOpenLab/openx/wallet"
+	wallet "github.com/YaleOpenLab/openx/xlm/wallet"
 	// xlm "github.com/YaleOpenLab/openx/xlm"
 	flags "github.com/jessevdk/go-flags"
 )
