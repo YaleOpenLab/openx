@@ -140,18 +140,26 @@ func searchComplyAdvantage() {
 			return
 		}
 
+		if r.URL.Query()["name"] == nil || r.URL.Query()["birthyear"] == nil {
+			responseHandler(w, StatusBadRequest)
+			return
+		}
+
+		name := r.URL.Query()["name"][0]
+		birthyear := r.URL.Query()["birthyear"][0]
 		body := "https://api.complyadvantage.com/searches?api_key=" + consts.KYCAPIKey
 		data := `{
-  "search_term": "El Chapo",
+  "search_term": "` + name + `",
   "client_ref": "testnet+ElChapo",
   "fuzziness": 0.8,
   "filters": {
-      "birth_year": "1957"
+      "birth_year": "` + birthyear + `"` + `
   },
 	"limit": 5,
   "share_url": 1
 }`
 		payload := bytes.NewBuffer([]byte(data))
+		// TODO: analyze the response and chekc whether the user is blacklisted or not
 		PostAndSendCA(w, r, body, payload)
 	})
 }
