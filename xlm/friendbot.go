@@ -1,8 +1,8 @@
 package xlm
 
 import (
-  "net/http"
 	"errors"
+	"net/http"
 )
 
 // GetXLM makes an API call to the friendbot on stellar testnet, which gives

@@ -7,8 +7,8 @@ import (
 	database "github.com/YaleOpenLab/openx/database"
 	notif "github.com/YaleOpenLab/openx/notif"
 	utils "github.com/YaleOpenLab/openx/utils"
-	wallet "github.com/YaleOpenLab/openx/wallet"
 	xlm "github.com/YaleOpenLab/openx/xlm"
+	wallet "github.com/YaleOpenLab/openx/xlm/wallet"
 	"github.com/boltdb/bolt"
 )
 

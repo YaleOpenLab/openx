@@ -3,10 +3,10 @@ package opensolar
 import (
 	"log"
 
-	assets "github.com/YaleOpenLab/openx/xlm/assets"
 	consts "github.com/YaleOpenLab/openx/consts"
-	multisig "github.com/YaleOpenLab/openx/multisig"
 	utils "github.com/YaleOpenLab/openx/utils"
+	assets "github.com/YaleOpenLab/openx/xlm/assets"
+	multisig "github.com/YaleOpenLab/openx/xlm/multisig"
 	"github.com/pkg/errors"
 )
 

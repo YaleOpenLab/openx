@@ -165,14 +165,14 @@ func searchComplyAdvantage() {
 }
 
 type caAllUserResponse struct {
-	Code int `json:"code"`
-	Status string `json:"status"`
+	Code    int    `json:"code"`
+	Status  string `json:"status"`
 	Content struct {
 		Data []struct {
-			Id int `json:"id"`
-			Email string `json:"email"`
-			Name string `json:"name"`
-			Phone string `json:"phone"`
+			Id         int    `json:"id"`
+			Email      string `json:"email"`
+			Name       string `json:"name"`
+			Phone      string `json:"phone"`
 			Updated_at string `json:"updated_at"`
 			Created_at string `json:"created_at"`
 		} `json:"data"`

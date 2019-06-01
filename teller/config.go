@@ -5,7 +5,7 @@ import (
 	"log"
 
 	utils "github.com/YaleOpenLab/openx/utils"
-	wallet "github.com/YaleOpenLab/openx/wallet"
+	wallet "github.com/YaleOpenLab/openx/xlm/wallet"
 	"github.com/spf13/viper"
 )
 

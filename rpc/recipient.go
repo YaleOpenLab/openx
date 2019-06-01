@@ -10,8 +10,8 @@ import (
 	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
 	opzones "github.com/YaleOpenLab/openx/platforms/ozones"
 	utils "github.com/YaleOpenLab/openx/utils"
-	wallet "github.com/YaleOpenLab/openx/wallet"
 	xlm "github.com/YaleOpenLab/openx/xlm"
+	wallet "github.com/YaleOpenLab/openx/xlm/wallet"
 )
 
 // setupRecipientRPCs sets up all RPCs related to the recipient. Most are similar

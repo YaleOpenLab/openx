@@ -6,14 +6,14 @@ import (
 	"net/http"
 	"strconv"
 
-	assets "github.com/YaleOpenLab/openx/xlm/assets"
 	database "github.com/YaleOpenLab/openx/database"
 	notif "github.com/YaleOpenLab/openx/notif"
 	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
 	opzones "github.com/YaleOpenLab/openx/platforms/ozones"
 	utils "github.com/YaleOpenLab/openx/utils"
-	wallet "github.com/YaleOpenLab/openx/wallet"
 	xlm "github.com/YaleOpenLab/openx/xlm"
+	assets "github.com/YaleOpenLab/openx/xlm/assets"
+	wallet "github.com/YaleOpenLab/openx/xlm/wallet"
 )
 
 // setupInvestorRPCs sets up all RPCs related to the investor

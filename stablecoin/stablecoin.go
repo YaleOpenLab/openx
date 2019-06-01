@@ -21,13 +21,13 @@ import (
 	"log"
 	"os"
 
-	assets "github.com/YaleOpenLab/openx/xlm/assets"
 	consts "github.com/YaleOpenLab/openx/consts"
 	oracle "github.com/YaleOpenLab/openx/oracle"
 	scan "github.com/YaleOpenLab/openx/scan"
 	utils "github.com/YaleOpenLab/openx/utils"
-	wallet "github.com/YaleOpenLab/openx/wallet"
 	xlm "github.com/YaleOpenLab/openx/xlm"
+	assets "github.com/YaleOpenLab/openx/xlm/assets"
+	wallet "github.com/YaleOpenLab/openx/xlm/wallet"
 	"github.com/pkg/errors"
 	"github.com/stellar/go/clients/horizon"
 )
