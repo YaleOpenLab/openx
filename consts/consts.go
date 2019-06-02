@@ -55,3 +55,9 @@ var KYCAPIKey = ""                                                              
 var AnchorUSDCode = "USD"                                                         // code for the AnchorUSD stablecoin (ref: https://www.anchorusd.com/docs/api#introduction)
 var AnchorUSDAddress = "GCKFBEIYV2U22IO2BJ4KVJOIP7XPWQGQFKKWXR6DOSJBV7STMAQSMTGG" // address issuing AnchorUSD (ref: https://www.anchorusd.com/.well-known/stellar.toml)
 var AnchorUSDTrustLimit = "1000000"                                               // the limit that the investor trusts AnchorUSD for / the max amount of AnchorUSD that a person can be given.
+
+// algorand consts
+var AlgodAddress = "http://localhost:50435"                                         // the remote address:port on which your algod daemon is running
+var AlgodToken = "df6740f7618f699b0417f764b6447fa7e690f9514c73cd60184314ae16141030" // the token for the algorand RPC
+var KmdAddress = "http://localhost:51976"                                           // the algorand key management daemon run from chain/Primary
+var KmdToken = "755071c9616f4ebac31512e4db7993dc056f12790d94d634e978a66dfc44ce9b"   // the token to access th e key management daemon

@@ -3,3 +3,9 @@ email: myemail@domain.extension
 password: topsecretpassword
 platformemail: platform@openx.com
 kycapikey: topsecret
+
+# algorand related consts
+algodAddress: fillthis
+algodToken: fillthis
+kmdAddress: fillthis
+kmdToken: fillthis

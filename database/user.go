@@ -13,6 +13,7 @@ import (
 	recovery "github.com/YaleOpenLab/openx/recovery"
 	utils "github.com/YaleOpenLab/openx/utils"
 	xlm "github.com/YaleOpenLab/openx/xlm"
+	algorand "github.com/YaleOpenLab/openx/algorand"
 	assets "github.com/YaleOpenLab/openx/xlm/assets"
 	wallet "github.com/YaleOpenLab/openx/xlm/wallet"
 	"github.com/boltdb/bolt"
@@ -30,8 +31,9 @@ type User struct {
 	// if the platform is hacked, the user's funds are still safe
 	Name string
 	// Name of the primary stakeholder involved (principal trustee of school, for eg.)
-	StellarWallet StellWallet
-	PublicKey     string
+	StellarWallet  StellWallet
+	AlgorandWallet AlgoWallet
+	PublicKey      string
 	// PublicKey denotes the public key of the recipient
 	City string
 	// the city of residence of the resident
@@ -99,6 +101,11 @@ type User struct {
 	TwoFASecret string // the 2FA secret that users can use to authenticate wiht something like Google Authenticator
 
 	AnchorKYC AnchorKYCHelper // kyc stuff required by AnchorUSD
+}
+
+type AlgoWallet struct {
+	WalletName string
+	WalletID   string
 }
 
 // KycStruct contains the parameters required by the kyc partner for querynig kyc compliance
@@ -345,10 +352,18 @@ func ValidateUser(name string, pwhash string) (User, error) {
 // GenKeys generates a keypair for the user
 func (a *User) GenKeys(seedpwd string, options ...string) error {
 	if len(options) == 1 {
-		chain := options[1]
+		chain := options[0]
 		switch chain {
 		case "algorand":
-			log.Println("Generating Algorand keypair")
+			log.Println("Generating Algorand wallet")
+			var err error
+			a.AlgorandWallet.WalletName = "algowl" + utils.GetRandomString(10)
+			password := seedpwd
+			a.AlgorandWallet.WalletID, err = algorand.CreateNewWallet(a.AlgorandWallet.WalletName, password)
+			if err != nil {
+				return errors.Wrap(err, "couldn't create new wallet id, quitting")
+			}
+			return a.Save()
 		case "cosmos":
 			log.Println("Generating Cosmos keypair")
 		default:
