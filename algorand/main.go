@@ -18,8 +18,8 @@ const algodAddress = "http://localhost:50435"
 const algodToken = "df6740f7618f699b0417f764b6447fa7e690f9514c73cd60184314ae16141030"
 var Client algod.Client
 
-const kmdAddress = "http://localhost:50559"
-const kmdToken = "0f87122a1b376c7f357f63c59a83b650044f91597622d70926df8e370a4c6ce6"
+const kmdAddress = "http://localhost:51976"
+const kmdToken = "755071c9616f4ebac31512e4db7993dc056f12790d94d634e978a66dfc44ce9b"
 
 var KmdClient kmd.Client
 
@@ -106,12 +106,7 @@ func SignTransaction(walletName string, password string, amount uint64) {
 		return
 	}
 
-	fromAddr, err := GenerateAddress(exampleWalletHandleToken)
-	if err != nil {
-		fmt.Printf("Error generating key: %s\n", err)
-		return
-	}
-	fmt.Printf("Generated address 1 %s\n", fromAddr)
+	fromAddr := "YXU3MTTKV74UAGED6ROTHVVPEY5646WI3N5FLLQZWFV66AFKVQ5PMMYDZE"
 
 	// Generate a new address from the wallet handle
 	toAddr, err := GenerateAddress(exampleWalletHandleToken)
@@ -128,7 +123,6 @@ func SignTransaction(walletName string, password string, amount uint64) {
 		return
 	}
 
-	log.Println("LASTROND:" , txParams.LastRound)
 	// Make transaction
 	genID := txParams.GenesisID
 	genHash := txParams.GenesisHash
@@ -136,7 +130,7 @@ func SignTransaction(walletName string, password string, amount uint64) {
 	lastRound := txParams.LastRound
 	// (from, to string, fee, amount, firstRound, lastRound uint64, note []byte,
 	// closeRemainderTo, genesisID string, genesisHash []byte) (types.Transaction, error)
-	tx, err := transaction.MakePaymentTxn(fromAddr, toAddr, fee, amount, 300, lastRound, nil, "", genID, genHash)
+	tx, err := transaction.MakePaymentTxn(fromAddr, toAddr, fee, amount, lastRound-50, lastRound+50, nil, "", genID, genHash)
 	if err != nil {
 		fmt.Printf("Error creating transaction: %s\n", err)
 		return
@@ -239,5 +233,5 @@ func main() {
 
 	log.Println("New address generated: ", address)
 	*/
-	SignTransaction("blah", "x", 500)
+	SignTransaction("blah", "x", 100000)
 }
