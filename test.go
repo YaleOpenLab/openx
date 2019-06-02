@@ -85,6 +85,13 @@ func StartPlatform() error {
 	}
 	consts.PlatformEmail = viper.Get("platformemail").(string)
 	consts.KYCAPIKey = viper.Get("kycapikey").(string)
+
+	// read algorand values
+	consts.AlgodAddress = viper.Get("algodAddress").(string)
+	consts.AlgodToken = viper.Get("algodToken ").(string)
+	consts.KmdAddress = viper.Get("kmdAddress").(string)
+	consts.KmdToken = viper.Get("kmdToken").(string)
+
 	log.Println("PLATFORM EMAIL: ", consts.PlatformEmail)
 	return nil
 }
