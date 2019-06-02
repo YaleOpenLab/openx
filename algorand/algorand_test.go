@@ -1,4 +1,4 @@
-// +build all algor
+// +build all algo
 
 package algorand
 
@@ -12,7 +12,7 @@ import (
 func TestAlgorandFunctions(t *testing.T) {
 
 	var err error
-	AlgodClient, err = InitClient()
+	AlgodClient, err = InitAlgodClient()
 	if err != nil {
 		t.Fatalf("failed to make algod client\n")
 	}
@@ -33,24 +33,23 @@ func TestAlgorandFunctions(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error getting last block\n")
 	}
-
 	log.Println("BLOCK: ", block.Hash)
 
 	walletName := utils.GetRandomString(6)
-	address, err := CreateNewWallet(walletName, "x")
+	address, err := CreateNewWalletAndAddress(walletName, "x")
 	if err != nil {
 		t.Fatalf("error while creating a new wallet, exiting")
 	}
-
 	log.Println("New address generated: ", address)
+
 	fromAddr := "YXU3MTTKV74UAGED6ROTHVVPEY5646WI3N5FLLQZWFV66AFKVQ5PMMYDZE" // the account that has funds
-	txhash, err := SendTransactionToSelf("blah", "x", fromAddr, 100000)
+	txhash, err := SendAlgoToSelf("blah", "x", fromAddr, 100000)
 	if err != nil {
 		t.Fatal(err)
 	}
 	log.Println("Sent tx hash: ", txhash)
 
-	txhash, err = SendTransaction("blah", "x", 100000, fromAddr, address)
+	txhash, err = SendAlgo("blah", "x", 100000, fromAddr, address)
 	if err != nil {
 		t.Fatal(err)
 	}

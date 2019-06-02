@@ -13,12 +13,57 @@ import (
 	"github.com/algorand/go-algorand-sdk/types"
 )
 
+// Algorand's model is similar to that of ethereum and stellar (account based model)
+// these accounts have a name ("blah") and each one of them can have multiple addresses
+// associated with them. Each address should have a minimum balance of 0.1 Algo (100,000 microAlgos)
+// Algorand doesn't have a horizone API (PHEW!) and needs one to directly interact with the blockchain
+// or create a private test network
+
 // These constants represent the algod REST endpoint and the corresponding
 // API token. You can retrieve these from the `algod.net` and `algod.token`
 // files in the algod data directory.
 var AlgodClient algod.Client
 var KmdClient kmd.Client
 
+// InitAlgodClient initializes a new algorand daemon client
+func InitAlgodClient() (algod.Client, error) {
+	var err error
+	AlgodClient, err = algod.MakeClient(consts.AlgodAddress, consts.AlgodToken)
+	if err != nil {
+		fmt.Printf("failed to make algod client: %s\n", err)
+		return AlgodClient, nil
+	}
+
+	return AlgodClient, nil
+}
+
+// InitKmdClient initializes a new key management daemon client
+func InitKmdClient() (kmd.Client, error) {
+	return kmd.MakeClient(consts.KmdAddress, consts.KmdToken)
+}
+
+func Init() error {
+	var err error
+	AlgodClient, err = InitAlgodClient()
+	if err != nil {
+		return err
+	}
+
+	KmdClient, err = InitKmdClient()
+	return err
+}
+
+// GetLatestBlock getst the latest block from the blockchain
+func GetLatestBlock(status models.NodeStatus) (models.Block, error) {
+	return AlgodClient.Block(status.LastRound)
+}
+
+// GetBlock gets the details ofa  given block from the algorand blockchain
+func GetBlock(blockNumber uint64) (models.Block, error) {
+	return AlgodClient.Block(blockNumber)
+}
+
+// GetStatus gets the status of a given algod client
 func GetStatus(Client algod.Client) (models.NodeStatus, error) {
 	var status models.NodeStatus
 	status, err := AlgodClient.Status()
@@ -30,30 +75,20 @@ func GetStatus(Client algod.Client) (models.NodeStatus, error) {
 	return status, nil
 }
 
-func InitClient() (algod.Client, error) {
-	var err error
-	AlgodClient, err = algod.MakeClient(consts.AlgodAddress, consts.AlgodToken)
+// CreateNewWallet creates a new wallet
+func CreateNewWallet(name string, password string) (string, error) {
+	response, err := KmdClient.CreateWallet(name, password, kmd.DefaultWalletDriver, types.MasterDerivationKey{})
 	if err != nil {
-		fmt.Printf("failed to make algod client: %s\n", err)
-		return AlgodClient, nil
+		return "", errors.Wrap(err, "error creating wallet")
 	}
 
-	return AlgodClient, nil
+	walletID := response.Wallet.ID
+	return walletID, nil
 }
 
-func InitKmdClient() (kmd.Client, error) {
-	return kmd.MakeClient(consts.KmdAddress, consts.KmdToken)
-}
-
-func GetLatestBlock(status models.NodeStatus) (models.Block, error) {
-	return AlgodClient.Block(status.LastRound)
-}
-
-func GetBlock(blockNumber uint64) (models.Block, error) {
-	return AlgodClient.Block(blockNumber)
-}
-
-func CreateNewWalletHandle(walletID string, password string) (string, error) {
+// generateWalletToken creates a wallet handle and is used for things like signing transactions
+// and creating accounts. Wallet handles do expire, but they can be renewed
+func generateWalletToken(walletID string, password string) (string, error) {
 	// Get a wallet handle. The wallet handle is used for things like signing transactions
 	// and creating accounts. Wallet handles do expire, but they can be renewed
 	initResponse, err := KmdClient.InitWalletHandle(walletID, password)
@@ -66,7 +101,8 @@ func CreateNewWalletHandle(walletID string, password string) (string, error) {
 	return walletHandleToken, nil
 }
 
-func GenerateAddress(walletHandleToken string) (string, error) {
+// generateAddress generates an address from a given wallet handle
+func generateAddress(walletHandleToken string) (string, error) {
 	// Generate a new address from the wallet handle
 	genResponse, err := KmdClient.GenerateKey(walletHandleToken)
 	if err != nil {
@@ -77,7 +113,8 @@ func GenerateAddress(walletHandleToken string) (string, error) {
 	return genResponse.Address, nil
 }
 
-func SendTransactionToSelf(walletName string, password string, fromAddr string, amount uint64) (string, error) {
+// SendAlgoToSelf sends algos to another address owned by the same user
+func SendAlgoToSelf(walletName string, password string, fromAddr string, amount uint64) (string, error) {
 	// Get the list of wallets
 	listResponse, err := KmdClient.ListWallets()
 	if err != nil {
@@ -95,13 +132,13 @@ func SendTransactionToSelf(walletName string, password string, fromAddr string, 
 		}
 	}
 
-	walletHandleToken, err := CreateNewWalletHandle(ourWalletId, password)
+	walletHandleToken, err := generateWalletToken(ourWalletId, password)
 	if err != nil {
 		return "", errors.Wrap(err, "error initializing wallet handle")
 	}
 
 	// Generate a new address from the wallet handle
-	toAddr, err := GenerateAddress(walletHandleToken)
+	toAddr, err := generateAddress(walletHandleToken)
 	if err != nil {
 		return "", errors.Wrap(err, "error generating key")
 	}
@@ -143,7 +180,8 @@ func SendTransactionToSelf(walletName string, password string, fromAddr string, 
 	return sendResponse.TxID, nil
 }
 
-func SendTransaction(walletName string, password string, amount uint64, fromAddr string, toAddr string) (string, error) {
+// SendAlgo sends algos to another address from a source account
+func SendAlgo(walletName string, password string, amount uint64, fromAddr string, toAddr string) (string, error) {
 	// Get the list of wallets
 	listResponse, err := KmdClient.ListWallets()
 	if err != nil {
@@ -160,7 +198,7 @@ func SendTransaction(walletName string, password string, amount uint64, fromAddr
 	}
 
 	// get a wallet handle token to sign the transaction with
-	walletHandleToken, err := CreateNewWalletHandle(ourWalletId, password)
+	walletHandleToken, err := generateWalletToken(ourWalletId, password)
 	if err != nil {
 		return "", errors.Wrap(err, "error initializing wallet handle")
 	}
@@ -199,32 +237,29 @@ func SendTransaction(walletName string, password string, amount uint64, fromAddr
 	return sendResponse.TxID, nil
 }
 
-func CreateNewWallet(name string, password string) (string, error) {
+// CreateNewWalletAndAddress creates a new wallet and an address
+func CreateNewWalletAndAddress(name string, password string) (string, error) {
 	var err error
-	KmdClient, err = kmd.MakeClient(consts.KmdAddress, consts.KmdToken)
+
+	walletID, err := CreateNewWallet(name, password)
 	if err != nil {
-		return "", errors.Wrap(err, "failed to make kmd client")
+		return "", errors.Wrap(err, "couldn't create new wallet id, quitting")
 	}
 
-	// Create the example wallet, if it doesn't already exist
-	createWalletResponse, err := KmdClient.CreateWallet(name, password, kmd.DefaultWalletDriver, types.MasterDerivationKey{})
-	if err != nil {
-		return "", errors.Wrap(err, "error creating wallet")
-	}
+	return GenerateNewAddress(walletID, name, password)
+}
 
-	// We need the wallet ID in order to get a wallet handle, so we can add accounts
-	walletID := createWalletResponse.Wallet.ID
-	fmt.Printf("Created wallet '%s' with ID: %s\n", createWalletResponse.Wallet.Name, walletID)
+// GenerateNewAddress generates a new address associated with the given wallet
+func GenerateNewAddress(walletID string, name string, password string) (string, error) {
+	var err error
 
-	// Get a wallet handle. The wallet handle is used for things like signing transactions
-	// and creating accounts. Wallet handles do expire, but they can be renewed
-	walletHandleToken, err := CreateNewWalletHandle(walletID, password)
+	walletHandleToken, err := generateWalletToken(walletID, password)
 	if err != nil {
 		return "", errors.Wrap(err, "failed to create new wallet handler")
 	}
 
 	// Generate a new address from the wallet handle
-	address, err := GenerateAddress(walletHandleToken)
+	address, err := generateAddress(walletHandleToken)
 	if err != nil {
 		return "", errors.Wrap(err, "failed to gneerate new address")
 	}

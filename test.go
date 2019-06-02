@@ -13,6 +13,7 @@ import (
 	// scan "github.com/YaleOpenLab/openx/scan"
 	// oracle "github.com/YaleOpenLab/openx/oracle"
 	stablecoin "github.com/YaleOpenLab/openx/stablecoin"
+	algorand "github.com/YaleOpenLab/openx/algorand"
 	utils "github.com/YaleOpenLab/openx/utils"
 	// scan "github.com/YaleOpenLab/openx/scan"
 	// wallet "github.com/YaleOpenLab/openx/wallet"
@@ -88,9 +89,14 @@ func StartPlatform() error {
 
 	// read algorand values
 	consts.AlgodAddress = viper.Get("algodAddress").(string)
-	consts.AlgodToken = viper.Get("algodToken ").(string)
+	consts.AlgodToken = viper.Get("algodToken").(string)
 	consts.KmdAddress = viper.Get("kmdAddress").(string)
 	consts.KmdToken = viper.Get("kmdToken").(string)
+
+	err = algorand.Init()
+	if err != nil {
+		return nil
+	}
 
 	log.Println("PLATFORM EMAIL: ", consts.PlatformEmail)
 	return nil
@@ -107,6 +113,14 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	var a database.User
+	err = a.GenKeys("x", "algorand")
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println(a.AlgorandWallet)
+	log.Fatal("cool")
 
 	// run this only when you need to monitor the tellers. Not required for local testing.
 	// go opensolar.MonitorTeller(1)
