@@ -12,8 +12,8 @@ import (
 	rpc "github.com/YaleOpenLab/openx/rpc"
 	// scan "github.com/YaleOpenLab/openx/scan"
 	// oracle "github.com/YaleOpenLab/openx/oracle"
-	stablecoin "github.com/YaleOpenLab/openx/stablecoin"
 	algorand "github.com/YaleOpenLab/openx/algorand"
+	stablecoin "github.com/YaleOpenLab/openx/stablecoin"
 	utils "github.com/YaleOpenLab/openx/utils"
 	// scan "github.com/YaleOpenLab/openx/scan"
 	// wallet "github.com/YaleOpenLab/openx/wallet"
@@ -113,14 +113,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	var a database.User
-	err = a.GenKeys("x", "algorand")
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println(a.AlgorandWallet)
-	log.Fatal("cool")
 
 	// run this only when you need to monitor the tellers. Not required for local testing.
 	// go opensolar.MonitorTeller(1)
