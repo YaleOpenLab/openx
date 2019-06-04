@@ -3,7 +3,8 @@
 #### ABSTRACT
 
 The OpenSolar Project and platform aims to use blockchain and IoT based smart contracts to help finance community solar projects. We seek to develop open source core technology to streamline the flow of crowd-based funds (eg. muni bonds and equity crowds) to finance the deployment of solar assets, and allow the end-users to own these resources in a short time frame through regular utility-like payments driven by energy generation and consumption IoT data.
-The payment platform is built on the Stellar blockchain, and our pilot projects are done in public schools in Puerto Rico.
+
+The payment platform defaults to using the Stellar blockchain, and our pilot projects are done in public schools in Puerto Rico. Projects can choose to be hosted on different chains as well.
 
 ![Graphical Abstract](../../docs/figures/Abstract.png)
 
