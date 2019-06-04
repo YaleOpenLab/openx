@@ -8,12 +8,12 @@ import (
 	"log"
 
 	aes "github.com/YaleOpenLab/openx/aes"
+	algorand "github.com/YaleOpenLab/openx/algorand"
 	consts "github.com/YaleOpenLab/openx/consts"
 	googauth "github.com/YaleOpenLab/openx/googauth"
 	recovery "github.com/YaleOpenLab/openx/recovery"
 	utils "github.com/YaleOpenLab/openx/utils"
 	xlm "github.com/YaleOpenLab/openx/xlm"
-	algorand "github.com/YaleOpenLab/openx/algorand"
 	assets "github.com/YaleOpenLab/openx/xlm/assets"
 	wallet "github.com/YaleOpenLab/openx/xlm/wallet"
 	"github.com/boltdb/bolt"
@@ -356,25 +356,38 @@ func (a *User) GenKeys(seedpwd string, options ...string) error {
 		switch chain {
 		case "algorand":
 			log.Println("Generating Algorand wallet")
+
 			var err error
-			a.AlgorandWallet.WalletName = "algowl" + utils.GetRandomString(10)
 			password := seedpwd
+
+			a.AlgorandWallet.WalletName = "algowl" + utils.GetRandomString(10)
 			a.AlgorandWallet.WalletID, err = algorand.CreateNewWallet(a.AlgorandWallet.WalletName, password)
 			if err != nil {
 				return errors.Wrap(err, "couldn't create new wallet id, quitting")
 			}
-			return a.Save()
-		case "cosmos":
-			log.Println("Generating Cosmos keypair")
+
+			err = a.Save()
+			if err != nil {
+				return err
+			}
+
+			backupPhrase, err := algorand.GenerateBackup(a.AlgorandWallet.WalletName, password)
+			if err != nil {
+				return err
+			}
+
+			tmp, err := recovery.Create(2, 3, backupPhrase)
+			if err != nil {
+				return errors.Wrap(err, "error while storing recovery shares")
+			}
+
+			a.RecoveryShares = append(a.RecoveryShares, tmp...) // this is for the primary account
 		default:
 			log.Println("Chain not supported, please feel free to add support in aanew Pull Request")
 			return fmt.Errorf("chain not supported, returning")
-		}
-		log.Println("Generating Cosmos keys")
-		return nil
+		} // end of switch
 	} else if len(options) == 0 {
-		// default user account supported is primary stellar + secondary Ethereum
-		// if the caller provides an option, we can look at alternate chains
+		// default user account supported is stellar
 		var err error
 		var seed string
 		seed, a.PublicKey, err = xlm.GetKeyPair()
@@ -393,43 +406,42 @@ func (a *User) GenKeys(seedpwd string, options ...string) error {
 		}
 
 		a.RecoveryShares = append(a.RecoveryShares, tmp...) // this is for the primary account
-
-		secSeed, secPubkey, err := xlm.GetKeyPair()
-		if err != nil {
-			return errors.Wrap(err, "could not generate secondary keypair")
-		}
-
-		a.SecondaryWallet.PublicKey = secPubkey
-		a.SecondaryWallet.EncryptedSeed, err = aes.Encrypt([]byte(secSeed), seedpwd)
-		if err != nil {
-			return errors.Wrap(err, "error while encrypting seed")
-		}
-
-		ecdsaPrivkey, err := crypto.GenerateKey()
-		if err != nil {
-			return errors.Wrap(err, "could not generate an ethereum keypair, quitting!")
-		}
-
-		privateKeyBytes := crypto.FromECDSA(ecdsaPrivkey)
-		a.EthereumWallet.PrivateKey = hexutil.Encode(privateKeyBytes)[2:]
-		a.EthereumWallet.Address = crypto.PubkeyToAddress(ecdsaPrivkey.PublicKey).Hex()
-
-		publicKeyECDSA, ok := ecdsaPrivkey.Public().(*ecdsa.PublicKey)
-		if !ok {
-			return errors.Wrap(err, "error casting public key to ECDSA")
-		}
-
-		publicKeyBytes := crypto.FromECDSAPub(publicKeyECDSA)
-		a.EthereumWallet.PublicKey = hexutil.Encode(publicKeyBytes)[4:] // an ethereum address is 65 bytes long and hte first byte is 0x04 for DER encoding, so we omit that
-
-		if crypto.PubkeyToAddress(*publicKeyECDSA).Hex() != a.EthereumWallet.Address {
-			return errors.Wrap(err, "addresses don't match, quitting!")
-		}
-
-		err = a.Save()
-		return err
 	}
-	return fmt.Errorf("Invalid options length")
+
+	secSeed, secPubkey, err := xlm.GetKeyPair()
+	if err != nil {
+		return errors.Wrap(err, "could not generate secondary keypair")
+	}
+
+	a.SecondaryWallet.PublicKey = secPubkey
+	a.SecondaryWallet.EncryptedSeed, err = aes.Encrypt([]byte(secSeed), seedpwd)
+	if err != nil {
+		return errors.Wrap(err, "error while encrypting seed")
+	}
+
+	ecdsaPrivkey, err := crypto.GenerateKey()
+	if err != nil {
+		return errors.Wrap(err, "could not generate an ethereum keypair, quitting!")
+	}
+
+	privateKeyBytes := crypto.FromECDSA(ecdsaPrivkey)
+	a.EthereumWallet.PrivateKey = hexutil.Encode(privateKeyBytes)[2:]
+	a.EthereumWallet.Address = crypto.PubkeyToAddress(ecdsaPrivkey.PublicKey).Hex()
+
+	publicKeyECDSA, ok := ecdsaPrivkey.Public().(*ecdsa.PublicKey)
+	if !ok {
+		return errors.Wrap(err, "error casting public key to ECDSA")
+	}
+
+	publicKeyBytes := crypto.FromECDSAPub(publicKeyECDSA)
+	a.EthereumWallet.PublicKey = hexutil.Encode(publicKeyBytes)[4:] // an ethereum address is 65 bytes long and hte first byte is 0x04 for DER encoding, so we omit that
+
+	if crypto.PubkeyToAddress(*publicKeyECDSA).Hex() != a.EthereumWallet.Address {
+		return errors.Wrap(err, "addresses don't match, quitting!")
+	}
+
+	err = a.Save()
+	return err
 }
 
 // CheckUsernameCollision checks if a username is available to a new user who

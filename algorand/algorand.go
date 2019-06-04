@@ -11,6 +11,7 @@ import (
 	"github.com/algorand/go-algorand-sdk/client/kmd"
 	"github.com/algorand/go-algorand-sdk/transaction"
 	"github.com/algorand/go-algorand-sdk/types"
+	"github.com/algorand/go-algorand-sdk/mnemonic"
 )
 
 // Algorand's model is similar to that of ethereum and stellar (account based model)
@@ -180,9 +181,7 @@ func SendAlgoToSelf(walletName string, password string, fromAddr string, amount 
 	return sendResponse.TxID, nil
 }
 
-// SendAlgo sends algos to another address from a source account
-func SendAlgo(walletName string, password string, amount uint64, fromAddr string, toAddr string) (string, error) {
-	// Get the list of wallets
+func getWalletId(walletName string) (string, error) {
 	listResponse, err := KmdClient.ListWallets()
 	if err != nil {
 		return "", errors.Wrap(err, "error listing wallets")
@@ -195,6 +194,17 @@ func SendAlgo(walletName string, password string, amount uint64, fromAddr string
 			fmt.Printf("found wallet '%s' with ID: %s\n", wallet.Name, wallet.ID)
 			ourWalletId = wallet.ID
 		}
+	}
+
+	return ourWalletId, nil
+}
+
+// SendAlgo sends algos to another address from a source account
+func SendAlgo(walletName string, password string, amount uint64, fromAddr string, toAddr string) (string, error) {
+	// Get the list of wallets
+	ourWalletId, err := getWalletId(walletName)
+	if err != nil {
+		return "", errors.Wrap(err, "couldn't get wallet id of wallet, quitting")
 	}
 
 	// get a wallet handle token to sign the transaction with
@@ -265,4 +275,33 @@ func GenerateNewAddress(walletID string, name string, password string) (string, 
 	}
 
 	return address, nil
+}
+
+// GenerateBackup gets the seedphrase from the walletName for backup
+func GenerateBackup(walletName string, password string) (string, error){
+	// Get the list of wallets
+	ourWalletId, err := getWalletId(walletName)
+	if err != nil {
+		return "", errors.Wrap(err, "couldn't get wallet id of wallet, quitting")
+	}
+
+	// get a wallet handle token to sign the transaction with
+	walletHandleToken, err := generateWalletToken(ourWalletId, password)
+	if err != nil {
+		return "", errors.Wrap(err, "error initializing wallet handle")
+	}
+
+	// Get the backup phrase
+	resp, err := KmdClient.ExportMasterDerivationKey(walletHandleToken, password)
+	if err != nil {
+		return "", errors.Wrap(err, "error exporting backup phrase")
+	}
+
+	// This string should be kept in a safe place and not shared
+	backupPhrase, err := mnemonic.FromKey(resp.MasterDerivationKey[:])
+	if err != nil {
+		return "", errors.Wrap(err, "error getting backup phrase")
+	}
+
+	return backupPhrase, nil
 }

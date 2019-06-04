@@ -125,6 +125,7 @@ func ListenForPayments() {
 
 	if err != nil {
 		// we shouldn't ideally fatal here, but do since we're testing out stuff
-		log.Fatal(err)
+		log.Println("stablecoin daemon not initialized: ", err)
+		return
 	}
 }
