@@ -132,8 +132,7 @@ func VoteTowardsProposedProject(invIndex int, votes int, projectIndex int) error
 	return nil
 }
 
-// -- INVESTMENT VERIFICATIONS--
-// the preInvestmentChecks associated with the opensolar platform when an Investor bids an investment amount of a specific project
+// preInvestmentChecks associated with the opensolar platform when an Investor bids an investment amount of a specific project
 func preInvestmentCheck(projIndex int, invIndex int, invAmount string) (Project, error) {
 	var project Project
 	var investor database.Investor
@@ -149,8 +148,6 @@ func preInvestmentCheck(projIndex int, invIndex int, invAmount string) (Project,
 		return project, errors.Wrap(err, "couldn't retrieve investor")
 	}
 
-	// here we should check whether the investor has adequate STABLEUSD or XLM and not just the stablecoin
-	// since we automate asset conversion in the MunibondInvest function
 	if !investor.CanInvest(invAmount) {
 		return project, errors.New("Investor has less balance than what is required to invest in this project")
 	}
@@ -161,25 +158,32 @@ func preInvestmentCheck(projIndex int, invIndex int, invAmount string) (Project,
 		return project, errors.New("Investment amount greater than what is required! Adjust your investment")
 	}
 
-	if project.SeedAssetCode == "" && project.InvestorAssetCode == "" {
-		// this project does not have an asset issuer associated with it yet since there has been
-		// no seed round nor investment round
-		project.InvestorAssetCode = assets.AssetID(consts.InvestorAssetPrefix + project.Metadata) // you can retrieve asetCodes anywhere since metadata is assumed to be unique
-		err = project.Save()
-		if err != nil {
-			return project, errors.Wrap(err, "couldn't save project")
+	// the checks till here are common for all chains. The stuff following this is exclusive to stellar.
+	if project.Chain == "stellar" || project.Chain == "" {
+		if project.SeedAssetCode == "" && project.InvestorAssetCode == "" {
+			// this project does not have an asset issuer associated with it yet since there has been
+			// no seed round nor investment round
+			project.InvestorAssetCode = assets.AssetID(consts.InvestorAssetPrefix + project.Metadata) // you can retrieve asetCodes anywhere since metadata is assumed to be unique
+			err = project.Save()
+			if err != nil {
+				return project, errors.Wrap(err, "couldn't save project")
+			}
+			err = issuer.InitIssuer(consts.OpenSolarIssuerDir, projIndex, consts.IssuerSeedPwd)
+			if err != nil {
+				return project, errors.Wrap(err, "error while initializing issuer")
+			}
+			err = issuer.FundIssuer(consts.OpenSolarIssuerDir, projIndex, consts.IssuerSeedPwd, consts.PlatformSeed)
+			if err != nil {
+				return project, errors.Wrap(err, "error while funding issuer")
+			}
 		}
-		err = issuer.InitIssuer(consts.OpenSolarIssuerDir, projIndex, consts.IssuerSeedPwd)
-		if err != nil {
-			return project, errors.Wrap(err, "error while initializing issuer")
-		}
-		err = issuer.FundIssuer(consts.OpenSolarIssuerDir, projIndex, consts.IssuerSeedPwd, consts.PlatformSeed)
-		if err != nil {
-			return project, errors.Wrap(err, "error while funding issuer")
-		}
-	}
 
-	return project, nil
+		return project, nil
+	} else if project.Chain == "algorand" {
+		return project, errors.Wrap(err, "algorand investments not supported yet, quitting")
+	} else {
+		return project, errors.Wrap(err, "chain not supported, quitting")
+	}
 }
 
 // SeedInvest is the seed investment function of the opensolar platform
@@ -190,36 +194,38 @@ func SeedInvest(projIndex int, invIndex int, invAmount string, invSeed string) e
 		return errors.Wrap(err, "error while performing pre investment check")
 	}
 
-	// MW: Consider other seed investments in stages before the big raise of stage 4
 	if project.Stage != 1 && project.Stage != 2 {
 		return fmt.Errorf("project stage not at 1, you either have passed the seed stage or project is not at seed stage yet")
 	}
 
-	// MW: Here it is using a specific model investment, eg. Muni Bond. If this is hard coded here, how can you set an opensolar project as equity crowdfunding or bond or debt?
 	if project.InvestmentType != "munibond" {
-		return fmt.Errorf("other investment models are not supported right now, quitting")
+		return fmt.Errorf("investment models other than munibonds are not supported right now, quitting")
 	}
 
 	if project.SeedInvestmentCap < utils.StoF(invAmount) {
 		return fmt.Errorf("you can't invest more than what the seed investment cap permits you to, quitting")
 	}
 
-	if project.SeedAssetCode == "" {
-		log.Println("assigning a seed asset code")
-		project.SeedAssetCode = "SEEDASSET"
-	}
-	err = model.MunibondInvest(consts.OpenSolarIssuerDir, invIndex, invSeed, invAmount, projIndex,
-		project.SeedAssetCode, project.TotalValue, project.SeedInvestmentFactor)
-	if err != nil {
-		return errors.Wrap(err, "error while investing")
-	}
+	if project.Chain == "stellar" || project.Chain == "" {
+		if project.SeedAssetCode == "" {
+			log.Println("assigning a seed asset code")
+			project.SeedAssetCode = "SEEDASSET"
+		}
+		err = model.MunibondInvest(consts.OpenSolarIssuerDir, invIndex, invSeed, invAmount, projIndex,
+			project.SeedAssetCode, project.TotalValue, project.SeedInvestmentFactor)
+		if err != nil {
+			return errors.Wrap(err, "error while investing")
+		}
 
-	err = project.updateProjectAfterInvestment(invAmount, invIndex)
-	if err != nil {
-		return errors.Wrap(err, "couldn't update project after investment")
-	}
+		err = project.updateProjectAfterInvestment(invAmount, invIndex)
+		if err != nil {
+			return errors.Wrap(err, "couldn't update project after investment")
+		}
 
-	return err
+		return err
+	} else {
+		return fmt.Errorf("other chain investments not supported  yet")
+	}
 }
 
 // Invest is the main invest function of the opensolar platform
@@ -236,28 +242,32 @@ func Invest(projIndex int, invIndex int, invAmount string, invSeed string) error
 		return fmt.Errorf("other investment models are not supported right now, quitting")
 	}
 
-	if project.Stage != 4 {
-		if project.Stage == 1 || project.Stage == 2 {
-			// need to redirect it to the seedinvest function
-			return SeedInvest(projIndex, invIndex, invAmount, invSeed)
+	if project.Chain == "stellar" || project.Chain == "" {
+		if project.Stage != 4 {
+			if project.Stage == 1 || project.Stage == 2 {
+				// need to redirect it to the seedinvest function
+				return SeedInvest(projIndex, invIndex, invAmount, invSeed)
+			}
+			return fmt.Errorf("project not at stage where it can solicit investment, quitting")
 		}
-		return fmt.Errorf("project not at stage where it can solicit investment, quitting")
-	}
-	// call the model and invest in the particular project
-	err = model.MunibondInvest(consts.OpenSolarIssuerDir, invIndex, invSeed, invAmount, projIndex,
-		project.InvestorAssetCode, project.TotalValue, 1)
-	if err != nil {
-		log.Println("Error while seed investing", err)
-		return errors.Wrap(err, "error while investing")
-	}
+		// call the model and invest in the particular project
+		err = model.MunibondInvest(consts.OpenSolarIssuerDir, invIndex, invSeed, invAmount, projIndex,
+			project.InvestorAssetCode, project.TotalValue, 1)
+		if err != nil {
+			log.Println("Error while seed investing", err)
+			return errors.Wrap(err, "error while investing")
+		}
 
-	// once the investment is complete, update the project and store in the database
-	err = project.updateProjectAfterInvestment(invAmount, invIndex)
-	if err != nil {
-		return errors.Wrap(err, "failed to update project after investment")
-	}
+		// once the investment is complete, update the project and store in the database
+		err = project.updateProjectAfterInvestment(invAmount, invIndex)
+		if err != nil {
+			return errors.Wrap(err, "failed to update project after investment")
+		}
 
-	return err
+		return err
+	} else {
+		return fmt.Errorf("other chain investment not supported right now")
+	}
 }
 
 // the updateProjectAfterInvestment of the opensolar platform
