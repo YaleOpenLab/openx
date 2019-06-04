@@ -54,4 +54,9 @@ func TestAlgorandFunctions(t *testing.T) {
 		t.Fatal(err)
 	}
 	log.Println("Sent tx hash: ", txhash)
+	txhash, err = GetAlgo("blah", "x")
+	if err != nil {
+		t.Fatal()
+	}
+	log.Println("Sent tx hash: ", txhash)
 }
