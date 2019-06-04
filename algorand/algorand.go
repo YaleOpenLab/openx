@@ -9,9 +9,9 @@ import (
 	"github.com/algorand/go-algorand-sdk/client/algod"
 	"github.com/algorand/go-algorand-sdk/client/algod/models"
 	"github.com/algorand/go-algorand-sdk/client/kmd"
+	"github.com/algorand/go-algorand-sdk/mnemonic"
 	"github.com/algorand/go-algorand-sdk/transaction"
 	"github.com/algorand/go-algorand-sdk/types"
-	"github.com/algorand/go-algorand-sdk/mnemonic"
 )
 
 // Algorand's model is similar to that of ethereum and stellar (account based model)
@@ -278,7 +278,7 @@ func GenerateNewAddress(walletID string, name string, password string) (string, 
 }
 
 // GenerateBackup gets the seedphrase from the walletName for backup
-func GenerateBackup(walletName string, password string) (string, error){
+func GenerateBackup(walletName string, password string) (string, error) {
 	// Get the list of wallets
 	ourWalletId, err := getWalletId(walletName)
 	if err != nil {

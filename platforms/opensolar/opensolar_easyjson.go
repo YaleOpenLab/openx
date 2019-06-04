@@ -1157,6 +1157,8 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(in *jlex
 			}
 		case "MapLink":
 			out.MapLink = string(in.String())
+		case "Chain":
+			out.Chain = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -2373,6 +2375,16 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 			out.RawString(prefix)
 		}
 		out.String(string(in.MapLink))
+	}
+	{
+		const prefix string = ",\"Chain\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Chain))
 	}
 	out.RawByte('}')
 }

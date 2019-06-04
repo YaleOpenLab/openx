@@ -132,6 +132,8 @@ type Project struct {
 	EngineeringLayoutType string
 	FEText                map[string]interface{} // put all the fe text in here reading it from the relevant json file(s)
 	MapLink               string                 // the google maps link to the installation site
+
+	Chain string // the chain on which the project desires to be.
 }
 
 // ExplorePageSummaryHelper defines the params that will appear on the frontend's explore page
