@@ -114,38 +114,8 @@ func generateAddress(walletHandleToken string) (string, error) {
 	return genResponse.Address, nil
 }
 
-// SendAlgoToSelf sends algos to another address owned by the same user
-func SendAlgoToSelf(walletName string, password string, fromAddr string, amount uint64) (string, error) {
-	// Get the list of wallets
-	listResponse, err := KmdClient.ListWallets()
-	if err != nil {
-		return "", errors.Wrap(err, "error listing wallets")
-	}
-
-	// Find our walletID in the list
-	var ourWalletId string
-	fmt.Printf("Got %d wallet(s):\n", len(listResponse.Wallets))
-	for _, wallet := range listResponse.Wallets {
-		fmt.Printf("ID: %s\tName: %s\n", wallet.ID, wallet.Name)
-		if wallet.Name == walletName {
-			fmt.Printf("found wallet '%s' with ID: %s\n", wallet.Name, wallet.ID)
-			ourWalletId = wallet.ID
-		}
-	}
-
-	walletHandleToken, err := generateWalletToken(ourWalletId, password)
-	if err != nil {
-		return "", errors.Wrap(err, "error initializing wallet handle")
-	}
-
-	// Generate a new address from the wallet handle
-	toAddr, err := generateAddress(walletHandleToken)
-	if err != nil {
-		return "", errors.Wrap(err, "error generating key")
-	}
-
-	log.Println("Generated address 2: ", toAddr)
-
+func sendTx(fromAddr string, toAddr string, amount uint64, note []byte,
+	walletHandleToken string, password string) (string, error) {
 	// Get the suggested transaction parameters
 	txParams, err := AlgodClient.SuggestedParams()
 	if err != nil {
@@ -181,6 +151,71 @@ func SendAlgoToSelf(walletName string, password string, fromAddr string, amount 
 	return sendResponse.TxID, nil
 }
 
+// GetAlgo seeds a given wallet with a specific number of algos similar to what friendbot
+// does on stellar
+func GetAlgo(walletName string, password string) (string, error) {
+	ourWalletId, err := getWalletId(walletName)
+	if err != nil {
+		return "", errors.Wrap(err, "couldn't get wallet id of wallet, quitting")
+	}
+
+	// get a wallet handle token to sign the transaction with
+	walletHandleToken, err := generateWalletToken(ourWalletId, password)
+	if err != nil {
+		return "", errors.Wrap(err, "error initializing wallet handle")
+	}
+
+	// Generate a new address from the wallet handle
+	toAddr, err := generateAddress(walletHandleToken)
+	if err != nil {
+		return "", errors.Wrap(err, "error generating key")
+	}
+
+	log.Println("Generated to address: ", toAddr)
+	fromAddr := "YXU3MTTKV74UAGED6ROTHVVPEY5646WI3N5FLLQZWFV66AFKVQ5PMMYDZE"
+	amount := uint64(150000) // 100000 is the minimum balance an account can hold
+
+	note := []byte("cool")
+
+	txid, err := sendTx(fromAddr, toAddr, amount, note, walletHandleToken, password)
+	if err != nil {
+		return "", errors.Wrap(err, "couldn't send tx")
+	}
+	log.Println("txid: ", txid)
+	return txid, nil
+}
+
+// SendAlgoToSelf sends algos to another address owned by the same user
+func SendAlgoToSelf(walletName string, password string, fromAddr string, amount uint64) (string, error) {
+	// Get the list of wallets
+	ourWalletId, err := getWalletId(walletName)
+	if err != nil {
+		return "", errors.Wrap(err, "couldn't get wallet id of wallet, quitting")
+	}
+
+	// get a wallet handle token to sign the transaction with
+	walletHandleToken, err := generateWalletToken(ourWalletId, password)
+	if err != nil {
+		return "", errors.Wrap(err, "error initializing wallet handle")
+	}
+
+	// Generate a new address from the wallet handle
+	toAddr, err := generateAddress(walletHandleToken)
+	if err != nil {
+		return "", errors.Wrap(err, "error generating key")
+	}
+
+	log.Println("Generated to address: ", toAddr)
+
+	note := []byte("cool")
+	txid, err := sendTx(fromAddr, toAddr, amount, note, walletHandleToken, password)
+	if err != nil {
+		return "", errors.Wrap(err, "couldn't send tx")
+	}
+	log.Println("txid: ", txid)
+	return txid, nil
+}
+
 func getWalletId(walletName string) (string, error) {
 	listResponse, err := KmdClient.ListWallets()
 	if err != nil {
@@ -213,38 +248,13 @@ func SendAlgo(walletName string, password string, amount uint64, fromAddr string
 		return "", errors.Wrap(err, "error initializing wallet handle")
 	}
 
-	// Get suggested parameters
-	txParams, err := AlgodClient.SuggestedParams()
+	note := []byte("cool")
+	txid, err := sendTx(fromAddr, toAddr, amount, note, walletHandleToken, password)
 	if err != nil {
-		return "", errors.Wrap(err, "error getting suggested tx params")
+		return "", errors.Wrap(err, "couldn't send tx")
 	}
-
-	// params for estimation
-	genID := txParams.GenesisID
-	genHash := txParams.GenesisHash
-	fee := txParams.Fee
-	lastRound := txParams.LastRound
-	// (from, to string, fee, amount, firstRound, lastRound uint64, note []byte,
-	// closeRemainderTo, genesisID string, genesisHash []byte) (types.Transaction, error)
-	tx, err := transaction.MakePaymentTxn(fromAddr, toAddr, fee, amount, lastRound-50, lastRound+50, nil, "", genID, genHash)
-	if err != nil {
-		return "", errors.Wrap(err, "error creating transaction")
-	}
-
-	// Sign the tx
-	signResponse, err := KmdClient.SignTransaction(walletHandleToken, password, tx)
-	if err != nil {
-		return "", errors.Wrap(err, "failed to sign transaction with kmd")
-	}
-
-	// Send the tx
-	sendResponse, err := AlgodClient.SendRawTransaction(signResponse.SignedTransaction)
-	if err != nil {
-		return "", errors.Wrap(err, "failed to send transaction")
-	}
-
-	log.Println("Transaction ID: ", sendResponse.TxID)
-	return sendResponse.TxID, nil
+	log.Println("txid: ", txid)
+	return txid, nil
 }
 
 // CreateNewWalletAndAddress creates a new wallet and an address
