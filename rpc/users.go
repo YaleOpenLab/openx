@@ -77,21 +77,21 @@ func removeSeedRecp(recipient database.Recipient) database.Recipient {
 	// knows the username and password anyway, so the route must return all routes
 	// that are accessible by a single login (uname + pwhash)
 	var dummy []byte
-	recipient.U.EncryptedSeed = dummy
+	recipient.U.StellarWallet.EncryptedSeed = dummy
 	return recipient
 }
 
 // removeSeedInv removes the encrypted seed from the investor structure
 func removeSeedInv(investor database.Investor) database.Investor {
 	var dummy []byte
-	investor.U.EncryptedSeed = dummy
+	investor.U.StellarWallet.EncryptedSeed = dummy
 	return investor
 }
 
 // removeSeedEntity removes the encrypted seed from the entity structure
 func removeSeedEntity(entity opensolar.Entity) opensolar.Entity {
 	var dummy []byte
-	entity.U.EncryptedSeed = dummy
+	entity.U.StellarWallet.EncryptedSeed = dummy
 	return entity
 }
 
@@ -289,7 +289,7 @@ func getBalances() {
 			return
 		}
 
-		pubkey := prepUser.PublicKey
+		pubkey := prepUser.StellarWallet.PublicKey
 		balances, err := xlm.GetAllBalances(pubkey)
 		if err != nil {
 			log.Println("did not get all balances", err)
@@ -312,7 +312,7 @@ func getXLMBalance() {
 			return
 		}
 
-		pubkey := prepUser.PublicKey
+		pubkey := prepUser.StellarWallet.PublicKey
 		balance, err := xlm.GetNativeBalance(pubkey)
 		if err != nil {
 			log.Println("did not get native balance", err)
@@ -338,7 +338,7 @@ func getAssetBalance() {
 			return
 		}
 
-		pubkey := prepUser.PublicKey
+		pubkey := prepUser.StellarWallet.PublicKey
 		asset := r.URL.Query()["asset"][0]
 		balance, err := xlm.GetAssetBalance(pubkey, asset)
 		if err != nil {
@@ -430,7 +430,7 @@ func sendXLM() {
 		amount := r.URL.Query()["amount"][0]
 
 		seedpwd := r.URL.Query()["seedpwd"][0]
-		seed, err := wallet.DecryptSeed(prepUser.EncryptedSeed, seedpwd)
+		seed, err := wallet.DecryptSeed(prepUser.StellarWallet.EncryptedSeed, seedpwd)
 		if err != nil {
 			log.Println("did not decrypt seed", err)
 			responseHandler(w, StatusBadRequest)
@@ -518,7 +518,7 @@ func askForCoins() {
 			return
 		}
 
-		err = xlm.GetXLM(prepUser.PublicKey)
+		err = xlm.GetXLM(prepUser.StellarWallet.PublicKey)
 		if err != nil {
 			log.Println("did not get xlm from friendbot", err)
 			responseHandler(w, StatusInternalServerError)
@@ -552,7 +552,7 @@ func trustAsset() {
 		limit := r.URL.Query()["limit"][0]
 
 		seedpwd := r.URL.Query()["seedpwd"][0]
-		seed, err := wallet.DecryptSeed(prepUser.EncryptedSeed, seedpwd)
+		seed, err := wallet.DecryptSeed(prepUser.StellarWallet.EncryptedSeed, seedpwd)
 		if err != nil {
 			log.Println("did not decrypt seed", err)
 			responseHandler(w, StatusBadRequest)
@@ -953,14 +953,14 @@ func generateNewSecrets() {
 			return
 		}
 
-		seedpwd, err := ValidateSeedPwd(w, r, user.EncryptedSeed, user.PublicKey)
+		seedpwd, err := ValidateSeedPwd(w, r, user.StellarWallet.EncryptedSeed, user.StellarWallet.PublicKey)
 		if err != nil {
 			log.Println(err)
 			responseHandler(w, StatusBadRequest)
 			return
 		}
 
-		seed, err := wallet.DecryptSeed(user.EncryptedSeed, seedpwd)
+		seed, err := wallet.DecryptSeed(user.StellarWallet.EncryptedSeed, seedpwd)
 		if err != nil {
 			log.Println(err)
 			responseHandler(w, StatusBadRequest)
@@ -1007,7 +1007,7 @@ func generateResetPwdCode() {
 			return
 		}
 
-		_, err = ValidateSeedPwd(w, r, rUser.EncryptedSeed, rUser.PublicKey)
+		_, err = ValidateSeedPwd(w, r, rUser.StellarWallet.EncryptedSeed, rUser.StellarWallet.PublicKey)
 		if err != nil {
 			responseHandler(w, StatusBadRequest)
 			return
@@ -1055,7 +1055,7 @@ func resetPassword() {
 			return
 		}
 
-		_, err = ValidateSeedPwd(w, r, rUser.EncryptedSeed, rUser.PublicKey)
+		_, err = ValidateSeedPwd(w, r, rUser.StellarWallet.EncryptedSeed, rUser.StellarWallet.PublicKey)
 		if err != nil {
 			log.Println("bad req1")
 			responseHandler(w, StatusBadRequest)
@@ -1108,21 +1108,21 @@ func sweepFunds() {
 			return
 		}
 
-		seedpwd, err := ValidateSeedPwd(w, r, prepUser.EncryptedSeed, prepUser.PublicKey)
+		seedpwd, err := ValidateSeedPwd(w, r, prepUser.StellarWallet.EncryptedSeed, prepUser.StellarWallet.PublicKey)
 		if err != nil {
 			log.Println(err)
 			responseHandler(w, StatusBadRequest)
 			return
 		}
 
-		seed, err := wallet.DecryptSeed(prepUser.EncryptedSeed, seedpwd)
+		seed, err := wallet.DecryptSeed(prepUser.StellarWallet.EncryptedSeed, seedpwd)
 		if err != nil {
 			log.Println(err)
 			responseHandler(w, StatusBadRequest)
 			return
 		}
 		// validated the user, so now proceed to sweep funds
-		xlmBalance, err := xlm.GetNativeBalance(prepUser.PublicKey)
+		xlmBalance, err := xlm.GetNativeBalance(prepUser.StellarWallet.PublicKey)
 		if err != nil {
 			log.Println(err)
 			responseHandler(w, StatusInternalServerError)
@@ -1180,14 +1180,14 @@ func sweepAsset() {
 		destination := r.URL.Query()["destination"][0]
 		issuerPubkey := r.URL.Query()["issuerPubkey"][0]
 
-		seedpwd, err := ValidateSeedPwd(w, r, prepUser.EncryptedSeed, prepUser.PublicKey)
+		seedpwd, err := ValidateSeedPwd(w, r, prepUser.StellarWallet.EncryptedSeed, prepUser.StellarWallet.PublicKey)
 		if err != nil {
 			log.Println(err)
 			responseHandler(w, StatusBadRequest)
 			return
 		}
 
-		seed, err := wallet.DecryptSeed(prepUser.EncryptedSeed, seedpwd)
+		seed, err := wallet.DecryptSeed(prepUser.StellarWallet.EncryptedSeed, seedpwd)
 		if err != nil {
 			log.Println(err)
 			responseHandler(w, StatusBadRequest)
@@ -1195,7 +1195,7 @@ func sweepAsset() {
 		}
 
 		// validated the user, so now proceed to sweep funds
-		assetBalance, err := xlm.GetAssetBalance(prepUser.PublicKey, assetName)
+		assetBalance, err := xlm.GetAssetBalance(prepUser.StellarWallet.PublicKey, assetName)
 		if err != nil {
 			log.Println(err)
 			responseHandler(w, StatusInternalServerError)

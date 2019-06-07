@@ -58,7 +58,7 @@ func sanitizeInvestor(investor database.Investor) SnInvestor {
 	sanitize.AmountInvested = investor.AmountInvested
 	sanitize.InvestedBonds = investor.InvestedBonds
 	sanitize.InvestedCoops = investor.InvestedCoops
-	sanitize.PublicKey = investor.U.PublicKey
+	sanitize.PublicKey = investor.U.StellarWallet.PublicKey
 	sanitize.Reputation = investor.U.Reputation
 	return sanitize
 }
@@ -70,7 +70,7 @@ func sanitizeRecipient(recipient database.Recipient) SnRecipient {
 	// in the investor struct
 	var sanitize SnRecipient
 	sanitize.Name = recipient.U.Name
-	sanitize.PublicKey = recipient.U.PublicKey
+	sanitize.PublicKey = recipient.U.StellarWallet.PublicKey
 	sanitize.Reputation = recipient.U.Reputation
 	sanitize.ReceivedSolarProjects = recipient.ReceivedSolarProjects
 	return sanitize
@@ -89,7 +89,7 @@ func sanitizeAllInvestors(investors []database.Investor) []SnInvestor {
 func sanitizeUser(user database.User) SnUser {
 	var sanitize SnUser
 	sanitize.Name = user.Name
-	sanitize.PublicKey = user.PublicKey
+	sanitize.PublicKey = user.StellarWallet.PublicKey
 	sanitize.Reputation = user.Reputation
 	return sanitize
 }

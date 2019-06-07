@@ -93,7 +93,7 @@ func intentDeposit() {
 			return
 		}
 
-		body := "https://sandbox-api.anchorusd.com/transfer/deposit?account=" + prepUser.PublicKey +
+		body := "https://sandbox-api.anchorusd.com/transfer/deposit?account=" + prepUser.StellarWallet.PublicKey +
 			"&asset_code=USD&email_address=" + prepUser.Email
 		x, err := GetAndReturnIdentifier(w, r, body) // we could return the identifier and save it if we have to. But the user has to click through anyawy and we could call the other endpoint from the frontend, so would need to discuss before we do that here
 		if err != nil {
@@ -159,7 +159,7 @@ func intentWithdraw() {
 		}
 
 		// amount can be chosen by the user in the flow on anchor, so no need to handle that here
-		body := "https://sandbox-api.anchorusd.com/transfer/withdraw?type=bank_account&asset_code=USD&account=" + prepUser.PublicKey +
+		body := "https://sandbox-api.anchorusd.com/transfer/withdraw?type=bank_account&asset_code=USD&account=" + prepUser.StellarWallet.PublicKey +
 			"&email_address=" + prepUser.Email
 
 		x, err := GetAndReturnIdentifier(w, r, body) // we could return the identifier and save it if we have to. But the user has to click through anyawy and we could call the other endpoint from the frontend, so would need to discuss before we do that here

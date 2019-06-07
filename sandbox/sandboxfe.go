@@ -477,11 +477,11 @@ func bootstrapInvestor(invName, invDescription string) (database.Investor, strin
 	if err != nil {
 		return investor1, "", err
 	}
-	invSeed, err := wallet.DecryptSeed(investor1.U.EncryptedSeed, seedpwd)
+	invSeed, err := wallet.DecryptSeed(investor1.U.StellarWallet.EncryptedSeed, seedpwd)
 	if err != nil {
 		return investor1, "", err
 	}
-	err = xlm.GetXLM(investor1.U.PublicKey)
+	err = xlm.GetXLM(investor1.U.StellarWallet.PublicKey)
 	if err != nil {
 		return investor1, "", err
 	}
@@ -491,7 +491,7 @@ func bootstrapInvestor(invName, invDescription string) (database.Investor, strin
 	if err != nil {
 		return investor1, "", err
 	}
-	_, _, err = assets.SendAssetFromIssuer(consts.StablecoinCode, investor1.U.PublicKey, "1000000", consts.StablecoinSeed, consts.StablecoinPublicKey)
+	_, _, err = assets.SendAssetFromIssuer(consts.StablecoinCode, investor1.U.StellarWallet.PublicKey, "1000000", consts.StablecoinSeed, consts.StablecoinPublicKey)
 	if err != nil {
 		return investor1, "", err
 	}
@@ -506,11 +506,11 @@ func bootstrapRecipient(recpName, recpDescription string) (database.Recipient, s
 	if err != nil {
 		return recipient, "", err
 	}
-	recpSeed, err := wallet.DecryptSeed(recipient.U.EncryptedSeed, seedpwd)
+	recpSeed, err := wallet.DecryptSeed(recipient.U.StellarWallet.EncryptedSeed, seedpwd)
 	if err != nil {
 		return recipient, "", err
 	}
-	err = xlm.GetXLM(recipient.U.PublicKey)
+	err = xlm.GetXLM(recipient.U.StellarWallet.PublicKey)
 	if err != nil {
 		return recipient, "", err
 	}

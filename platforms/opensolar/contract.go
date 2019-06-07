@@ -306,14 +306,14 @@ func (project *Project) updateProjectAfterInvestment(invAmount string, invIndex 
 			return errors.Wrap(err, "error while retrieving investors, quitting")
 		}
 
-		log.Println(investor.U.PublicKey, project.InvestorAssetCode)
+		log.Println(investor.U.StellarWallet.PublicKey, project.InvestorAssetCode)
 
 		var balanceS1 string
 		var balanceS2 string
 		var balanceF1 float64
 		var balanceF2 float64
 
-		balanceS1, err = xlm.GetAssetBalance(investor.U.PublicKey, project.InvestorAssetCode)
+		balanceS1, err = xlm.GetAssetBalance(investor.U.StellarWallet.PublicKey, project.InvestorAssetCode)
 		if err != nil {
 			balanceS1 = "0"
 			// return errors.Wrap(err, "error while retrieving asset balance, quitting")
@@ -324,7 +324,7 @@ func (project *Project) updateProjectAfterInvestment(invAmount string, invIndex 
 			return errors.Wrap(err, "error while converting to float, quitting")
 		}
 
-		balanceS2, err = xlm.GetAssetBalance(investor.U.PublicKey, project.SeedAssetCode)
+		balanceS2, err = xlm.GetAssetBalance(investor.U.StellarWallet.PublicKey, project.SeedAssetCode)
 		if err != nil {
 			balanceS2 = "0"
 			// do nothing, since the user hasn't invested in seed assets yet
@@ -339,7 +339,7 @@ func (project *Project) updateProjectAfterInvestment(invAmount string, invIndex 
 		balanceF := balanceF1 + balanceF2
 
 		percentageInvestment := balanceF / project.TotalValue
-		project.InvestorMap[investor.U.PublicKey] = percentageInvestment
+		project.InvestorMap[investor.U.StellarWallet.PublicKey] = percentageInvestment
 	}
 
 	err = project.Save()
@@ -379,7 +379,7 @@ func UnlockProject(username string, pwhash string, projIndex int, seedpwd string
 		return errors.New("Recipient Indices don't match, quitting!")
 	}
 
-	recpSeed, err := wallet.DecryptSeed(recipient.U.EncryptedSeed, seedpwd)
+	recpSeed, err := wallet.DecryptSeed(recipient.U.StellarWallet.EncryptedSeed, seedpwd)
 	if err != nil {
 		return errors.Wrap(err, "error while decrpyting seed")
 	}
@@ -389,7 +389,7 @@ func UnlockProject(username string, pwhash string, projIndex int, seedpwd string
 		return errors.Wrap(err, "couldn't get public key from seed")
 	}
 
-	if checkPubkey != recipient.U.PublicKey {
+	if checkPubkey != recipient.U.StellarWallet.PublicKey {
 		log.Println("Invalid seed")
 		return errors.New("Failed to unlock project")
 	}
@@ -440,12 +440,12 @@ func sendRecipientAssets(projIndex int) error {
 		return errors.Wrap(err, "couldn't retrieve recipienrt")
 	}
 
-	recpSeed, err := wallet.DecryptSeed(recipient.U.EncryptedSeed, project.LockPwd)
+	recpSeed, err := wallet.DecryptSeed(recipient.U.StellarWallet.EncryptedSeed, project.LockPwd)
 	if err != nil {
 		return errors.Wrap(err, "couldn't decrypt seed")
 	}
 
-	escrowPubkey, err := InitEscrow(project.Index, consts.EscrowPwd, recipient.U.PublicKey, recpSeed)
+	escrowPubkey, err := InitEscrow(project.Index, consts.EscrowPwd, recipient.U.StellarWallet.PublicKey, recpSeed)
 	if err != nil {
 		return errors.Wrap(err, "error while initializing issuer")
 	}
@@ -718,7 +718,7 @@ func CoverFirstLoss(projIndex int, entityIndex int, amount string) error {
 		amount = utils.FtoS(entity.FirstLossGuaranteeAmt)
 	}
 	// we now need to send funds from the gurantor's account to the escrow
-	seed, err := wallet.DecryptSeed(entity.U.EncryptedSeed, entity.FirstLossGuarantee) //
+	seed, err := wallet.DecryptSeed(entity.U.StellarWallet.EncryptedSeed, entity.FirstLossGuarantee) //
 	if err != nil {
 		return errors.Wrap(err, "could not decrypt seed, quitting!")
 	}

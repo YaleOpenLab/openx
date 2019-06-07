@@ -31,7 +31,7 @@ func MunibondInvest(issuerPath string, invIndex int, invSeed string, invAmount s
 		return errors.Wrap(err, "Unable to retrieve investor from database")
 	}
 
-	err = stablecoin.OfferExchange(investor.U.PublicKey, invSeed, invAmount)
+	err = stablecoin.OfferExchange(investor.U.StellarWallet.PublicKey, invSeed, invAmount)
 	if err != nil {
 		return errors.Wrap(err, "Unable to offer xlm to STABLEUSD excahnge for investor")
 	}
@@ -53,12 +53,12 @@ func MunibondInvest(issuerPath string, invIndex int, invSeed string, invAmount s
 	}
 
 	log.Printf("Investor trusts InvAsset %s with txhash %s", InvestorAsset.Code, invTrustTxHash)
-	_, invAssetTxHash, err := assets.SendAssetFromIssuer(InvestorAsset.Code, investor.U.PublicKey, invAmount, issuerSeed, issuerPubkey)
+	_, invAssetTxHash, err := assets.SendAssetFromIssuer(InvestorAsset.Code, investor.U.StellarWallet.PublicKey, invAmount, issuerSeed, issuerPubkey)
 	if err != nil {
 		return errors.Wrap(err, "Error while sending out investor asset")
 	}
 
-	log.Printf("Sent InvAsset %s to investor %s with txhash %s", InvestorAsset.Code, investor.U.PublicKey, invAssetTxHash)
+	log.Printf("Sent InvAsset %s to investor %s with txhash %s", InvestorAsset.Code, investor.U.StellarWallet.PublicKey, invAssetTxHash)
 
 	investor.AmountInvested += utils.StoF(invAmount) //  / seedInvestmentFactor -> figure out after demo
 	investor.InvestedSolarProjects = append(investor.InvestedSolarProjects, InvestorAsset.Code)
@@ -106,24 +106,24 @@ func MunibondReceive(issuerPath string, recpIndex int, projIndex int, debtAssetI
 	}
 	log.Printf("Recipient Trusts Payback asset %s with txhash %s", PaybackAsset.Code, paybackTrustHash)
 
-	_, paybackAssetHash, err := assets.SendAssetFromIssuer(PaybackAsset.Code, recipient.U.PublicKey, pbAmtTrust, issuerSeed, issuerPubkey) // same amount as debt
+	_, paybackAssetHash, err := assets.SendAssetFromIssuer(PaybackAsset.Code, recipient.U.StellarWallet.PublicKey, pbAmtTrust, issuerSeed, issuerPubkey) // same amount as debt
 	if err != nil {
 		return errors.Wrap(err, "Error while sending payback asset from issue")
 	}
 
-	log.Printf("Sent PaybackAsset to recipient %s with txhash %s", recipient.U.PublicKey, paybackAssetHash)
+	log.Printf("Sent PaybackAsset to recipient %s with txhash %s", recipient.U.StellarWallet.PublicKey, paybackAssetHash)
 	debtTrustHash, err := assets.TrustAsset(DebtAsset.Code, issuerPubkey, utils.FtoS(totalValue*2), recpSeed)
 	if err != nil {
 		return errors.Wrap(err, "Error while trusting debt asset")
 	}
 	log.Printf("Recipient Trusts Debt asset %s with txhash %s", DebtAsset.Code, debtTrustHash)
 
-	_, recpDebtAssetHash, err := assets.SendAssetFromIssuer(DebtAsset.Code, recipient.U.PublicKey, utils.FtoS(totalValue), issuerSeed, issuerPubkey) // same amount as debt
+	_, recpDebtAssetHash, err := assets.SendAssetFromIssuer(DebtAsset.Code, recipient.U.StellarWallet.PublicKey, utils.FtoS(totalValue), issuerSeed, issuerPubkey) // same amount as debt
 	if err != nil {
 		return errors.Wrap(err, "Error while sending debt asset")
 	}
 
-	log.Printf("Sent DebtAsset to recipient %s with txhash %s\n", recipient.U.PublicKey, recpDebtAssetHash)
+	log.Printf("Sent DebtAsset to recipient %s with txhash %s\n", recipient.U.StellarWallet.PublicKey, recpDebtAssetHash)
 	recipient.ReceivedSolarProjects = append(recipient.ReceivedSolarProjects, DebtAsset.Code)
 	recipient.ReceivedSolarProjectIndices = append(recipient.ReceivedSolarProjectIndices, projIndex)
 	err = recipient.Save()
@@ -205,12 +205,12 @@ func MunibondPayback(issuerPath string, recpIndex int, amount string, recipientS
 		return -1, fmt.Errorf("amount paid is less than amount needed. Please refill your main account")
 	}
 
-	err = stablecoin.OfferExchange(recipient.U.PublicKey, recipientSeed, amount)
+	err = stablecoin.OfferExchange(recipient.U.StellarWallet.PublicKey, recipientSeed, amount)
 	if err != nil {
 		return -1, errors.Wrap(err, "Unable to offer xlm to STABLEUSD exchange for investor")
 	}
 
-	StableBalance, err := xlm.GetAssetBalance(recipient.U.PublicKey, "STABLEUSD")
+	StableBalance, err := xlm.GetAssetBalance(recipient.U.StellarWallet.PublicKey, "STABLEUSD")
 	if err != nil || (utils.StoF(StableBalance) < utils.StoF(amount)) {
 		return -1, errors.Wrap(err, "You do not have the required stablecoin balance, please refill")
 	}

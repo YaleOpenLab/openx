@@ -52,11 +52,11 @@ func Invest(projIndex int, invIndex int, invAssetCode string, invSeed string,
 	}
 	log.Println("Investor trusted asset: ", invAssetCode, " tx hash: ", investorAssetTrustHash)
 	log.Println("Sending InvestorAsset: ", invAssetCode, "for: ", invAmount)
-	_, investorAssetHash, err := assets.SendAssetFromIssuer(invAssetCode, investor.U.PublicKey, invAmount, issuerSeed, issuerPubkey)
+	_, investorAssetHash, err := assets.SendAssetFromIssuer(invAssetCode, investor.U.StellarWallet.PublicKey, invAmount, issuerSeed, issuerPubkey)
 	if err != nil {
 		return err
 	}
-	log.Printf("Sent InvestorAsset %s to investor %s with txhash %s", invAssetCode, investor.U.PublicKey, investorAssetHash)
+	log.Printf("Sent InvestorAsset %s to investor %s with txhash %s", invAssetCode, investor.U.StellarWallet.PublicKey, investorAssetHash)
 	// investor asset sent, update a.Params's BalLeft
 	investor.AmountInvested += utils.StoF(invAmount)
 	if application == "constructionBond" {
@@ -101,13 +101,13 @@ func ReceiveBond(issuerPath string, recpIndex int, projIndex int, debtAssetCode 
 	}
 	log.Printf("Recipient Trusts Investment asset %s with txhash %s", debtAssetCode, debtTrustHash)
 
-	_, recpDebtAssetHash, err := assets.SendAssetFromIssuer(debtAssetCode, recipient.U.PublicKey, utils.FtoS(totalValue), issuerSeed, issuerPubkey) // same amount as investment
+	_, recpDebtAssetHash, err := assets.SendAssetFromIssuer(debtAssetCode, recipient.U.StellarWallet.PublicKey, utils.FtoS(totalValue), issuerSeed, issuerPubkey) // same amount as investment
 	if err != nil {
 		log.Println("Error while sending investment asset", err)
 		return err
 	}
 
-	log.Printf("Sent DebtAsset to recipient %s with txhash %s\n", recipient.U.PublicKey, recpDebtAssetHash)
+	log.Printf("Sent DebtAsset to recipient %s with txhash %s\n", recipient.U.StellarWallet.PublicKey, recpDebtAssetHash)
 	recipient.ReceivedConstructionBonds = append(recipient.ReceivedConstructionBonds, debtAssetCode)
 	err = recipient.Save()
 	if err != nil {

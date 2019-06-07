@@ -193,7 +193,7 @@ func sendRecipientAssets(projIndex int, totalValue float64) error {
 		return errors.Wrap(err, "couldn't retrieve recipient from db")
 	}
 
-	recpSeed, err := wallet.DecryptSeed(recipient.U.EncryptedSeed, project.LockPwd)
+	recpSeed, err := wallet.DecryptSeed(recipient.U.StellarWallet.EncryptedSeed, project.LockPwd)
 	if err != nil {
 		return errors.Wrap(err, "couldn't decrypt seed")
 	}
@@ -227,7 +227,7 @@ func UnlockProject(username string, pwhash string, projIndex int, seedpwd string
 		return errors.Wrap(err, "couldn't validate recipient")
 	}
 
-	recpSeed, err := wallet.DecryptSeed(recipient.U.EncryptedSeed, seedpwd)
+	recpSeed, err := wallet.DecryptSeed(recipient.U.StellarWallet.EncryptedSeed, seedpwd)
 	if err != nil {
 		return errors.Wrap(err, "Error while decrpyting seed")
 	}
@@ -237,7 +237,7 @@ func UnlockProject(username string, pwhash string, projIndex int, seedpwd string
 		return errors.Wrap(err, "Couldn't get pubkey from seed")
 	}
 
-	if checkPubkey != recipient.U.PublicKey {
+	if checkPubkey != recipient.U.StellarWallet.PublicKey {
 		return errors.New("Failed to unlock project, public keys don't match")
 	}
 

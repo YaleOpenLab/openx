@@ -26,14 +26,10 @@ import (
 type User struct {
 	Index int
 	// default index, gets us easy stats on how many people are there
-	EncryptedSeed []byte
-	// EncryptedSeed stores the AES-256 encrypted seed of the user. This way, even
-	// if the platform is hacked, the user's funds are still safe
 	Name string
 	// Name of the primary stakeholder involved (principal trustee of school, for eg.)
 	StellarWallet  StellWallet
 	AlgorandWallet AlgoWallet
-	PublicKey      string
 	// PublicKey denotes the public key of the recipient
 	City string
 	// the city of residence of the resident
@@ -390,12 +386,12 @@ func (a *User) GenKeys(seedpwd string, options ...string) error {
 		// default user account supported is stellar
 		var err error
 		var seed string
-		seed, a.PublicKey, err = xlm.GetKeyPair()
+		seed, a.StellarWallet.PublicKey, err = xlm.GetKeyPair()
 		if err != nil {
 			return errors.Wrap(err, "error while generating public and private key pair")
 		}
 		// don't store the seed in the database
-		a.EncryptedSeed, err = aes.Encrypt([]byte(seed), seedpwd)
+		a.StellarWallet.EncryptedSeed, err = aes.Encrypt([]byte(seed), seedpwd)
 		if err != nil {
 			return errors.Wrap(err, "error while encrypting seed")
 		}
@@ -549,7 +545,7 @@ func IncreaseTrustLimit(userIndex int, seedpwd string, trust string) error {
 		return errors.Wrap(err, "couldn't retrieve user from database, quitting!")
 	}
 
-	seed, err := wallet.DecryptSeed(user.EncryptedSeed, seedpwd)
+	seed, err := wallet.DecryptSeed(user.StellarWallet.EncryptedSeed, seedpwd)
 	if err != nil {
 		return errors.Wrap(err, "couldn't decrypt seed, quitting!")
 	}
@@ -627,7 +623,7 @@ func MoveFundsFromSecondaryWallet(userIndex int, pwhash string, amount string, s
 	}
 
 	// send the tx over
-	_, txhash, err := xlm.SendXLM(user.PublicKey, amount, secSeed, "fund transfer to secondary")
+	_, txhash, err := xlm.SendXLM(user.StellarWallet.PublicKey, amount, secSeed, "fund transfer to secondary")
 	if err != nil {
 		return errors.Wrap(err, "error while transferring funds to secondary account, quitting")
 	}
@@ -662,7 +658,7 @@ func SweepSecondaryWallet(userIndex int, pwhash string, seedpwd string) error {
 
 	secFundsWithMinbal := utils.FtoS(utils.StoF(secFunds) - 5)
 	// send the tx over
-	_, txhash, err := xlm.SendXLM(user.PublicKey, secFundsWithMinbal, secSeed, "fund transfer to secondary")
+	_, txhash, err := xlm.SendXLM(user.StellarWallet.PublicKey, secFundsWithMinbal, secSeed, "fund transfer to secondary")
 	if err != nil {
 		return errors.Wrap(err, "error while transferring funds to secondary account, quitting")
 	}

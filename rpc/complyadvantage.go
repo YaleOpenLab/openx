@@ -159,7 +159,8 @@ func searchComplyAdvantage() {
   "share_url": 1
 }`
 		payload := bytes.NewBuffer([]byte(data))
-		// TODO: analyze the response and chekc whether the user is blacklisted or not
+		// TODO: analyze the response and check whether the user is clear or not. If not,
+		// also decide what should be done with the specific user and what message must be dipslayed on the frontend
 		PostAndSendCA(w, r, body, payload)
 	})
 }

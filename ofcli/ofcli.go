@@ -156,7 +156,7 @@ func main() {
 					break
 				}
 				// make sure that the seed provided is valid
-				_, err = wallet.DecryptSeed(recipient.U.EncryptedSeed, seedpwd)
+				_, err = wallet.DecryptSeed(recipient.U.StellarWallet.EncryptedSeed, seedpwd)
 				if err != nil {
 					log.Println(err)
 					break
@@ -225,7 +225,7 @@ func main() {
 					log.Println(err)
 					break
 				}
-				err = stablecoin.Exchange(recipient.U.PublicKey, recipientSeed, convAmount)
+				err = stablecoin.Exchange(recipient.U.StellarWallet.PublicKey, recipientSeed, convAmount)
 				if err != nil {
 					log.Println(err)
 				}
@@ -331,7 +331,7 @@ func main() {
 			case 8:
 				DisplayOriginProjects()
 			case 9:
-				BalanceDisplayPrompt(recipient.U.PublicKey)
+				BalanceDisplayPrompt(recipient.U.StellarWallet.PublicKey)
 			case 10:
 				// need to unlock the recipient account
 				seedpwd, err := scan.ScanRawPassword()
@@ -339,7 +339,7 @@ func main() {
 					log.Println(err)
 					break
 				}
-				seed, err := wallet.DecryptSeed(recipient.U.EncryptedSeed, seedpwd)
+				seed, err := wallet.DecryptSeed(recipient.U.StellarWallet.EncryptedSeed, seedpwd)
 				if err != nil {
 					log.Println(err)
 					break
@@ -493,7 +493,7 @@ func main() {
 				// which will be called by the frontend, so we can emulate this successfully.
 				// curl -X GET -H "Content-Type: application/x-www-form-urlencoded" -H "Origin: localhost" -H "Cache-Control: no-cache" "http://localhost:8080/investor/invest?username=john&password=9a768ace36ff3d1771d5c145a544de3d68343b2e76093cb7b2a8ea89ac7f1a20c852e6fc1d71275b43abffefac381c5b906f55c3bcff4225353d02f1d3498758&seedpwd=x&projIndex=1&amount=14000"
 			case 4:
-				BalanceDisplayPrompt(investor.U.PublicKey)
+				BalanceDisplayPrompt(investor.U.StellarWallet.PublicKey)
 			case 5:
 				// Stablecoin/get route
 				// curl -X GET -H "Content-Type: application/x-www-form-urlencoded" -H "Origin: localhost" -H "Cache-Control: no-cache" "http://localhost:8080/stablecoin/get?seed=SB2Z5GZASNF4ZR7263WWYISZP3UXSP7A6IP6ENZ44G4T44G6NVUCSVSP&amount=1"
@@ -503,7 +503,7 @@ func main() {
 					log.Println(err)
 					break
 				}
-				err = stablecoin.Exchange(investor.U.PublicKey, investorSeed, convAmount)
+				err = stablecoin.Exchange(investor.U.StellarWallet.PublicKey, investorSeed, convAmount)
 				if err != nil {
 					log.Println(err)
 				}
@@ -580,7 +580,7 @@ func main() {
 					log.Println(err)
 					break
 				}
-				seed, err := wallet.DecryptSeed(investor.U.EncryptedSeed, seedpwd)
+				seed, err := wallet.DecryptSeed(investor.U.StellarWallet.EncryptedSeed, seedpwd)
 				if err != nil {
 					log.Println(err)
 					break

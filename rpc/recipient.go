@@ -77,7 +77,7 @@ func registerRecipient() {
 			// username collision, check other fields by fetching user details for the collided user
 			if duplicateUser.Name == name && duplicateUser.Pwhash == utils.SHA3hash(pwd) {
 				// this is the same user who wants to register as an investor now, check if encrypted seed decrypts
-				seed, err := wallet.DecryptSeed(duplicateUser.EncryptedSeed, seedpwd)
+				seed, err := wallet.DecryptSeed(duplicateUser.StellarWallet.EncryptedSeed, seedpwd)
 				if err != nil {
 					responseHandler(w, StatusInternalServerError)
 					return
@@ -87,7 +87,7 @@ func registerRecipient() {
 					responseHandler(w, StatusInternalServerError)
 					return
 				}
-				if pubkey != duplicateUser.PublicKey {
+				if pubkey != duplicateUser.StellarWallet.PublicKey {
 					responseHandler(w, StatusUnauthorized)
 					return
 				}
@@ -160,7 +160,7 @@ func payback() {
 		seedpwd := r.URL.Query()["seedpwd"][0]
 		amount := r.URL.Query()["amount"][0]
 
-		recipientSeed, err := wallet.DecryptSeed(prepRecipient.U.EncryptedSeed, seedpwd)
+		recipientSeed, err := wallet.DecryptSeed(prepRecipient.U.StellarWallet.EncryptedSeed, seedpwd)
 		if err != nil {
 			log.Println("did not decrypt seed", err)
 			responseHandler(w, StatusBadRequest)
@@ -569,7 +569,7 @@ func calculateTrustLimit() {
 		}
 
 		assetName := r.URL.Query()["assetName"][0]
-		trustLimit, err := xlm.GetAssetTrustLimit(recipient.U.PublicKey, assetName)
+		trustLimit, err := xlm.GetAssetTrustLimit(recipient.U.StellarWallet.PublicKey, assetName)
 		if err != nil {
 			log.Println("did not get trust limit", err)
 			responseHandler(w, StatusInternalServerError)

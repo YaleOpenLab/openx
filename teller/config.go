@@ -60,7 +60,7 @@ func StartTeller() error {
 
 	go RefreshLogin(username, password) // update local copy of the recipient every 5 minutes
 
-	RecpSeed, err = wallet.DecryptSeed(LocalRecipient.U.EncryptedSeed, LocalSeedPwd)
+	RecpSeed, err = wallet.DecryptSeed(LocalRecipient.U.StellarWallet.EncryptedSeed, LocalSeedPwd)
 	if err != nil {
 		return errors.Wrap(err, "Error while decrypting seed")
 	}
@@ -70,7 +70,7 @@ func StartTeller() error {
 		return errors.Wrap(err, "Error while returning publickey")
 	}
 
-	if RecpPublicKey != LocalRecipient.U.PublicKey {
+	if RecpPublicKey != LocalRecipient.U.StellarWallet.PublicKey {
 		log.Println("PUBLIC KEYS DON'T MATCH, QUITTING!")
 		return errors.New("PUBLIC KEYS DON'T MATCH, QUITTING!")
 	}

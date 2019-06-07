@@ -126,21 +126,12 @@ func easyjson9e1087fdDecodeGithubComYaleOpenLabOpenxDatabase1(in *jlexer.Lexer, 
 		switch key {
 		case "Index":
 			out.Index = int(in.Int())
-		case "EncryptedSeed":
-			if in.IsNull() {
-				in.Skip()
-				out.EncryptedSeed = nil
-			} else {
-				out.EncryptedSeed = in.Bytes()
-			}
 		case "Name":
 			out.Name = string(in.String())
 		case "StellarWallet":
 			(out.StellarWallet).UnmarshalEasyJSON(in)
 		case "AlgorandWallet":
 			(out.AlgorandWallet).UnmarshalEasyJSON(in)
-		case "PublicKey":
-			out.PublicKey = string(in.String())
 		case "City":
 			out.City = string(in.String())
 		case "ZipCode":
@@ -189,9 +180,9 @@ func easyjson9e1087fdDecodeGithubComYaleOpenLabOpenxDatabase1(in *jlexer.Lexer, 
 					out.LocalAssets = (out.LocalAssets)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v5 string
-					v5 = string(in.String())
-					out.LocalAssets = append(out.LocalAssets, v5)
+					var v4 string
+					v4 = string(in.String())
+					out.LocalAssets = append(out.LocalAssets, v4)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -212,9 +203,9 @@ func easyjson9e1087fdDecodeGithubComYaleOpenLabOpenxDatabase1(in *jlexer.Lexer, 
 					out.RecoveryShares = (out.RecoveryShares)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v6 string
-					v6 = string(in.String())
-					out.RecoveryShares = append(out.RecoveryShares, v6)
+					var v5 string
+					v5 = string(in.String())
+					out.RecoveryShares = append(out.RecoveryShares, v5)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -238,9 +229,9 @@ func easyjson9e1087fdDecodeGithubComYaleOpenLabOpenxDatabase1(in *jlexer.Lexer, 
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v7 string
-					v7 = string(in.String())
-					(out.PendingDocuments)[key] = v7
+					var v6 string
+					v6 = string(in.String())
+					(out.PendingDocuments)[key] = v6
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -260,9 +251,9 @@ func easyjson9e1087fdDecodeGithubComYaleOpenLabOpenxDatabase1(in *jlexer.Lexer, 
 				for !in.IsDelim('}') {
 					key := int(in.IntStr())
 					in.WantColon()
-					var v8 int
-					v8 = int(in.Int())
-					(out.StarRating)[key] = v8
+					var v7 int
+					v7 = int(in.Int())
+					(out.StarRating)[key] = v7
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -280,9 +271,9 @@ func easyjson9e1087fdDecodeGithubComYaleOpenLabOpenxDatabase1(in *jlexer.Lexer, 
 				for !in.IsDelim('}') {
 					key := int(in.IntStr())
 					in.WantColon()
-					var v9 int
-					v9 = int(in.Int())
-					(out.GivenStarRating)[key] = v9
+					var v8 int
+					v8 = int(in.Int())
+					(out.GivenStarRating)[key] = v8
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -316,16 +307,6 @@ func easyjson9e1087fdEncodeGithubComYaleOpenLabOpenxDatabase1(out *jwriter.Write
 		out.Int(int(in.Index))
 	}
 	{
-		const prefix string = ",\"EncryptedSeed\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.Base64Bytes(in.EncryptedSeed)
-	}
-	{
 		const prefix string = ",\"Name\":"
 		if first {
 			first = false
@@ -354,16 +335,6 @@ func easyjson9e1087fdEncodeGithubComYaleOpenLabOpenxDatabase1(out *jwriter.Write
 			out.RawString(prefix)
 		}
 		(in.AlgorandWallet).MarshalEasyJSON(out)
-	}
-	{
-		const prefix string = ",\"PublicKey\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.PublicKey))
 	}
 	{
 		const prefix string = ",\"City\":"
@@ -537,11 +508,11 @@ func easyjson9e1087fdEncodeGithubComYaleOpenLabOpenxDatabase1(out *jwriter.Write
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v12, v13 := range in.LocalAssets {
-				if v12 > 0 {
+			for v9, v10 := range in.LocalAssets {
+				if v9 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v13))
+				out.String(string(v10))
 			}
 			out.RawByte(']')
 		}
@@ -558,11 +529,11 @@ func easyjson9e1087fdEncodeGithubComYaleOpenLabOpenxDatabase1(out *jwriter.Write
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v14, v15 := range in.RecoveryShares {
-				if v14 > 0 {
+			for v11, v12 := range in.RecoveryShares {
+				if v11 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v15))
+				out.String(string(v12))
 			}
 			out.RawByte(']')
 		}
@@ -609,16 +580,16 @@ func easyjson9e1087fdEncodeGithubComYaleOpenLabOpenxDatabase1(out *jwriter.Write
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v16First := true
-			for v16Name, v16Value := range in.PendingDocuments {
-				if v16First {
-					v16First = false
+			v13First := true
+			for v13Name, v13Value := range in.PendingDocuments {
+				if v13First {
+					v13First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v16Name))
+				out.String(string(v13Name))
 				out.RawByte(':')
-				out.String(string(v16Value))
+				out.String(string(v13Value))
 			}
 			out.RawByte('}')
 		}
@@ -645,16 +616,16 @@ func easyjson9e1087fdEncodeGithubComYaleOpenLabOpenxDatabase1(out *jwriter.Write
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v17First := true
-			for v17Name, v17Value := range in.StarRating {
-				if v17First {
-					v17First = false
+			v14First := true
+			for v14Name, v14Value := range in.StarRating {
+				if v14First {
+					v14First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.IntStr(int(v17Name))
+				out.IntStr(int(v14Name))
 				out.RawByte(':')
-				out.Int(int(v17Value))
+				out.Int(int(v14Value))
 			}
 			out.RawByte('}')
 		}
@@ -671,16 +642,16 @@ func easyjson9e1087fdEncodeGithubComYaleOpenLabOpenxDatabase1(out *jwriter.Write
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v18First := true
-			for v18Name, v18Value := range in.GivenStarRating {
-				if v18First {
-					v18First = false
+			v15First := true
+			for v15Name, v15Value := range in.GivenStarRating {
+				if v15First {
+					v15First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.IntStr(int(v18Name))
+				out.IntStr(int(v15Name))
 				out.RawByte(':')
-				out.Int(int(v18Value))
+				out.Int(int(v15Value))
 			}
 			out.RawByte('}')
 		}
