@@ -1,5 +1,23 @@
 package rpc
 
+// anchor connects with AnchorUSD's endpoints and returns the relevant endpoints in order
+// for us to parse correctly. Broadly when a user wants to procure or deal with AnchorUSD,
+// there are a couple things that he needs to do:
+// 1. Deposit Funds and get AnchorUSD:
+// 1a. Create a deposit intent - this wouuld be returned with a 403 since the user has not
+// gone through Anchor's KYC process
+// 1b. Verify KYC - need to pass relevant parameters to Anchor so they can verfiy from their
+// end that the user who wants stablecoin is not sanctioned or something
+// 1c. Deposit funds to the relevant bank address sent to the email address of the user.
+// AnchorUSD verifies this and deposits AnchorUSD after 2/3 business days.
+// 1d. After this, the user heads back to the platform and invests in the platform using the
+// AnchorUSD associated with his account
+// 2. Withdraw funds denominated in AnchorUSD
+// 2a. Create Withdraw intent - returns the identifier / an error if the user hasn't gone through KYC
+// 2b. Go through KYC / Withdraw funds - this again takes 2 or 3 business days for AnchorUSD
+// to deposit or withdraw funds.
+// there are a couple problems with automation in betwee nsince there's a delay of 2/3 days with
+// each associated fiat operation. Hoepfully, we can solve this in some way or the other.
 import (
 	"encoding/json"
 	"io"
@@ -130,7 +148,7 @@ func kycDeposit() {
 func intentWithdraw() {
 	// curl 'https://sandbox-api.anchorusd.com/transfer/withdraw?type=bank_account&asset_code=USD&email_address=j%40anchorusd.com
 	http.HandleFunc("/user/anchorusd/withdraw/intent", func(w http.ResponseWriter, r *http.Request) {
-		// the withdraw endpoint doesn't return an identifier and we'd have to parse some stuff ourselves. Ugly hack and we shouldn't really ahve to do this, should be fixed by Anchor
+		// the withdraw endpoint doesn't return an identifier and we'd have to parse some stuff ourselves. Ugly hack and we shouldn't really have to do this, should be fixed by Anchor
 		checkGet(w, r)
 		checkOrigin(w, r)
 
@@ -174,8 +192,27 @@ func kycWithdraw() {
 
 		body := "https://sandbox-api.anchorusd.com/api/register"
 		data := url.Values{}
-		data.Set("identifier", prepUser.AnchorKYC.WithdrawIdentifier) // TODO: the deposit API doesn't parse identifiers. Should be fixed on AnchorUSD's end.
+		if !prepUser.Kyc {
+			// we need to call the register KYC first before heading directly to withdrawals
+			data.Set("identifier", prepUser.AnchorKYC.DepositIdentifier)
+			data.Set("name", prepUser.AnchorKYC.Name)
+			data.Set("birthday[month]", prepUser.AnchorKYC.Birthday.Month)
+			data.Set("birthday[day]", prepUser.AnchorKYC.Birthday.Day)
+			data.Set("birthday[year]", prepUser.AnchorKYC.Birthday.Year)
+			data.Set("tax-country", prepUser.AnchorKYC.Tax.Country)
+			data.Set("tax-id-number", prepUser.AnchorKYC.Tax.Id)
+			data.Set("address[street-1]", prepUser.AnchorKYC.Address.Street)
+			data.Set("address[city]", prepUser.AnchorKYC.Address.City)
+			data.Set("address[postal-code]", prepUser.AnchorKYC.Address.Postal)
+			data.Set("address[region]", prepUser.AnchorKYC.Address.Region)
+			data.Set("address[country]", prepUser.AnchorKYC.Address.Country)
+			data.Set("primary-phone-number", prepUser.AnchorKYC.PrimaryPhone)
+			data.Set("gender", prepUser.AnchorKYC.Gender)
+		} else {
+			// user has already done kyc while depositing or while signing up, no need for us to do anything here
+			data.Set("identifier", prepUser.AnchorKYC.WithdrawIdentifier)
+		}
 		payload := strings.NewReader(data.Encode())
-		PostAndSend(w, r, body, payload)
+		PostAndSend(w, r, body, payload) // send the payload and response, will be handled by Anchor's KYC and withdrawal system
 	})
 }

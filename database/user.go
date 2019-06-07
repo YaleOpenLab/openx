@@ -98,7 +98,7 @@ type User struct {
 
 	GivenStarRating map[int]int // to keep track of users for whom you've given feedback
 
-	TwoFASecret string // the 2FA secret that users can use to authenticate wiht something like Google Authenticator
+	TwoFASecret string // the 2FA secret that users can use to authenticate with something like Google Authenticator
 
 	AnchorKYC AnchorKYCHelper // kyc stuff required by AnchorUSD
 }
