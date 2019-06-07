@@ -65,7 +65,7 @@ func ParseInputOrig(input []string) error {
 	case "receive":
 		receiveHelper(input, LocalOriginator.U.Username, LocalOriginator.U.Pwhash)
 	case "create":
-		createHelper(input, LocalOriginator.U.Username, LocalOriginator.U.Pwhash, LocalOriginator.U.PublicKey)
+		createHelper(input, LocalOriginator.U.Username, LocalOriginator.U.Pwhash, LocalOriginator.U.StellarWallet.PublicKey)
 	case "kyc":
 		kycHelper(input, LocalOriginator.U.Username, LocalOriginator.U.Pwhash, LocalOriginator.U.Inspector)
 	case "increasetrust":

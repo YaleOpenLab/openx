@@ -65,7 +65,7 @@ func ParseInputCont(input []string) error {
 	case "receive":
 		receiveHelper(input, LocalContractor.U.Username, LocalContractor.U.Pwhash)
 	case "create":
-		createHelper(input, LocalContractor.U.Username, LocalContractor.U.Pwhash, LocalContractor.U.PublicKey)
+		createHelper(input, LocalContractor.U.Username, LocalContractor.U.Pwhash, LocalContractor.U.StellarWallet.PublicKey)
 	case "kyc":
 		kycHelper(input, LocalContractor.U.Username, LocalContractor.U.Pwhash, LocalContractor.U.Inspector)
 	case "increasetrust":

@@ -54,7 +54,7 @@ func registerInvestor() {
 			// username collision, check other fields by fetching user details for the collided user
 			if duplicateUser.Name == name && duplicateUser.Pwhash == utils.SHA3hash(pwd) {
 				// this is the same user who wants to register as an investor now, check if encrypted seed decrypts
-				seed, err := wallet.DecryptSeed(duplicateUser.EncryptedSeed, seedpwd)
+				seed, err := wallet.DecryptSeed(duplicateUser.StellarWallet.EncryptedSeed, seedpwd)
 				if err != nil {
 					responseHandler(w, StatusInternalServerError)
 					return
@@ -64,7 +64,7 @@ func registerInvestor() {
 					responseHandler(w, StatusInternalServerError)
 					return
 				}
-				if pubkey != duplicateUser.PublicKey {
+				if pubkey != duplicateUser.StellarWallet.PublicKey {
 					responseHandler(w, StatusUnauthorized)
 					return
 				}
@@ -148,7 +148,7 @@ func invest() {
 		}
 
 		seedpwd := r.URL.Query()["seedpwd"][0]
-		investorSeed, err := wallet.DecryptSeed(investor.U.EncryptedSeed, seedpwd)
+		investorSeed, err := wallet.DecryptSeed(investor.U.StellarWallet.EncryptedSeed, seedpwd)
 		if err != nil {
 			log.Println("did not decrypt seed", err)
 			responseHandler(w, StatusBadRequest)
@@ -304,7 +304,7 @@ func invAssetInv() {
 		assetName := r.URL.Query()["assetName"][0]
 
 		seedpwd := r.URL.Query()["seedpwd"][0]
-		seed, err := wallet.DecryptSeed(prepInvestor.U.EncryptedSeed, seedpwd)
+		seed, err := wallet.DecryptSeed(prepInvestor.U.StellarWallet.EncryptedSeed, seedpwd)
 		if err != nil {
 			log.Println("did not decrypt seed", err)
 			responseHandler(w, StatusBadRequest)
@@ -326,7 +326,7 @@ func invAssetInv() {
 			return
 		}
 
-		_, txhash, err := assets.SendAssetFromIssuer(assetName, destination, amount, seed, prepInvestor.U.PublicKey)
+		_, txhash, err := assets.SendAssetFromIssuer(assetName, destination, amount, seed, prepInvestor.U.StellarWallet.PublicKey)
 		if err != nil {
 			log.Println("did not send asset from issuer", err)
 			responseHandler(w, StatusInternalServerError)
@@ -383,7 +383,7 @@ func investInConstructionBond() {
 		projIndex := utils.StoI(r.URL.Query()["projIndex"][0])
 		seedpwd := r.URL.Query()["seedpwd"][0]
 
-		invSeed, err := wallet.DecryptSeed(prepInvestor.U.EncryptedSeed, seedpwd)
+		invSeed, err := wallet.DecryptSeed(prepInvestor.U.StellarWallet.EncryptedSeed, seedpwd)
 		if err != nil {
 			log.Println("did not get investor seed from password", err)
 			responseHandler(w, StatusBadRequest)
@@ -421,7 +421,7 @@ func investInLivingUnitCoop() {
 		projIndex := utils.StoI(r.URL.Query()["projIndex"][0])
 		seedpwd := r.URL.Query()["seedpwd"][0]
 
-		invSeed, err := wallet.DecryptSeed(prepInvestor.U.EncryptedSeed, seedpwd)
+		invSeed, err := wallet.DecryptSeed(prepInvestor.U.StellarWallet.EncryptedSeed, seedpwd)
 		if err != nil {
 			log.Println("did not get investor seed from password", err)
 			responseHandler(w, StatusBadRequest)

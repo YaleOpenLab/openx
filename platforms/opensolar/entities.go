@@ -327,7 +327,7 @@ func AgreeToContractConditions(contractHash string, projIndex string,
 		return errors.Wrap(err, "couldn't retrieve user from db")
 	}
 
-	seed, err := wallet.DecryptSeed(user.EncryptedSeed, seedpwd)
+	seed, err := wallet.DecryptSeed(user.StellarWallet.EncryptedSeed, seedpwd)
 	if err != nil {
 		return errors.Wrap(err, "couldn't decrypt seed")
 	}
@@ -340,27 +340,27 @@ func AgreeToContractConditions(contractHash string, projIndex string,
 	fifthPart := messageHash[112:140]
 
 	timeStamp := utils.I64toS(utils.Unix())
-	_, firstHash, err := xlm.SendXLM(user.PublicKey, timeStamp, seed, firstPart)
+	_, firstHash, err := xlm.SendXLM(user.StellarWallet.PublicKey, timeStamp, seed, firstPart)
 	if err != nil {
 		return errors.Wrap(err, "couldn't send tx 1")
 	}
 
-	_, secondHash, err := xlm.SendXLM(user.PublicKey, timeStamp, seed, secondPart)
+	_, secondHash, err := xlm.SendXLM(user.StellarWallet.PublicKey, timeStamp, seed, secondPart)
 	if err != nil {
 		return errors.Wrap(err, "couldn't send tx 2")
 	}
 
-	_, thirdHash, err := xlm.SendXLM(user.PublicKey, timeStamp, seed, thirdPart)
+	_, thirdHash, err := xlm.SendXLM(user.StellarWallet.PublicKey, timeStamp, seed, thirdPart)
 	if err != nil {
 		return errors.Wrap(err, "couldn't send tx 3")
 	}
 
-	_, fourthHash, err := xlm.SendXLM(user.PublicKey, timeStamp, seed, fourthPart)
+	_, fourthHash, err := xlm.SendXLM(user.StellarWallet.PublicKey, timeStamp, seed, fourthPart)
 	if err != nil {
 		return errors.Wrap(err, "couldn't send tx 4")
 	}
 
-	_, fifthHash, err := xlm.SendXLM(user.PublicKey, timeStamp, seed, fifthPart)
+	_, fifthHash, err := xlm.SendXLM(user.StellarWallet.PublicKey, timeStamp, seed, fifthPart)
 	if err != nil {
 		return errors.Wrap(err, "couldn't send tx 5")
 	}

@@ -178,12 +178,12 @@ func (a *Investor) AddVotingBalance(votes int) error {
 
 // CanInvest checks whether an investor has the required balance to invest in a project
 func (a *Investor) CanInvest(targetBalance string) bool {
-	usdBalance, err := xlm.GetAssetBalance(a.U.PublicKey, "STABLEUSD")
+	usdBalance, err := xlm.GetAssetBalance(a.U.StellarWallet.PublicKey, "STABLEUSD")
 	if err != nil {
 		usdBalance = "0"
 	}
 
-	xlmBalance, err := xlm.GetNativeBalance(a.U.PublicKey)
+	xlmBalance, err := xlm.GetNativeBalance(a.U.StellarWallet.PublicKey)
 	if err != nil {
 		xlmBalance = "0"
 	}

@@ -309,7 +309,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = xlm.GetXLM(contractor.U.PublicKey)
+	err = xlm.GetXLM(contractor.U.StellarWallet.PublicKey)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -881,7 +881,7 @@ func TestDb(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = xlm.GetXLM(recp.U.PublicKey)
+	err = xlm.GetXLM(recp.U.StellarWallet.PublicKey)
 	if err != nil {
 		t.Fatal(err)
 	}

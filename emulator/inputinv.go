@@ -72,7 +72,7 @@ func ParseInputInv(input []string) error {
 	case "receive":
 		receiveHelper(input, LocalInvestor.U.Username, LocalInvestor.U.Pwhash)
 	case "create":
-		createHelper(input, LocalInvestor.U.Username, LocalInvestor.U.Pwhash, LocalInvestor.U.PublicKey)
+		createHelper(input, LocalInvestor.U.Username, LocalInvestor.U.Pwhash, LocalInvestor.U.StellarWallet.PublicKey)
 	case "kyc":
 		kycHelper(input, LocalInvestor.U.Username, LocalInvestor.U.Pwhash, LocalInvestor.U.Inspector)
 	case "increasetrust":

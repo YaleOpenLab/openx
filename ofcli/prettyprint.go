@@ -47,8 +47,8 @@ func PrintProject(project solar.Project) {
 
 // PrintInvestor pretty prints investors
 func PrintInvestor(investor database.Investor) {
-	fmt.Println("          Your Public Key is: ", investor.U.PublicKey)
-	fmt.Println("          Your Encrypted Seed is: ", investor.U.EncryptedSeed)
+	fmt.Println("          Your Public Key is: ", investor.U.StellarWallet.PublicKey)
+	fmt.Println("          Your Encrypted Seed is: ", investor.U.StellarWallet.EncryptedSeed)
 	fmt.Println("          Your Voting Balance is: ", investor.VotingBalance)
 	fmt.Println("          You have Invested: ", investor.AmountInvested)
 	fmt.Println("          Your Invested Assets are: ", investor.InvestedSolarProjects)
@@ -72,8 +72,8 @@ func PrintUsers(users []database.User) {
 func PrintUser(user database.User) {
 	fmt.Println("    WELCOME BACK ", user.Name)
 	fmt.Println("          Your user index is: ", user.Index)
-	fmt.Println("          Your Public Key is: ", user.PublicKey)
-	fmt.Println("          Your Encrypted Seed is: ", user.EncryptedSeed)
+	fmt.Println("          Your Public Key is: ", user.StellarWallet.PublicKey)
+	fmt.Println("          Your Encrypted Seed is: ", user.StellarWallet.EncryptedSeed)
 	fmt.Println("          Your Username is: ", user.Username)
 	fmt.Println("          Your Password hash is: ", user.Pwhash)
 	fmt.Println("          Your KYC status is: ", user.Kyc)
@@ -85,8 +85,8 @@ func PrintUser(user database.User) {
 // PrintRecipient pretty prints recipients
 func PrintRecipient(recipient database.Recipient) {
 	fmt.Println("          Your Index is: ", recipient.U.Index)
-	fmt.Println("          Your Public Key is: ", recipient.U.PublicKey)
-	fmt.Println("          Your Encrypted Seed is: ", recipient.U.EncryptedSeed)
+	fmt.Println("          Your Public Key is: ", recipient.U.StellarWallet.PublicKey)
+	fmt.Println("          Your Encrypted Seed is: ", recipient.U.StellarWallet.EncryptedSeed)
 	fmt.Println("          Your Received Assets are: ", recipient.ReceivedSolarProjects)
 	fmt.Println("          Your Username is: ", recipient.U.Username)
 	fmt.Println("          Your Password hash is: ", recipient.U.Pwhash)
@@ -104,8 +104,8 @@ func PrintRecipient(recipient database.Recipient) {
 func PrintEntity(a solar.Entity) {
 	fmt.Println("    WELCOME BACK ", a.U.Name)
 	fmt.Println("    			 Your Index is ", a.U.Index)
-	fmt.Println("          Your Public Key is: ", a.U.PublicKey)
-	fmt.Println("          Your Encrypted Seed is: ", a.U.EncryptedSeed)
+	fmt.Println("          Your Public Key is: ", a.U.StellarWallet.PublicKey)
+	fmt.Println("          Your Encrypted Seed is: ", a.U.StellarWallet.EncryptedSeed)
 	fmt.Println("          Your Username is: ", a.U.Username)
 	fmt.Println("          Your Password hash is: ", a.U.Pwhash)
 	fmt.Println("          Your Address is: ", a.U.Address)

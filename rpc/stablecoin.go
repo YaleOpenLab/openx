@@ -31,7 +31,7 @@ func getTestStableCoin() {
 		}
 		// we need to validate the user and check if its a part of the platform. If not,
 		// we don't allow it to exchange xlm for stablecoin.
-		receiverSeed, err := wallet.DecryptSeed(user.EncryptedSeed, r.URL.Query()["seedpwd"][0])
+		receiverSeed, err := wallet.DecryptSeed(user.StellarWallet.EncryptedSeed, r.URL.Query()["seedpwd"][0])
 		if err != nil {
 			log.Println(err)
 			responseHandler(w, StatusBadRequest)
@@ -97,7 +97,7 @@ func getAnchorUSD() {
 				return
 			}
 
-			seed, err := wallet.DecryptSeed(user.EncryptedSeed, r.URL.Query()["seedpwd"][0])
+			seed, err := wallet.DecryptSeed(user.StellarWallet.EncryptedSeed, r.URL.Query()["seedpwd"][0])
 			if err != nil {
 				log.Println(err)
 				responseHandler(w, StatusBadRequest)

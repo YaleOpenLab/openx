@@ -83,7 +83,7 @@ func TestAnchorEndpoints(t *testing.T) {
 
 	body = "https://sandbox-api.anchorusd.com/api/register"
 	data = url.Values{}
-	data.Set("identifier", withdrawIdentifier) // TODO: the deposit API doesn't parse identifiers. Should be fixed on AnchorUSD's end.
+	data.Set("identifier", withdrawIdentifier)
 	payload = strings.NewReader(data.Encode())
 
 	dataPost, err = PostRequest(body, payload)

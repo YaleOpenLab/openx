@@ -371,11 +371,11 @@ func TestDb(t *testing.T) {
 	// check the asset functions below. For some weird reason, placing these tests
 	// above confuses the other routes, so placing everything here so that we can
 	// isolate them from the other routes.
-	err = xlm.GetXLM(recp.U.PublicKey)
+	err = xlm.GetXLM(recp.U.StellarWallet.PublicKey)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = xlm.GetXLM(inv.U.PublicKey)
+	err = xlm.GetXLM(inv.U.StellarWallet.PublicKey)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -383,17 +383,17 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	build.CreditAsset("blah", recp.U.PublicKey)
-	invSeed, err := wallet.DecryptSeed(inv.U.EncryptedSeed, "blah")
+	build.CreditAsset("blah", recp.U.StellarWallet.PublicKey)
+	invSeed, err := wallet.DecryptSeed(inv.U.StellarWallet.EncryptedSeed, "blah")
 	if err != nil {
 		t.Fatal(err)
 	}
-	hash, err := assets.TrustAsset("blah", recp.U.PublicKey, "100", invSeed)
+	hash, err := assets.TrustAsset("blah", recp.U.StellarWallet.PublicKey, "100", invSeed)
 	if err != nil {
 		t.Fatal(err)
 	}
 	log.Println("HASH IS: ", hash)
-	_, err = assets.TrustAsset("blah", recp.U.PublicKey, "-1", "blah")
+	_, err = assets.TrustAsset("blah", recp.U.StellarWallet.PublicKey, "-1", "blah")
 	if err == nil {
 		t.Fatalf("can trust asset with invalid s eed!")
 	}
@@ -502,7 +502,7 @@ func TestDb(t *testing.T) {
 		t.Fatal(err)
 	}
 	testuser, _ := SearchWithEmailId("blahx@blah.com")
-	if testuser.PublicKey != "" {
+	if testuser.StellarWallet.PublicKey != "" {
 		t.Fatalf("user with invalid email exists")
 	}
 	err = xlm.GetXLM(inv.U.SecondaryWallet.PublicKey)

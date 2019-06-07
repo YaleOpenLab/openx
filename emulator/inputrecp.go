@@ -64,7 +64,7 @@ func ParseInputRecp(input []string) error {
 	case "receive":
 		receiveHelper(input, LocalRecipient.U.Username, LocalRecipient.U.Pwhash)
 	case "create":
-		createHelper(input, LocalRecipient.U.Username, LocalRecipient.U.Pwhash, LocalRecipient.U.PublicKey)
+		createHelper(input, LocalRecipient.U.Username, LocalRecipient.U.Pwhash, LocalRecipient.U.StellarWallet.PublicKey)
 	case "kyc":
 		kycHelper(input, LocalRecipient.U.Username, LocalRecipient.U.Pwhash, LocalRecipient.U.Inspector)
 	case "increasetrust":

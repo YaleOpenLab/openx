@@ -41,7 +41,7 @@ func Login(username string, pwhash string) (string, error) {
 		if err != nil {
 			return wString, errors.Wrap(err, "could not scan raw password")
 		}
-		LocalSeed, err = wallet.DecryptSeed(LocalInvestor.U.EncryptedSeed, LocalSeedPwd)
+		LocalSeed, err = wallet.DecryptSeed(LocalInvestor.U.StellarWallet.EncryptedSeed, LocalSeedPwd)
 		if err != nil {
 			return wString, errors.Wrap(err, "could not decrypt seed")
 		}
@@ -62,7 +62,7 @@ func Login(username string, pwhash string) (string, error) {
 		if err != nil {
 			return wString, errors.Wrap(err, "could not scan raw password")
 		}
-		LocalSeed, err = wallet.DecryptSeed(LocalRecipient.U.EncryptedSeed, LocalSeedPwd)
+		LocalSeed, err = wallet.DecryptSeed(LocalRecipient.U.StellarWallet.EncryptedSeed, LocalSeedPwd)
 		if err != nil {
 			return wString, errors.Wrap(err, "could not decrypt seed")
 		}
@@ -92,12 +92,12 @@ func Login(username string, pwhash string) (string, error) {
 			return wString, errors.Wrap(err, "could not scan raw password")
 		}
 		if entity.Contractor {
-			LocalSeed, err = wallet.DecryptSeed(LocalContractor.U.EncryptedSeed, LocalSeedPwd)
+			LocalSeed, err = wallet.DecryptSeed(LocalContractor.U.StellarWallet.EncryptedSeed, LocalSeedPwd)
 			if err != nil {
 				return wString, errors.Wrap(err, "could not decrypt seed")
 			}
 		} else if entity.Originator {
-			LocalSeed, err = wallet.DecryptSeed(LocalOriginator.U.EncryptedSeed, LocalSeedPwd)
+			LocalSeed, err = wallet.DecryptSeed(LocalOriginator.U.StellarWallet.EncryptedSeed, LocalSeedPwd)
 			if err != nil {
 				return wString, errors.Wrap(err, "could not decrypt seed")
 			}
