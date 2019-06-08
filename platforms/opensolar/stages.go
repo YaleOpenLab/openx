@@ -1,7 +1,6 @@
 package opensolar
 
 import (
-	"fmt"
 	"github.com/pkg/errors"
 	"log"
 
@@ -103,12 +102,12 @@ func StageXtoY(index int) error {
 
 	if project.Stage < 0 || project.Stage > 8 {
 		log.Println("project stage number out of bounds, quitting")
-		return fmt.Errorf("stage number out of bounds or not eligible for stage updation")
+		return errors.New("stage number out of bounds or not eligible for stage updation")
 	}
 
 	if project.StageChecklist == nil || project.StageData == nil {
 		log.Println("stage checklist or stage data is nil, quitting")
-		return fmt.Errorf("stage checklist or stage data is nil, quitting")
+		return errors.New("stage checklist or stage data is nil, quitting")
 	}
 
 	var baseStage Stage
@@ -144,24 +143,24 @@ func StageXtoY(index int) error {
 		finalStage = Stage9
 	default:
 		// shouldn't come here? in case it does, error out.
-		return fmt.Errorf("base stage doesn't match with predefined stages, quitting")
+		return errors.New("base stage doesn't match with predefined stages, quitting")
 	}
 
 	if len(project.StageChecklist[baseStage.Number]) != len(baseStage.Activities) {
 		log.Println("length of checklists don't match, quitting")
-		return fmt.Errorf("length of checklists don't match, quitting")
+		return errors.New("length of checklists don't match, quitting")
 	}
 
 	if len(project.StageData[baseStage.Number]) == 0 {
 		log.Println("baseStage data is empty, can't upgrade stages!")
-		return fmt.Errorf("baseStage data is empty, can't upgrade stages")
+		return errors.New("baseStage data is empty, can't upgrade stages")
 	}
 
 	// go through the checklist and see if something's wrong
 	for _, check := range project.StageChecklist[baseStage.Number] {
 		if !check {
 			log.Println("checklist not satisfied, quitting")
-			return fmt.Errorf("checklist not satisfied, quitting")
+			return errors.New("checklist not satisfied, quitting")
 		}
 	}
 

@@ -1,7 +1,6 @@
 package munibond
 
 import (
-	"fmt"
 	"log"
 	"time"
 
@@ -137,7 +136,7 @@ func MunibondReceive(issuerPath string, recpIndex int, projIndex int, debtAssetI
 	}
 
 	log.Printf("Tx hash for freezing issuer is: %s", txhash)
-	fmt.Printf("PROJECT %d's INVESTMENT CONFIRMED!", projIndex)
+	log.Printf("PROJECT %d's INVESTMENT CONFIRMED!", projIndex)
 
 	if recipient.U.Notification {
 		notif.SendInvestmentNotifToRecipient(projIndex, recipient.U.Email, paybackTrustHash, paybackAssetHash, debtTrustHash, recpDebtAssetHash)
@@ -202,7 +201,7 @@ func MunibondPayback(issuerPath string, recpIndex int, amount string, recipientS
 	mBillFloat := utils.StoF(monthlyBill)
 
 	if utils.StoF(amount) < mBillFloat {
-		return -1, fmt.Errorf("amount paid is less than amount needed. Please refill your main account")
+		return -1, errors.New("amount paid is less than amount needed. Please refill your main account")
 	}
 
 	err = stablecoin.OfferExchange(recipient.U.StellarWallet.PublicKey, recipientSeed, amount)

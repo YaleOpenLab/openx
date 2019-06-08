@@ -1,7 +1,6 @@
 package ozones
 
 import (
-	"fmt"
 	"github.com/pkg/errors"
 	"log"
 	"math"
@@ -221,7 +220,7 @@ func (project *ConstructionBond) sendRecipientNotification() error {
 
 // UnlockProject unlocks a specific project that has just been invested in
 func UnlockProject(username string, pwhash string, projIndex int, seedpwd string, application string) error {
-	fmt.Println("UNLOCKING PROJECT")
+	log.Println("UNLOCKING PROJECT")
 	recipient, err := database.ValidateRecipient(username, pwhash)
 	if err != nil {
 		return errors.Wrap(err, "couldn't validate recipient")

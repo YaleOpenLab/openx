@@ -3,7 +3,6 @@ package database
 import (
 	"crypto/ecdsa"
 	"encoding/base32"
-	"fmt"
 	"github.com/pkg/errors"
 	"log"
 
@@ -380,7 +379,7 @@ func (a *User) GenKeys(seedpwd string, options ...string) error {
 			a.RecoveryShares = append(a.RecoveryShares, tmp...) // this is for the primary account
 		default:
 			log.Println("Chain not supported, please feel free to add support in aanew Pull Request")
-			return fmt.Errorf("chain not supported, returning")
+			return errors.New("chain not supported, returning")
 		} // end of switch
 	} else if len(options) == 0 {
 		// default user account supported is stellar
@@ -600,7 +599,7 @@ func MoveFundsFromSecondaryWallet(userIndex int, pwhash string, amount string, s
 	}
 
 	if user.Pwhash != pwhash {
-		return fmt.Errorf("pw hashes don't match, quitting")
+		return errors.New("pw hashes don't match, quitting")
 	}
 	amountI, err := utils.StoFWithCheck(amount)
 	if err != nil {
@@ -619,7 +618,7 @@ func MoveFundsFromSecondaryWallet(userIndex int, pwhash string, amount string, s
 	}
 
 	if amountI > utils.StoF(secFunds) {
-		return fmt.Errorf("amount to be transferred is greater than the funds available in the secondary account, quitting")
+		return errors.New("amount to be transferred is greater than the funds available in the secondary account, quitting")
 	}
 
 	// send the tx over
@@ -642,7 +641,7 @@ func SweepSecondaryWallet(userIndex int, pwhash string, seedpwd string) error {
 	}
 
 	if user.Pwhash != pwhash {
-		return fmt.Errorf("pw hashes don't match, quitting")
+		return errors.New("pw hashes don't match, quitting")
 	}
 
 	secSeed, err := wallet.DecryptSeed(user.SecondaryWallet.EncryptedSeed, seedpwd)
@@ -683,11 +682,11 @@ func (a *User) AddEmail(email string) error {
 // SetBan can be used by an inspector to se a ban on any user for violating certain terms and conditions
 func (a *User) SetBan(userIndex int) error {
 	if !a.Inspector {
-		return fmt.Errorf("user not authorized to ban a user")
+		return errors.New("user not authorized to ban a user")
 	}
 
 	if a.Index == userIndex {
-		return fmt.Errorf("can't ban yourself, quitting")
+		return errors.New("can't ban yourself, quitting")
 	}
 
 	user, err := RetrieveUser(userIndex)
@@ -717,7 +716,7 @@ func (a *User) GiveFeedback(userIndex int, feedback int) error {
 
 	if feedback > 5 || feedback < 0 {
 		log.Println("feedback greater than 5 or less than 0, quitting")
-		return fmt.Errorf("feedback greater than 5, quitting")
+		return errors.New("feedback greater than 5, quitting")
 	}
 
 	user.StarRating[a.Index] = feedback

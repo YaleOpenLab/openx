@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/chzyer/readline"
 	"github.com/fatih/color"
 	"log"
@@ -115,7 +114,7 @@ func main() {
 		testSwytch()
 	}
 
-	fmt.Println("---------------WELCOME TO THE TELLER INTERFACE---------------")
+	log.Println("---------------WELCOME TO THE TELLER INTERFACE---------------")
 	defer recoverPanic() // catch any panics that may occur during the teller's runtime
 	err = StartTeller()  // login to the platform, set device id, etc
 	if err != nil {
@@ -143,7 +142,7 @@ func main() {
 		log.Println("Running teller in daemon mode")
 		go func() {
 			<-signalChan
-			fmt.Println("\nSigint received, calling endhandler!")
+			log.Println("\nSigint received, calling endhandler!")
 			err = endHandler()
 			for err != nil {
 				log.Println(err)
@@ -160,7 +159,7 @@ func main() {
 	// non daemon mode, CLI available.
 	go func() {
 		<-signalChan
-		fmt.Println("\nSigint received, not quitting wihtout closing endhandler!")
+		log.Println("\nSigint received, not quitting wihtout closing endhandler!")
 		close(cleanupDone)
 	}()
 

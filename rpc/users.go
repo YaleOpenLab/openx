@@ -3,7 +3,6 @@ package rpc
 import (
 	"crypto/tls"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"math"
@@ -1500,17 +1499,17 @@ func ValidateSeedPwd(w http.ResponseWriter, r *http.Request, encryptedSeed []byt
 	// we've validated the seedpwd, try decrypting the Encrypted Seed.
 	seed, err := wallet.DecryptSeed(encryptedSeed, seedpwd)
 	if err != nil {
-		return seedpwd, fmt.Errorf("could not decrypt seed")
+		return seedpwd, errors.New("could not decrypt seed")
 	}
 
 	// now get the pubkey from this seed and match with original pubkey
 	pubkey, err := wallet.ReturnPubkey(seed)
 	if err != nil {
-		return seedpwd, fmt.Errorf("could not retrieve pubkey")
+		return seedpwd, errors.New("could not retrieve pubkey")
 	}
 
 	if pubkey != userPublickey {
-		return seedpwd, fmt.Errorf("pubkeys don't match, quitting")
+		return seedpwd, errors.New("pubkeys don't match, quitting")
 	}
 
 	return seedpwd, nil

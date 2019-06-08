@@ -1,9 +1,6 @@
 package xlm
 
-// the xlm package provides all the necessary handlers in order to interact with the
-// Stellar blockchain
 import (
-	"fmt"
 	"github.com/pkg/errors"
 	"log"
 
@@ -13,6 +10,9 @@ import (
 	"github.com/stellar/go/keypair"
 	"github.com/stellar/go/network"
 )
+
+// package xlm provides all the necessary handlers in order to interact with the
+// Stellar blockchain
 
 // GetKeyPair gets a keypair that can be used to interact with the stellar blockchain
 func GetKeyPair() (string, string, error) {
@@ -51,7 +51,7 @@ func SendTx(Seed string, tx *build.TransactionBuilder) (int32, string, error) {
 		return -1, "", errors.Wrap(err, "could not submit tx to horizon")
 	}
 
-	fmt.Printf("Propagated Transaction: %s, sequence: %d\n", resp.Hash, resp.Ledger)
+	log.Printf("Propagated Transaction: %s, sequence: %d\n", resp.Hash, resp.Ledger)
 	return resp.Ledger, resp.Hash, nil
 }
 

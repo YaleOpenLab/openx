@@ -1,7 +1,6 @@
 package multisig
 
 import (
-	"fmt"
 	"github.com/pkg/errors"
 	"log"
 	"net/http"
@@ -100,7 +99,7 @@ func constructThresholdTx(seed string, pubkey string, cosignerPubkey string, y i
 func Newxofy(x int, y int, signers ...string) (string, error) {
 
 	if y != len(signers) {
-		return "", fmt.Errorf("length of multisig tx and number of signers don't match, quitting")
+		return "", errors.New("length of multisig tx and number of signers don't match, quitting")
 	}
 
 	tempSeed, pubkey, err := xlm.GetKeyPair()

@@ -1,7 +1,6 @@
 package platform
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -35,7 +34,7 @@ func InitializePlatform() error {
 	// now we can be sure we have the directory, check for seed
 	if _, err := os.Stat(consts.PlatformSeedFile); !os.IsNotExist(err) {
 		// the seed exists
-		fmt.Println("ENTER YOUR PASSWORD TO DECRYPT THE PLATFORM SEED FILE")
+		log.Println("ENTER YOUR PASSWORD TO DECRYPT THE PLATFORM SEED FILE")
 		password, err := scan.ScanRawPassword()
 		if err != nil {
 			return errors.Wrap(err, "couldn't scan raw password")
@@ -44,7 +43,7 @@ func InitializePlatform() error {
 		return err
 	}
 	// platform doesn't exist or user doesn't have encrypted file. Ask
-	fmt.Println("DO YOU HAVE YOUR RAW SEED? IF SO, ENTER SEED. ELSE ENTER N")
+	log.Println("DO YOU HAVE YOUR RAW SEED? IF SO, ENTER SEED. ELSE ENTER N")
 	seed, err = scan.ScanForString()
 	if err != nil {
 		return errors.Wrap(err, "couldn't scan raw string")
@@ -52,7 +51,7 @@ func InitializePlatform() error {
 	if seed == "N" || seed == "n" {
 		// no seed, no file, create new keypair
 		// need to pass the password for the  eed file
-		fmt.Println("Enter a password to encrypt your master seed. Please store this in a very safe place. This prompt will not ask to confirm your password")
+		log.Println("Enter a password to encrypt your master seed. Please store this in a very safe place. This prompt will not ask to confirm your password")
 		password, err := scan.ScanRawPassword()
 		if err != nil {
 			return err

@@ -1,7 +1,6 @@
 package algorand
 
 import (
-	"fmt"
 	"github.com/pkg/errors"
 	"log"
 
@@ -37,7 +36,7 @@ func InitAlgodClient() (algod.Client, error) {
 	var err error
 	AlgodClient, err = algod.MakeClient(consts.AlgodAddress, consts.AlgodToken)
 	if err != nil {
-		fmt.Printf("failed to make algod client: %s\n", err)
+		log.Printf("failed to make algod client: %s\n", err)
 		return AlgodClient, nil
 	}
 
@@ -75,7 +74,7 @@ func GetStatus(Client algod.Client) (models.NodeStatus, error) {
 	var status models.NodeStatus
 	status, err := AlgodClient.Status()
 	if err != nil {
-		fmt.Printf("error getting algod status: %s\n", err)
+		log.Printf("error getting algod status: %s\n", err)
 		return status, err
 	}
 
@@ -100,7 +99,7 @@ func generateWalletToken(walletID string, password string) (string, error) {
 	// and creating accounts. Wallet handles do expire, but they can be renewed
 	initResponse, err := KmdClient.InitWalletHandle(walletID, password)
 	if err != nil {
-		fmt.Printf("Error initializing wallet handle: %s\n", err)
+		log.Printf("Error initializing wallet handle: %s\n", err)
 		return "", err
 	}
 
@@ -113,10 +112,10 @@ func generateAddress(walletHandleToken string) (string, error) {
 	// Generate a new address from the wallet handle
 	genResponse, err := KmdClient.GenerateKey(walletHandleToken)
 	if err != nil {
-		fmt.Printf("Error generating key: %s\n", err)
+		log.Printf("Error generating key: %s\n", err)
 		return "", err
 	}
-	fmt.Printf("Generated address %s\n", genResponse.Address)
+	log.Printf("Generated address %s\n", genResponse.Address)
 	return genResponse.Address, nil
 }
 
@@ -232,7 +231,7 @@ func getWalletId(walletName string) (string, error) {
 	var ourWalletId string
 	for _, wallet := range listResponse.Wallets {
 		if wallet.Name == walletName {
-			fmt.Printf("found wallet '%s' with ID: %s\n", wallet.Name, wallet.ID)
+			log.Printf("found wallet '%s' with ID: %s\n", wallet.Name, wallet.ID)
 			ourWalletId = wallet.ID
 		}
 	}
