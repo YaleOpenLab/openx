@@ -497,7 +497,7 @@ func TestDb(t *testing.T) {
 	if len(allO) != 1 {
 		t.Fatalf("Multiple originated orders when there should be only one")
 	}
-	err = inv.AddVotingBalance(1000)
+	err = inv.ChangeVotingBalance(1000)
 	if err != nil {
 		t.Fatal(err)
 	}

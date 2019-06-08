@@ -37,7 +37,7 @@ func easyjsonA00f0bbcDecodeGithubComYaleOpenLabOpenxDatabase(in *jlexer.Lexer, o
 		}
 		switch key {
 		case "VotingBalance":
-			out.VotingBalance = int(in.Int())
+			out.VotingBalance = float64(in.Float64())
 		case "AmountInvested":
 			out.AmountInvested = float64(in.Float64())
 		case "InvestedSolarProjects":
@@ -193,7 +193,7 @@ func easyjsonA00f0bbcEncodeGithubComYaleOpenLabOpenxDatabase(out *jwriter.Writer
 		} else {
 			out.RawString(prefix)
 		}
-		out.Int(int(in.VotingBalance))
+		out.Float64(float64(in.VotingBalance))
 	}
 	{
 		const prefix string = ",\"AmountInvested\":"

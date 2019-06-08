@@ -143,7 +143,7 @@ func InsertDummyData(simulate bool) error {
 		if err != nil {
 			return err
 		}
-		err = inv.AddVotingBalance(100000)
+		err = inv.ChangeVotingBalance(100000)
 		// this function saves as well, so there's no need to save again
 		if err != nil {
 			return err

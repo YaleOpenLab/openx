@@ -89,7 +89,7 @@ type Project struct {
 	// Define parameters that will not be defined directly but will be used for the backend flow
 	Lock           bool               // lock investment in order to wait for recipient's confirmation
 	LockPwd        string             // the recipient's seedpwd. Will be set to null as soon as we use it.
-	Votes          int                // the number of votes towards a proposed contract by investors
+	Votes          float64            // the number of votes towards a proposed contract by investors
 	AmountOwed     float64            // the amoutn owed to investors as a cumulative sum. Used in case of a breach
 	Reputation     float64            // the positive reputation associated with a given project
 	OwnershipShift float64            // the percentage of the project that the recipient now owns

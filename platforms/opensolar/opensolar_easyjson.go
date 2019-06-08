@@ -742,7 +742,7 @@ func easyjson4a457b9dDecodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(in *jlex
 		case "LockPwd":
 			out.LockPwd = string(in.String())
 		case "Votes":
-			out.Votes = int(in.Int())
+			out.Votes = float64(in.Float64())
 		case "AmountOwed":
 			out.AmountOwed = float64(in.Float64())
 		case "Reputation":
@@ -1826,7 +1826,7 @@ func easyjson4a457b9dEncodeGithubComYaleOpenLabOpenxPlatformsOpensolar5(out *jwr
 		} else {
 			out.RawString(prefix)
 		}
-		out.Int(int(in.Votes))
+		out.Float64(float64(in.Votes))
 	}
 	{
 		const prefix string = ",\"AmountOwed\":"
