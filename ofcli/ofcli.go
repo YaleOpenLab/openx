@@ -528,7 +528,7 @@ func main() {
 				}
 				fmt.Println("YOUR AVAILABLE VOTING BALANCE IS: ", investor.VotingBalance)
 				fmt.Println("HOW MANY VOTES DO YOU WANT TO DELEGATE TOWARDS THIS ORDER?")
-				votes, err := scan.ScanForInt()
+				votes, err := scan.ScanForFloat()
 				if err != nil {
 					log.Println(err)
 					break
