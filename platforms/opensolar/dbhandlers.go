@@ -1,7 +1,6 @@
 package opensolar
 
 import (
-	"fmt"
 	"github.com/pkg/errors"
 
 	database "github.com/YaleOpenLab/openx/database"
@@ -77,7 +76,7 @@ func RetrieveAllProjects() ([]Project, error) {
 func RetrieveProjectsAtStage(stage int) ([]Project, error) {
 	var arr []Project
 	if stage > 9 { // check for this and fail early instead of wasting compute time on this
-		return arr, errors.Wrap(fmt.Errorf(""), "stage can not be greater than 9, quitting!")
+		return arr, errors.Wrap(errors.New("stage can not be greater than 9, quitting!"), "stage can not be greater than 9, quitting!")
 	}
 	db, err := database.OpenDB()
 	if err != nil {
@@ -109,7 +108,7 @@ func RetrieveProjectsAtStage(stage int) ([]Project, error) {
 func RetrieveContractorProjects(stage int, index int) ([]Project, error) {
 	var arr []Project
 	if stage > 9 { // check for this and fail early instead of wasting compute time on this
-		return arr, errors.Wrap(fmt.Errorf(""), "stage can not be greater than 9, quitting!")
+		return arr, errors.Wrap(errors.New("stage can not be greater than 9, quitting!"), "stage can not be greater than 9, quitting!")
 	}
 	db, err := database.OpenDB()
 	if err != nil {
@@ -140,7 +139,7 @@ func RetrieveContractorProjects(stage int, index int) ([]Project, error) {
 func RetrieveOriginatorProjects(stage int, index int) ([]Project, error) {
 	var arr []Project
 	if stage > 9 { // check for this and fail early instead of wasting compute time on this
-		return arr, errors.Wrap(fmt.Errorf(""), "stage can not be greater than 9, quitting!")
+		return arr, errors.Wrap(errors.New("stage can not be greater than 9, quitting!"), "stage can not be greater than 9, quitting!")
 	}
 	db, err := database.OpenDB()
 	if err != nil {
@@ -171,7 +170,7 @@ func RetrieveOriginatorProjects(stage int, index int) ([]Project, error) {
 func RetrieveRecipientProjects(stage int, index int) ([]Project, error) {
 	var arr []Project
 	if stage > 9 { // check for this and fail early instead of wasting compute time on this
-		return arr, errors.Wrap(fmt.Errorf(""), "stage can not be greater than 9, quitting!")
+		return arr, errors.Wrap(errors.New("stage can not be greater than 9, quitting!"), "stage can not be greater than 9, quitting!")
 	}
 	db, err := database.OpenDB()
 	if err != nil {

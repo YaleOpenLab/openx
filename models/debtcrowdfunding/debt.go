@@ -1,7 +1,6 @@
 package investmentcrowdfunding
 
 import (
-	"fmt"
 	"log"
 
 	consts "github.com/YaleOpenLab/openx/consts"
@@ -121,7 +120,7 @@ func ReceiveBond(issuerPath string, recpIndex int, projIndex int, debtAssetCode 
 	}
 
 	log.Printf("Tx hash for freezing issuer is: %s", txhash)
-	fmt.Printf("PROJECT %d's INVESTMENT CONFIRMED!", projIndex)
+	log.Printf("PROJECT %d's INVESTMENT CONFIRMED!", projIndex)
 
 	if recipient.U.Notification {
 		go notif.SendInvestmentNotifToRecipientOZ(projIndex, recipient.U.Email, debtTrustHash, recpDebtAssetHash)

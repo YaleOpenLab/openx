@@ -1,7 +1,6 @@
 package opensolar
 
 import (
-	"fmt"
 	"github.com/pkg/errors"
 	"log"
 	"time"
@@ -54,7 +53,7 @@ func VerifyBeforeAuthorizing(projIndex int) bool {
 	if err != nil {
 		return false
 	}
-	fmt.Printf("ORIGINATOR'S NAME IS: %s and PROJECT's METADATA IS: %s", originator.U.Name, project.Metadata)
+	log.Println("ORIGINATOR'S NAME IS:", originator.U.Name, " and PROJECT's METADATA IS: ", project.Metadata)
 	if originator.U.Kyc && !originator.U.Banned {
 		return true
 	}
@@ -128,7 +127,7 @@ func VoteTowardsProposedProject(invIndex int, votes int, projectIndex int) error
 		return errors.Wrap(err, "error while deducitng voting balance of investor")
 	}
 
-	fmt.Println("CAST VOTE TOWARDS PROJECT SUCCESSFULLY")
+	log.Println("CAST VOTE TOWARDS PROJECT SUCCESSFULLY")
 	return nil
 }
 
@@ -195,15 +194,15 @@ func SeedInvest(projIndex int, invIndex int, invAmount string, invSeed string) e
 	}
 
 	if project.Stage != 1 && project.Stage != 2 {
-		return fmt.Errorf("project stage not at 1, you either have passed the seed stage or project is not at seed stage yet")
+		return errors.New("project stage not at 1, you either have passed the seed stage or project is not at seed stage yet")
 	}
 
 	if project.InvestmentType != "munibond" {
-		return fmt.Errorf("investment models other than munibonds are not supported right now, quitting")
+		return errors.New("investment models other than munibonds are not supported right now, quitting")
 	}
 
 	if project.SeedInvestmentCap < utils.StoF(invAmount) {
-		return fmt.Errorf("you can't invest more than what the seed investment cap permits you to, quitting")
+		return errors.New("you can't invest more than what the seed investment cap permits you to, quitting")
 	}
 
 	if project.Chain == "stellar" || project.Chain == "" {
@@ -224,7 +223,7 @@ func SeedInvest(projIndex int, invIndex int, invAmount string, invSeed string) e
 
 		return err
 	} else {
-		return fmt.Errorf("other chain investments not supported  yet")
+		return errors.New("other chain investments not supported  yet")
 	}
 }
 
@@ -239,7 +238,7 @@ func Invest(projIndex int, invIndex int, invAmount string, invSeed string) error
 	}
 
 	if project.InvestmentType != "munibond" {
-		return fmt.Errorf("other investment models are not supported right now, quitting")
+		return errors.New("other investment models are not supported right now, quitting")
 	}
 
 	if project.Chain == "stellar" || project.Chain == "" {
@@ -248,7 +247,7 @@ func Invest(projIndex int, invIndex int, invAmount string, invSeed string) error
 				// need to redirect it to the seedinvest function
 				return SeedInvest(projIndex, invIndex, invAmount, invSeed)
 			}
-			return fmt.Errorf("project not at stage where it can solicit investment, quitting")
+			return errors.New("project not at stage where it can solicit investment, quitting")
 		}
 		// call the model and invest in the particular project
 		err = model.MunibondInvest(consts.OpenSolarIssuerDir, invIndex, invSeed, invAmount, projIndex,
@@ -266,7 +265,7 @@ func Invest(projIndex int, invIndex int, invAmount string, invSeed string) error
 
 		return err
 	} else {
-		return fmt.Errorf("other chain investment not supported right now")
+		return errors.New("other chain investment not supported right now")
 	}
 }
 
@@ -364,7 +363,7 @@ func (project *Project) sendRecipientNotification() error {
 
 // UnlockProject unlocks a specific project that has just been invested in
 func UnlockProject(username string, pwhash string, projIndex int, seedpwd string) error {
-	fmt.Println("UNLOCKING PROJECT")
+	log.Println("UNLOCKING PROJECT")
 	project, err := RetrieveProject(projIndex)
 	if err != nil {
 		return errors.Wrap(err, "couldn't retrieve project")
@@ -512,7 +511,7 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 	}
 
 	if project.InvestmentType != "munibond" {
-		return fmt.Errorf("other investment models are not supported right now, quitting")
+		return errors.New("other investment models are not supported right now, quitting")
 	}
 
 	pct, err := model.MunibondPayback(consts.OpenSolarIssuerDir, recpIndex, amount,
@@ -568,7 +567,7 @@ func DistributePayments(recipientSeed string, escrowPubkey string, projIndex int
 
 	if project.EscrowLock {
 		log.Println("project", project.Index, "'s escrow locked, can't send funds")
-		return fmt.Errorf("project escrow locked, can't send funds")
+		return errors.New("project escrow locked, can't send funds")
 	}
 	fixedRate := 0.05 // 5 % of the total investment as return or something similar. Should not be hardcoded
 	// and must be read from the project data. But hardcoded for now.
@@ -710,7 +709,7 @@ func CoverFirstLoss(projIndex int, entityIndex int, amount string) error {
 
 	// we now have the entity and the project under question
 	if project.GuarantorIndex != entity.U.Index {
-		return fmt.Errorf("guarantor index does not match with entity's index in database")
+		return errors.New("guarantor index does not match with entity's index in database")
 	}
 
 	if entity.FirstLossGuaranteeAmt < utils.StoF(amount) {

@@ -2,7 +2,6 @@ package oracle
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/pkg/errors"
 	"io/ioutil"
 	"log"
@@ -82,7 +81,7 @@ func BinanceTicker() (float64, error) {
 	}
 
 	if response.Symbol != "XLMUSDT" {
-		return -1, fmt.Errorf("ticker symbols don't match with API response")
+		return -1, errors.New("ticker symbols don't match with API response")
 	}
 	// response.Price is in string, need to convert it to float
 	price, err := utils.StoFWithCheck(response.Price)
@@ -107,7 +106,7 @@ func BinanceVolume() (float64, error) {
 	}
 
 	if response.Symbol != "XLMUSDT" {
-		return -1, fmt.Errorf("ticker symbols don't match with API response")
+		return -1, errors.New("ticker symbols don't match with API response")
 	}
 
 	volume, err := utils.StoFWithCheck(response.Volume)

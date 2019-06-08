@@ -1,7 +1,6 @@
 package recovery
 
 import (
-	"fmt"
 	"math/big"
 
 	"github.com/pkg/errors"
@@ -24,7 +23,7 @@ func Create(minimum int, shares int, raw string) ([]string, error) {
 	// sense to generate fewer shares than are needed to reconstruct the secret.
 	var dummy []string
 	if minimum > shares {
-		return dummy, fmt.Errorf("cannot require more shares then existing")
+		return dummy, errors.New("cannot require more shares then existing")
 	}
 
 	// Convert the secret to its respective 256-bit big.Int representation
@@ -140,7 +139,7 @@ func Combine(shares []string) (string, error) {
 	for i := range shares {
 		// ...ensure that it is valid...
 		if !IsValidShare(shares[i]) {
-			return "", fmt.Errorf("one of the shares is invalid")
+			return "", errors.New("one of the shares is invalid")
 		}
 
 		// ...find the number of parts it represents...

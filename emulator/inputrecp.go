@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/pkg/errors"
 	"log"
 	"strings"
@@ -49,8 +48,8 @@ func ParseInputRecp(input []string) error {
 	command := input[0]
 	switch command {
 	case "help":
-		fmt.Println("LIST OF SUPPORTED COMMANDS: ")
-		fmt.Println("ping, display, exchange, ipfs, create, send, receive, unlock, payback, finalize, originate")
+		log.Println("LIST OF SUPPORTED COMMANDS: ")
+		log.Println("ping, display, exchange, ipfs, create, send, receive, unlock, payback, finalize, originate")
 	case "ping":
 		pingHelper()
 	case "display":
@@ -143,7 +142,7 @@ func ParseInputRecp(input []string) error {
 
 		if !found {
 			log.Println("Asset not found within received projects list")
-			return fmt.Errorf("asset not found within received projects list")
+			return errors.New("asset not found within received projects list")
 		}
 
 		status, err := Payback(projIndex, LocalSeedPwd, LocalRecipient.U.Username, LocalRecipient.U.Pwhash, assetName, amount)
@@ -214,7 +213,7 @@ func ParseInputRecp(input []string) error {
 		case "ownership":
 			// calculate the balance of the debt asset here
 			if len(input) != 2 {
-				fmt.Println("payback assetName")
+				log.Println("payback assetName")
 				break
 			}
 
@@ -229,7 +228,7 @@ func ParseInputRecp(input []string) error {
 
 			if !found {
 				log.Println("Asset not found within received projects list")
-				return fmt.Errorf("asset not found within received projects list")
+				return errors.New("asset not found within received projects list")
 			}
 
 			limit, err := GetTrustLimit(LocalRecipient.U.Username, LocalRecipient.U.Pwhash, assetName)
