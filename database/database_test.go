@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"testing"
+	"time"
 
 	consts "github.com/YaleOpenLab/openx/consts"
 	xlm "github.com/YaleOpenLab/openx/xlm"
@@ -379,6 +380,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	time.Sleep(5 * time.Second)
 	err = IncreaseTrustLimit(inv.U.Index, "blah", "10")
 	if err != nil {
 		t.Fatal(err)
