@@ -23,6 +23,12 @@ import (
 // These constants represent the algod REST endpoint and the corresponding
 // API token. You can retrieve these from the `algod.net` and `algod.token`
 // files in the algod data directory.
+
+// there are a few potential issues with testins stuff on Algorand - the first is that we must run
+// our own block explorer since we're testing on a private network. To test on Algorand testnet,
+// we must create a seed account with a large number of algos and run the algod daemon on AWS
+// or something similar. Also we'd need to see how we can  migrate to mainnet.
+
 var AlgodClient algod.Client
 var KmdClient kmd.Client
 
