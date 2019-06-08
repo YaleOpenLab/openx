@@ -4,7 +4,6 @@ import (
 	"errors"
 	"log"
 	"net/http"
-	"strconv"
 
 	database "github.com/YaleOpenLab/openx/database"
 	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
@@ -26,7 +25,6 @@ func setupRecipientRPCs() {
 	storeDeviceId()
 	storeStartTime()
 	storeDeviceLocation()
-	changeReputationRecp()
 	chooseBlindAuction()
 	chooseVickreyAuction()
 	chooseTimeAuction()
@@ -275,36 +273,6 @@ func storeDeviceLocation() {
 		err = prepRecipient.Save()
 		if err != nil {
 			log.Println("did not save recipient", err)
-			responseHandler(w, StatusInternalServerError)
-			return
-		}
-		responseHandler(w, StatusOK)
-	})
-}
-
-// changeReputation changes the reputation of a specified recipient
-func changeReputationRecp() {
-	http.HandleFunc("/recipient/reputation", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
-		checkOrigin(w, r)
-		recipient, err := RecpValidateHelper(w, r)
-		if err != nil {
-			responseHandler(w, StatusUnauthorized)
-			return
-		}
-		if r.URL.Query()["reputation"] == nil {
-			responseHandler(w, StatusBadRequest)
-			return
-		}
-		reputation, err := strconv.ParseFloat(r.URL.Query()["reputation"][0], 32) // same as StoI but we need to catch the error here
-		if err != nil {
-			log.Println("did not parse float", err)
-			responseHandler(w, StatusBadRequest)
-			return
-		}
-		err = database.ChangeRecpReputation(recipient.U.Index, reputation)
-		if err != nil {
-			log.Println("did not cahnge reputation", err)
 			responseHandler(w, StatusInternalServerError)
 			return
 		}

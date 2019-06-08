@@ -64,5 +64,5 @@ func RepOriginatedProject(origIndex int, projIndex int) error {
 	if err != nil {
 		return errors.Wrap(err, "couldn't retrieve project from db")
 	}
-	return originator.U.IncreaseReputation(project.TotalValue * OriginatorWeight)
+	return originator.U.ChangeReputation(project.TotalValue * OriginatorWeight)
 }

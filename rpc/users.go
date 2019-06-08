@@ -7,6 +7,7 @@ import (
 	"log"
 	"math"
 	"net/http"
+	"strconv"
 
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
@@ -21,9 +22,8 @@ import (
 )
 
 func setupUserRpcs() {
-	registerUser()
 	updateUser()
-	ValidateUser()
+	validateUser()
 	getBalances()
 	getXLMBalance()
 	getAssetBalance()
@@ -52,6 +52,7 @@ func setupUserRpcs() {
 	giveStarRating()
 	new2fa()
 	auth2fa()
+	changeReputation()
 	addAnchorKYCInfo()
 }
 
@@ -110,42 +111,6 @@ func UserValidateHelper(w http.ResponseWriter, r *http.Request) (database.User, 
 	}
 
 	return prepUser, nil
-}
-
-func registerUser() {
-	http.HandleFunc("/user/register", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
-		checkOrigin(w, r)
-
-		// to register, we need the name, username and pwhash
-		if r.URL.Query()["name"] == nil || r.URL.Query()["username"] == nil || r.URL.Query()["pwd"] == nil || r.URL.Query()["seedpwd"] == nil {
-			log.Println("missing basic set of params that can be used to validate a user")
-			responseHandler(w, StatusBadRequest)
-			return
-		}
-
-		name := r.URL.Query()["name"][0]
-		username := r.URL.Query()["username"][0]
-		pwd := r.URL.Query()["pwd"][0]
-		seedpwd := r.URL.Query()["seedpwd"][0]
-
-		// if the username already exists, we don't allow for a new user with the same username
-		_, err := database.CheckUsernameCollision(username)
-		if err != nil {
-			log.Println("already registered as an user, so not registering again")
-			responseHandler(w, StatusNotAcceptable)
-			return
-		}
-
-		user, err := database.NewUser(username, pwd, seedpwd, name)
-		if err != nil {
-			log.Println(err)
-			responseHandler(w, StatusInternalServerError)
-			return
-		}
-
-		MarshalSend(w, user)
-	})
 }
 
 func updateUser() {
@@ -230,8 +195,8 @@ func updateUser() {
 	})
 }
 
-// ValidateUser is a route that helps validate users on the platform
-func ValidateUser() {
+// validateUser is a route that helps validate users on the platform
+func validateUser() {
 	http.HandleFunc("/user/validate", func(w http.ResponseWriter, r *http.Request) {
 		checkGet(w, r)
 		checkOrigin(w, r)
@@ -1490,6 +1455,35 @@ func addAnchorKYCInfo() {
 			responseHandler(w, StatusInternalServerError)
 		}
 
+		responseHandler(w, StatusOK)
+	})
+}
+
+// changeReputationInv can be used to change the reputation of a sepcific investor on the platform
+// on completion of a contract or on evaluation of feedback proposed by other entities on the system
+func changeReputation() {
+	http.HandleFunc("/user/reputation", func(w http.ResponseWriter, r *http.Request) {
+		user, err := UserValidateHelper(w, r)
+		if err != nil {
+			responseHandler(w, StatusUnauthorized)
+			return
+		}
+		if r.URL.Query()["reputation"] == nil {
+			responseHandler(w, StatusBadRequest)
+			return
+		}
+		reputation, err := strconv.ParseFloat(r.URL.Query()["reputation"][0], 32) // same as StoI but we need to catch the error here
+		if err != nil {
+			log.Println("could not parse float", err)
+			responseHandler(w, StatusBadRequest)
+			return
+		}
+		err = user.ChangeReputation(reputation)
+		if err != nil {
+			log.Println("did not change investor reputation", err)
+			responseHandler(w, StatusInternalServerError)
+			return
+		}
 		responseHandler(w, StatusOK)
 	})
 }
