@@ -4,7 +4,6 @@ import (
 	"errors"
 	"log"
 	"net/http"
-	"strconv"
 
 	database "github.com/YaleOpenLab/openx/database"
 	notif "github.com/YaleOpenLab/openx/notif"
@@ -22,7 +21,6 @@ func setupInvestorRPCs() {
 	validateInvestor()
 	getAllInvestors()
 	invest()
-	changeReputationInv()
 	voteTowardsProject()
 	addLocalAssetInv()
 	invAssetInv()
@@ -202,35 +200,6 @@ func InvValidateHelper(w http.ResponseWriter, r *http.Request) (database.Investo
 	}
 
 	return prepInvestor, nil
-}
-
-// changeReputationInv can be used to change the reputation of a sepcific investor on the platform
-// on completion of a contract or on evaluation of feedback proposed by other entities on the system
-func changeReputationInv() {
-	http.HandleFunc("/investor/reputation", func(w http.ResponseWriter, r *http.Request) {
-		investor, err := InvValidateHelper(w, r)
-		if err != nil {
-			responseHandler(w, StatusUnauthorized)
-			return
-		}
-		if r.URL.Query()["reputation"] == nil {
-			responseHandler(w, StatusBadRequest)
-			return
-		}
-		reputation, err := strconv.ParseFloat(r.URL.Query()["reputation"][0], 32) // same as StoI but we need to catch the error here
-		if err != nil {
-			log.Println("could not parse float", err)
-			responseHandler(w, StatusBadRequest)
-			return
-		}
-		err = database.ChangeInvReputation(investor.U.Index, reputation)
-		if err != nil {
-			log.Println("did not change investor reputation", err)
-			responseHandler(w, StatusInternalServerError)
-			return
-		}
-		responseHandler(w, StatusOK)
-	})
 }
 
 // voteTowardsProject votes towards a specific propsoed project of the user's choice.

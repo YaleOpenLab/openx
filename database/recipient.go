@@ -159,23 +159,6 @@ func ValidateRecipient(name string, pwhash string) (Recipient, error) {
 	return RetrieveRecipient(user.Index)
 }
 
-// ChangeRecpReputation changes the reputation of the recipient
-func ChangeRecpReputation(recpIndex int, reputation float64) error {
-	a, err := RetrieveRecipient(recpIndex)
-	if err != nil {
-		return errors.Wrap(err, "Error while retrieving recipient")
-	}
-	if reputation > 0 {
-		err = a.U.IncreaseReputation(reputation)
-	} else {
-		err = a.U.DecreaseReputation(reputation)
-	}
-	if err != nil {
-		return errors.Wrap(err, "Error while changing reputation of recipient")
-	}
-	return a.Save()
-}
-
 // TopReputationRecipient returns a list of recipients with the best reputation
 func TopReputationRecipient() ([]Recipient, error) {
 	allRecipients, err := RetrieveAllRecipients()

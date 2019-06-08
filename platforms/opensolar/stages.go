@@ -36,7 +36,7 @@ func (a *Project) SetStage(number int) error {
 			log.Println("error while retrieving entity from db, quitting")
 			return err
 		}
-		err = contractor.U.IncreaseReputation(a.TotalValue * ContractorWeight) // modify contractor Reputation now that a project has been installed
+		err = contractor.U.ChangeReputation(a.TotalValue * ContractorWeight) // modify contractor Reputation now that a project has been installed
 		if err != nil {
 			log.Println("Couldn't increase contractor reputation", err)
 			return err
@@ -48,14 +48,18 @@ func (a *Project) SetStage(number int) error {
 				log.Println("Error while retrieving investor", err)
 				return err
 			}
-			err = database.ChangeInvReputation(elem.U.Index, a.TotalValue*InvestorWeight)
+			err = elem.U.ChangeReputation(a.TotalValue*InvestorWeight)
 			if err != nil {
 				log.Println("Couldn't change investor reputation", err)
 				return err
 			}
 		}
 	case 6:
-		err := database.ChangeRecpReputation(a.RecipientIndex, a.TotalValue*RecipientWeight) // modify recipient reputation now that the system had begun power generation
+		recp, err := database.RetrieveRecipient(a.RecipientIndex)
+		if err != nil {
+			return err
+		}
+		err = recp.U.ChangeReputation(a.TotalValue*RecipientWeight) // modify recipient reputation now that the system had begun power generation
 		if err != nil {
 			log.Println("Error while changing recipient reputation", err)
 			return err

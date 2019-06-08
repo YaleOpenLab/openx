@@ -198,26 +198,9 @@ func (a *Investor) CanInvest(targetBalance string) bool {
 }
 
 // the following two functions on reputation are repeated for recipients and entities
-// but are necessary for th RPC which woukd call these functions in various scenarios
+// but are necessary for the RPC which woukd call these functions in various scenarios
 // eg. when negative feedback is approved  by multiple parties and they decide to
 // reduce the reputation of the user
-
-// ChangeInvReputation changes the investor's reputation
-func ChangeInvReputation(invIndex int, reputation float64) error {
-	a, err := RetrieveInvestor(invIndex)
-	if err != nil {
-		return errors.Wrap(err, "failed to retrieve investor")
-	}
-	if reputation > 0 {
-		err = a.U.IncreaseReputation(reputation)
-	} else {
-		err = a.U.DecreaseReputation(reputation)
-	}
-	if err != nil {
-		return errors.Wrap(err, "Error while changing reputation")
-	}
-	return a.Save()
-}
 
 // TopReputationInvestors gets a list of all the investors with top reputation
 func TopReputationInvestors() ([]Investor, error) {

@@ -52,8 +52,10 @@ func PopulateDB() {
 	}
 	db.Close()
 
-	for i := 0; i < 10000; i++ {
+	for i := 0; i < 10; i++ {
 		var x Investor
+		var xu User
+		x.U = &xu
 		x.U.Index = i
 		x.U.Username = "q"
 		x.U.Pwhash = "p"
@@ -66,7 +68,7 @@ func PopulateDB() {
 		log.Fatal(err)
 	}
 
-	if len(iA) != 9999 {
+	if len(iA) != 9 {
 		log.Fatal("Couldn't populate db, quitting!")
 	}
 }
@@ -178,10 +180,15 @@ func BenchmarkValidateInvestor(b *testing.B) {
 	}
 }
 
-func BenchmarkInvReputation(b *testing.B) {
+func BenchmarkReputation(b *testing.B) {
 	b.ResetTimer()
+	var x User
+	x.Index = 10
+	x.Username = "q"
+	x.Pwhash = "p"
+	x.Save()
 	for i := 1; i < b.N; i++ {
-		_ = ChangeInvReputation(i, float64(i))
+		_ = x.ChangeReputation(float64(i))
 	}
 }
 

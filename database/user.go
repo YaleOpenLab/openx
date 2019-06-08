@@ -505,14 +505,8 @@ func AddInspector(userIndex int) error {
 // these two functions can be used as internal hnadlers and hte RPC can save reputation directly
 
 // IncreaseReputation increases reputation
-func (a *User) IncreaseReputation(reputation float64) error {
+func (a *User) ChangeReputation(reputation float64) error {
 	a.Reputation += reputation
-	return a.Save()
-}
-
-// DecreaseReputation decreases reputation
-func (a *User) DecreaseReputation(reputation float64) error {
-	a.Reputation -= reputation
 	return a.Save()
 }
 

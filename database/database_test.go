@@ -109,17 +109,14 @@ func TestDb(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Able to retrieve top recipients in database with invalid path")
 	}
-	err = ChangeRecpReputation(1, 1.0)
+	var xu User
+	err = xu.ChangeReputation(1.0)
 	if err == nil {
 		t.Fatalf("Able to change reputation in database with invalid path")
 	}
 	_, err = TopReputationInvestors()
 	if err == nil {
 		t.Fatalf("able to retrieve top investors in database with invalid path")
-	}
-	err = ChangeInvReputation(1, 1.0)
-	if err == nil {
-		t.Fatalf("Able to change reputation in database with invalid path")
 	}
 	err = IncreaseTrustLimit(1, "blah", "1")
 	if err == nil {
@@ -420,11 +417,11 @@ func TestDb(t *testing.T) {
 	if err == nil {
 		t.Fatalf("recipient username collision not picked up")
 	}
-	err = user.IncreaseReputation(1.0)
+	err = user.ChangeReputation(1.0)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = user.DecreaseReputation(1.0)
+	err = user.ChangeReputation(1.0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -487,11 +484,11 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = ChangeRecpReputation(recp.U.Index, 1.0)
+	err = recp.U.ChangeReputation(1.0)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = ChangeRecpReputation(recp.U.Index, -1.0)
+	err = recp.U.ChangeReputation(-1.0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -541,40 +538,11 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = ChangeInvReputation(inv.U.Index, 1.0)
+	err = inv.U.ChangeReputation(1.0)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = ChangeInvReputation(inv.U.Index, -1.0)
-	if err != nil {
-		t.Fatal(err)
-	}
-	inv2, err := NewInvestor("investor1", "blah", "blah", "Investor1")
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = ChangeInvReputation(inv2.U.Index, 10.0)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = ChangeInvReputation(inv.U.Index, 5.0)
-	if err != nil {
-		t.Fatal(err)
-	}
-	recp2, err := NewRecipient("recipient1", "blah", "blah", "Recipient1")
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = ChangeRecpReputation(recp2.U.Index, 10.0)
-	if err != nil {
-		t.Fatal(err)
-	}
-	chk, err := RetrieveRecipient(recp2.U.Index)
-	if err != nil {
-		t.Fatal(err)
-	}
-	log.Println("CHKTHIS: ", chk.U.Reputation)
-	err = ChangeRecpReputation(recp2.U.Index, 5.0)
+	err = inv.U.ChangeReputation(-1.0)
 	if err != nil {
 		t.Fatal(err)
 	}
