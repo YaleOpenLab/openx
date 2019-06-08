@@ -336,14 +336,14 @@ func TestDb(t *testing.T) {
 
 	// check voting balance routes
 	voteBalance := inv.VotingBalance
-	err = inv.AddVotingBalance(10000)
+	err = inv.ChangeVotingBalance(10000)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if inv.VotingBalance-voteBalance != 10000 {
 		t.Fatalf("Voting Balance not added, quitting!")
 	}
-	err = inv.DeductVotingBalance(10000)
+	err = inv.ChangeVotingBalance(-10000)
 	if err != nil {
 		t.Fatal(err)
 	}

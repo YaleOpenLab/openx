@@ -99,7 +99,7 @@ func RecipientAuthorize(projIndex int, recpIndex int) error {
 
 // VoteTowardsProposedProject is a handler that an investor would use to vote towards a
 // specific proposed project on the platform.
-func VoteTowardsProposedProject(invIndex int, votes int, projectIndex int) error {
+func VoteTowardsProposedProject(invIndex int, votes float64, projectIndex int) error {
 	inv, err := database.RetrieveInvestor(invIndex)
 	if err != nil {
 		return errors.Wrap(err, "couldn't retrieve investor")
@@ -122,7 +122,7 @@ func VoteTowardsProposedProject(invIndex int, votes int, projectIndex int) error
 		return errors.Wrap(err, "couldn't save project")
 	}
 
-	err = inv.DeductVotingBalance(votes)
+	err = inv.ChangeVotingBalance(votes)
 	if err != nil {
 		return errors.Wrap(err, "error while deducitng voting balance of investor")
 	}

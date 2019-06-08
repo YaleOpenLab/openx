@@ -19,7 +19,7 @@ import (
 
 // Investor defines the investor structure
 type Investor struct {
-	VotingBalance int // this will be equal to the amount of stablecoins that the investor possesses,
+	VotingBalance float64 // this will be equal to the amount of stablecoins that the investor possesses,
 	// should update this every once in a while to ensure voting consistency.
 	// These are votes to show opinions about bids done by contractors on the specific projects that investors invested in.
 	AmountInvested float64
@@ -160,19 +160,14 @@ func ValidateInvestor(name string, pwhash string) (Investor, error) {
 	return RetrieveInvestor(user.Index)
 }
 
-// DeductVotingBalance deducts voting balance
-func (a *Investor) DeductVotingBalance(votes int) error {
-	// maybe once the user can presses the vote button manually, we can fetch balance
-	// and show him available votes onthe frontend
-	a.VotingBalance -= votes
-	return a.Save()
-}
-
-// AddVotingBalance adds voting balance
-func (a *Investor) AddVotingBalance(votes int) error {
+// AddVotingBalance adds / subtracts voting balance
+func (a *Investor) ChangeVotingBalance(votes float64) error {
 	// this function is caled when we want to refund the user with the votes once
 	// an order has been finalized.
 	a.VotingBalance += votes
+	if a.VotingBalance < 0 {
+		a.VotingBalance = 0 // to ensure no one has negative votes or something
+	}
 	return a.Save()
 }
 

@@ -215,7 +215,12 @@ func voteTowardsProject() {
 			return
 		}
 
-		votes := utils.StoI(r.URL.Query()["votes"][0])
+		votes, err := utils.StoFWithCheck(r.URL.Query()["votes"][0])
+		if err != nil {
+			log.Println("votes not float, quitting")
+			responseHandler(w, StatusInternalServerError)
+			return
+		}
 		projIndex := utils.StoI(r.URL.Query()["projIndex"][0])
 		err = opensolar.VoteTowardsProposedProject(investor.U.Index, votes, projIndex)
 		if err != nil {

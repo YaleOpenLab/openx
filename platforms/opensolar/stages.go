@@ -48,7 +48,7 @@ func (a *Project) SetStage(number int) error {
 				log.Println("Error while retrieving investor", err)
 				return err
 			}
-			err = elem.U.ChangeReputation(a.TotalValue*InvestorWeight)
+			err = elem.U.ChangeReputation(a.TotalValue * InvestorWeight)
 			if err != nil {
 				log.Println("Couldn't change investor reputation", err)
 				return err
@@ -59,7 +59,7 @@ func (a *Project) SetStage(number int) error {
 		if err != nil {
 			return err
 		}
-		err = recp.U.ChangeReputation(a.TotalValue*RecipientWeight) // modify recipient reputation now that the system had begun power generation
+		err = recp.U.ChangeReputation(a.TotalValue * RecipientWeight) // modify recipient reputation now that the system had begun power generation
 		if err != nil {
 			log.Println("Error while changing recipient reputation", err)
 			return err

@@ -497,7 +497,7 @@ func TestDb(t *testing.T) {
 	if len(allO) != 1 {
 		t.Fatalf("Multiple originated orders when there should be only one")
 	}
-	err = inv.AddVotingBalance(1000)
+	err = inv.ChangeVotingBalance(1000)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -622,11 +622,11 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = contractor2.U.IncreaseReputation(5)
+	err = contractor2.U.ChangeReputation(5)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = contractor.U.IncreaseReputation(10)
+	err = contractor.U.ChangeReputation(10)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -665,7 +665,7 @@ func TestDb(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Invalid Entity returns true")
 	}
-	err = contractor.U.DecreaseReputation(-10)
+	err = contractor.U.ChangeReputation(-10)
 	if err != nil {
 		t.Fatal(err)
 	}
