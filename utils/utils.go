@@ -1,6 +1,6 @@
 package utils
 
-// utils contains utility functions that are needed commonly in packages
+// utils contains utility functions that are used in packages
 import (
 	"encoding/hex"
 	"math/rand"

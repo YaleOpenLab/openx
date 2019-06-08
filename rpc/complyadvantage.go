@@ -26,7 +26,7 @@ type CAResponse struct {
 			Searcher_id int64  `json:"searcher_id"`
 			Assignee_id int64  `json:"assignee_id"`
 			Filters     struct {
-				birth_year      int64    `json:"birth_year"`
+				Birth_year      int64    `json:"birth_year"`
 				Country_codes   []int    `json:"country_codes"`
 				Remove_deceased int      `json:"remove_deceased"`
 				Types           []string `json:"types"`
@@ -56,7 +56,7 @@ type CAResponse struct {
 						Source     string `json:"source"`
 						Type       string `json:"type"`
 					} `json:"assets"`
-					Entity_type string `json:entity_type`
+					Entity_type string `json:"entity_type"`
 					Fields      []struct {
 						Name   string `json:"name"`
 						Source string `json:"source"`
@@ -160,7 +160,7 @@ func searchComplyAdvantage() {
 }`
 		payload := bytes.NewBuffer([]byte(data))
 		// TODO: analyze the response and check whether the user is clear or not. If not,
-		// also decide what should be done with the specific user and what message must be dipslayed on the frontend
+		// also decide what should be done with the specific user and what message must be displayed on the frontend
 		PostAndSendCA(w, r, body, payload)
 	})
 }

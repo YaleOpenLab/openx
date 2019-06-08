@@ -17,7 +17,7 @@ package rpc
 // 2b. Go through KYC / Withdraw funds - this again takes 2 or 3 business days for AnchorUSD
 // to deposit or withdraw funds.
 // there are a couple problems with automation in betwee nsince there's a delay of 2/3 days with
-// each associated fiat operation. Hoepfully, we can solve this in some way or the other.
+// each associated fiat operation. Hopefully, we can solve this in some way or the other.
 import (
 	"encoding/json"
 	"io"

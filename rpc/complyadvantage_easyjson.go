@@ -453,7 +453,7 @@ func easyjsonD017d1f1Decode2(in *jlexer.Lexer, out *struct {
 		Searcher_id int64  `json:"searcher_id"`
 		Assignee_id int64  `json:"assignee_id"`
 		Filters     struct {
-			birth_year      int64    `json:"birth_year"`
+			Birth_year      int64    `json:"birth_year"`
 			Country_codes   []int    `json:"country_codes"`
 			Remove_deceased int      `json:"remove_deceased"`
 			Types           []string `json:"types"`
@@ -482,7 +482,7 @@ func easyjsonD017d1f1Decode2(in *jlexer.Lexer, out *struct {
 					Source     string `json:"source"`
 					Type       string `json:"type"`
 				} `json:"assets"`
-				Entity_type string `json:entity_type`
+				Entity_type string `json:"entity_type"`
 				Fields      []struct {
 					Name   string `json:"name"`
 					Source string `json:"source"`
@@ -544,7 +544,7 @@ func easyjsonD017d1f1Encode2(out *jwriter.Writer, in struct {
 		Searcher_id int64  `json:"searcher_id"`
 		Assignee_id int64  `json:"assignee_id"`
 		Filters     struct {
-			birth_year      int64    `json:"birth_year"`
+			Birth_year      int64    `json:"birth_year"`
 			Country_codes   []int    `json:"country_codes"`
 			Remove_deceased int      `json:"remove_deceased"`
 			Types           []string `json:"types"`
@@ -573,7 +573,7 @@ func easyjsonD017d1f1Encode2(out *jwriter.Writer, in struct {
 					Source     string `json:"source"`
 					Type       string `json:"type"`
 				} `json:"assets"`
-				Entity_type string `json:entity_type`
+				Entity_type string `json:"entity_type"`
 				Fields      []struct {
 					Name   string `json:"name"`
 					Source string `json:"source"`
@@ -619,7 +619,7 @@ func easyjsonD017d1f1Decode3(in *jlexer.Lexer, out *struct {
 	Searcher_id int64  `json:"searcher_id"`
 	Assignee_id int64  `json:"assignee_id"`
 	Filters     struct {
-		birth_year      int64    `json:"birth_year"`
+		Birth_year      int64    `json:"birth_year"`
 		Country_codes   []int    `json:"country_codes"`
 		Remove_deceased int      `json:"remove_deceased"`
 		Types           []string `json:"types"`
@@ -648,7 +648,7 @@ func easyjsonD017d1f1Decode3(in *jlexer.Lexer, out *struct {
 				Source     string `json:"source"`
 				Type       string `json:"type"`
 			} `json:"assets"`
-			Entity_type string `json:entity_type`
+			Entity_type string `json:"entity_type"`
 			Fields      []struct {
 				Name   string `json:"name"`
 				Source string `json:"source"`
@@ -763,7 +763,7 @@ func easyjsonD017d1f1Decode3(in *jlexer.Lexer, out *struct {
 									Source     string `json:"source"`
 									Type       string `json:"type"`
 								} `json:"assets"`
-								Entity_type string `json:entity_type`
+								Entity_type string `json:"entity_type"`
 								Fields      []struct {
 									Name   string `json:"name"`
 									Source string `json:"source"`
@@ -797,7 +797,7 @@ func easyjsonD017d1f1Decode3(in *jlexer.Lexer, out *struct {
 									Source     string `json:"source"`
 									Type       string `json:"type"`
 								} `json:"assets"`
-								Entity_type string `json:entity_type`
+								Entity_type string `json:"entity_type"`
 								Fields      []struct {
 									Name   string `json:"name"`
 									Source string `json:"source"`
@@ -835,7 +835,7 @@ func easyjsonD017d1f1Decode3(in *jlexer.Lexer, out *struct {
 								Source     string `json:"source"`
 								Type       string `json:"type"`
 							} `json:"assets"`
-							Entity_type string `json:entity_type`
+							Entity_type string `json:"entity_type"`
 							Fields      []struct {
 								Name   string `json:"name"`
 								Source string `json:"source"`
@@ -880,7 +880,7 @@ func easyjsonD017d1f1Encode3(out *jwriter.Writer, in struct {
 	Searcher_id int64  `json:"searcher_id"`
 	Assignee_id int64  `json:"assignee_id"`
 	Filters     struct {
-		birth_year      int64    `json:"birth_year"`
+		Birth_year      int64    `json:"birth_year"`
 		Country_codes   []int    `json:"country_codes"`
 		Remove_deceased int      `json:"remove_deceased"`
 		Types           []string `json:"types"`
@@ -909,7 +909,7 @@ func easyjsonD017d1f1Encode3(out *jwriter.Writer, in struct {
 				Source     string `json:"source"`
 				Type       string `json:"type"`
 			} `json:"assets"`
-			Entity_type string `json:entity_type`
+			Entity_type string `json:"entity_type"`
 			Fields      []struct {
 				Name   string `json:"name"`
 				Source string `json:"source"`
@@ -1150,7 +1150,7 @@ func easyjsonD017d1f1Decode5(in *jlexer.Lexer, out *struct {
 			Source     string `json:"source"`
 			Type       string `json:"type"`
 		} `json:"assets"`
-		Entity_type string `json:entity_type`
+		Entity_type string `json:"entity_type"`
 		Fields      []struct {
 			Name   string `json:"name"`
 			Source string `json:"source"`
@@ -1242,7 +1242,7 @@ func easyjsonD017d1f1Encode5(out *jwriter.Writer, in struct {
 			Source     string `json:"source"`
 			Type       string `json:"type"`
 		} `json:"assets"`
-		Entity_type string `json:entity_type`
+		Entity_type string `json:"entity_type"`
 		Fields      []struct {
 			Name   string `json:"name"`
 			Source string `json:"source"`
@@ -1340,7 +1340,7 @@ func easyjsonD017d1f1Decode6(in *jlexer.Lexer, out *struct {
 		Source     string `json:"source"`
 		Type       string `json:"type"`
 	} `json:"assets"`
-	Entity_type string `json:entity_type`
+	Entity_type string `json:"entity_type"`
 	Fields      []struct {
 		Name   string `json:"name"`
 		Source string `json:"source"`
@@ -1440,7 +1440,7 @@ func easyjsonD017d1f1Decode6(in *jlexer.Lexer, out *struct {
 				}
 				in.Delim(']')
 			}
-		case "Entity_type":
+		case "entity_type":
 			out.Entity_type = string(in.String())
 		case "fields":
 			if in.IsNull() {
@@ -1587,7 +1587,7 @@ func easyjsonD017d1f1Encode6(out *jwriter.Writer, in struct {
 		Source     string `json:"source"`
 		Type       string `json:"type"`
 	} `json:"assets"`
-	Entity_type string `json:entity_type`
+	Entity_type string `json:"entity_type"`
 	Fields      []struct {
 		Name   string `json:"name"`
 		Source string `json:"source"`
@@ -1651,7 +1651,7 @@ func easyjsonD017d1f1Encode6(out *jwriter.Writer, in struct {
 		}
 	}
 	{
-		const prefix string = ",\"Entity_type\":"
+		const prefix string = ",\"entity_type\":"
 		if first {
 			first = false
 			out.RawString(prefix[1:])
@@ -2083,7 +2083,7 @@ func easyjsonD017d1f1Encode7(out *jwriter.Writer, in struct {
 	out.RawByte('}')
 }
 func easyjsonD017d1f1Decode4(in *jlexer.Lexer, out *struct {
-	birth_year      int64    `json:"birth_year"`
+	Birth_year      int64    `json:"birth_year"`
 	Country_codes   []int    `json:"country_codes"`
 	Remove_deceased int      `json:"remove_deceased"`
 	Types           []string `json:"types"`
@@ -2108,6 +2108,8 @@ func easyjsonD017d1f1Decode4(in *jlexer.Lexer, out *struct {
 			continue
 		}
 		switch key {
+		case "birth_year":
+			out.Birth_year = int64(in.Int64())
 		case "country_codes":
 			if in.IsNull() {
 				in.Skip()
@@ -2171,7 +2173,7 @@ func easyjsonD017d1f1Decode4(in *jlexer.Lexer, out *struct {
 	}
 }
 func easyjsonD017d1f1Encode4(out *jwriter.Writer, in struct {
-	birth_year      int64    `json:"birth_year"`
+	Birth_year      int64    `json:"birth_year"`
 	Country_codes   []int    `json:"country_codes"`
 	Remove_deceased int      `json:"remove_deceased"`
 	Types           []string `json:"types"`
@@ -2181,6 +2183,16 @@ func easyjsonD017d1f1Encode4(out *jwriter.Writer, in struct {
 	out.RawByte('{')
 	first := true
 	_ = first
+	{
+		const prefix string = ",\"birth_year\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Int64(int64(in.Birth_year))
+	}
 	{
 		const prefix string = ",\"country_codes\":"
 		if first {
