@@ -1,20 +1,11 @@
 package database
 
-// recipient.go defines all recipient related functions that are not defined on
-// the struct itself.
 import (
 	"github.com/pkg/errors"
 
 	utils "github.com/YaleOpenLab/openx/utils"
 	"github.com/boltdb/bolt"
 )
-
-// about recipients to add in the struct, For example, recipients should be associated
-// to sites eligible for projects (eg. a building or land where you can put panels),
-// (and eventually need to show proof of this)
-// Each project should have a unique recipient associated with it. While this is
-// not strictly necessary, it is better for management on both ends, so seems like
-// something that we want to encourage?
 
 // Recipient defines the recipient structure
 type Recipient struct {

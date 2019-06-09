@@ -706,6 +706,7 @@ func (a *User) GiveFeedback(userIndex int, feedback int) error {
 	return a.Save()
 }
 
+// Generate2FA generates a new 2FA secret for the given user
 func (a *User) Generate2FA() (string, error) {
 	secret := utils.GetRandomString(35) // multiples of 5 to  prevent the = padding at the end
 	secretBase32 := base32.StdEncoding.EncodeToString([]byte(secret))
@@ -729,6 +730,7 @@ func (a *User) Generate2FA() (string, error) {
 	return otpString, nil
 }
 
+// Authenticate2FA authenticates tghe the given password against the user's stored password
 func (a *User) Authenticate2FA(password string) (bool, error) {
 	secretBase32 := base32.StdEncoding.EncodeToString([]byte(a.TwoFASecret))
 	otpc := &googauth.OTPConfig{

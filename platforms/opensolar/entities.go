@@ -12,9 +12,6 @@ import (
 	"github.com/boltdb/bolt"
 )
 
-// the contractor super struct comprises of various entities within it. Its a
-// super struct because combining them results in less duplication of code
-
 // Entity defines a common structure for contractors, developers and originators. Will be split
 // into their respective roles once they are defined in a better way.
 type Entity struct {
@@ -30,7 +27,7 @@ type Entity struct {
 	Developer bool
 	// A developer is someone who installs the required equipment (Raspberry Pi,
 	// network adapters, anti tamper installations and similar) In the initial
-	// projects, this will be us, since we'd be installign the pi ourselves, but in
+	// projects, this will be us, since we'd be installing the pi ourselves, but in
 	// the future, we expect third party developers / companies to do this for us
 	// and act in a decentralized fashion. This money can either be paid out of chain
 	// in fiat or can be a portion of the funds the investors chooses to invest in.
@@ -60,7 +57,7 @@ type Entity struct {
 	// by a contractor, who publishes his own copy of the proposed contract
 	// which will be the set of contracts that will be sent to auction
 	PresentContracts []Project
-	// list of all contracts that the contractor is presently undertaking1
+	// list of all contracts that the contractor is presently undertaking
 	PastFeedback []Feedback
 	// feedback received on the contractor from parties involved in the past. This is an automated
 	// feedback system which falls backto a manual one in the event of disputes
@@ -365,9 +362,9 @@ func AgreeToContractConditions(contractHash string, projIndex string,
 		return errors.Wrap(err, "couldn't send tx 5")
 	}
 
-	//if user.Notification {
-	notif.SendContractNotification(firstHash, secondHash, thirdHash, fourthHash, fifthHash, user.Email)
-	//}
+	if user.Notification {
+		notif.SendContractNotification(firstHash, secondHash, thirdHash, fourthHash, fifthHash, user.Email)
+	}
 
 	return nil
 }

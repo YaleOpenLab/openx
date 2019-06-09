@@ -9,14 +9,6 @@ import (
 	"github.com/boltdb/bolt"
 )
 
-// the investor struct contains all the investor details such as
-// public key, seed (if account is created on the website) and other stuff which
-// is yet to be decided
-
-// All investors will be referenced by their public key, name is optional (maybe necessary?)
-// we need to still decide on identity and stuff and how much we want to track
-// people who invest in projects
-
 // Investor defines the investor structure
 type Investor struct {
 	VotingBalance float64 // this will be equal to the amount of stablecoins that the investor possesses,
@@ -42,10 +34,7 @@ type Investor struct {
 }
 
 // NewInvestor creates a new investor object when passed the username, password hash,
-// name and an option to generate the seed and publicKey. This is done because if
-// we decide to allow anonymous investors to invest on our platform, we can easily
-// insert their publickey into the system and then have hanlders for them signing
-// transactions
+// name and an option to generate the seed and publicKey.
 func NewInvestor(uname string, pwd string, seedpwd string, Name string) (Investor, error) {
 	var a Investor
 	var err error
@@ -191,11 +180,6 @@ func (a *Investor) CanInvest(targetBalance string) bool {
 	}
 	return false
 }
-
-// the following two functions on reputation are repeated for recipients and entities
-// but are necessary for the RPC which woukd call these functions in various scenarios
-// eg. when negative feedback is approved  by multiple parties and they decide to
-// reduce the reputation of the user
 
 // TopReputationInvestors gets a list of all the investors with top reputation
 func TopReputationInvestors() ([]Investor, error) {
