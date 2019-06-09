@@ -118,7 +118,7 @@ func TestDb(t *testing.T) {
 	if err == nil {
 		t.Fatalf("able to retrieve top investors in database with invalid path")
 	}
-	err = IncreaseTrustLimit(1, "blah", "1")
+	err = xu.IncreaseTrustLimit("blah", "1")
 	if err == nil {
 		t.Fatalf("Able to increase trust limit in database with invalid path")
 	}
@@ -126,12 +126,12 @@ func TestDb(t *testing.T) {
 	if err == nil {
 		t.Fatalf("user with invalid email exists")
 	}
-	err = MoveFundsFromSecondaryWallet(1, "ed2df20bb16ecb0b4b149cf8e7d9819afd608b22999e707364196187fca0cf38544c9f3eb981ad81cef18562e4c818370eab068992639af7d70488945265197f",
-		"10", "blah")
+	var xf User
+	err = xf.MoveFundsFromSecondaryWallet("10", "blah")
 	if err == nil {
 		t.Fatal(err)
 	}
-	err = SweepSecondaryWallet(1, "ed2df20bb16ecb0b4b149cf8e7d9819afd608b22999e707364196187fca0cf38544c9f3eb981ad81cef18562e4c818370eab068992639af7d70488945265197f", "ed2df20bb16ecb0b4b149cf8e7d9819afd608b22999e707364196187fca0cf38544c9f3eb981ad81cef18562e4c818370eab068992639af7d70488945265197f")
+	err = xf.SweepSecondaryWallet("blah")
 	if err == nil {
 		t.Fatal(err)
 	}
@@ -378,7 +378,7 @@ func TestDb(t *testing.T) {
 		t.Fatal(err)
 	}
 	time.Sleep(5 * time.Second)
-	err = IncreaseTrustLimit(inv.U.Index, "blah", "10")
+	err = inv.U.IncreaseTrustLimit("blah", "10")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -508,29 +508,19 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = MoveFundsFromSecondaryWallet(inv.U.Index, "ed2df20bb16ecb0b4b149cf8e7d9819afd608b22999e707364196187fca0cf38544c9f3eb981ad81cef18562e4c818370eab068992639af7d70488945265197f",
-		"10", "blah")
+	err = inv.U.MoveFundsFromSecondaryWallet("10", "blah")
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = MoveFundsFromSecondaryWallet(inv.U.Index, "invalidpwhash", "10", "blah")
-	if err == nil {
-		t.Fatalf("not able to catch invalid hash error")
-	}
-	err = MoveFundsFromSecondaryWallet(inv.U.Index, "ed2df20bb16ecb0b4b149cf8e7d9819afd608b22999e707364196187fca0cf38544c9f3eb981ad81cef18562e4c818370eab068992639af7d70488945265197f",
-		"blah", "blah")
+	err = inv.U.MoveFundsFromSecondaryWallet("blah", "blah")
 	if err == nil {
 		t.Fatalf("not able to catch invalid amount error")
 	}
-	err = SweepSecondaryWallet(inv.U.Index, "ed2df20bb16ecb0b4b149cf8e7d9819afd608b22999e707364196187fca0cf38544c9f3eb981ad81cef18562e4c818370eab068992639af7d70488945265197f", "blah")
+	err = inv.U.SweepSecondaryWallet("blah")
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = SweepSecondaryWallet(inv.U.Index, "invalidpwhash", "blah")
-	if err == nil {
-		t.Fatalf("not able to catch invalid pwhash error")
-	}
-	err = SweepSecondaryWallet(inv.U.Index, "ed2df20bb16ecb0b4b149cf8e7d9819afd608b22999e707364196187fca0cf38544c9f3eb981ad81cef18562e4c818370eab068992639af7d70488945265197f", "invalidseedpwd")
+	err = inv.U.SweepSecondaryWallet("invalidseedpwd")
 	if err == nil {
 		t.Fatalf("no able to catch invalid seedpwd")
 	}

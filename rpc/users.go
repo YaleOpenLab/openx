@@ -730,7 +730,7 @@ func increaseTrustLimit() {
 		trust := r.URL.Query()["trust"][0]
 		seedpwd := r.URL.Query()["seedpwd"][0]
 
-		err = database.IncreaseTrustLimit(prepUser.Index, seedpwd, trust)
+		err = prepUser.IncreaseTrustLimit(seedpwd, trust)
 		if err != nil {
 			log.Println(err)
 			responseHandler(w, StatusInternalServerError)
