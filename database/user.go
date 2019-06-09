@@ -531,14 +531,9 @@ func TopReputationUsers() ([]User, error) {
 }
 
 // IncreaseTrustLimit increases the trustl imit of a specific user towards the STABLEUSD asset
-func IncreaseTrustLimit(userIndex int, seedpwd string, trust string) error {
+func (a *User) IncreaseTrustLimit(seedpwd string, trust string) error {
 
-	user, err := RetrieveUser(userIndex)
-	if err != nil {
-		return errors.Wrap(err, "couldn't retrieve user from database, quitting!")
-	}
-
-	seed, err := wallet.DecryptSeed(user.StellarWallet.EncryptedSeed, seedpwd)
+	seed, err := wallet.DecryptSeed(a.StellarWallet.EncryptedSeed, seedpwd)
 	if err != nil {
 		return errors.Wrap(err, "couldn't decrypt seed, quitting!")
 	}
@@ -585,27 +580,19 @@ func SearchWithEmailId(email string) (User, error) {
 }
 
 // MoveFundsFromSecondaryWallet moves funds from the secondary wallet to the primary wallet
-func MoveFundsFromSecondaryWallet(userIndex int, pwhash string, amount string, seedpwd string) error {
-	user, err := RetrieveUser(userIndex)
-	if err != nil {
-		return errors.Wrap(err, "could not retrieve user, quitting")
-	}
-
-	if user.Pwhash != pwhash {
-		return errors.New("pw hashes don't match, quitting")
-	}
+func (a *User) MoveFundsFromSecondaryWallet(amount string, seedpwd string) error {
 	amountI, err := utils.StoFWithCheck(amount)
 	if err != nil {
 		return errors.Wrap(err, "amount not float, quitting")
 	}
 	// unlock secondary account
-	secSeed, err := wallet.DecryptSeed(user.SecondaryWallet.EncryptedSeed, seedpwd)
+	secSeed, err := wallet.DecryptSeed(a.SecondaryWallet.EncryptedSeed, seedpwd)
 	if err != nil {
 		return errors.Wrap(err, "could not unlock secondary seed, quitting")
 	}
 
 	// get secondary balance
-	secFunds, err := xlm.GetNativeBalance(user.SecondaryWallet.PublicKey)
+	secFunds, err := xlm.GetNativeBalance(a.SecondaryWallet.PublicKey)
 	if err != nil {
 		return errors.Wrap(err, "could not get xlm balance of secondary account")
 	}
@@ -615,7 +602,7 @@ func MoveFundsFromSecondaryWallet(userIndex int, pwhash string, amount string, s
 	}
 
 	// send the tx over
-	_, txhash, err := xlm.SendXLM(user.StellarWallet.PublicKey, amount, secSeed, "fund transfer to secondary")
+	_, txhash, err := xlm.SendXLM(a.StellarWallet.PublicKey, amount, secSeed, "fund transfer to secondary")
 	if err != nil {
 		return errors.Wrap(err, "error while transferring funds to secondary account, quitting")
 	}
@@ -625,32 +612,23 @@ func MoveFundsFromSecondaryWallet(userIndex int, pwhash string, amount string, s
 }
 
 // SweepSecondaryWallet sweeps fudsd from the secondary account to the primary account
-func SweepSecondaryWallet(userIndex int, pwhash string, seedpwd string) error {
+func (a *User) SweepSecondaryWallet(seedpwd string) error {
 	// unlock secondary account
 
-	user, err := RetrieveUser(userIndex)
-	if err != nil {
-		return errors.Wrap(err, "could not retrieve user, quitting")
-	}
-
-	if user.Pwhash != pwhash {
-		return errors.New("pw hashes don't match, quitting")
-	}
-
-	secSeed, err := wallet.DecryptSeed(user.SecondaryWallet.EncryptedSeed, seedpwd)
+	secSeed, err := wallet.DecryptSeed(a.SecondaryWallet.EncryptedSeed, seedpwd)
 	if err != nil {
 		return errors.Wrap(err, "could not unlock primary seed, quitting")
 	}
 
 	// get secondary balance
-	secFunds, err := xlm.GetNativeBalance(user.SecondaryWallet.PublicKey)
+	secFunds, err := xlm.GetNativeBalance(a.SecondaryWallet.PublicKey)
 	if err != nil {
 		return errors.Wrap(err, "could not get xlm balance of secondary account")
 	}
 
 	secFundsWithMinbal := utils.FtoS(utils.StoF(secFunds) - 5)
 	// send the tx over
-	_, txhash, err := xlm.SendXLM(user.StellarWallet.PublicKey, secFundsWithMinbal, secSeed, "fund transfer to secondary")
+	_, txhash, err := xlm.SendXLM(a.StellarWallet.PublicKey, secFundsWithMinbal, secSeed, "fund transfer to secondary")
 	if err != nil {
 		return errors.Wrap(err, "error while transferring funds to secondary account, quitting")
 	}
