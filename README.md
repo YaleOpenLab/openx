@@ -19,7 +19,7 @@ Comprehensive documentation on each platform is available inside each repo.
 
 ## Getting Started
 
-In order to be able to run this, you need to have the latest version of go installed. [Here](https://medium.com/@patdhlk/how-to-install-go-1-9-1-on-ubuntu-16-04-ee64c073cd79) is a quick tutorial on how to get go installed on a Linux / macOS machine.
+In order to be able to run this, you need to have the latest version of go installed. [Here](https://tecadmin.net/install-go-on-ubuntu/) is a quick tutorial on how to get go installed on a Linux / macOS machine. Older versions of go (more than two versions old according to [the golang wiki](https://github.com/golang/go/wiki/MinorReleases)) have unpatched vulnerabilities and as a result, we will not be backporting versions.
 
 Once you have go installed, you need to get the packages in this repo. Before that, you might need to install the `stellar/go` package separately since it uses a separate dependency manager. Get the `stellar/go` package separately and then run `dep ensure -v` inside `$HOME/stellar/go`. This might take a few minutes to complete.
 
