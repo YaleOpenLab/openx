@@ -12,7 +12,7 @@ easyjson
 staticcheck
 watcher/watcher
 misspell
-multisig/multisig
+xlm/multisig/multisig
 logger
 aws
 openx-backend.pem

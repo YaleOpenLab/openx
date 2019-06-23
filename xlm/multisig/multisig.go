@@ -178,7 +178,7 @@ func Tx2of2(pubkey1 string, destination string, signer1 string, signer2 string, 
 		return errors.Wrap(err, "could not load client details, quitting")
 	}
 
-	op1 := build.Payment{
+	op := build.Payment{
 		Destination: pubkey1,
 		Amount:      amount,
 		Asset:       build.NativeAsset{},
@@ -186,7 +186,7 @@ func Tx2of2(pubkey1 string, destination string, signer1 string, signer2 string, 
 
 	tx := build.Transaction{
 		SourceAccount: &sourceAccount,
-		Operations:    []build.Operation{&op1},
+		Operations:    []build.Operation{&op},
 		Timebounds:    build.NewInfiniteTimeout(),
 		Network:       passphrase,
 		Memo:          build.Memo(build.MemoText(memo)),
@@ -261,20 +261,14 @@ func TrustAssetTx(assetCode string, assetIssuer string, limit string, pubkey str
 		return errors.Wrap(err, "could not load client details, quitting")
 	}
 
-	op1 := build.AllowTrust{
-		Trustor:   pubkey,
-		Type:      build.CreditAsset{assetCode, assetIssuer},
-		Authorize: true,
-	}
-
-	op2 := build.ChangeTrust{
+	op := build.ChangeTrust{
 		Line:  build.CreditAsset{assetCode, assetIssuer},
 		Limit: limit,
 	}
 
 	tx := build.Transaction{
 		SourceAccount: &sourceAccount,
-		Operations:    []build.Operation{&op1, &op2},
+		Operations:    []build.Operation{&op},
 		Timebounds:    build.NewInfiniteTimeout(),
 		Network:       passphrase,
 	}

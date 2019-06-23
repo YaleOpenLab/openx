@@ -8,8 +8,6 @@ import (
 
 	consts "github.com/YaleOpenLab/openx/consts"
 	xlm "github.com/YaleOpenLab/openx/xlm"
-	"github.com/stellar/go/build"
-	"github.com/stellar/go/network"
 )
 
 func TestMultisig2of2(t *testing.T) {
@@ -57,27 +55,7 @@ func TestMultisig2of2(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	tx, err := build.Transaction(
-		build.SourceAccount{pubkey1},
-		build.AutoSequence{TestNetClient},
-		build.Network{network.TestNetworkPassphrase},
-		build.MemoText{"running a test"},
-		build.Payment(
-			build.Destination{pubkey1},
-			build.NativeAmount{"1"},
-		),
-	)
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	txe, err := tx.Sign(seed1, seed2) // sign using party 2's seed
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	err = SendTx(txe)
+	err = Tx2of2(pubkey1, pubkey1, seed1, seed2, "1", "cool")
 	if err != nil {
 		t.Fatal(err)
 	}
