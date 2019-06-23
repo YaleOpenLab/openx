@@ -12,7 +12,7 @@ import (
 	xlm "github.com/YaleOpenLab/openx/xlm"
 	assets "github.com/YaleOpenLab/openx/xlm/assets"
 	wallet "github.com/YaleOpenLab/openx/xlm/wallet"
-	"github.com/stellar/go/build"
+	build "github.com/stellar/go/txnbuild"
 )
 
 // go test --tags="all" -coverprofile=test.txt .
@@ -382,7 +382,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	build.CreditAsset("blah", recp.U.StellarWallet.PublicKey)
+	_ = build.CreditAsset{"blah", recp.U.StellarWallet.PublicKey}
 	invSeed, err := wallet.DecryptSeed(inv.U.StellarWallet.EncryptedSeed, "blah")
 	if err != nil {
 		t.Fatal(err)
@@ -400,7 +400,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	build.CreditAsset("blah2", pkSeed) // this account doesn't exist yet, so this should fail
+	_ = build.CreditAsset{"blah2", pkSeed} // this account doesn't exist yet, so this should fail
 	_, err = assets.TrustAsset("blah2", "", "-1", "blah")
 	if err == nil {
 		t.Fatalf("can trust invalid asset")
