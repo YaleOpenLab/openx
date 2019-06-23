@@ -6,9 +6,11 @@ import (
 	"net/http"
 
 	xlm "github.com/YaleOpenLab/openx/xlm"
-	"github.com/stellar/go/build"
 	clients "github.com/stellar/go/clients/horizon"
+	horizon "github.com/stellar/go/clients/horizonclient"
+	"github.com/stellar/go/keypair"
 	"github.com/stellar/go/network"
+	build "github.com/stellar/go/txnbuild"
 )
 
 /*
@@ -35,25 +37,31 @@ func addSigner(seed string, pubkey string, cosignerPubkey string) error {
 	memo := "addsigner"
 	amount := "1" // some token amount, this can be any number though (even larger than the number of xlm in  xistence)
 
-	tx, err := build.Transaction(
-		build.SourceAccount{pubkey},
-		build.AutoSequence{TestNetClient},
-		build.Network{network.TestNetworkPassphrase},
-		build.MemoText{memo},
-		build.Payment(
-			build.Destination{pubkey},
-			build.NativeAmount{amount},
-		),
-		build.SetOptions(
-			build.AddSigner(cosignerPubkey, 1), // add first signer
-		),
-	)
-
+	passphrase := network.TestNetworkPassphrase
+	sourceAccount, mykp, err := xlm.ReturnSourceAccount(seed)
 	if err != nil {
-		return errors.Wrap(err, "error while constructing tx")
+		return err
 	}
 
-	_, _, err = xlm.SendTx(seed, tx)
+	op1 := build.Payment{
+		Destination: pubkey,
+		Amount:      amount,
+		Asset:       build.NativeAsset{},
+	}
+
+	op2 := build.SetOptions{
+		Signer: &build.Signer{cosignerPubkey, 1},
+	}
+
+	tx := build.Transaction{
+		SourceAccount: &sourceAccount,
+		Operations:    []build.Operation{&op1, &op2},
+		Timebounds:    build.NewInfiniteTimeout(),
+		Network:       passphrase,
+		Memo:          build.Memo(build.MemoText(memo)),
+	}
+
+	_, _, err = xlm.SendTx(mykp, tx)
 	if err != nil {
 		return errors.Wrap(err, "error while sending tx to horizon")
 	}
@@ -63,31 +71,39 @@ func addSigner(seed string, pubkey string, cosignerPubkey string) error {
 
 // when the number of tx's reaches x-1, call the threshold tx to set thresholds
 func constructThresholdTx(seed string, pubkey string, cosignerPubkey string, y int) error {
+
 	memo := "sealthreshold"
 	amount := "1" // some token amount, this can be any number though (even larger than the number of xlm in  xistence)
-	x := uint32(y)
-
-	tx, err := build.Transaction(
-		build.SourceAccount{pubkey},
-		build.AutoSequence{TestNetClient},
-		build.Network{network.TestNetworkPassphrase},
-		build.MemoText{memo},
-		build.Payment(
-			build.Destination{pubkey},
-			build.NativeAmount{amount},
-		),
-		build.SetOptions(
-			build.MasterWeight(0),              // set the seed od account 2 to have zero weight
-			build.AddSigner(cosignerPubkey, 1), // add second signer
-			build.SetThresholds(x, x, x),       // set all thresholds to the threshold you want
-		),
-	)
-
+	x := build.Threshold(y)
+	passphrase := network.TestNetworkPassphrase
+	sourceAccount, mykp, err := xlm.ReturnSourceAccount(seed)
 	if err != nil {
-		return errors.Wrap(err, "error while constructing tx")
+		return err
 	}
 
-	_, _, err = xlm.SendTx(seed, tx)
+	op1 := build.Payment{
+		Destination: pubkey,
+		Amount:      amount,
+		Asset:       build.NativeAsset{},
+	}
+
+	op2 := build.SetOptions{
+		Signer:          &build.Signer{cosignerPubkey, 1},
+		MasterWeight:    build.NewThreshold(0),
+		LowThreshold:    build.NewThreshold(x),
+		MediumThreshold: build.NewThreshold(x),
+		HighThreshold:   build.NewThreshold(x),
+	}
+
+	tx := build.Transaction{
+		SourceAccount: &sourceAccount,
+		Operations:    []build.Operation{&op1, &op2},
+		Timebounds:    build.NewInfiniteTimeout(),
+		Network:       passphrase,
+		Memo:          build.Memo(build.MemoText(memo)),
+	}
+
+	_, _, err = xlm.SendTx(mykp, tx)
 	if err != nil {
 		return errors.Wrap(err, "error while sending tx to horizon")
 	}
@@ -140,40 +156,53 @@ func New2of2(cosigner1Pubkey string, cosigner2Pubkey string) (string, error) {
 }
 
 // SendTx sends the multisig tx. Copied from xlm/ to  avoid import cycles
-func SendTx(txe build.TransactionEnvelopeBuilder) error {
-	txeB64, err := txe.Base64()
+func SendTx(tx string) error {
+
+	resp, err := TestNetClient.SubmitTransaction(tx)
 	if err != nil {
-		return errors.Wrap(err, "error while converting tx to base64")
+		return errors.Wrap(err, "could not submit tx to horizon")
 	}
 
-	resp, err := TestNetClient.SubmitTransaction(txeB64)
-	if err != nil {
-		return errors.Wrap(err, "error while submitting tx")
-	}
-
-	log.Printf("Two party multisig tx: %s, sequence: %d\n", resp.Hash, resp.Ledger)
-	return nil
+	log.Printf("Propagated Transaction: %s, sequence: %d\n", resp.Hash, resp.Ledger)
+	return err
 }
 
 // Tx2of2 constructs a tx where the source account pubkey1 is the 2of2 account, we need 2 signers for this tx
 func Tx2of2(pubkey1 string, destination string, signer1 string, signer2 string, amount string, memo string) error {
 	// construct a tx sending coins from account 1 to account 1
-	tx, err := build.Transaction(
-		build.SourceAccount{pubkey1},
-		build.AutoSequence{TestNetClient},
-		build.Network{network.TestNetworkPassphrase},
-		build.MemoText{memo},
-		build.Payment(
-			build.Destination{pubkey1},
-			build.NativeAmount{amount},
-		),
-	)
-
+	passphrase := network.TestNetworkPassphrase
+	client := horizon.DefaultTestNetClient
+	ar := horizon.AccountRequest{AccountID: pubkey1}
+	sourceAccount, err := client.AccountDetail(ar)
 	if err != nil {
-		return errors.Wrap(err, "error while building tx")
+		return errors.Wrap(err, "could not load client details, quitting")
 	}
 
-	txe, err := tx.Sign(signer1, signer2) // sign using party 2's seed
+	op1 := build.Payment{
+		Destination: pubkey1,
+		Amount:      amount,
+		Asset:       build.NativeAsset{},
+	}
+
+	tx := build.Transaction{
+		SourceAccount: &sourceAccount,
+		Operations:    []build.Operation{&op1},
+		Timebounds:    build.NewInfiniteTimeout(),
+		Network:       passphrase,
+		Memo:          build.Memo(build.MemoText(memo)),
+	}
+
+	_, kp1, err := xlm.ReturnSourceAccount(signer1)
+	if err != nil {
+		return err
+	}
+
+	_, kp2, err := xlm.ReturnSourceAccount(signer2)
+	if err != nil {
+		return err
+	}
+
+	txe, err := tx.BuildSignEncode(kp1.(*keypair.Full), kp2.(*keypair.Full))
 	if err != nil {
 		return errors.Wrap(err, "second party couldn't sign tx")
 	}
@@ -183,21 +212,37 @@ func Tx2of2(pubkey1 string, destination string, signer1 string, signer2 string, 
 
 // AuthImmutable2of2 sets the auth immutable flag on a multisig account
 func AuthImmutable2of2(pubkey1 string, signer1 string, signer2 string) error {
-	tx, err := build.Transaction(
-		build.SourceAccount{pubkey1},
-		build.AutoSequence{TestNetClient},
-		build.Network{network.TestNetworkPassphrase},
-		build.MemoText{"Set Auth Immutable"},
-		build.SetOptions(
-			build.SetAuthImmutable(),
-		),
-	)
 
+	passphrase := network.TestNetworkPassphrase
+	client := horizon.DefaultTestNetClient
+	ar := horizon.AccountRequest{AccountID: pubkey1}
+	sourceAccount, err := client.AccountDetail(ar)
 	if err != nil {
-		return errors.Wrap(err, "error while building tx")
+		return errors.Wrap(err, "could not load client details, quitting")
 	}
 
-	txe, err := tx.Sign(signer1, signer2) // sign using party 2's seed
+	op := build.SetOptions{
+		SetFlags: []build.AccountFlag{build.AuthImmutable},
+	}
+
+	tx := build.Transaction{
+		SourceAccount: &sourceAccount,
+		Operations:    []build.Operation{&op},
+		Timebounds:    build.NewInfiniteTimeout(),
+		Network:       passphrase,
+	}
+
+	_, kp1, err := xlm.ReturnSourceAccount(signer1)
+	if err != nil {
+		return err
+	}
+
+	_, kp2, err := xlm.ReturnSourceAccount(signer2)
+	if err != nil {
+		return err
+	}
+
+	txe, err := tx.BuildSignEncode(kp1.(*keypair.Full), kp2.(*keypair.Full))
 	if err != nil {
 		return errors.Wrap(err, "second party couldn't sign tx")
 	}
@@ -207,18 +252,44 @@ func AuthImmutable2of2(pubkey1 string, signer1 string, signer2 string) error {
 
 // TrustAssetTx trusts a specific asset
 func TrustAssetTx(assetCode string, assetIssuer string, limit string, pubkey string, signer1 string, signer2 string) error {
-	tx, err := build.Transaction(
-		build.SourceAccount{pubkey},
-		build.AutoSequence{SequenceProvider: xlm.TestNetClient},
-		build.TestNetwork,
-		build.Trust(assetCode, assetIssuer, build.Limit(limit)),
-	)
 
+	passphrase := network.TestNetworkPassphrase
+	client := horizon.DefaultTestNetClient
+	ar := horizon.AccountRequest{AccountID: pubkey}
+	sourceAccount, err := client.AccountDetail(ar)
 	if err != nil {
-		return errors.Wrap(err, "error while building tx")
+		return errors.Wrap(err, "could not load client details, quitting")
 	}
 
-	txe, err := tx.Sign(signer1, signer2) // sign using party 2's seed
+	op1 := build.AllowTrust{
+		Trustor:   pubkey,
+		Type:      build.CreditAsset{assetCode, assetIssuer},
+		Authorize: true,
+	}
+
+	op2 := build.ChangeTrust{
+		Line:  build.CreditAsset{assetCode, assetIssuer},
+		Limit: limit,
+	}
+
+	tx := build.Transaction{
+		SourceAccount: &sourceAccount,
+		Operations:    []build.Operation{&op1, &op2},
+		Timebounds:    build.NewInfiniteTimeout(),
+		Network:       passphrase,
+	}
+
+	_, kp1, err := xlm.ReturnSourceAccount(signer1)
+	if err != nil {
+		return err
+	}
+
+	_, kp2, err := xlm.ReturnSourceAccount(signer2)
+	if err != nil {
+		return err
+	}
+
+	txe, err := tx.BuildSignEncode(kp1.(*keypair.Full), kp2.(*keypair.Full))
 	if err != nil {
 		return errors.Wrap(err, "second party couldn't sign tx")
 	}
@@ -227,32 +298,40 @@ func TrustAssetTx(assetCode string, assetIssuer string, limit string, pubkey str
 }
 
 // Convert2of2 converts the account with pubkey myPubkey to a 2of2 multisig account
-func Convert2of2(myPubkey string, mySeed string, cosignerPubkey string) error {
+func Convert2of2(myPubkey string, seed string, cosignerPubkey string) error {
 	// don't check if the account exists or not, hopefully it does
 	memo := "testsign"
 	amount := "1"
 
-	tx, err := build.Transaction(
-		build.SourceAccount{myPubkey},
-		build.AutoSequence{TestNetClient},
-		build.Network{network.TestNetworkPassphrase},
-		build.MemoText{memo},
-		build.Payment(
-			build.Destination{myPubkey},
-			build.NativeAmount{amount},
-		),
-		build.SetOptions(
-			build.MasterWeight(1),
-			build.AddSigner(cosignerPubkey, 1), // add x-1 signers here
-			build.SetThresholds(2, 2, 2),       // set all thresholds to the threshold you want
-		),
-	)
-
+	passphrase := network.TestNetworkPassphrase
+	sourceAccount, mykp, err := xlm.ReturnSourceAccount(seed)
 	if err != nil {
-		return errors.Wrap(err, "error while constructing tx")
+		return err
 	}
 
-	_, _, err = xlm.SendTx(mySeed, tx)
+	op1 := build.Payment{
+		Destination: myPubkey,
+		Amount:      amount,
+		Asset:       build.NativeAsset{},
+	}
+
+	op2 := build.SetOptions{
+		Signer:          &build.Signer{cosignerPubkey, 1},
+		MasterWeight:    build.NewThreshold(1),
+		LowThreshold:    build.NewThreshold(2),
+		MediumThreshold: build.NewThreshold(2),
+		HighThreshold:   build.NewThreshold(2),
+	}
+
+	tx := build.Transaction{
+		SourceAccount: &sourceAccount,
+		Operations:    []build.Operation{&op1, &op2},
+		Timebounds:    build.NewInfiniteTimeout(),
+		Network:       passphrase,
+		Memo:          build.Memo(build.MemoText(memo)),
+	}
+
+	_, _, err = xlm.SendTx(mykp, tx)
 	if err != nil {
 		return errors.Wrap(err, "error while sending tx to horizon")
 	}

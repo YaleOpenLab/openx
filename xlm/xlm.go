@@ -9,8 +9,8 @@ import (
 	horizon "github.com/stellar/go/clients/horizonclient"
 	"github.com/stellar/go/keypair"
 	"github.com/stellar/go/network"
-	build "github.com/stellar/go/txnbuild"
 	horizonprotocol "github.com/stellar/go/protocols/horizon"
+	build "github.com/stellar/go/txnbuild"
 )
 
 // package xlm provides all the necessary handlers in order to interact with the

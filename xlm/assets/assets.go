@@ -78,22 +78,10 @@ func TrustAsset(assetCode string, assetIssuer string, limit string, seed string)
 		return "", err
 	}
 
-	op := build.AllowTrust{
+	op1 := build.AllowTrust{
 		Trustor:   mykp.Address(),
 		Type:      build.CreditAsset{assetCode, assetIssuer},
 		Authorize: true,
-	}
-
-	tx := build.Transaction{
-		SourceAccount: &sourceAccount,
-		Operations:    []build.Operation{&op},
-		Timebounds:    build.NewInfiniteTimeout(),
-		Network:       passphrase,
-	}
-
-	_, txHash, err := xlm.SendTx(mykp, tx)
-	if err != nil {
-		return txHash, err
 	}
 
 	op2 := build.ChangeTrust{
@@ -101,14 +89,14 @@ func TrustAsset(assetCode string, assetIssuer string, limit string, seed string)
 		Limit: limit,
 	}
 
-	tx = build.Transaction{
+	tx := build.Transaction{
 		SourceAccount: &sourceAccount,
-		Operations:    []build.Operation{&op2},
+		Operations:    []build.Operation{&op1, &op2},
 		Timebounds:    build.NewInfiniteTimeout(),
 		Network:       passphrase,
 	}
 
-	_, txHash, err = xlm.SendTx(mykp, tx)
+	_, txHash, err := xlm.SendTx(mykp, tx)
 	return txHash, err
 }
 

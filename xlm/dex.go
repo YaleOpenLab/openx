@@ -2,7 +2,7 @@ package xlm
 
 import (
 	"github.com/pkg/errors"
-//	"log"
+	//	"log"
 
 	wallet "github.com/YaleOpenLab/openx/xlm/wallet"
 	horizon "github.com/stellar/go/clients/horizonclient"
