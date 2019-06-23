@@ -25,7 +25,7 @@ func GetKeyPair() (string, string, error) {
 	return pair.Seed(), pair.Address(), err
 }
 
-// AccountExists checks whether an accoutn exists, not needed now since we do the check ourselves
+// AccountExists checks whether an account exists, not needed now since we do the check ourselves
 // in multiple places
 func AccountExists(address string) bool {
 	_, err := TestNetClient.LoadAccount(address)
