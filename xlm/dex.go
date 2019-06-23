@@ -4,28 +4,17 @@ import (
 	"github.com/pkg/errors"
 	//	"log"
 
-	wallet "github.com/YaleOpenLab/openx/xlm/wallet"
-	horizon "github.com/stellar/go/clients/horizonclient"
-	"github.com/stellar/go/keypair"
 	"github.com/stellar/go/network"
 	build "github.com/stellar/go/txnbuild"
 )
 
-func NewBuyOrder(encryptedSeed []byte, seedpwd string, assetName string,
-	destination string, amount string, price string) (int32, string, error) {
-	seed, err := wallet.DecryptSeed(encryptedSeed, seedpwd)
-	if err != nil {
-		return -1, "", errors.Wrap(err, "could not decrypt seed, quitting")
-	}
+// package dex contains functions for interfacing with the stellar dex
 
-	mykp, err := keypair.Parse(seed)
-	if err != nil {
-		return -1, "", errors.Wrap(err, "could not parse keypair, quitting")
-	}
+// NewBuyOrder creates a new buy order on the stellar dex
+func NewBuyOrder(seed string, assetName string, destination string,
+	amount string, price string) (int32, string, error) {
 
-	client := horizon.DefaultTestNetClient
-	ar := horizon.AccountRequest{AccountID: mykp.Address()}
-	sourceAccount, err := client.AccountDetail(ar)
+	sourceAccount, mykp, err := ReturnSourceAccount(seed)
 	if err != nil {
 		return -1, "", errors.Wrap(err, "could not load client details, quitting")
 	}
@@ -48,21 +37,11 @@ func NewBuyOrder(encryptedSeed []byte, seedpwd string, assetName string,
 	return SendTx(mykp, tx)
 }
 
-func NewSellOrder(encryptedSeed []byte, seedpwd string, assetName string,
-	destination string, amount string, price string) (int32, string, error) {
-	seed, err := wallet.DecryptSeed(encryptedSeed, seedpwd)
-	if err != nil {
-		return -1, "", errors.Wrap(err, "could not decrypt seed, quitting")
-	}
+// NewSellOrder creates a new sell order on the stellar dex
+func NewSellOrder(seed string, assetName string, destination string,
+	amount string, price string) (int32, string, error) {
 
-	mykp, err := keypair.Parse(seed)
-	if err != nil {
-		return -1, "", errors.Wrap(err, "could not parse keypair, quitting")
-	}
-
-	client := horizon.DefaultTestNetClient
-	ar := horizon.AccountRequest{AccountID: mykp.Address()}
-	sourceAccount, err := client.AccountDetail(ar)
+	sourceAccount, mykp, err := ReturnSourceAccount(seed)
 	if err != nil {
 		return -1, "", errors.Wrap(err, "could not load client details, quitting")
 	}

@@ -1,14 +1,12 @@
 package xlm
 
 import (
-	"github.com/stellar/go/network"
 	build "github.com/stellar/go/txnbuild"
 )
 
 // SetAuthImmutable sets the auth_immutable flag on an account
 func SetAuthImmutable(seed string) (int32, string, error) {
 	//  Create with Auth immutable since we don't want the asset to be revocable
-	passphrase := network.TestNetworkPassphrase
 	sourceAccount, mykp, err := ReturnSourceAccount(seed)
 	if err != nil {
 		return -1, "", err
@@ -22,7 +20,7 @@ func SetAuthImmutable(seed string) (int32, string, error) {
 		SourceAccount: &sourceAccount,
 		Operations:    []build.Operation{&op},
 		Timebounds:    build.NewInfiniteTimeout(),
-		Network:       passphrase,
+		Network:       Passphrase,
 	}
 
 	return SendTx(mykp, tx)
@@ -30,7 +28,6 @@ func SetAuthImmutable(seed string) (int32, string, error) {
 
 // FreezeAccount freezes the account
 func FreezeAccount(seed string) (int32, string, error) {
-	passphrase := network.TestNetworkPassphrase
 	sourceAccount, mykp, err := ReturnSourceAccount(seed)
 	if err != nil {
 		return -1, "", err
@@ -47,7 +44,7 @@ func FreezeAccount(seed string) (int32, string, error) {
 		SourceAccount: &sourceAccount,
 		Operations:    []build.Operation{&op},
 		Timebounds:    build.NewInfiniteTimeout(),
-		Network:       passphrase,
+		Network:       Passphrase,
 	}
 
 	return SendTx(mykp, tx)

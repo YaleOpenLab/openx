@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	build "github.com/stellar/go/txnbuild"
 	"github.com/stellar/go/network"
+	build "github.com/stellar/go/txnbuild"
 )
 
 func TestXLM(t *testing.T) {
@@ -148,7 +148,7 @@ func trustAsset(assetCode string, assetIssuer string, limit string, seed string)
 
 	tx := build.Transaction{
 		SourceAccount: &sourceAccount,
-		Operations:     []build.Operation{&op},
+		Operations:    []build.Operation{&op},
 		Timebounds:    build.NewInfiniteTimeout(),
 		Network:       passphrase,
 	}

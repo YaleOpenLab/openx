@@ -7,25 +7,10 @@ import (
 
 	xlm "github.com/YaleOpenLab/openx/xlm"
 	clients "github.com/stellar/go/clients/horizon"
-	horizon "github.com/stellar/go/clients/horizonclient"
 	"github.com/stellar/go/keypair"
-	"github.com/stellar/go/network"
 	build "github.com/stellar/go/txnbuild"
 )
 
-/*
-InflationDest("GCT7S5BA6ZC7SV7GGEMEYJTWOBYTBOA7SC4JEYP7IAEDG7HQNIWKRJ4G"),
-	SetAuthRequired(),
-	SetAuthRevocable(),
-	SetAuthImmutable(),
-	ClearAuthRequired(),
-	ClearAuthRevocable(),
-	ClearAuthImmutable(),
-	MasterWeight(1),
-	SetThresholds(2, 3, 4),
-	HomeDomain("stellar.org"),
-	AddSigner("GC6DDGPXVWXD5V6XOWJ7VUTDYI7VKPV2RAJWBVBHR47OPV5NASUNHTJW", 5),
-*/
 var TestNetClient = &clients.Client{
 	// URL: "http://35.192.122.229:8080",
 	URL:  "https://horizon-testnet.stellar.org",
@@ -37,7 +22,6 @@ func addSigner(seed string, pubkey string, cosignerPubkey string) error {
 	memo := "addsigner"
 	amount := "1" // some token amount, this can be any number though (even larger than the number of xlm in  xistence)
 
-	passphrase := network.TestNetworkPassphrase
 	sourceAccount, mykp, err := xlm.ReturnSourceAccount(seed)
 	if err != nil {
 		return err
@@ -57,7 +41,7 @@ func addSigner(seed string, pubkey string, cosignerPubkey string) error {
 		SourceAccount: &sourceAccount,
 		Operations:    []build.Operation{&op1, &op2},
 		Timebounds:    build.NewInfiniteTimeout(),
-		Network:       passphrase,
+		Network:       xlm.Passphrase,
 		Memo:          build.Memo(build.MemoText(memo)),
 	}
 
@@ -75,7 +59,6 @@ func constructThresholdTx(seed string, pubkey string, cosignerPubkey string, y i
 	memo := "sealthreshold"
 	amount := "1" // some token amount, this can be any number though (even larger than the number of xlm in  xistence)
 	x := build.Threshold(y)
-	passphrase := network.TestNetworkPassphrase
 	sourceAccount, mykp, err := xlm.ReturnSourceAccount(seed)
 	if err != nil {
 		return err
@@ -99,7 +82,7 @@ func constructThresholdTx(seed string, pubkey string, cosignerPubkey string, y i
 		SourceAccount: &sourceAccount,
 		Operations:    []build.Operation{&op1, &op2},
 		Timebounds:    build.NewInfiniteTimeout(),
-		Network:       passphrase,
+		Network:       xlm.Passphrase,
 		Memo:          build.Memo(build.MemoText(memo)),
 	}
 
@@ -168,14 +151,10 @@ func SendTx(tx string) error {
 }
 
 // Tx2of2 constructs a tx where the source account pubkey1 is the 2of2 account, we need 2 signers for this tx
-func Tx2of2(pubkey1 string, destination string, signer1 string, signer2 string, amount string, memo string) error {
-	// construct a tx sending coins from account 1 to account 1
-	passphrase := network.TestNetworkPassphrase
-	client := horizon.DefaultTestNetClient
-	ar := horizon.AccountRequest{AccountID: pubkey1}
-	sourceAccount, err := client.AccountDetail(ar)
+func Tx2of2(pubkey1 string, signer1 string, signer2 string, amount string, memo string) error {
+	sourceAccount, err := xlm.ReturnSourceAccountPubkey(pubkey1)
 	if err != nil {
-		return errors.Wrap(err, "could not load client details, quitting")
+		return errors.Wrap(err, "could not load account details, quitting")
 	}
 
 	op := build.Payment{
@@ -188,7 +167,7 @@ func Tx2of2(pubkey1 string, destination string, signer1 string, signer2 string, 
 		SourceAccount: &sourceAccount,
 		Operations:    []build.Operation{&op},
 		Timebounds:    build.NewInfiniteTimeout(),
-		Network:       passphrase,
+		Network:       xlm.Passphrase,
 		Memo:          build.Memo(build.MemoText(memo)),
 	}
 
@@ -212,13 +191,9 @@ func Tx2of2(pubkey1 string, destination string, signer1 string, signer2 string, 
 
 // AuthImmutable2of2 sets the auth immutable flag on a multisig account
 func AuthImmutable2of2(pubkey1 string, signer1 string, signer2 string) error {
-
-	passphrase := network.TestNetworkPassphrase
-	client := horizon.DefaultTestNetClient
-	ar := horizon.AccountRequest{AccountID: pubkey1}
-	sourceAccount, err := client.AccountDetail(ar)
+	sourceAccount, err := xlm.ReturnSourceAccountPubkey(pubkey1)
 	if err != nil {
-		return errors.Wrap(err, "could not load client details, quitting")
+		return errors.Wrap(err, "could not load account details, quitting")
 	}
 
 	op := build.SetOptions{
@@ -229,7 +204,7 @@ func AuthImmutable2of2(pubkey1 string, signer1 string, signer2 string) error {
 		SourceAccount: &sourceAccount,
 		Operations:    []build.Operation{&op},
 		Timebounds:    build.NewInfiniteTimeout(),
-		Network:       passphrase,
+		Network:       xlm.Passphrase,
 	}
 
 	_, kp1, err := xlm.ReturnSourceAccount(signer1)
@@ -252,13 +227,9 @@ func AuthImmutable2of2(pubkey1 string, signer1 string, signer2 string) error {
 
 // TrustAssetTx trusts a specific asset
 func TrustAssetTx(assetCode string, assetIssuer string, limit string, pubkey string, signer1 string, signer2 string) error {
-
-	passphrase := network.TestNetworkPassphrase
-	client := horizon.DefaultTestNetClient
-	ar := horizon.AccountRequest{AccountID: pubkey}
-	sourceAccount, err := client.AccountDetail(ar)
+	sourceAccount, err := xlm.ReturnSourceAccountPubkey(pubkey)
 	if err != nil {
-		return errors.Wrap(err, "could not load client details, quitting")
+		return errors.Wrap(err, "could not load account details, quitting")
 	}
 
 	op := build.ChangeTrust{
@@ -270,7 +241,7 @@ func TrustAssetTx(assetCode string, assetIssuer string, limit string, pubkey str
 		SourceAccount: &sourceAccount,
 		Operations:    []build.Operation{&op},
 		Timebounds:    build.NewInfiniteTimeout(),
-		Network:       passphrase,
+		Network:       xlm.Passphrase,
 	}
 
 	_, kp1, err := xlm.ReturnSourceAccount(signer1)
@@ -297,7 +268,6 @@ func Convert2of2(myPubkey string, seed string, cosignerPubkey string) error {
 	memo := "testsign"
 	amount := "1"
 
-	passphrase := network.TestNetworkPassphrase
 	sourceAccount, mykp, err := xlm.ReturnSourceAccount(seed)
 	if err != nil {
 		return err
@@ -321,7 +291,7 @@ func Convert2of2(myPubkey string, seed string, cosignerPubkey string) error {
 		SourceAccount: &sourceAccount,
 		Operations:    []build.Operation{&op1, &op2},
 		Timebounds:    build.NewInfiniteTimeout(),
-		Network:       passphrase,
+		Network:       xlm.Passphrase,
 		Memo:          build.Memo(build.MemoText(memo)),
 	}
 

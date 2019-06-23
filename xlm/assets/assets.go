@@ -73,7 +73,7 @@ func CreateAsset(assetName string, PublicKey string) build.Asset {
 func TrustAsset(assetCode string, assetIssuer string, limit string, seed string) (string, error) {
 	// TRUST is FROM Seed TO assetIssuer
 	passphrase := network.TestNetworkPassphrase
-	sourceAccount, mykp, err := ReturnSourceAccount(seed)
+	sourceAccount, mykp, err := xlm.ReturnSourceAccount(seed)
 	if err != nil {
 		return "", err
 	}
@@ -85,18 +85,19 @@ func TrustAsset(assetCode string, assetIssuer string, limit string, seed string)
 
 	tx := build.Transaction{
 		SourceAccount: &sourceAccount,
-		Operations:     []build.Operation{&op},
+		Operations:    []build.Operation{&op},
 		Timebounds:    build.NewInfiniteTimeout(),
 		Network:       passphrase,
 	}
 
-	_, txHash, err := SendTx(mykp, tx)
+	_, txHash, err := xlm.SendTx(mykp, tx)
 	if err != nil {
 		return "", err
 	}
 
 	return txHash, err
 }
+
 // SendAssetFromIssuer transfers _amount_ number of assets from the caller to the destination
 // and returns an error if the destination doesn't have a trustline with the issuer
 // This method is called by the issuer of the asset
