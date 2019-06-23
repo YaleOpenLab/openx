@@ -46,21 +46,21 @@ func MunibondInvest(issuerPath string, invIndex int, invSeed string, invAmount s
 	}
 
 	InvestorAsset := assets.CreateAsset(invAssetCode, issuerPubkey)
-	invTrustTxHash, err := assets.TrustAsset(InvestorAsset.Code, issuerPubkey, utils.FtoS(totalValue), invSeed)
+	invTrustTxHash, err := assets.TrustAsset(InvestorAsset.GetCode(), issuerPubkey, utils.FtoS(totalValue), invSeed)
 	if err != nil {
 		return errors.Wrap(err, "Error while trusting investor asset")
 	}
 
-	log.Printf("Investor trusts InvAsset %s with txhash %s", InvestorAsset.Code, invTrustTxHash)
-	_, invAssetTxHash, err := assets.SendAssetFromIssuer(InvestorAsset.Code, investor.U.StellarWallet.PublicKey, invAmount, issuerSeed, issuerPubkey)
+	log.Printf("Investor trusts InvAsset %s with txhash %s", InvestorAsset.GetCode(), invTrustTxHash)
+	_, invAssetTxHash, err := assets.SendAssetFromIssuer(InvestorAsset.GetCode(), investor.U.StellarWallet.PublicKey, invAmount, issuerSeed, issuerPubkey)
 	if err != nil {
 		return errors.Wrap(err, "Error while sending out investor asset")
 	}
 
-	log.Printf("Sent InvAsset %s to investor %s with txhash %s", InvestorAsset.Code, investor.U.StellarWallet.PublicKey, invAssetTxHash)
+	log.Printf("Sent InvAsset %s to investor %s with txhash %s", InvestorAsset.GetCode(), investor.U.StellarWallet.PublicKey, invAssetTxHash)
 
 	investor.AmountInvested += utils.StoF(invAmount) //  / seedInvestmentFactor -> figure out after demo
-	investor.InvestedSolarProjects = append(investor.InvestedSolarProjects, InvestorAsset.Code)
+	investor.InvestedSolarProjects = append(investor.InvestedSolarProjects, InvestorAsset.GetCode())
 	investor.InvestedSolarProjectsIndices = append(investor.InvestedSolarProjectsIndices, projIndex)
 	// keep note of who all invested in this asset (even though it should be easy
 	// to get that from the blockchain)
@@ -99,31 +99,31 @@ func MunibondReceive(issuerPath string, recpIndex int, projIndex int, debtAssetI
 	}
 	pbAmtTrust := utils.ItoS(years * 12 * 2) // two way exchange possible, to account for errors
 
-	paybackTrustHash, err := assets.TrustAsset(PaybackAsset.Code, issuerPubkey, pbAmtTrust, recpSeed)
+	paybackTrustHash, err := assets.TrustAsset(PaybackAsset.GetCode(), issuerPubkey, pbAmtTrust, recpSeed)
 	if err != nil {
 		return errors.Wrap(err, "Error while trusting Payback Asset")
 	}
-	log.Printf("Recipient Trusts Payback asset %s with txhash %s", PaybackAsset.Code, paybackTrustHash)
+	log.Printf("Recipient Trusts Payback asset %s with txhash %s", PaybackAsset.GetCode(), paybackTrustHash)
 
-	_, paybackAssetHash, err := assets.SendAssetFromIssuer(PaybackAsset.Code, recipient.U.StellarWallet.PublicKey, pbAmtTrust, issuerSeed, issuerPubkey) // same amount as debt
+	_, paybackAssetHash, err := assets.SendAssetFromIssuer(PaybackAsset.GetCode(), recipient.U.StellarWallet.PublicKey, pbAmtTrust, issuerSeed, issuerPubkey) // same amount as debt
 	if err != nil {
 		return errors.Wrap(err, "Error while sending payback asset from issue")
 	}
 
 	log.Printf("Sent PaybackAsset to recipient %s with txhash %s", recipient.U.StellarWallet.PublicKey, paybackAssetHash)
-	debtTrustHash, err := assets.TrustAsset(DebtAsset.Code, issuerPubkey, utils.FtoS(totalValue*2), recpSeed)
+	debtTrustHash, err := assets.TrustAsset(DebtAsset.GetCode(), issuerPubkey, utils.FtoS(totalValue*2), recpSeed)
 	if err != nil {
 		return errors.Wrap(err, "Error while trusting debt asset")
 	}
-	log.Printf("Recipient Trusts Debt asset %s with txhash %s", DebtAsset.Code, debtTrustHash)
+	log.Printf("Recipient Trusts Debt asset %s with txhash %s", DebtAsset.GetCode(), debtTrustHash)
 
-	_, recpDebtAssetHash, err := assets.SendAssetFromIssuer(DebtAsset.Code, recipient.U.StellarWallet.PublicKey, utils.FtoS(totalValue), issuerSeed, issuerPubkey) // same amount as debt
+	_, recpDebtAssetHash, err := assets.SendAssetFromIssuer(DebtAsset.GetCode(), recipient.U.StellarWallet.PublicKey, utils.FtoS(totalValue), issuerSeed, issuerPubkey) // same amount as debt
 	if err != nil {
 		return errors.Wrap(err, "Error while sending debt asset")
 	}
 
 	log.Printf("Sent DebtAsset to recipient %s with txhash %s\n", recipient.U.StellarWallet.PublicKey, recpDebtAssetHash)
-	recipient.ReceivedSolarProjects = append(recipient.ReceivedSolarProjects, DebtAsset.Code)
+	recipient.ReceivedSolarProjects = append(recipient.ReceivedSolarProjects, DebtAsset.GetCode())
 	recipient.ReceivedSolarProjectIndices = append(recipient.ReceivedSolarProjectIndices, projIndex)
 	err = recipient.Save()
 	if err != nil {

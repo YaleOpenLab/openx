@@ -6,13 +6,18 @@ import (
 
 	consts "github.com/YaleOpenLab/openx/consts"
 	utils "github.com/YaleOpenLab/openx/utils"
-	"github.com/stellar/go/build"
+	horizon "github.com/stellar/go/clients/horizonclient"
 	"github.com/stellar/go/keypair"
-	"github.com/stellar/go/network"
+	horizonprotocol "github.com/stellar/go/protocols/horizon"
+	build "github.com/stellar/go/txnbuild"
 )
 
 // package xlm provides all the necessary handlers in order to interact with the
 // Stellar blockchain
+
+// Generating a keypair on stellar doesn't mean that you can send funds to it
+// you need to call the CreateAccount method in project to be able to send funds
+// to it
 
 // GetKeyPair gets a keypair that can be used to interact with the stellar blockchain
 func GetKeyPair() (string, string, error) {
@@ -33,107 +38,98 @@ func AccountExists(address string) bool {
 	*/
 }
 
-// SendTx sends out a transaction via horizon to the blockchain
-func SendTx(Seed string, tx *build.TransactionBuilder) (int32, string, error) {
-	// Sign the transaction to prove you are actually the person sending it.
-	txe, err := tx.Sign(Seed)
+func SendTx(mykp keypair.KP, tx build.Transaction) (int32, string, error) {
+	txe, err := tx.BuildSignEncode(mykp.(*keypair.Full))
 	if err != nil {
-		return -1, "", errors.Wrap(err, "could not sign tx")
+		return -1, "", err
 	}
 
-	txeB64, err := txe.Base64()
-	if err != nil {
-		return -1, "", errors.Wrap(err, "could not convert tx to base 64 representation")
-	}
-	// And finally, send it off to Stellar
-	resp, err := TestNetClient.SubmitTransaction(txeB64)
+	resp, err := TestNetClient.SubmitTransaction(txe)
 	if err != nil {
 		return -1, "", errors.Wrap(err, "could not submit tx to horizon")
 	}
 
 	log.Printf("Propagated Transaction: %s, sequence: %d\n", resp.Hash, resp.Ledger)
+
 	return resp.Ledger, resp.Hash, nil
 }
 
-/*
-	SETOPTIONS DOCUMENTATION
-	having this here because stellar doesn't have it and it takes some time to
-	see their repo and fetch these. SetOptions is quite powerful and can do
-	operations on a given accoutn by the same account
-	1. Freeze Issuance - this can be done by setting all 4 weights to zero and locking
-	the issuing account. This would however mean that we can never send a tx from
-	the account, we need to have a new platform struct for each proejct that is advertised
-	on the platform
-	2. Set Flags - Call the helper functions in order to set flags on the accounts.
-			A. Immutable - can't delete the account
-			B. Required - need issuing account's permission before they can hold the
-			issuing account's credit.
-			C. Revocable - can revoke credit held by other accounts
-	Based on the descriptions above, it is clear that we need A and B. But having 2
-	would mean that secondary speculation markets cant flourish (since they would
-	require our authorization) and hence we don't set the required flag
-
-	SetOptions(
-	InflationDest("GCT7S5BA6ZC7SV7GGEMEYJTWOBYTBOA7SC4JEYP7IAEDG7HQNIWKRJ4G"),
-	SetAuthRequired(),
-	SetAuthRevocable(),
-	SetAuthImmutable(),
-	ClearAuthRequired(),
-	ClearAuthRevocable(),
-	ClearAuthImmutable(),
-	MasterWeight(1),
-	SetThresholds(2, 3, 4),
-	HomeDomain("stellar.org"),
-	AddSigner("GC6DDGPXVWXD5V6XOWJ7VUTDYI7VKPV2RAJWBVBHR47OPV5NASUNHTJW", 5),
-*/
-
-// Generating a keypair on stellar doesn't mean that you can send funds to it
-// you need to call the CreateAccount method in project to be able to send funds
-// to it
-
 // SendXLMCreateAccount sends XLM to an account and creates the account if it doesn't exist already
-func SendXLMCreateAccount(destination string, amount string, Seed string) (int32, string, error) {
-	// destination will not exist yet, so don't check
-	passphrase := network.TestNetworkPassphrase
-	tx, err := build.Transaction(
-		build.SourceAccount{Seed},
-		build.AutoSequence{TestNetClient},
-		build.Network{passphrase},
-		build.MemoText{"Sending Boootstrap Money"},
-		build.CreateAccount(
-			build.Destination{destination},
-			build.NativeAmount{amount},
-		),
-	)
+func SendXLMCreateAccount(destination string, amount string, seed string) (int32, string, error) {
 
+	// don't check if the account exists or not, hopefully it does
+	sourceAccount, mykp, err := ReturnSourceAccount(seed)
 	if err != nil {
-		return -1, "", errors.Wrap(err, "could not build transaction")
+		return -1, "", err
 	}
 
-	return SendTx(Seed, tx)
+	op := build.CreateAccount{
+		Destination: destination,
+		Amount:      amount,
+	}
+
+	tx := build.Transaction{
+		SourceAccount: &sourceAccount,
+		Operations:    []build.Operation{&op},
+		Timebounds:    build.NewInfiniteTimeout(),
+		Network:       Passphrase,
+	}
+
+	return SendTx(mykp, tx)
+}
+
+func ReturnSourceAccount(seed string) (horizonprotocol.Account, keypair.KP, error) {
+	var sourceAccount horizonprotocol.Account
+	mykp, err := keypair.Parse(seed)
+	if err != nil {
+		return sourceAccount, mykp, errors.Wrap(err, "could not parse keypair, quitting")
+	}
+
+	client := horizon.DefaultTestNetClient
+	ar := horizon.AccountRequest{AccountID: mykp.Address()}
+	sourceAccount, err = client.AccountDetail(ar)
+	if err != nil {
+		return sourceAccount, mykp, errors.Wrap(err, "could not load client details, quitting")
+	}
+
+	return sourceAccount, mykp, nil
+}
+
+func ReturnSourceAccountPubkey(pubkey string) (horizonprotocol.Account, error) {
+	client := horizon.DefaultTestNetClient
+	ar := horizon.AccountRequest{AccountID: pubkey}
+	sourceAccount, err := client.AccountDetail(ar)
+	if err != nil {
+		return sourceAccount, errors.Wrap(err, "could not load client details, quitting")
+	}
+
+	return sourceAccount, nil
 }
 
 // SendXLM sends _amount_ number of native tokens (XLM) to the specified destination
 // address using the stellar testnet API
-func SendXLM(destination string, amount string, Seed string, memo string) (int32, string, error) {
+func SendXLM(destination string, amount string, seed string, memo string) (int32, string, error) {
 	// don't check if the account exists or not, hopefully it does
-	passphrase := network.TestNetworkPassphrase
-	tx, err := build.Transaction(
-		build.SourceAccount{Seed}, // this can be the seed or the pubkey. We sign the tx in SendTx anyways
-		build.AutoSequence{TestNetClient},
-		build.Network{passphrase},
-		build.MemoText{memo},
-		build.Payment(
-			build.Destination{destination},
-			build.NativeAmount{amount},
-		),
-	)
-
+	sourceAccount, mykp, err := ReturnSourceAccount(seed)
 	if err != nil {
-		return -1, "", errors.Wrap(err, "could not build transaction")
+		return -1, "", err
 	}
 
-	return SendTx(Seed, tx)
+	op := build.Payment{
+		Destination: destination,
+		Amount:      amount,
+		Asset:       build.NativeAsset{},
+	}
+
+	tx := build.Transaction{
+		SourceAccount: &sourceAccount,
+		Operations:    []build.Operation{&op},
+		Timebounds:    build.NewInfiniteTimeout(),
+		Network:       Passphrase,
+		Memo:          build.Memo(build.MemoText(memo)),
+	}
+
+	return SendTx(mykp, tx)
 }
 
 // RefillAccount refills an account

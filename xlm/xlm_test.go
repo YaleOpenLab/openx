@@ -3,10 +3,12 @@
 package xlm
 
 import (
+	"log"
 	"testing"
 	"time"
 
-	"github.com/stellar/go/build"
+	"github.com/stellar/go/network"
+	build "github.com/stellar/go/txnbuild"
 )
 
 func TestXLM(t *testing.T) {
@@ -92,8 +94,8 @@ func TestXLM(t *testing.T) {
 		t.Fatal(err)
 	}
 	// testseed, pk ; seed, address
-	_ = build.CreditAsset("BLAH1", pk)
-	_, err = trustAsset("BLAH1", pk, "10", address, seed)
+	_ = build.CreditAsset{"BLAH1", pk}
+	_, err = trustAsset("BLAH1", pk, "10", seed)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -131,41 +133,55 @@ func TestXLM(t *testing.T) {
 	TestNetClient.URL = oldTc
 }
 
-// BELOW FUNCTIONS BORROWED FROM ASSETS DUE TO IMPORT LIMITATIONS
-func trustAsset(assetCode string, assetIssuer string, limit string, PublicKey string, Seed string) (string, error) {
-	// TRUST is FROM PublicKey TO Seed
-	trustTx, err := build.Transaction(
-		build.SourceAccount{PublicKey},
-		build.AutoSequence{SequenceProvider: TestNetClient},
-		build.TestNetwork,
-		build.Trust(assetCode, assetIssuer, build.Limit(limit)),
-	)
-
+func trustAsset(assetCode string, assetIssuer string, limit string, seed string) (string, error) {
+	// TRUST is FROM Seed TO assetIssuer
+	passphrase := network.TestNetworkPassphrase
+	sourceAccount, mykp, err := ReturnSourceAccount(seed)
 	if err != nil {
 		return "", err
 	}
 
-	_, txHash, err := SendTx(Seed, trustTx)
+	op := build.ChangeTrust{
+		Line:  build.CreditAsset{assetCode, assetIssuer},
+		Limit: limit,
+	}
+
+	tx := build.Transaction{
+		SourceAccount: &sourceAccount,
+		Operations:    []build.Operation{&op},
+		Timebounds:    build.NewInfiniteTimeout(),
+		Network:       passphrase,
+	}
+
+	_, txHash, err := SendTx(mykp, tx)
+	if err != nil {
+		return "", err
+	}
+
 	return txHash, err
 }
 
-func sendAssetFromIssuer(assetName string, destination string, amount string,
-	issuerSeed string, issuerPubkey string) (int32, string, error) {
-	// this transaction is FROM issuer TO recipient
-	paymentTx, err := build.Transaction(
-		build.SourceAccount{issuerPubkey},
-		build.TestNetwork,
-		build.AutoSequence{SequenceProvider: TestNetClient},
-		build.MemoText{"Sending Asset: " + assetName},
-		build.Payment(
-			build.Destination{AddressOrSeed: destination},
-			build.CreditAmount{assetName, issuerPubkey, amount},
-			// CreditAmount identifies the asset by asset Code and issuer pubkey
-		),
-	)
+func sendAssetFromIssuer(assetCode string, destination string, amount string,
+	seed string, issuerPubkey string) (int32, string, error) {
 
+	passphrase := network.TestNetworkPassphrase
+	sourceAccount, mykp, err := ReturnSourceAccount(seed)
 	if err != nil {
 		return -1, "", err
 	}
-	return SendTx(issuerSeed, paymentTx)
+
+	op := build.Payment{
+		Destination: destination,
+		Amount:      amount,
+		Asset:       build.CreditAsset{assetCode, issuerPubkey},
+	}
+
+	tx := build.Transaction{
+		SourceAccount: &sourceAccount,
+		Operations:    []build.Operation{&op},
+		Timebounds:    build.NewInfiniteTimeout(),
+		Network:       passphrase,
+	}
+
+	return SendTx(mykp, tx)
 }

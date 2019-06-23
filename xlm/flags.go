@@ -1,48 +1,51 @@
 package xlm
 
 import (
-	"github.com/stellar/go/build"
-	"github.com/stellar/go/network"
+	build "github.com/stellar/go/txnbuild"
 )
 
 // SetAuthImmutable sets the auth_immutable flag on an account
 func SetAuthImmutable(seed string) (int32, string, error) {
 	//  Create with Auth immutable since we don't want the asset to be revocable
-	passphrase := network.TestNetworkPassphrase
-	tx, err := build.Transaction(
-		build.SourceAccount{seed},
-		build.AutoSequence{TestNetClient},
-		build.Network{passphrase},
-		build.MemoText{"Set Auth Immutable"},
-		build.SetOptions(
-			build.SetAuthImmutable(),
-		),
-	)
-
+	sourceAccount, mykp, err := ReturnSourceAccount(seed)
 	if err != nil {
 		return -1, "", err
 	}
 
-	return SendTx(seed, tx)
+	op := build.SetOptions{
+		SetFlags: []build.AccountFlag{build.AuthImmutable},
+	}
+
+	tx := build.Transaction{
+		SourceAccount: &sourceAccount,
+		Operations:    []build.Operation{&op},
+		Timebounds:    build.NewInfiniteTimeout(),
+		Network:       Passphrase,
+	}
+
+	return SendTx(mykp, tx)
 }
 
 // FreezeAccount freezes the account
 func FreezeAccount(seed string) (int32, string, error) {
-	passphrase := network.TestNetworkPassphrase
-	tx, err := build.Transaction(
-		build.SourceAccount{seed},
-		build.AutoSequence{TestNetClient},
-		build.Network{passphrase},
-		build.MemoText{"Freezing Account"},
-		build.SetOptions(
-			build.MasterWeight(0),
-			build.SetThresholds(0, 0, 0),
-		),
-	)
-
+	sourceAccount, mykp, err := ReturnSourceAccount(seed)
 	if err != nil {
 		return -1, "", err
 	}
 
-	return SendTx(seed, tx)
+	op := build.SetOptions{
+		MasterWeight:    build.NewThreshold(0),
+		LowThreshold:    build.NewThreshold(0),
+		MediumThreshold: build.NewThreshold(0),
+		HighThreshold:   build.NewThreshold(0),
+	}
+
+	tx := build.Transaction{
+		SourceAccount: &sourceAccount,
+		Operations:    []build.Operation{&op},
+		Timebounds:    build.NewInfiniteTimeout(),
+		Network:       Passphrase,
+	}
+
+	return SendTx(mykp, tx)
 }

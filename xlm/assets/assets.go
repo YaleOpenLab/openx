@@ -1,11 +1,12 @@
 package assets
 
 import (
-	"log"
+	//"log"
 
 	utils "github.com/YaleOpenLab/openx/utils"
 	xlm "github.com/YaleOpenLab/openx/xlm"
-	"github.com/stellar/go/build"
+	"github.com/stellar/go/network"
+	build "github.com/stellar/go/txnbuild"
 )
 
 // Package assets contains asset related functions like calculating AssetID and
@@ -63,95 +64,116 @@ func AssetID(inputString string) string {
 // CreateAsset creates a new asset belonging to the public key referenced above
 func CreateAsset(assetName string, PublicKey string) build.Asset {
 	// need to set a couple flags here
-	return build.CreditAsset(assetName, PublicKey)
+	return build.CreditAsset{assetName, PublicKey}
 }
 
 // TrustAsset trusts a specific asset issued by a particular public key and signs
 // a transaction with a preset limit on how much it is willing to trsut that issuer's
 // asset for
-func TrustAsset(assetCode string, assetIssuer string, limit string, Seed string) (string, error) {
+func TrustAsset(assetCode string, assetIssuer string, limit string, seed string) (string, error) {
 	// TRUST is FROM Seed TO assetIssuer
-	trustTx, err := build.Transaction(
-		build.SourceAccount{Seed},
-		build.AutoSequence{SequenceProvider: xlm.TestNetClient},
-		build.TestNetwork,
-		build.Trust(assetCode, assetIssuer, build.Limit(limit)),
-	)
-
+	passphrase := network.TestNetworkPassphrase
+	sourceAccount, mykp, err := xlm.ReturnSourceAccount(seed)
 	if err != nil {
-		log.Println("Error while constructing trust asset transaction", err)
 		return "", err
 	}
 
-	_, txHash, err := xlm.SendTx(Seed, trustTx)
+	op := build.ChangeTrust{
+		Line:  build.CreditAsset{assetCode, assetIssuer},
+		Limit: limit,
+	}
+
+	tx := build.Transaction{
+		SourceAccount: &sourceAccount,
+		Operations:    []build.Operation{&op},
+		Timebounds:    build.NewInfiniteTimeout(),
+		Network:       passphrase,
+	}
+
+	_, txHash, err := xlm.SendTx(mykp, tx)
+	if err != nil {
+		return "", err
+	}
+
 	return txHash, err
 }
 
 // SendAssetFromIssuer transfers _amount_ number of assets from the caller to the destination
 // and returns an error if the destination doesn't have a trustline with the issuer
 // This method is called by the issuer of the asset
-func SendAssetFromIssuer(assetName string, destination string, amount string,
-	issuerSeed string, issuerPubkey string) (int32, string, error) {
-	// this transaction is FROM issuer TO recipient
-	paymentTx, err := build.Transaction(
-		build.SourceAccount{issuerSeed},
-		build.TestNetwork,
-		build.AutoSequence{SequenceProvider: xlm.TestNetClient},
-		build.MemoText{"Sending Asset: " + assetName},
-		build.Payment(
-			build.Destination{AddressOrSeed: destination},
-			build.CreditAmount{assetName, issuerPubkey, amount},
-			// CreditAmount identifies the asset by asset Code and issuer pubkey
-		),
-	)
+func SendAssetFromIssuer(assetCode string, destination string, amount string,
+	seed string, issuerPubkey string) (int32, string, error) {
 
+	passphrase := network.TestNetworkPassphrase
+	sourceAccount, mykp, err := xlm.ReturnSourceAccount(seed)
 	if err != nil {
-		log.Println("Error while constructing send asset from issuer transaction", err)
 		return -1, "", err
 	}
-	return xlm.SendTx(issuerSeed, paymentTx)
+
+	op := build.Payment{
+		Destination: destination,
+		Amount:      amount,
+		Asset:       build.CreditAsset{assetCode, issuerPubkey},
+	}
+
+	tx := build.Transaction{
+		SourceAccount: &sourceAccount,
+		Operations:    []build.Operation{&op},
+		Timebounds:    build.NewInfiniteTimeout(),
+		Network:       passphrase,
+	}
+
+	return xlm.SendTx(mykp, tx)
 }
 
 // SendAssetToIssuer sends a specific asset back to the issuer
-func SendAssetToIssuer(assetName string, destination string, amount string,
+func SendAssetToIssuer(assetCode string, destination string, amount string,
 	seed string) (int32, string, error) {
-	// this transaction is FROM recipient TO issuer
-	paymentTx, err := build.Transaction(
-		build.SourceAccount{seed},
-		build.TestNetwork,
-		build.AutoSequence{SequenceProvider: xlm.TestNetClient},
-		build.MemoText{"Sending Asset: " + assetName},
-		build.Payment(
-			build.Destination{AddressOrSeed: destination},
-			build.CreditAmount{assetName, destination, amount},
-		),
-	)
 
+	passphrase := network.TestNetworkPassphrase
+	sourceAccount, mykp, err := xlm.ReturnSourceAccount(seed)
 	if err != nil {
-		log.Println("Error while constructing send asset to issuer transaction", err)
 		return -1, "", err
 	}
-	return xlm.SendTx(seed, paymentTx)
+
+	op := build.Payment{
+		Destination: destination,
+		Amount:      amount,
+		Asset:       build.CreditAsset{assetCode, destination},
+	}
+
+	tx := build.Transaction{
+		SourceAccount: &sourceAccount,
+		Operations:    []build.Operation{&op},
+		Timebounds:    build.NewInfiniteTimeout(),
+		Network:       passphrase,
+	}
+
+	return xlm.SendTx(mykp, tx)
 }
 
 // SendAsset sends the asset to a destination which already has an established trustline with the issuer
-func SendAsset(assetName string, issuerPubkey string, destination string, amount string,
+func SendAsset(assetCode string, issuerPubkey string, destination string, amount string,
 	seed string, memo string) (int32, string, error) {
-	// this transaction is FROM seed TO destination
-	paymentTx, err := build.Transaction(
-		build.SourceAccount{seed},
-		build.TestNetwork,
-		build.AutoSequence{SequenceProvider: xlm.TestNetClient},
-		build.MemoText{memo},
-		build.Payment(
-			build.Destination{AddressOrSeed: destination},
-			build.CreditAmount{assetName, issuerPubkey, amount},
-		),
-	)
-
+	passphrase := network.TestNetworkPassphrase
+	sourceAccount, mykp, err := xlm.ReturnSourceAccount(seed)
 	if err != nil {
-		log.Println("Error while constructing send asset transaction", err)
 		return -1, "", err
 	}
-	return xlm.SendTx(seed, paymentTx)
+
+	op := build.Payment{
+		Destination: destination,
+		Amount:      amount,
+		Asset:       build.CreditAsset{assetCode, issuerPubkey},
+	}
+
+	tx := build.Transaction{
+		SourceAccount: &sourceAccount,
+		Operations:    []build.Operation{&op},
+		Timebounds:    build.NewInfiniteTimeout(),
+		Network:       passphrase,
+		Memo:          build.Memo(build.MemoText(memo)),
+	}
+
+	return xlm.SendTx(mykp, tx)
 }
