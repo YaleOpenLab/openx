@@ -2,7 +2,7 @@ package xlm
 
 import (
 	"github.com/pkg/errors"
-	"log"
+//	"log"
 
 	wallet "github.com/YaleOpenLab/openx/xlm/wallet"
 	horizon "github.com/stellar/go/clients/horizonclient"
@@ -10,22 +10,6 @@ import (
 	"github.com/stellar/go/network"
 	build "github.com/stellar/go/txnbuild"
 )
-
-func sendTx(mykp keypair.KP, tx build.Transaction) (int32, string, error) {
-	txe, err := tx.BuildSignEncode(mykp.(*keypair.Full))
-	if err != nil {
-		return -1, "", err
-	}
-
-	resp, err := TestNetClient.SubmitTransaction(txe)
-	if err != nil {
-		return -1, "", errors.Wrap(err, "could not submit tx to horizon")
-	}
-
-	log.Printf("Propagated Transaction: %s, sequence: %d\n", resp.Hash, resp.Ledger)
-
-	return resp.Ledger, resp.Hash, nil
-}
 
 func NewBuyOrder(encryptedSeed []byte, seedpwd string, assetName string,
 	destination string, amount string, price string) (int32, string, error) {
@@ -61,7 +45,7 @@ func NewBuyOrder(encryptedSeed []byte, seedpwd string, assetName string,
 		Network:       network.TestNetworkPassphrase,
 	}
 
-	return sendTx(mykp, tx)
+	return SendTx(mykp, tx)
 }
 
 func NewSellOrder(encryptedSeed []byte, seedpwd string, assetName string,
@@ -98,5 +82,5 @@ func NewSellOrder(encryptedSeed []byte, seedpwd string, assetName string,
 		Network:       network.TestNetworkPassphrase,
 	}
 
-	return sendTx(mykp, tx)
+	return SendTx(mykp, tx)
 }
