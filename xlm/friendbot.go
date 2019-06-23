@@ -1,12 +1,11 @@
 package xlm
 
 import (
-	"errors"
+	"github.com/pkg/errors"
 	"net/http"
 )
 
-// GetXLM makes an API call to the friendbot on stellar testnet, which gives
-// us 10000 testnet XLM
+// GetXLM makes an API call to friendbot, which gives us 10000 testnet XLM
 func GetXLM(PublicKey string) error {
 	// get some coins from the stellar robot for testing
 	// gives only a constant amount of stellar, so no need to pass it a coin param

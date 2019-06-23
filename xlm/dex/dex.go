@@ -1,4 +1,4 @@
-package xlm
+package dex
 
 import (
 	"github.com/pkg/errors"
@@ -9,6 +9,7 @@ import (
 	utils "github.com/YaleOpenLab/openx/utils"
 	"github.com/stellar/go/network"
 	build "github.com/stellar/go/txnbuild"
+	xlm "github.com/YaleOpenLab/openx/xlm"
 )
 
 // package dex contains functions for interfacing with the stellar dex
@@ -17,7 +18,7 @@ import (
 func NewBuyOrder(seed string, assetName string, issuer string,
 	amount string, price string) (int32, string, error) {
 
-	sourceAccount, mykp, err := ReturnSourceAccount(seed)
+	sourceAccount, mykp, err := xlm.ReturnSourceAccount(seed)
 	if err != nil {
 		return -1, "", errors.Wrap(err, "could not load client details, quitting")
 	}
@@ -38,14 +39,14 @@ func NewBuyOrder(seed string, assetName string, issuer string,
 	}
 
 	// once the offer is completed, we need to send a follow up tx to send funds to the requested address
-	return SendTx(mykp, tx)
+	return xlm.SendTx(mykp, tx)
 }
 
 // NewSellOrder creates a new sell order on the stellar dex
 func NewSellOrder(seed string, assetName string, issuer string, amount string,
 	price string) (int32, string, error) {
 
-	sourceAccount, mykp, err := ReturnSourceAccount(seed)
+	sourceAccount, mykp, err := xlm.ReturnSourceAccount(seed)
 	if err != nil {
 		return -1, "", errors.Wrap(err, "could not load client details, quitting")
 	}
@@ -65,7 +66,7 @@ func NewSellOrder(seed string, assetName string, issuer string, amount string,
 		Network:       network.TestNetworkPassphrase,
 	}
 
-	return SendTx(mykp, tx)
+	return xlm.SendTx(mykp, tx)
 }
 
 // DexStableCoinBuy gets the price from an oracle and places an order on the DEX to buy AnchorUSD
