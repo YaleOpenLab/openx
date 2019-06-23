@@ -92,7 +92,7 @@ func SendXLMCreateAccount(destination string, amount string, seed string) (int32
 
 	// don't check if the account exists or not, hopefully it does
 	passphrase := network.TestNetworkPassphrase
-	sourceAccount, mykp, err := returnSourceAccount(seed)
+	sourceAccount, mykp, err := ReturnSourceAccount(seed)
 	if err != nil {
 		return -1, "", err
 	}
@@ -112,7 +112,7 @@ func SendXLMCreateAccount(destination string, amount string, seed string) (int32
 	return SendTx(mykp, tx)
 }
 
-func returnSourceAccount(seed string) (horizonprotocol.Account, keypair.KP, error) {
+func ReturnSourceAccount(seed string) (horizonprotocol.Account, keypair.KP, error) {
 	var sourceAccount horizonprotocol.Account
 	mykp, err := keypair.Parse(seed)
 	if err != nil {
@@ -134,7 +134,7 @@ func returnSourceAccount(seed string) (horizonprotocol.Account, keypair.KP, erro
 func SendXLM(destination string, amount string, seed string, memo string) (int32, string, error) {
 	// don't check if the account exists or not, hopefully it does
 	passphrase := network.TestNetworkPassphrase
-	sourceAccount, mykp, err := returnSourceAccount(seed)
+	sourceAccount, mykp, err := ReturnSourceAccount(seed)
 	if err != nil {
 		return -1, "", err
 	}

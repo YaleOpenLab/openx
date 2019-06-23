@@ -9,7 +9,7 @@ import (
 func SetAuthImmutable(seed string) (int32, string, error) {
 	//  Create with Auth immutable since we don't want the asset to be revocable
 	passphrase := network.TestNetworkPassphrase
-	sourceAccount, mykp, err := returnSourceAccount(seed)
+	sourceAccount, mykp, err := ReturnSourceAccount(seed)
 	if err != nil {
 		return -1, "", err
 	}
@@ -31,7 +31,7 @@ func SetAuthImmutable(seed string) (int32, string, error) {
 // FreezeAccount freezes the account
 func FreezeAccount(seed string) (int32, string, error) {
 	passphrase := network.TestNetworkPassphrase
-	sourceAccount, mykp, err := returnSourceAccount(seed)
+	sourceAccount, mykp, err := ReturnSourceAccount(seed)
 	if err != nil {
 		return -1, "", err
 	}
