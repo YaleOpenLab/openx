@@ -144,14 +144,14 @@ func SendTx(txXdr string) (int32, string, error) {
 }
 
 // Tx2of2 constructs a tx where the source account pubkey1 is the 2of2 account, we need 2 signers for this tx
-func Tx2of2(pubkey1 string, signer1 string, signer2 string, amount string, memo string) error {
+func Tx2of2(pubkey1 string, destination string, signer1 string, signer2 string, amount string, memo string) error {
 	sourceAccount, err := xlm.ReturnSourceAccountPubkey(pubkey1)
 	if err != nil {
 		return errors.Wrap(err, "could not load account details, quitting")
 	}
 
 	op := build.Payment{
-		Destination: pubkey1,
+		Destination: destination,
 		Amount:      amount,
 		Asset:       build.NativeAsset{},
 	}

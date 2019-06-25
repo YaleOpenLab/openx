@@ -3,7 +3,6 @@
 package xlm
 
 import (
-	"log"
 	"testing"
 	"time"
 
@@ -120,8 +119,8 @@ func TestXLM(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	oldTc := TestNetClient.URL
-	TestNetClient.URL = "blah"
+	oldTc := TestNetClient.HorizonURL
+	TestNetClient.HorizonURL = "blah"
 	_, _, err = SetAuthImmutable(seed)
 	if err == nil {
 		t.Fatalf("can send tx with an invalid client url, quitting!")
@@ -130,7 +129,7 @@ func TestXLM(t *testing.T) {
 	if err == nil {
 		t.Fatalf("can send tx with an invalid client url, quitting!")
 	}
-	TestNetClient.URL = oldTc
+	TestNetClient.HorizonURL = oldTc
 }
 
 func trustAsset(assetCode string, assetIssuer string, limit string, seed string) (string, error) {

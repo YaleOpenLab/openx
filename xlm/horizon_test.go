@@ -45,13 +45,13 @@ func TestApi(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	oldTc := TestNetClient.URL
-	TestNetClient.URL = "blah"
+	oldTc := TestNetClient.HorizonURL
+	TestNetClient.HorizonURL = "blah"
 	_, err = GetLatestBlockHash()
 	if err == nil {
 		t.Fatalf("can call with invalid client URL")
 	}
-	TestNetClient.URL = oldTc
+	TestNetClient.HorizonURL = oldTc
 }
 
 func TestBalances(t *testing.T) {
@@ -71,13 +71,13 @@ func TestBalances(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Invalid account exists, quitting!")
 	}
-	oldTc := TestNetClient.URL
-	TestNetClient.URL = "blah"
+	oldTc := TestNetClient.HorizonURL
+	TestNetClient.HorizonURL = "blah"
 	_, err = GetAccountData("blah")
 	if err == nil {
 		t.Fatalf("Can return data with invalid url, quitting!")
 	}
-	TestNetClient.URL = oldTc
+	TestNetClient.HorizonURL = oldTc
 	if balance != "5.9996700" {
 		log.Println("CHECKBAL:", balance)
 		t.Fatalf("Balance doesn't match with remote API, quitting!")
