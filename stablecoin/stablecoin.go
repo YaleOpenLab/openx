@@ -23,8 +23,11 @@ import (
 	"time"
 
 	consts "github.com/YaleOpenLab/openx/consts"
+	oracle "github.com/YaleOpenLab/openx/oracle"
 	scan "github.com/YaleOpenLab/openx/scan"
+	utils "github.com/YaleOpenLab/openx/utils"
 	xlm "github.com/YaleOpenLab/openx/xlm"
+	assets "github.com/YaleOpenLab/openx/xlm/assets"
 	wallet "github.com/YaleOpenLab/openx/xlm/wallet"
 	"github.com/pkg/errors"
 	horizon "github.com/stellar/go/clients/horizonclient"
@@ -67,6 +70,11 @@ func InitStableCoin() error {
 	consts.StablecoinPublicKey = publicKey
 	consts.StablecoinSeed = seed
 
+	go ListenForPayments()
+	return nil
+}
+
+func ListenForPayments() {
 	client := xlm.TestNetClient
 	// all payments
 	opRequest := horizon.OperationRequest{ForAccount: consts.StableCoinAddress}
@@ -81,12 +89,40 @@ func InitStableCoin() error {
 
 	printHandler := func(op operations.Operation) {
 		log.Println("stablecoin operation: ", op)
+		log.Println("PAGING TOKEN: ", op.PagingToken())
+		log.Println("GETTYPE TOKEN: ", op.GetType())
+		log.Println("GETID TOKEN: ", op.GetID())
+		log.Println("GetTransactionHash TOKEN: ", op.GetTransactionHash())
+		log.Println("IsTransactionSuccessful TOKEN: ", op.IsTransactionSuccessful())
+		log.Println("IsTransactionSuccessful TOKEN: ", op)
+
+		if op.IsTransactionSuccessful() {
+			switch payment := op.(type) {
+			case operations.Payment:
+				log.Println("sending stablecoin to counterparty")
+				log.Println("CHECK THIS OUT: ", payment.Asset.Type)
+				if payment.Asset.Type == "native" { // native asset
+					payee := payment.From
+					amount := payment.Amount
+					log.Printf("Received request for stablecoin from %s worth %s", payee, amount)
+					xlmWorth := oracle.ExchangeXLMforUSD(amount)
+					log.Println("The deposited amount is worth: ", xlmWorth)
+					// now send the stableusd asset over to this guy
+					_, hash, err := assets.SendAssetFromIssuer(consts.StablecoinCode, payee, utils.FtoS(xlmWorth), consts.StablecoinSeed, consts.StablecoinPublicKey)
+					if err != nil {
+						log.Println("Error while sending USD Assets back to payee: ", payee, err)
+						//  don't skip here, there's technically nothing we can do
+					}
+					log.Println("Successful payment, hash: ", hash)
+				}
+			}
+		}
 	}
+
 	err := client.StreamPayments(ctx, opRequest, printHandler)
 	if err != nil {
 		log.Println(err)
-		return err
+		return
 	}
-
-	return nil
+	return
 }

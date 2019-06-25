@@ -83,9 +83,9 @@ func GetAssetBalance(username string, pwhash string, asset string) (string, erro
 	return x, nil
 }
 
-func GetStableCoin(username string, pwhash string, seed string, amount string) (rpc.StatusResponse, error) {
+func GetStableCoin(username string, pwhash string, amount string) (rpc.StatusResponse, error) {
 	var x rpc.StatusResponse
-	data, err := rpc.GetRequest(ApiUrl + "/stablecoin/get?" + "seed=" + seed + "&amount=" +
+	data, err := rpc.GetRequest(ApiUrl + "/stablecoin/get?" + "seedpwd=" + LocalSeedPwd + "&amount=" +
 		amount + "&username=" + username + "&pwhash=" + pwhash)
 	if err != nil {
 		return x, err
