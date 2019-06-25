@@ -27,8 +27,8 @@ func GetKeyPair() (string, string, error) {
 
 // AccountExists checks whether an account exists, not needed now since we do the check ourselves
 // in multiple places
-func AccountExists(address string) bool {
-	_, err := TestNetClient.LoadAccount(address)
+func AccountExists(publicKey string) bool {
+	_, err := ReturnSourceAccountPubkey(publicKey)
 	return !(err != nil)
 	/*
 		if err != nil {
@@ -44,7 +44,7 @@ func SendTx(mykp keypair.KP, tx build.Transaction) (int32, string, error) {
 		return -1, "", err
 	}
 
-	resp, err := TestNetClient.SubmitTransaction(txe)
+	resp, err := TestNetClient.SubmitTransactionXDR(txe)
 	if err != nil {
 		return -1, "", errors.Wrap(err, "could not submit tx to horizon")
 	}

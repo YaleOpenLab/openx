@@ -3,19 +3,11 @@ package multisig
 import (
 	"github.com/pkg/errors"
 	"log"
-	"net/http"
 
 	xlm "github.com/YaleOpenLab/openx/xlm"
-	clients "github.com/stellar/go/clients/horizon"
 	"github.com/stellar/go/keypair"
 	build "github.com/stellar/go/txnbuild"
 )
-
-var TestNetClient = &clients.Client{
-	// URL: "http://35.192.122.229:8080",
-	URL:  "https://horizon-testnet.stellar.org",
-	HTTP: http.DefaultClient,
-}
 
 // AddSigner is used to add a signer to the account with Public Key pubkey
 func addSigner(seed string, pubkey string, cosignerPubkey string) error {
@@ -139,26 +131,27 @@ func New2of2(cosigner1Pubkey string, cosigner2Pubkey string) (string, error) {
 }
 
 // SendTx sends the multisig tx. Copied from xlm/ to  avoid import cycles
-func SendTx(tx string) error {
+func SendTx(txXdr string) (int32, string, error) {
 
-	resp, err := TestNetClient.SubmitTransaction(tx)
+	resp, err := xlm.TestNetClient.SubmitTransactionXDR(txXdr)
 	if err != nil {
-		return errors.Wrap(err, "could not submit tx to horizon")
+		return -1, "", errors.Wrap(err, "could not submit tx to horizon")
 	}
 
 	log.Printf("Propagated Transaction: %s, sequence: %d\n", resp.Hash, resp.Ledger)
-	return err
+
+	return resp.Ledger, resp.Hash, nil
 }
 
 // Tx2of2 constructs a tx where the source account pubkey1 is the 2of2 account, we need 2 signers for this tx
-func Tx2of2(pubkey1 string, signer1 string, signer2 string, amount string, memo string) error {
+func Tx2of2(pubkey1 string, destination string, signer1 string, signer2 string, amount string, memo string) error {
 	sourceAccount, err := xlm.ReturnSourceAccountPubkey(pubkey1)
 	if err != nil {
 		return errors.Wrap(err, "could not load account details, quitting")
 	}
 
 	op := build.Payment{
-		Destination: pubkey1,
+		Destination: destination,
 		Amount:      amount,
 		Asset:       build.NativeAsset{},
 	}
@@ -186,7 +179,8 @@ func Tx2of2(pubkey1 string, signer1 string, signer2 string, amount string, memo 
 		return errors.Wrap(err, "second party couldn't sign tx")
 	}
 
-	return SendTx(txe)
+	_, _, err = SendTx(txe)
+	return err
 }
 
 // AuthImmutable2of2 sets the auth immutable flag on a multisig account
@@ -222,7 +216,8 @@ func AuthImmutable2of2(pubkey1 string, signer1 string, signer2 string) error {
 		return errors.Wrap(err, "second party couldn't sign tx")
 	}
 
-	return SendTx(txe)
+	_, _, err = SendTx(txe)
+	return err
 }
 
 // TrustAssetTx trusts a specific asset
@@ -259,7 +254,8 @@ func TrustAssetTx(assetCode string, assetIssuer string, limit string, pubkey str
 		return errors.Wrap(err, "second party couldn't sign tx")
 	}
 
-	return SendTx(txe)
+	_, _, err = SendTx(txe)
+	return err
 }
 
 // Convert2of2 converts the account with pubkey myPubkey to a 2of2 multisig account

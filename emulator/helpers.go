@@ -196,7 +196,7 @@ func exchangeHelper(input []string, username string, pwhash string, seed string)
 	}
 	// convert this to int and check if int
 	fmt.Println("Exchanging", amount, "XLM for STABLEUSD")
-	response, err := GetStableCoin(username, pwhash, seed, input[1])
+	response, err := GetStableCoin(username, pwhash, input[1])
 	if err != nil {
 		log.Println(err)
 		return

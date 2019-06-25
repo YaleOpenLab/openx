@@ -17,7 +17,7 @@ import (
 func GetLedgerData(blockNumber string) ([]byte, error) {
 	var err error
 	var data []byte
-	resp, err := http.Get(TestNetClient.URL + "/ledgers/" + blockNumber)
+	resp, err := http.Get(TestNetClient.HorizonURL + "/ledgers/" + blockNumber)
 	if err != nil || resp.Status != "200 OK" {
 		return data, errors.New("API Request did not succeed")
 	}
@@ -43,7 +43,7 @@ func GetBlockHash(blockNumber string) (string, error) {
 
 // GetLatestBlockHash gets the lastest block hash
 func GetLatestBlockHash() (string, error) {
-	url := TestNetClient.URL + "/ledgers?cursor=now&order=desc&limit=1"
+	url := TestNetClient.HorizonURL + "/ledgers?cursor=now&order=desc&limit=1"
 	resp, err := http.Get(url)
 	if err != nil || resp.Status != "200 OK" {
 		return "", errors.New("API Request did not succeed")
@@ -79,7 +79,7 @@ func GetLatestBlockHash() (string, error) {
 func GetAccountData(a string) ([]byte, error) {
 	var err error
 	var data []byte
-	resp, err := http.Get(TestNetClient.URL + "/accounts/" + a)
+	resp, err := http.Get(TestNetClient.HorizonURL + "/accounts/" + a)
 	if err != nil {
 		return data, errors.Wrap(err, "could not get /accounts/ endpoint from API")
 	}
@@ -162,7 +162,8 @@ func GetAssetTrustLimit(publicKey string, assetName string) (string, error) {
 // GetAllBalances calls the stellar testnet API to get all the balances associated
 // with a certain account.
 func GetAllBalances(publicKey string) ([]protocols.Balance, error) {
-	account, err := TestNetClient.LoadAccount(publicKey)
+
+	account, err := ReturnSourceAccountPubkey(publicKey)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not load account")
 	}
@@ -171,8 +172,8 @@ func GetAllBalances(publicKey string) ([]protocols.Balance, error) {
 
 // HasStableCoin checks whether the PublicKey has a stablecoin balance associated
 // with it in the first place, if not, returns false
-func HasStableCoin(PublicKey string) bool {
-	account, err := TestNetClient.LoadAccount(PublicKey)
+func HasStableCoin(publicKey string) bool {
+	account, err := ReturnSourceAccountPubkey(publicKey)
 	if err != nil {
 		// account does not exist
 		return false
@@ -190,7 +191,7 @@ func HasStableCoin(PublicKey string) bool {
 func GetTransactionData(txhash string) ([]byte, error) {
 	var err error
 	var data []byte
-	resp, err := http.Get(TestNetClient.URL + "/transactions/" + txhash)
+	resp, err := http.Get(TestNetClient.HorizonURL + "/transactions/" + txhash)
 	if err != nil || resp.Status != "200 OK" {
 		// check here since if we don't, we need to check the body of the unmarshalled
 		// response to see if we have 0

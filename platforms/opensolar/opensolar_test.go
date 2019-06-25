@@ -858,9 +858,9 @@ func TestDb(t *testing.T) {
 		t.Fatalf("stage promotion works without satisfying checklist, quitting!")
 	}
 
-	consts.PlatformSeed = "SBODXH3TJCBWQCVHAEUJZQGCHC7CKAOOI6DA3DFMI5GIK4M6I7KQ7ZSG"
-	consts.PlatformPublicKey = "GCHKX52XNXJ4PWG4TJYR7SEHFBBVDJWRGA22ELSISYLMRCDRSBLSL3MH"
-	consts.StablecoinPublicKey = "GCSMRNO2NBLVULZAIAHA7PAPMFXXLFMLMEAZ23XPNGWMNSY2RL6GJYZR"
+	consts.PlatformSeed = "SA6Q7TOCQTJZGPR2BSQ4AK6QWRJA4LA2FBUW35CK6GIPW3Q3OOG3HL23"
+	consts.PlatformPublicKey = "GCBWNXTD65I7I3NFE5P2HQDYOQHFARABOQLVMRADX2OTMTIJWB4I3OLX"
+	consts.StablecoinPublicKey = "SC3FVSRP6ZMDILVI2OSGF2WYVFZPWITN4HMJBGP223XBJU62PU7YIK3S"
 	seed1, pubkey1, err := xlm.GetKeyPair()
 	if err != nil {
 		t.Fatal(err)
@@ -873,10 +873,11 @@ func TestDb(t *testing.T) {
 
 	escrowPubkey, err := initMultisigEscrow(pubkey1)
 	if err != nil {
+		log.Println(err)
 		t.Fatal(err)
 	}
 
-	err = SendFundsFromEscrow(escrowPubkey, escrowPubkey, seed1, "10", "testescrowtx")
+	err = SendFundsFromEscrow(escrowPubkey, pubkey1, seed1, "1", "")
 	if err != nil {
 		t.Fatal(err)
 	}

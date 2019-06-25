@@ -730,7 +730,7 @@ func (a *User) Generate2FA() (string, error) {
 	return otpString, nil
 }
 
-// Authenticate2FA authenticates tghe the given password against the user's stored password
+// Authenticate2FA authenticates the given password against the user's stored password
 func (a *User) Authenticate2FA(password string) (bool, error) {
 	secretBase32 := base32.StdEncoding.EncodeToString([]byte(a.TwoFASecret))
 	otpc := &googauth.OTPConfig{

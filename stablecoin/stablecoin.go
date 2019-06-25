@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	consts "github.com/YaleOpenLab/openx/consts"
 	oracle "github.com/YaleOpenLab/openx/oracle"
@@ -29,7 +30,8 @@ import (
 	assets "github.com/YaleOpenLab/openx/xlm/assets"
 	wallet "github.com/YaleOpenLab/openx/xlm/wallet"
 	"github.com/pkg/errors"
-	"github.com/stellar/go/clients/horizon"
+	horizon "github.com/stellar/go/clients/horizonclient"
+	"github.com/stellar/go/protocols/horizon/operations"
 )
 
 // InitStableCoin returns the platform structure and the seed
@@ -67,65 +69,60 @@ func InitStableCoin() error {
 	// the user doesn't have seed, so create a new platform
 	consts.StablecoinPublicKey = publicKey
 	consts.StablecoinSeed = seed
+
 	go ListenForPayments()
 	return nil
 }
 
-// ListenForPayments listens for payments to the stablecoin account and once it
-// gets the transaction hash from the rmeote API, calculates how much USD it owes
-// for the amount deposited and then transfers the StableUSD asset to the payee
-// Prices are retrieved from an oracle.
 func ListenForPayments() {
-	// the publicKey above has to be hardcoded as a constant because stellar's API wants it like so
-	// stupid stuff, but we need to go ahead with it. In reality, this shouldn't
-	// be much of a problem since we expect that the platform's seed will be
-	// constant
-	ctx := context.Background() // start in the background context
-	cursor := horizon.Cursor("now")
-	fmt.Println("Waiting for a payment...")
-	err := xlm.TestNetClient.StreamPayments(ctx, consts.StableCoinAddress, &cursor, func(payment horizon.Payment) {
-		/*
-			Sample Response:
-			Payment type payment
-			Payment From GC76MINOSNQUMDBNONBARFYFCCQA5QLNQSJOVANR5RNQVHQRB5B46B6I
-			Payment To GBAACP6UUXZAB5ZAYAHWEYLNKORWB36WVBZBXWNPFXQTDY2AIQFM6D7Y
-			Payment Asset Type native
-			Payment Asset Code
-			Payment Asset Issuer
-			Payment Amount 10.0000000
-			Payment Memo Type
-			Payment Memo
-		*/
-		log.Println("Stablecoin payment to/from detected")
-		log.Println("Payment type", payment.Type)
-		log.Println("Payment From", payment.From)
-		log.Println("Payment To", payment.To)
-		log.Println("Payment Asset Type", payment.AssetType)
-		log.Println("Payment Asset Code", payment.AssetCode)
-		log.Println("Payment Asset Issuer", payment.AssetIssuer)
-		log.Println("Payment Amount", payment.Amount)
-		log.Println("Payment Memo Type", payment.Memo.Type)
-		log.Println("Payment Memo", payment.Memo.Value)
-		if payment.Type == "payment" && payment.AssetType == "native" {
-			// store the stuff that we want here
-			payee := payment.From
-			amount := payment.Amount
-			log.Printf("Received request for stablecoin from %s worth %s", payee, amount)
-			xlmWorth := oracle.ExchangeXLMforUSD(amount)
-			log.Println("The deposited amount is worth: ", xlmWorth)
-			// now send the stableusd asset over to this guy
-			_, hash, err := assets.SendAssetFromIssuer(consts.StablecoinCode, payee, utils.FtoS(xlmWorth), consts.StablecoinSeed, consts.StablecoinPublicKey)
-			if err != nil {
-				log.Println("Error while sending USD Assets back to payee: ", payee, err)
-				//  don't skip here, there's technically nothing we can do
-			}
-			log.Println("Successful payment, hash: ", hash)
-		}
-	})
+	client := xlm.TestNetClient
+	// all payments
+	opRequest := horizon.OperationRequest{ForAccount: consts.StableCoinAddress}
 
+	ctx, _ := context.WithCancel(context.Background()) // cancel
+	go func() {
+		// Stop streaming after 60 seconds.
+		log.Println("monitoring payments made towards address")
+		time.Sleep(5 * time.Second) // refresh the thread every 5 seconds to check for payments
+		// cancel() don't cancel the handler, let it run indefinitely
+	}()
+
+	printHandler := func(op operations.Operation) {
+		log.Println("stablecoin operation: ", op)
+		log.Println("PAGING TOKEN: ", op.PagingToken())
+		log.Println("GETTYPE TOKEN: ", op.GetType())
+		log.Println("GETID TOKEN: ", op.GetID())
+		log.Println("GetTransactionHash TOKEN: ", op.GetTransactionHash())
+		log.Println("IsTransactionSuccessful TOKEN: ", op.IsTransactionSuccessful())
+		log.Println("IsTransactionSuccessful TOKEN: ", op)
+
+		if op.IsTransactionSuccessful() {
+			switch payment := op.(type) {
+			case operations.Payment:
+				log.Println("sending stablecoin to counterparty")
+				log.Println("CHECK THIS OUT: ", payment.Asset.Type)
+				if payment.Asset.Type == "native" { // native asset
+					payee := payment.From
+					amount := payment.Amount
+					log.Printf("Received request for stablecoin from %s worth %s", payee, amount)
+					xlmWorth := oracle.ExchangeXLMforUSD(amount)
+					log.Println("The deposited amount is worth: ", xlmWorth)
+					// now send the stableusd asset over to this guy
+					_, hash, err := assets.SendAssetFromIssuer(consts.StablecoinCode, payee, utils.FtoS(xlmWorth), consts.StablecoinSeed, consts.StablecoinPublicKey)
+					if err != nil {
+						log.Println("Error while sending USD Assets back to payee: ", payee, err)
+						//  don't skip here, there's technically nothing we can do
+					}
+					log.Println("Successful payment, hash: ", hash)
+				}
+			}
+		}
+	}
+
+	err := client.StreamPayments(ctx, opRequest, printHandler)
 	if err != nil {
-		// we shouldn't ideally fatal here, but do since we're testing out stuff
-		log.Println("stablecoin daemon not initialized: ", err)
+		log.Println(err)
 		return
 	}
+	return
 }
