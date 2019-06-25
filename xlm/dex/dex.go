@@ -7,9 +7,9 @@ import (
 	consts "github.com/YaleOpenLab/openx/consts"
 	oracle "github.com/YaleOpenLab/openx/oracle"
 	utils "github.com/YaleOpenLab/openx/utils"
+	xlm "github.com/YaleOpenLab/openx/xlm"
 	"github.com/stellar/go/network"
 	build "github.com/stellar/go/txnbuild"
-	xlm "github.com/YaleOpenLab/openx/xlm"
 )
 
 // package dex contains functions for interfacing with the stellar dex
