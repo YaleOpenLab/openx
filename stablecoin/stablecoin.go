@@ -19,7 +19,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"time"
 
@@ -68,7 +67,7 @@ func InitStableCoin() error {
 	consts.StablecoinPublicKey = publicKey
 	consts.StablecoinSeed = seed
 
-	client := DefaultTestNetClient
+	client := xlm.TestNetClient
 	// all payments
 	opRequest := horizon.OperationRequest{ForAccount: consts.StableCoinAddress}
 
@@ -90,9 +89,4 @@ func InitStableCoin() error {
 	}
 
 	return nil
-}
-
-var DefaultTestNetClient = &horizon.Client{
-	HorizonURL: "https://horizon-testnet.stellar.org/",
-	HTTP:       http.DefaultClient,
 }
