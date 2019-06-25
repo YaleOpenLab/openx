@@ -413,10 +413,6 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = CheckUsernameCollision("recipient1")
-	if err == nil {
-		t.Fatalf("recipient username collision not picked up")
-	}
 	err = user.ChangeReputation(1.0)
 	if err != nil {
 		t.Fatal(err)
