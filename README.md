@@ -4,7 +4,7 @@
 [![Codecov](https://codecov.io/gh/YaleOpenLab/openx/branch/master/graph/badge.svg)](https://codecov.io/gh/YaleOpenLab/openx)
 [![Go Report Card](https://goreportcard.com/badge/github.com/YaleOpenLab/openx)](https://goreportcard.com/report/github.com/YaleOpenLab/openx)
 
-This repo contains a WIP implementation of the OpenX idea in stellar. Broadly, the openx model seeks to implement the paradigm of investing and developing projects without hassles and enabling smart ownership with the help of semi trusted entities on the blockchain. The openx model can be thought more generally as a platform of platforms and houses multiple platforms within it (in `platforms/`).  The goal is to have a common interface between all parties that relate to a project; investors, investees (i.e. beneficiaries or receivers of the investment, often also including the issuer of the security), and the family of developers that include all service providers. Investors must complete KYC, authentication, etc and to be able to invest in multiple assets. We use the help of the blockchain to have trust minimized proof of ownership and debt along with a publicly audit-able source of data along with proofs. Currently there are two platforms housed within openx:
+This repo contains a WIP implementation of the OpenX idea in stellar. Broadly, the openx model seeks to implement the paradigm of investing and developing projects without hassles and enabling smart ownership with the help of semi trust-less entities on the blockchain. The openx model can be thought more generally as a platform of platforms and houses multiple platforms within it (in `platforms/`).  The goal is to have a common interface between all parties that relate to a project: investors, investees (i.e. beneficiaries or receivers of the investment) and the family of developers (that include all service providers). Depending upon the country of project origin, investors may be required to complete KYC to be able to invest in assets. The openx model can be adapted to any blockchain but we currently use the Stellar blockchain to create and move project assets. There are two platforms housed within openx:
 
 1. Opzones - the ozones platform focuses on opportunity zones.
 
@@ -33,7 +33,7 @@ ipfs is used by some parts of the program to store legal contracts, files that t
 
 You need to keep your peer key (`ipfs.key` usually) in a safe place for future reference. Start ipfs using `ipfs daemon` and you can test if it worked by creating a test file `test.txt` and run `ipfs add test.txt` to see if it succeeds. The resultant hash can be decrypted using `curl "http://127.0.0.1:8080/ipfs/hash"` where 8080 is the endpoint of the ipfs server or by doing `cat /ipfs/hash` directly. You can also refer to [this helpful tutorial](https://michalzalecki.com/set-up-ipfs-node-on-the-server/) in order to get started with ipfs.
 
-# Installing EasyJson
+## Installing EasyJson
 
 [EasyJson](https://github.com/mailru/easyjson) is a project that generates fast json encoding and decoding code that we use. Benchmarks show that it is ~3x faster than the native `encoding/json` package. To generate the required files, run `./easyjson -all */*.go` and `./easyjson -all */**/*.go` to generate json encoding for all required files.
 
@@ -45,13 +45,9 @@ go get golang.org/x/tools/cmd/cover
 ```
 if you already don't have the package. Running `go test --tags="all" -coverprofile=test.txt ./...` should run all the tests and provide coverage data on each specific package. Running with the tag `travis` will omit the tests in `ipfs/` which requires [a local `go-ipfs` node running](https://michalzalecki.com/set-up-ipfs-node-on-the-server/) as described above.
 
-## Dependency graph
-
-The dependency graph of this repo can be seen [here](godepgraph.png)
-
 ## Contributing
-This is an open source project and everyone is invited to contribute value to it. It is part of an open innovation framework and published using an MIT License so that it allows compatibility with proprietary layers. General code standards are to be considered while opening Pull Requests.
-![Open Contributions](docs/figures/OpenContributions.png)
+
+Please feel free to open Pull Requests and Issues with your changes and suggestions. Before working on a major feature, please describe the same in an issue so everyone can understand what you're building.
 
 ## Security
 
@@ -62,5 +58,4 @@ For security related issues, *DO NOT OPEN A GITHUB ISSUE!*. Please disclose the 
 In addition to this, openx is fully fully compliant with the [disclose.io](https://disclose.io) core terms followed by [bugcrowd](https://www.bugcrowd.com/resource/what-is-responsible-disclosure/). For more info, see [SECURITY.md](SECURITY.md)
 
 ## License
-
-[MIT](https://github.com/YaleOpenLab/openx/blob/master/LICENSE)
+openx is licensed under the [GPL3 License](https://github.com/YaleOpenLab/openx/blob/master/LICENSE) and [openx-frontend](https://github.com/YaleOpenLab/openx-frontend) is licensed under the [MIT License](https://github.com/YaleOpenLab/openx-frontend/blob/master/LICENSE.md). This is to ensure that the broader openx community benefits from any change made in openx while still having the freedom to build proprietary platforms.
