@@ -140,6 +140,7 @@ type AnchorKYCHelper struct {
 type StellWallet struct {
 	PublicKey     string
 	EncryptedSeed []byte
+	SeedPwhash    string
 }
 
 // EthWallet contains the structures needed for an ethereum wallet
@@ -309,6 +310,17 @@ func RetrieveUser(key int) (User, error) {
 		return inv.UnmarshalJSON(x)
 	})
 	return inv, err
+}
+
+// ValidateSeedpwd acts as a pre verify function so we don't try to decrypt the encrypted seed
+// each time a malicious entity tries to guess the password.
+func ValidateSeedpwd(name string, pwhash string, seedpwd string) (User, error) {
+	user, err := ValidateUser(name, pwhash)
+	if err == nil && utils.SHA3hash(seedpwd) == user.StellarWallet.SeedPwhash {
+		return user, nil
+	} else {
+		return user, errors.New("errored out in seedpwd validation, quitting")
+	}
 }
 
 // ValidateUser validates a particular user

@@ -730,6 +730,8 @@ func easyjson9e1087fdDecodeGithubComYaleOpenLabOpenxDatabase2(in *jlexer.Lexer, 
 			} else {
 				out.EncryptedSeed = in.Bytes()
 			}
+		case "SeedPwhash":
+			out.SeedPwhash = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -763,6 +765,16 @@ func easyjson9e1087fdEncodeGithubComYaleOpenLabOpenxDatabase2(out *jwriter.Write
 			out.RawString(prefix)
 		}
 		out.Base64Bytes(in.EncryptedSeed)
+	}
+	{
+		const prefix string = ",\"SeedPwhash\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.SeedPwhash))
 	}
 	out.RawByte('}')
 }
