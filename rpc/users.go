@@ -104,7 +104,16 @@ func UserValidateHelper(w http.ResponseWriter, r *http.Request) (database.User, 
 		return prepUser, errors.New("invalid params passed")
 	}
 
-	prepUser, err = database.ValidateUser(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
+	if r.URL.Query()["seedpwd"] != nil {
+		// check seed pwhash before decryption
+		seedpwhash := utils.SHA3hash(r.URL.Query()["seedpwd"][0])
+		prepUser, err = database.ValidateSeedpwd(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0], seedpwhash)
+	} else {
+		// no seedpwhash, normal call
+		prepUser, err = database.ValidateUser(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
+	}
+
+	// catch the error from the relevant error call
 	if err != nil {
 		log.Println("did not validate user", err)
 		return prepUser, err
