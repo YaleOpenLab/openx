@@ -4,10 +4,10 @@ import (
 	"github.com/pkg/errors"
 	"log"
 
+	scan "github.com/Varunram/essentials/scan"
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
 	solar "github.com/YaleOpenLab/openx/platforms/opensolar"
-	scan "github.com/YaleOpenLab/openx/scan"
 	"github.com/chzyer/readline"
 	"github.com/fatih/color"
 	"github.com/spf13/viper"

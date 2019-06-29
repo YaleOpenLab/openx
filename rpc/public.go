@@ -4,8 +4,9 @@ import (
 	"log"
 	"net/http"
 
+	erpc "github.com/Varunram/essentials/rpc"
+	utils "github.com/Varunram/essentials/utils"
 	database "github.com/YaleOpenLab/openx/database"
-	utils "github.com/YaleOpenLab/openx/utils"
 )
 
 // SnInvestor defines a sanitized investor
@@ -116,16 +117,16 @@ func sanitizeAllUsers(users []database.User) []SnUser {
 // display it to some entity that is interested to view such stats
 func getAllInvestorsPublic() {
 	http.HandleFunc("/public/investor/all", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
-		checkOrigin(w, r)
+		erpc.CheckGet(w, r)
+		erpc.CheckOrigin(w, r)
 		investors, err := database.RetrieveAllInvestors()
 		if err != nil {
 			log.Println("did not retrieve all investors", err)
-			responseHandler(w, StatusInternalServerError)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
 		sInvestors := sanitizeAllInvestors(investors)
-		MarshalSend(w, sInvestors)
+		erpc.MarshalSend(w, sInvestors)
 	})
 }
 
@@ -133,16 +134,16 @@ func getAllInvestorsPublic() {
 // display it to some entity that is interested to view such stats
 func getAllRecipientsPublic() {
 	http.HandleFunc("/public/recipient/all", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
-		checkOrigin(w, r)
+		erpc.CheckGet(w, r)
+		erpc.CheckOrigin(w, r)
 		recipients, err := database.RetrieveAllRecipients()
 		if err != nil {
 			log.Println("did not retrieve all recipients", err)
-			responseHandler(w, StatusInternalServerError)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
 		sRecipients := sanitizeAllRecipients(recipients)
-		MarshalSend(w, sRecipients)
+		erpc.MarshalSend(w, sRecipients)
 	})
 }
 
@@ -150,77 +151,77 @@ func getAllRecipientsPublic() {
 // to award them badges or something similar
 func getTopReputationPublic() {
 	http.HandleFunc("/public/reputation/top", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
-		checkOrigin(w, r)
+		erpc.CheckGet(w, r)
+		erpc.CheckOrigin(w, r)
 		allUsers, err := database.TopReputationUsers()
 		if err != nil {
 			log.Println("did not retrive all top reputation users", err)
-			responseHandler(w, StatusInternalServerError)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
 		sUsers := sanitizeAllUsers(allUsers)
-		MarshalSend(w, sUsers)
+		erpc.MarshalSend(w, sUsers)
 	})
 }
 
 // getRecpTopReputationPublic gets a list of the recipients who have the best reputation on the platform
 func getRecpTopReputationPublic() {
 	http.HandleFunc("/public/recipient/reputation/top", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
-		checkOrigin(w, r)
+		erpc.CheckGet(w, r)
+		erpc.CheckOrigin(w, r)
 		allRecps, err := database.TopReputationRecipient()
 		if err != nil {
 			log.Println("did not retrieve all top reputaiton recipients", err)
-			responseHandler(w, StatusInternalServerError)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
 		sRecipients := sanitizeAllRecipients(allRecps)
-		MarshalSend(w, sRecipients)
+		erpc.MarshalSend(w, sRecipients)
 	})
 }
 
 // getInvTopReputationPublic gets a lsit of the investors who have the best reputation on the platform
 func getInvTopReputationPublic() {
 	http.HandleFunc("/public/investor/reputation/top", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
-		checkOrigin(w, r)
+		erpc.CheckGet(w, r)
+		erpc.CheckOrigin(w, r)
 		allInvs, err := database.TopReputationInvestors()
 		if err != nil {
 			log.Println("did not retrieve all top reputation investors", err)
-			responseHandler(w, StatusInternalServerError)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
 		sInvestors := sanitizeAllInvestors(allInvs)
-		MarshalSend(w, sInvestors)
+		erpc.MarshalSend(w, sInvestors)
 	})
 }
 
 func getUserInfo() {
 	http.HandleFunc("/public/user", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
-		checkOrigin(w, r)
+		erpc.CheckGet(w, r)
+		erpc.CheckOrigin(w, r)
 
 		if r.URL.Query()["index"] == nil {
 			log.Println("no index retrieved, quitting!")
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
 		index, err := utils.StoICheck(r.URL.Query()["index"][0])
 		if err != nil {
 			log.Println(err)
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
 		user, err := database.RetrieveUser(index)
 		if err != nil {
 			log.Println(err)
-			responseHandler(w, StatusInternalServerError)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
 
 		sUser := sanitizeUser(user)
-		MarshalSend(w, sUser)
+		erpc.MarshalSend(w, sUser)
 	})
 }

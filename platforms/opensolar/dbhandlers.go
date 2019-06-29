@@ -3,8 +3,8 @@ package opensolar
 import (
 	"github.com/pkg/errors"
 
+	utils "github.com/Varunram/essentials/utils"
 	database "github.com/YaleOpenLab/openx/database"
-	utils "github.com/YaleOpenLab/openx/utils"
 	"github.com/boltdb/bolt"
 )
 

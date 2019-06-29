@@ -4,17 +4,18 @@ import (
 	"github.com/pkg/errors"
 	"log"
 
+	wallet "github.com/Varunram/essentials/crypto/xlm/wallet"
+	erpc "github.com/Varunram/essentials/rpc"
+	scan "github.com/Varunram/essentials/scan"
 	database "github.com/YaleOpenLab/openx/database"
 	solar "github.com/YaleOpenLab/openx/platforms/opensolar"
 	rpc "github.com/YaleOpenLab/openx/rpc"
-	scan "github.com/YaleOpenLab/openx/scan"
-	wallet "github.com/YaleOpenLab/openx/xlm/wallet"
 )
 
 // Login logs on to the platform
 func Login(username string, pwhash string) (string, error) {
 	var wString string
-	data, err := rpc.GetRequest(ApiUrl + "/user/validate?" + "username=" + username + "&pwhash=" + pwhash)
+	data, err := erpc.GetRequest(ApiUrl + "/user/validate?" + "username=" + username + "&pwhash=" + pwhash)
 	if err != nil {
 		return wString, errors.Wrap(err, "validate request failed")
 	}
@@ -26,7 +27,7 @@ func Login(username string, pwhash string) (string, error) {
 	switch x.Role {
 	case "Investor":
 		wString = "Investor"
-		data, err = rpc.GetRequest(ApiUrl + "/investor/validate?" + "username=" + username + "&pwhash=" + pwhash)
+		data, err = erpc.GetRequest(ApiUrl + "/investor/validate?" + "username=" + username + "&pwhash=" + pwhash)
 		if err != nil {
 			return wString, errors.Wrap(err, "could not call ivnestor validate function")
 		}
@@ -47,7 +48,7 @@ func Login(username string, pwhash string) (string, error) {
 		}
 	case "Recipient":
 		wString = "Recipient"
-		data, err = rpc.GetRequest(ApiUrl + "/recipient/validate?" + "username=" + username + "&pwhash=" + pwhash)
+		data, err = erpc.GetRequest(ApiUrl + "/recipient/validate?" + "username=" + username + "&pwhash=" + pwhash)
 		if err != nil {
 			return wString, errors.Wrap(err, "could not call recipient validate endpoint")
 		}
@@ -68,7 +69,7 @@ func Login(username string, pwhash string) (string, error) {
 		}
 	case "Entity":
 		log.Println("ENTITY?")
-		data, err = rpc.GetRequest(ApiUrl + "/entity/validate?" + "username=" + username + "&pwhash=" + pwhash)
+		data, err = erpc.GetRequest(ApiUrl + "/entity/validate?" + "username=" + username + "&pwhash=" + pwhash)
 		if err != nil {
 			return wString, errors.Wrap(err, "could not call entity validate endpoint")
 		}

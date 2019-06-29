@@ -4,8 +4,9 @@ import (
 	"log"
 	"net/http"
 
-	stablecoin "github.com/YaleOpenLab/openx/stablecoin"
-	wallet "github.com/YaleOpenLab/openx/xlm/wallet"
+	stablecoin "github.com/Varunram/essentials/crypto/stablecoin"
+	wallet "github.com/Varunram/essentials/crypto/xlm/wallet"
+	erpc "github.com/Varunram/essentials/rpc"
 )
 
 // this file handles the RPCs necessary for converting a fixed amount of XLM into
@@ -21,12 +22,12 @@ func setupStableCoinRPCs() {
 // getStableCoin gets stablecoin in exchange for xlm
 func getTestStableCoin() {
 	http.HandleFunc("/stablecoin/get", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
-		checkOrigin(w, r)
+		erpc.CheckGet(w, r)
+		erpc.CheckOrigin(w, r)
 		user, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["seedpwd"] == nil || r.URL.Query()["amount"] == nil {
 			log.Println(err)
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 		// we need to validate the user and check if its a part of the platform. If not,
@@ -34,23 +35,23 @@ func getTestStableCoin() {
 		receiverSeed, err := wallet.DecryptSeed(user.StellarWallet.EncryptedSeed, r.URL.Query()["seedpwd"][0])
 		if err != nil {
 			log.Println(err)
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 		amount := r.URL.Query()["amount"][0] // in string
 		receiverPubkey, err := wallet.ReturnPubkey(receiverSeed)
 		if err != nil {
 			log.Println("did not return pubkey", err)
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 		err = stablecoin.Exchange(receiverPubkey, receiverSeed, amount)
 		if err != nil {
 			log.Println("did not exchange for xlm", err)
-			responseHandler(w, StatusInternalServerError)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
-		responseHandler(w, StatusOK)
+		erpc.ResponseHandler(w, erpc.StatusOK)
 	})
 }
 
@@ -61,19 +62,19 @@ type GetAnchorResponse struct {
 // getAnchorUSD gets anchorUSD from Anchor
 func getAnchorUSD() {
 	http.HandleFunc("/anchor/get", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
-		checkOrigin(w, r)
+		erpc.CheckGet(w, r)
+		erpc.CheckOrigin(w, r)
 		user, err := UserValidateHelper(w, r)
 		if err != nil {
 			log.Println(err)
-			responseHandler(w, StatusUnauthorized)
+			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
 		if !user.Kyc || user.Banned {
 			// banned  or user without kyc is trying to request stablecoin, don't allow
 			log.Println("user who is not verified under kyc / is sanctioned is requesting stablecoin: ", user.Name, user.Pwhash)
-			responseHandler(w, StatusNotAcceptable)
+			erpc.ResponseHandler(w, erpc.StatusNotAcceptable)
 			return
 		}
 
@@ -81,7 +82,7 @@ func getAnchorUSD() {
 		// and there's nothing we can do to change this.
 		if r.URL.Query()["mode"] == nil {
 			log.Println("user hasn't specified mode, quitting")
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -93,14 +94,14 @@ func getAnchorUSD() {
 		case "crypto":
 			if r.URL.Query()["seedpwd"] == nil || r.URL.Query()["amount"] == nil {
 				log.Println("required params for crypto to anchorUSD transaction not defined, quitting")
-				responseHandler(w, StatusBadRequest)
+				erpc.ResponseHandler(w, erpc.StatusBadRequest)
 				return
 			}
 
 			seed, err := wallet.DecryptSeed(user.StellarWallet.EncryptedSeed, r.URL.Query()["seedpwd"][0])
 			if err != nil {
 				log.Println(err)
-				responseHandler(w, StatusBadRequest)
+				erpc.ResponseHandler(w, erpc.StatusBadRequest)
 				return
 			}
 
@@ -109,18 +110,18 @@ func getAnchorUSD() {
 			txhash, err := stablecoin.GetAnchorUSD(seed, amount)
 			if err != nil {
 				log.Println("error in fetching stablecoin, quitting")
-				responseHandler(w, StatusInternalServerError)
+				erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 				return
 			}
 
 			var response GetAnchorResponse
 			response.Txhash = txhash
-			MarshalSend(w, response)
+			erpc.MarshalSend(w, response)
 			// send a tx to anchorUSD's pubkey and hope they send stablecoin back. Since this is not dependent on us, we'd need
 			// to wait for the interval that anchorUSD determines in order to be able to proceed further.
 		default:
 			log.Println("mode not specified for anchorUSD conversion, quitting")
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 	})

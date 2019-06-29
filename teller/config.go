@@ -4,8 +4,8 @@ import (
 	"github.com/pkg/errors"
 	"log"
 
-	utils "github.com/YaleOpenLab/openx/utils"
-	wallet "github.com/YaleOpenLab/openx/xlm/wallet"
+	wallet "github.com/Varunram/essentials/crypto/xlm/wallet"
+	utils "github.com/Varunram/essentials/utils"
 	"github.com/spf13/viper"
 )
 

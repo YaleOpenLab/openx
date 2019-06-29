@@ -6,14 +6,14 @@ import (
 	"math"
 	"time"
 
+	assets "github.com/Varunram/essentials/crypto/xlm/assets"
+	issuer "github.com/Varunram/essentials/crypto/xlm/issuer"
+	wallet "github.com/Varunram/essentials/crypto/xlm/wallet"
+	utils "github.com/Varunram/essentials/utils"
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
 	model "github.com/YaleOpenLab/openx/models/debtcrowdfunding"
 	notif "github.com/YaleOpenLab/openx/notif"
-	utils "github.com/YaleOpenLab/openx/utils"
-	assets "github.com/YaleOpenLab/openx/xlm/assets"
-	issuer "github.com/YaleOpenLab/openx/xlm/issuer"
-	wallet "github.com/YaleOpenLab/openx/xlm/wallet"
 )
 
 // preInvestmentConstructionBonds defines the pre investment conditions pertaining to construction bonds

@@ -4,12 +4,12 @@ import (
 	"log"
 	"os"
 
+	xlm "github.com/Varunram/essentials/crypto/xlm"
+	assets "github.com/Varunram/essentials/crypto/xlm/assets"
+	wallet "github.com/Varunram/essentials/crypto/xlm/wallet"
+	scan "github.com/Varunram/essentials/scan"
+	utils "github.com/Varunram/essentials/utils"
 	consts "github.com/YaleOpenLab/openx/consts"
-	scan "github.com/YaleOpenLab/openx/scan"
-	utils "github.com/YaleOpenLab/openx/utils"
-	xlm "github.com/YaleOpenLab/openx/xlm"
-	assets "github.com/YaleOpenLab/openx/xlm/assets"
-	wallet "github.com/YaleOpenLab/openx/xlm/wallet"
 	"github.com/pkg/errors"
 )
 

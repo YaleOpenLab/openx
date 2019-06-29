@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	rpc "github.com/YaleOpenLab/openx/rpc"
-	utils "github.com/YaleOpenLab/openx/utils"
+	erpc "github.com/Varunram/essentials/rpc"
+	utils "github.com/Varunram/essentials/utils"
 )
 
 // server starts a local server which would inform us about the uptime of the teller and provide a data endpoint
@@ -18,41 +18,17 @@ func checkGet(w http.ResponseWriter, r *http.Request) {
 }
 
 func responseHandler(w http.ResponseWriter, r *http.Request, status int) {
-	var response rpc.StatusResponse
+	var response erpc.StatusResponse
 	response.Code = status
 	switch status {
-	case rpc.StatusOK:
+	case erpc.StatusOK:
 		response.Status = "OK"
-	case rpc.StatusNotFound:
+	case erpc.StatusNotFound:
 		response.Status = "404 Error Not Found!"
-	case rpc.StatusInternalServerError:
+	case erpc.StatusInternalServerError:
 		response.Status = "Internal Server Error"
 	}
-	rpc.MarshalSend(w, response)
-}
-
-// setupDefaultHandler sets up the default handler (ie returns 404 for invalid routes)
-func setupDefaultHandler() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		responseHandler(w, r, rpc.StatusNotFound)
-	})
-}
-
-// pingHandler can be used on the frontend to try checking whether the teller is still up.
-// maybe have a button or something and pressing that would call this endpoint
-func pingHandler() {
-	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
-		var pr rpc.StatusResponse
-		pr.Code = 200
-		pr.Status = "HEALTH OK"
-		prJson, err := pr.MarshalJSON()
-		if err != nil {
-			responseHandler(w, r, rpc.StatusInternalServerError)
-			return
-		}
-		WriteToHandler(w, prJson)
-	})
+	erpc.MarshalSend(w, response)
 }
 
 // HCHeaderResponse defines the hash chain header's response
@@ -71,7 +47,7 @@ func hashChainHeaderHandler() {
 		x.Hash = HashChainHeader
 		xJson, err := x.MarshalJSON()
 		if err != nil {
-			responseHandler(w, r, rpc.StatusInternalServerError)
+			responseHandler(w, r, erpc.StatusInternalServerError)
 			return
 		}
 		WriteToHandler(w, xJson)
@@ -79,8 +55,7 @@ func hashChainHeaderHandler() {
 }
 
 func setupRoutes() {
-	setupDefaultHandler()
-	pingHandler()
+	erpc.SetupDefaultHandler()
 	hashChainHeaderHandler()
 }
 

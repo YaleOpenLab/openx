@@ -5,10 +5,10 @@ import (
 	"log"
 	"time"
 
+	xlm "github.com/Varunram/essentials/crypto/xlm"
+	assets "github.com/Varunram/essentials/crypto/xlm/assets"
+	utils "github.com/Varunram/essentials/utils"
 	consts "github.com/YaleOpenLab/openx/consts"
-	utils "github.com/YaleOpenLab/openx/utils"
-	xlm "github.com/YaleOpenLab/openx/xlm"
-	assets "github.com/YaleOpenLab/openx/xlm/assets"
 )
 
 // the models package won't be imported directly in any place but would be imported

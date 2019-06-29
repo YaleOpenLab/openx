@@ -4,8 +4,9 @@ import (
 	"log"
 	"net/http"
 
+	erpc "github.com/Varunram/essentials/rpc"
+	utils "github.com/Varunram/essentials/utils"
 	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
-	utils "github.com/YaleOpenLab/openx/utils"
 )
 
 func setupStagesHandlers() {
@@ -19,33 +20,33 @@ func setupStagesHandlers() {
 // this is a public function that can be called by anyone, so we don't authenticate
 func returnAllStages() {
 	http.HandleFunc("/stages/all", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
-		checkOrigin(w, r)
+		erpc.CheckGet(w, r)
+		erpc.CheckOrigin(w, r)
 
 		var arr []opensolar.Stage
 		arr = append(arr, opensolar.Stage0, opensolar.Stage1, opensolar.Stage2, opensolar.Stage3, opensolar.Stage4,
 			opensolar.Stage5, opensolar.Stage6, opensolar.Stage7, opensolar.Stage8, opensolar.Stage9)
 
-		MarshalSend(w, arr)
+		erpc.MarshalSend(w, arr)
 	})
 }
 
 // returnSpecificStage returns details on a specific stage defined in the opensolar platform
 func returnSpecificStage() {
 	http.HandleFunc("/stages", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
-		checkOrigin(w, r)
+		erpc.CheckGet(w, r)
+		erpc.CheckOrigin(w, r)
 
 		if r.URL.Query()["index"] == nil {
 			log.Println("User did not pass index to retrieve stage for, quitting!")
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
 		index, err := utils.StoICheck(r.URL.Query()["index"][0])
 		if err != nil {
 			log.Println("Passed index not an integer, quitting!")
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -74,34 +75,34 @@ func returnSpecificStage() {
 			x = opensolar.Stage0
 		}
 
-		MarshalSend(w, x)
+		erpc.MarshalSend(w, x)
 	})
 }
 
 // promoteStage returns details on a specific stage defined in the opensolar platform
 func promoteStage() {
 	http.HandleFunc("/stages/promote", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
-		checkOrigin(w, r)
+		erpc.CheckGet(w, r)
+		erpc.CheckOrigin(w, r)
 
 		if r.URL.Query()["index"] == nil {
 			log.Println("some fields missing to promote from stage x to y, quitting!")
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
 		index, err := utils.StoICheck(r.URL.Query()["index"][0])
 		if err != nil {
 			log.Println(err)
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 		err = opensolar.StageXtoY(index)
 		if err != nil {
 			log.Println(err)
-			responseHandler(w, StatusInternalServerError)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
-		responseHandler(w, StatusOK)
+		erpc.ResponseHandler(w, erpc.StatusOK)
 	})
 }

@@ -3,7 +3,7 @@ package database
 import (
 	"github.com/pkg/errors"
 
-	utils "github.com/YaleOpenLab/openx/utils"
+	utils "github.com/Varunram/essentials/utils"
 	"github.com/boltdb/bolt"
 )
 

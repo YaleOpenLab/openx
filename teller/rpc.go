@@ -6,10 +6,11 @@ import (
 	"github.com/pkg/errors"
 	"log"
 
+	erpc "github.com/Varunram/essentials/rpc"
+	utils "github.com/Varunram/essentials/utils"
 	database "github.com/YaleOpenLab/openx/database"
 	solar "github.com/YaleOpenLab/openx/platforms/opensolar"
 	rpc "github.com/YaleOpenLab/openx/rpc"
-	utils "github.com/YaleOpenLab/openx/utils"
 	geo "github.com/martinlindhe/google-geolocate"
 )
 
@@ -31,11 +32,11 @@ func GetLocation(mapskey string) string {
 // PingRpc pings the platform to see if its up
 func PingRpc() error {
 	// make a curl request out to lcoalhost and get the ping response
-	data, err := rpc.GetRequest(ApiUrl + "/ping")
+	data, err := erpc.GetRequest(ApiUrl + "/ping")
 	if err != nil {
 		return err
 	}
-	var x rpc.StatusResponse
+	var x erpc.StatusResponse
 	// now data is in byte, we need the other structure now
 	err = x.UnmarshalJSON(data)
 	if err != nil {
@@ -48,7 +49,7 @@ func PingRpc() error {
 
 // GetProjectIndex gets a specific project's index
 func GetProjectIndex(assetName string) (int, error) {
-	data, err := rpc.GetRequest(ApiUrl + "/projects?index=7")
+	data, err := erpc.GetRequest(ApiUrl + "/projects?index=7")
 	if err != nil {
 		log.Println("Error while making get request: ", err)
 		return -1, err
@@ -68,7 +69,7 @@ func GetProjectIndex(assetName string) (int, error) {
 
 // LoginToPlatform logs on to the platform
 func LoginToPlatform(username string, pwhash string) error {
-	data, err := rpc.GetRequest(ApiUrl + "/recipient/validate?" + "username=" + username + "&pwhash=" + pwhash)
+	data, err := erpc.GetRequest(ApiUrl + "/recipient/validate?" + "username=" + username + "&pwhash=" + pwhash)
 	if err != nil {
 		return err
 	}
@@ -88,13 +89,13 @@ func ProjectPayback(assetName string, amount string) error {
 	log.Println("PAYMENT BODY: ", ApiUrl+"/recipient/payback?"+"username="+LocalRecipient.U.Username+
 		"&pwhash="+LocalRecipient.U.Pwhash+"&projIndex="+LocalProjIndex+"&assetName="+LocalProject.DebtAssetCode+"&seedpwd="+
 		LocalSeedPwd+"&amount="+amount)
-	data, err := rpc.GetRequest(ApiUrl + "/recipient/payback?" + "username=" + LocalRecipient.U.Username +
+	data, err := erpc.GetRequest(ApiUrl + "/recipient/payback?" + "username=" + LocalRecipient.U.Username +
 		"&pwhash=" + LocalRecipient.U.Pwhash + "&projIndex=" + LocalProjIndex + "&assetName=" + LocalProject.DebtAssetCode + "&seedpwd=" +
 		LocalSeedPwd + "&amount=" + amount)
 	if err != nil {
 		return err
 	}
-	var x rpc.StatusResponse
+	var x erpc.StatusResponse
 	err = x.UnmarshalJSON(data)
 	if err != nil {
 		return err
@@ -109,12 +110,12 @@ func ProjectPayback(assetName string, amount string) error {
 
 // SetDeviceId sets the device id of the teller
 func SetDeviceId(username string, pwhash string, deviceId string) error {
-	data, err := rpc.GetRequest(ApiUrl + "/recipient/deviceId?" + "username=" + username +
+	data, err := erpc.GetRequest(ApiUrl + "/recipient/deviceId?" + "username=" + username +
 		"&pwhash=" + pwhash + "&deviceid=" + deviceId)
 	if err != nil {
 		return err
 	}
-	var x rpc.StatusResponse
+	var x erpc.StatusResponse
 	err = x.UnmarshalJSON(data)
 	if err != nil {
 		return err
@@ -128,13 +129,13 @@ func SetDeviceId(username string, pwhash string, deviceId string) error {
 
 // StoreStartTime stores that start time of this particular instance
 func StoreStartTime() error {
-	data, err := rpc.GetRequest(ApiUrl + "/recipient/startdevice?" + "username=" + LocalRecipient.U.Username +
+	data, err := erpc.GetRequest(ApiUrl + "/recipient/startdevice?" + "username=" + LocalRecipient.U.Username +
 		"&pwhash=" + LocalRecipient.U.Pwhash + "&start=" + utils.I64toS(utils.Unix()))
 	if err != nil {
 		return err
 	}
 
-	var x rpc.StatusResponse
+	var x erpc.StatusResponse
 	err = x.UnmarshalJSON(data)
 	if err != nil {
 		return err
@@ -152,7 +153,7 @@ func StoreLocation(mapskey string) error {
 	log.Println("MAPSKEY: ", mapskey, location)
 	log.Println(ApiUrl + "/recipient/storelocation?" + "username=" + LocalRecipient.U.Username +
 		"&pwhash=" + LocalRecipient.U.Pwhash + "&location=" + location)
-	data, err := rpc.GetRequest(ApiUrl + "/recipient/storelocation?" + "username=" + LocalRecipient.U.Username +
+	data, err := erpc.GetRequest(ApiUrl + "/recipient/storelocation?" + "username=" + LocalRecipient.U.Username +
 		"&pwhash=" + LocalRecipient.U.Pwhash + "&location=" + location)
 	if err != nil {
 		log.Println("RPC ERROR IN STORELOCATION ENDPOINT")
@@ -160,7 +161,7 @@ func StoreLocation(mapskey string) error {
 	}
 
 	log.Println("DATA: ", data)
-	var x rpc.StatusResponse
+	var x erpc.StatusResponse
 	err = x.UnmarshalJSON(data)
 	if err != nil {
 		return err
@@ -174,7 +175,7 @@ func StoreLocation(mapskey string) error {
 
 // GetPlatformEmail gets the email of the platform
 func GetPlatformEmail() error {
-	data, err := rpc.GetRequest(ApiUrl + "/platformemail?" + "username=" + LocalRecipient.U.Username +
+	data, err := erpc.GetRequest(ApiUrl + "/platformemail?" + "username=" + LocalRecipient.U.Username +
 		"&pwhash=" + LocalRecipient.U.Pwhash)
 	if err != nil {
 		log.Println(err)
@@ -195,7 +196,7 @@ func GetPlatformEmail() error {
 // SendDeviceShutdownEmail sends a shutdown notice to the platform
 func SendDeviceShutdownEmail(tx1 string, tx2 string) error {
 
-	data, err := rpc.GetRequest(ApiUrl + "/tellershutdown?" + "username=" + LocalRecipient.U.Username +
+	data, err := erpc.GetRequest(ApiUrl + "/tellershutdown?" + "username=" + LocalRecipient.U.Username +
 		"&pwhash=" + LocalRecipient.U.Pwhash + "&projIndex=" + LocalProjIndex + "&deviceId=" + DeviceId +
 		"&tx1=" + tx1 + "&tx2=" + tx2)
 	if err != nil {
@@ -203,7 +204,7 @@ func SendDeviceShutdownEmail(tx1 string, tx2 string) error {
 		return err
 	}
 
-	var x rpc.StatusResponse
+	var x erpc.StatusResponse
 	err = x.UnmarshalJSON(data)
 	if err != nil {
 		return err
@@ -220,7 +221,7 @@ func GetLocalProjectDetails(projIndex string) (solar.Project, error) {
 
 	var x solar.Project
 	body := ApiUrl + "/project/get?index=" + projIndex
-	data, err := rpc.GetRequest(body)
+	data, err := erpc.GetRequest(body)
 	if err != nil {
 		log.Println(err)
 		return x, err
@@ -238,14 +239,14 @@ func GetLocalProjectDetails(projIndex string) (solar.Project, error) {
 // SendDevicePaybackFailedEmail sends a notification if the payback routine breaks in its execution
 func SendDevicePaybackFailedEmail() error {
 
-	data, err := rpc.GetRequest(ApiUrl + "/tellerpayback?" + "username=" + LocalRecipient.U.Username +
+	data, err := erpc.GetRequest(ApiUrl + "/tellerpayback?" + "username=" + LocalRecipient.U.Username +
 		"&pwhash=" + LocalRecipient.U.Pwhash + "&projIndex=" + LocalProjIndex + "&deviceId=" + DeviceId)
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 
-	var x rpc.StatusResponse
+	var x erpc.StatusResponse
 	err = x.UnmarshalJSON(data)
 	if err != nil {
 		return err
@@ -259,14 +260,14 @@ func SendDevicePaybackFailedEmail() error {
 
 // StoreStateHistory stores state history in the data file
 func StoreStateHistory(hash string) error {
-	data, err := rpc.GetRequest(ApiUrl + "/recipient/ssh?" + "username=" + LocalRecipient.U.Username +
+	data, err := erpc.GetRequest(ApiUrl + "/recipient/ssh?" + "username=" + LocalRecipient.U.Username +
 		"&pwhash=" + LocalRecipient.U.Pwhash + "&hash=" + hash)
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 
-	var x rpc.StatusResponse
+	var x erpc.StatusResponse
 	err = x.UnmarshalJSON(data)
 	if err != nil {
 		return err
@@ -284,7 +285,7 @@ func testSwytch() {
 		"clientId=" + SwytchClientid + "&clientSecret=" + SwytchPassword + "&username=" + SwytchPassword +
 		"&password=" + SwytchPassword
 	log.Println(body)
-	data, err := rpc.GetRequest(body)
+	data, err := erpc.GetRequest(body)
 	if err != nil {
 		log.Println(err)
 		return
@@ -299,7 +300,7 @@ func testSwytch() {
 	refresh_token := x1.Data[0].Refresh_token
 	// we have the access token as well but need to refresh it using the refresh token, so
 	// might as well store later.
-	data, err = rpc.GetRequest("swytch/refreshToken?clientId=c0fe38566a254a3a80b2a42081b46843&clientSecret=46d10252a4954007af5e2f8941aeeb37&" +
+	data, err = erpc.GetRequest("swytch/refreshToken?clientId=c0fe38566a254a3a80b2a42081b46843&clientSecret=46d10252a4954007af5e2f8941aeeb37&" +
 		"refreshToken=" + refresh_token)
 	if err != nil {
 		log.Println(err)
@@ -314,7 +315,7 @@ func testSwytch() {
 
 	access_token := x1.Data[0].Access_token
 
-	data, err = rpc.GetRequest(ApiUrl + "swytch/getuser?authToken=" + access_token)
+	data, err = erpc.GetRequest(ApiUrl + "swytch/getuser?authToken=" + access_token)
 	if err != nil {
 		log.Println(err)
 		return
@@ -330,7 +331,7 @@ func testSwytch() {
 	log.Println("USER ID: ", user_id)
 	// we have the user id, query for assets
 
-	data, err = rpc.GetRequest(ApiUrl + "swytch/getassets?authToken=" + access_token + "&userId=" + user_id)
+	data, err = erpc.GetRequest(ApiUrl + "swytch/getassets?authToken=" + access_token + "&userId=" + user_id)
 	if err != nil {
 		log.Println(err)
 		return
@@ -345,7 +346,7 @@ func testSwytch() {
 	asset_id := x4.Data[0].Id
 	log.Println("ASSETID: ", asset_id)
 	// we have the asset id, try to get some info
-	data, err = rpc.GetRequest(ApiUrl + "swytch/getenergy?authToken=" + access_token + "&assetId=" + asset_id)
+	data, err = erpc.GetRequest(ApiUrl + "swytch/getenergy?authToken=" + access_token + "&assetId=" + asset_id)
 	if err != nil {
 		log.Println(err)
 		return
@@ -359,7 +360,7 @@ func testSwytch() {
 
 	log.Println("Energy data from installed asset: ", x4)
 
-	data, err = rpc.GetRequest(ApiUrl + "swytch/getattributes?authToken=" + access_token + "&assetId=" + asset_id)
+	data, err = erpc.GetRequest(ApiUrl + "swytch/getattributes?authToken=" + access_token + "&assetId=" + asset_id)
 	if err != nil {
 		log.Println(err)
 		return

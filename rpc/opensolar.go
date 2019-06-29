@@ -5,8 +5,9 @@ import (
 	"log"
 	"net/http"
 
+	erpc "github.com/Varunram/essentials/rpc"
+	utils "github.com/Varunram/essentials/utils"
 	platform "github.com/YaleOpenLab/openx/platforms/opensolar"
-	utils "github.com/YaleOpenLab/openx/utils"
 )
 
 // collect all handlers in one place so that we can assemble them easily
@@ -64,30 +65,30 @@ func insertProject() {
 	// this route does not define an originator and would mostly not be useful, should
 	// look into a way where we can define originators in the route as well
 	http.HandleFunc("/project/insert", func(w http.ResponseWriter, r *http.Request) {
-		checkPost(w, r)
-		checkOrigin(w, r)
+		erpc.CheckPost(w, r)
+		erpc.CheckOrigin(w, r)
 		var prepProject platform.Project
 		prepProject, err := parseProject(r)
 		if err != nil {
 			log.Println("did not parse project", err)
-			responseHandler(w, StatusInternalServerError)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
 		err = prepProject.Save()
 		if err != nil {
 			log.Println("did not save project", err)
-			responseHandler(w, StatusInternalServerError)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
-		responseHandler(w, StatusOK)
+		erpc.ResponseHandler(w, erpc.StatusOK)
 	})
 }
 
 // getAllProjects gets a list of all the projects that registered on the platform.
 func getAllProjects() {
 	http.HandleFunc("/project/all", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
-		checkOrigin(w, r)
+		erpc.CheckGet(w, r)
+		erpc.CheckOrigin(w, r)
 		// make a call to the db to get all projects
 		// while making this call, the rpc should not be aware of the db we are using
 		// and stuff. So we need to have another route that would open the existing
@@ -95,10 +96,10 @@ func getAllProjects() {
 		allProjects, err := platform.RetrieveAllProjects()
 		if err != nil {
 			log.Println("did not retrieve all projects", err)
-			responseHandler(w, StatusInternalServerError)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
-		MarshalSend(w, allProjects)
+		erpc.MarshalSend(w, allProjects)
 	})
 }
 
@@ -106,34 +107,34 @@ func getAllProjects() {
 func getProject() {
 	// we need to read passed the key from the URL that the user calls
 	http.HandleFunc("/project/get", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
-		checkOrigin(w, r)
+		erpc.CheckGet(w, r)
+		erpc.CheckOrigin(w, r)
 		if r.URL.Query()["index"] == nil {
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 		uKey := utils.StoI(r.URL.Query()["index"][0])
 		contract, err := platform.RetrieveProject(uKey)
 		if err != nil {
 			log.Println("did not retrieve project", err)
-			responseHandler(w, StatusInternalServerError)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
-		MarshalSend(w, contract)
+		erpc.MarshalSend(w, contract)
 	})
 }
 
 // projectHandler gets proejcts at a specific stage from the database
 func projectHandler(w http.ResponseWriter, r *http.Request, stage int) {
-	checkGet(w, r)
-	checkOrigin(w, r)
+	erpc.CheckGet(w, r)
+	erpc.CheckOrigin(w, r)
 	allProjects, err := platform.RetrieveProjectsAtStage(stage)
 	if err != nil {
 		log.Println("did not retrieve project at specific stage", err)
-		responseHandler(w, StatusInternalServerError)
+		erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 		return
 	}
-	MarshalSend(w, allProjects)
+	erpc.MarshalSend(w, allProjects)
 }
 
 // various handlers for fetching projects which are at different stages on the platform
@@ -141,14 +142,14 @@ func getProjectsAtIndex() {
 	http.HandleFunc("/projects", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Query()["index"] == nil {
 			log.Println("No stage number passed, not returning anything!")
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
 		index, err := utils.StoICheck(r.URL.Query()["index"][0])
 		if err != nil {
 			log.Println("Passed index not an integer, quitting!")
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 

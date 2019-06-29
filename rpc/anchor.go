@@ -25,6 +25,8 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+
+	erpc "github.com/Varunram/essentials/rpc"
 )
 
 func setupAnchorHandlers() {
@@ -49,7 +51,7 @@ type kycDepositResponse struct {
 // GetAndReturnIdentifier is a handler that makes a get request and returns json data
 func GetAndReturnIdentifier(w http.ResponseWriter, r *http.Request, body string) (AnchorIntentResponse, error) {
 	var x AnchorIntentResponse
-	data, err := GetRequest(body)
+	data, err := erpc.GetRequest(body)
 	if err != nil {
 		log.Println("did not get response", err)
 		return x, err
@@ -65,31 +67,31 @@ func GetAndReturnIdentifier(w http.ResponseWriter, r *http.Request, body string)
 
 // PostAndSend is a handler that POSTs data and returns the response
 func PostAndSend(w http.ResponseWriter, r *http.Request, body string, payload io.Reader) {
-	data, err := PostRequest(body, payload)
+	data, err := erpc.PostRequest(body, payload)
 	if err != nil {
 		log.Println("did not receive success response", err)
-		responseHandler(w, StatusBadRequest)
+		erpc.ResponseHandler(w, erpc.StatusBadRequest)
 		return
 	}
 	var x kycDepositResponse
 	err = json.Unmarshal(data, &x)
 	if err != nil {
 		log.Println("did not unmarshal json", err)
-		responseHandler(w, StatusInternalServerError)
+		erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 		return
 	}
-	MarshalSend(w, x)
+	erpc.MarshalSend(w, x)
 }
 
 func intentDeposit() {
 	// curl 'https://sandbox-api.anchorusd.com/transfer/deposit?account=GBP3XOFYC6TWUIRZAB7MB6MTUZBCREAYB4E7XKE3OWDP75VU5JB74ZF6&asset_code=USD&email_address=j%40anchorusd.com
 	http.HandleFunc("/user/anchorusd/deposit/intent", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
-		checkOrigin(w, r)
+		erpc.CheckGet(w, r)
+		erpc.CheckOrigin(w, r)
 
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil {
-			responseHandler(w, StatusUnauthorized)
+			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
@@ -97,29 +99,29 @@ func intentDeposit() {
 			"&asset_code=USD&email_address=" + prepUser.Email
 		x, err := GetAndReturnIdentifier(w, r, body) // we could return the identifier and save it if we have to. But the user has to click through anyawy and we could call the other endpoint from the frontend, so would need to discuss before we do that here
 		if err != nil {
-			responseHandler(w, StatusInternalServerError)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
 
 		prepUser.AnchorKYC.DepositIdentifier = x.Identifier
 		err = prepUser.Save()
 		if err != nil {
-			responseHandler(w, StatusInternalServerError)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
 
-		MarshalSend(w, x)
+		erpc.MarshalSend(w, x)
 	})
 }
 
 func kycDeposit() {
 	http.HandleFunc("/user/anchorusd/deposit/kyc", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
-		checkOrigin(w, r)
+		erpc.CheckGet(w, r)
+		erpc.CheckOrigin(w, r)
 
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil {
-			responseHandler(w, StatusUnauthorized)
+			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
@@ -149,12 +151,12 @@ func intentWithdraw() {
 	// curl 'https://sandbox-api.anchorusd.com/transfer/withdraw?type=bank_account&asset_code=USD&email_address=j%40anchorusd.com
 	http.HandleFunc("/user/anchorusd/withdraw/intent", func(w http.ResponseWriter, r *http.Request) {
 		// the withdraw endpoint doesn't return an identifier and we'd have to parse some stuff ourselves. Ugly hack and we shouldn't really have to do this, should be fixed by Anchor
-		checkGet(w, r)
-		checkOrigin(w, r)
+		erpc.CheckGet(w, r)
+		erpc.CheckOrigin(w, r)
 
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil {
-			responseHandler(w, StatusUnauthorized)
+			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
@@ -164,29 +166,29 @@ func intentWithdraw() {
 
 		x, err := GetAndReturnIdentifier(w, r, body) // we could return the identifier and save it if we have to. But the user has to click through anyawy and we could call the other endpoint from the frontend, so would need to discuss before we do that here
 		if err != nil {
-			responseHandler(w, StatusInternalServerError)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
 
 		prepUser.AnchorKYC.WithdrawIdentifier = x.Identifier
 		err = prepUser.Save()
 		if err != nil {
-			responseHandler(w, StatusInternalServerError)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
 
-		MarshalSend(w, x)
+		erpc.MarshalSend(w, x)
 	})
 }
 
 func kycWithdraw() {
 	http.HandleFunc("/user/anchorusd/withdraw/kyc", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
-		checkOrigin(w, r)
+		erpc.CheckGet(w, r)
+		erpc.CheckOrigin(w, r)
 
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil {
-			responseHandler(w, StatusUnauthorized)
+			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 

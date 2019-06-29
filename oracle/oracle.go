@@ -4,7 +4,7 @@ package oracle
 // right now, most are just placehlders, but in the future, they should call
 // remote APIs and act as oracles
 import (
-	utils "github.com/YaleOpenLab/openx/utils"
+	utils "github.com/Varunram/essentials/utils"
 )
 
 // MonthlyBill returns the power tariffs and any data that we need to certify
@@ -33,15 +33,4 @@ func MonthlyBillInFloat() float64 {
 	priceOfElectricity := 0.2
 	averageConsumption := float64(600)
 	return priceOfElectricity * averageConsumption
-}
-
-// ExchangeXLMforUSD retrieves the current price of XLM/USD and then returns the USD amount
-// that the XLM deposited is worth and takes a percentage premium that emulates
-// how real world exchanges would behave. This fee is 0.01% for now
-func ExchangeXLMforUSD(amount string) float64 {
-	// defines the rate for 1 usd = x XLM. Currently hardcoded to 10
-	amountF := utils.StoF(amount)
-	// exchangeRate := 0.1 // hardcode for now, can query cmc apis later
-	exchangeRate := 10000000.0 // rig the exchange rate so that we can test some stuff
-	return amountF * exchangeRate
 }

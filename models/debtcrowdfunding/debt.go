@@ -3,14 +3,14 @@ package investmentcrowdfunding
 import (
 	"log"
 
+	assets "github.com/Varunram/essentials/crypto/xlm/assets"
+	issuer "github.com/Varunram/essentials/crypto/xlm/issuer"
+	wallet "github.com/Varunram/essentials/crypto/xlm/wallet"
+	utils "github.com/Varunram/essentials/utils"
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
 	models "github.com/YaleOpenLab/openx/models"
 	notif "github.com/YaleOpenLab/openx/notif"
-	utils "github.com/YaleOpenLab/openx/utils"
-	assets "github.com/YaleOpenLab/openx/xlm/assets"
-	issuer "github.com/YaleOpenLab/openx/xlm/issuer"
-	wallet "github.com/YaleOpenLab/openx/xlm/wallet"
 	"github.com/pkg/errors"
 )
 

@@ -1,13 +1,9 @@
 package notif
 
 import (
-	"github.com/pkg/errors"
-	"log"
-	"net/smtp"
-
+	email "github.com/Varunram/essentials/email"
+	utils "github.com/Varunram/essentials/utils"
 	consts "github.com/YaleOpenLab/openx/consts"
-	utils "github.com/YaleOpenLab/openx/utils"
-	"github.com/spf13/viper"
 )
 
 // package notif is used to send out notifications regarding important events that take
@@ -17,34 +13,6 @@ import (
 var footerString = "Have a nice day!\n\nWarm Regards, \nThe OpenSolar Team\n\n\n\n" +
 	"You're receiving this email because your contact was given" +
 	" on the opensolar platform for receiving notifications on orders in which you're a party.\n\n\n"
-
-// sendMail is a handler for sending out an email to an entity, reading required params
-// from the config file
-func sendMail(body string, to string) error {
-	var err error
-	// read from config.yaml in the working directory
-	viper.SetConfigType("yaml")
-	viper.SetConfigName("config")
-	viper.AddConfigPath(".")
-	err = viper.ReadInConfig()
-	if err != nil {
-		return errors.Wrap(err, "error while reading email values from config file")
-	}
-	log.Println("SENDING EMAIL: ", viper.Get("email"), viper.Get("password"))
-	from := viper.Get("email").(string)    // interface to string
-	pass := viper.Get("password").(string) // interface to string
-	auth := smtp.PlainAuth("", from, pass, "smtp.gmail.com")
-	// to can also be an array of addresses if needed
-	msg := "From: " + from + "\n" +
-		"To: " + to + "\n" +
-		"Subject: OpenSolar Notification\n\n" + body
-
-	err = smtp.SendMail("smtp.gmail.com:587", auth, from, []string{to}, []byte(msg))
-	if err != nil {
-		return errors.Wrap(err, "smtp error")
-	}
-	return nil
-}
 
 // SendInvestmentNotifToRecipient sends a notification to the recipient when an investor
 // invests in an order he's the recipient of
@@ -58,7 +26,7 @@ func SendInvestmentNotifToRecipient(projIndex int, to string, recpPbTrustHash st
 		"Your debt trusted asset hash is: https://testnet.steexp.com/tx/" + recpDebtTrustHash + "\n" +
 		"Your debt asset hash is: https://testnet.steexp.com/tx/" + recpDebtAssetHash + "\n\n\n" +
 		footerString
-	return sendMail(body, to)
+	return email.SendMail(body, to)
 }
 
 // SendInvestmentNotifToRecipientOZ sends a notification to the recipient as part of the opzones platform
@@ -70,7 +38,7 @@ func SendInvestmentNotifToRecipientOZ(projIndex int, to string, recpDebtTrustHas
 		"Your debt trusted asset hash is: https://testnet.steexp.com/tx/" + recpDebtTrustHash + "\n" +
 		"Your debt asset hash is: https://testnet.steexp.com/tx/" + recpDebtAssetHash + "\n\n\n" +
 		footerString
-	return sendMail(body, to)
+	return email.SendMail(body, to)
 }
 
 // SendInvestmentNotifToInvestor sends a notification to the investor when he invests
@@ -86,7 +54,7 @@ func SendInvestmentNotifToInvestor(projIndex int, to string, stableHash string, 
 		"Your trusted asset hash is: https://testnet.steexp.com/tx/" + trustHash + "\n" +
 		"Your investment asset hash is: https://testnet.steexp.com/tx/" + assetHash + "\n\n\n" +
 		footerString
-	return sendMail(body, to)
+	return email.SendMail(body, to)
 }
 
 // SendSeedInvestmentNotifToInvestor sends a notification to the user after seed investment
@@ -101,7 +69,7 @@ func SendSeedInvestmentNotifToInvestor(projIndex int, to string, stableHash stri
 		"Your trusted asset hash is: https://testnet.steexp.com/tx/" + trustHash + "\n" +
 		"Your investment asset hash is: https://testnet.steexp.com/tx/" + assetHash + "\n\n\n" +
 		footerString
-	return sendMail(body, to)
+	return email.SendMail(body, to)
 }
 
 // SendPaybackNotifToRecipient sends a notification email to the recipient when he
@@ -114,7 +82,7 @@ func SendPaybackNotifToRecipient(projIndex int, to string, stableUSDHash string,
 		"Stablecoin payment hash is: https://testnet.steexp.com/tx/" + stableUSDHash + "\n" +
 		"Debt asset hash is: https://testnet.steexp.com/tx/" + debtPaybackHash + "\n\n\n" +
 		footerString
-	return sendMail(body, to)
+	return email.SendMail(body, to)
 }
 
 // SendPaybackNotifToInvestor sends a notification email to the investor when the recipient
@@ -127,7 +95,7 @@ func SendPaybackNotifToInvestor(projIndex int, to string, stableUSDHash string, 
 		"Stablecoin payment hash is: https://testnet.steexp.com/tx/" + stableUSDHash + "\n" +
 		"Debt asset hash is: https://testnet.steexp.com/tx/" + debtPaybackHash + "\n\n\n" +
 		footerString
-	return sendMail(body, to)
+	return email.SendMail(body, to)
 }
 
 // SendUnlockNotifToRecipient sends a notification email to the investor when the recipient
@@ -140,7 +108,7 @@ func SendUnlockNotifToRecipient(projIndex int, to string) error {
 		"If you choose to not accept the given investment in your project, please be warned that your reputation score " +
 		"will be adjusted accordingly and this may affect any future proposal that you seek funding for on the platform\n\n" +
 		footerString
-	return sendMail(body, to)
+	return email.SendMail(body, to)
 }
 
 // SendUnlockNotifToRecipientOZ sends an unlock notification as part of the opzones platform
@@ -152,7 +120,7 @@ func SendUnlockNotifToRecipientOZ(projIndex int, to string) error {
 		"If you choose to not accept the given investment in your project, please be warned that your reputation score " +
 		"will be adjusted accordingly and this may affect any future proposal that you seek funding for on the platform\n\n" +
 		footerString
-	return sendMail(body, to)
+	return email.SendMail(body, to)
 }
 
 // SendEmail is a hlper for the rpc to send an email to an entity
@@ -161,7 +129,7 @@ func SendEmail(message string, to string, name string) error {
 	startString := "Greetings from the opensolar platform! \n\n" +
 		"We're writing to let you know that " + name + " has sent you a message. The message contents follow: \n\n"
 	body := startString + message + "\n\n\n" + footerString
-	return sendMail(body, to)
+	return email.SendMail(body, to)
 }
 
 // SendAlertEmail sends an alert email
@@ -169,7 +137,7 @@ func SendAlertEmail(message string, to string) error {
 	startString := "Greetings from the opensolar platform! \n\n" +
 		"We're writing to let you know that you have received a message from the platform: \n\n\n" + message
 	body := startString + "\n\n\n" + footerString
-	return sendMail(body, to)
+	return email.SendMail(body, to)
 }
 
 // SendPaybackAlertEmail sends a payback alert email. We don't know if the user has paid and send
@@ -179,7 +147,7 @@ func SendPaybackAlertEmail(projIndex int, to string) error {
 		"This is a kind reminder to let you know that your payment is due this period for project numbered: " + utils.ItoS(projIndex) +
 		"\n\n If you have already paid or have received a donation towards this month, please ignore this alert."
 	body := startString + "\n\n\n" + footerString
-	return sendMail(body, to)
+	return email.SendMail(body, to)
 }
 
 // SendNicePaybackAlertEmail sends an email when the amount for 2 payment cycles is due
@@ -188,7 +156,7 @@ func SendNicePaybackAlertEmail(projIndex int, to string) error {
 		"This is a kind reminder to let you know that your payment is due this period for project numbered: " + utils.ItoS(projIndex) +
 		"\n\n Please payback at the earliest."
 	body := startString + "\n\n\n" + footerString
-	return sendMail(body, to)
+	return email.SendMail(body, to)
 }
 
 // SendSternPaybackAlertEmail sends an email when the amount for 4 payment cycles is due.
@@ -197,7 +165,7 @@ func SendSternPaybackAlertEmail(projIndex int, to string) error {
 		"We're writing to let you know that your payment is due this period for project numbered: " + utils.ItoS(projIndex) +
 		"\n\n Please payback within two payback cycles to avoid re-routing of power services."
 	body := startString + "\n\n\n" + footerString
-	return sendMail(body, to)
+	return email.SendMail(body, to)
 }
 
 // SendDisconnectionEmail sends an email when the amount for 6 payment cycles is due
@@ -206,7 +174,7 @@ func SendDisconnectionEmail(projIndex int, to string) error {
 		"We're writing to let you know that electricity produced from your project numbered: " + utils.ItoS(projIndex) +
 		"\n\nHas been redirected towards the main power grid. Please contact your guarantor to resume services"
 	body := startString + "\n\n\n" + footerString
-	return sendMail(body, to)
+	return email.SendMail(body, to)
 }
 
 // SendDisconnectionEmailI sends an email to the investor when the amount for 6 payment cycles is due on the recipient's end
@@ -217,7 +185,7 @@ func SendDisconnectionEmailI(projIndex int, to string) error {
 		"We are constantly monitoring this situation and will be continuing to send you emails on the same.\n\n" +
 		"Please feel free to write to support with your queries in the meantime."
 	body := startString + "\n\n\n" + footerString
-	return sendMail(body, to)
+	return email.SendMail(body, to)
 }
 
 // SendSternPaybackAlertEmailI sends a stern payback email notification to the investor
@@ -230,7 +198,7 @@ func SendSternPaybackAlertEmailI(projIndex int, to string) error {
 		"We are constantly monitoring this situation and will be continuing to send you emails on the same.\n\n" +
 		"Please feel free to write to support with your queries in the meantime."
 	body := startString + "\n\n\n" + footerString
-	return sendMail(body, to)
+	return email.SendMail(body, to)
 }
 
 // SendSternPaybackAlertEmailG sends a stern payback email notification to the guarantor
@@ -243,7 +211,7 @@ func SendSternPaybackAlertEmailG(projIndex int, to string) error {
 		"We are constantly monitoring this situation and will be continuing to send you emails on the same.\n\n" +
 		"Please feel free to write to support with your queries in the meantime."
 	body := startString + "\n\n\n" + footerString
-	return sendMail(body, to)
+	return email.SendMail(body, to)
 }
 
 // SendDisconnectionEmailG sends a disconnection email notification to the guarantor
@@ -257,7 +225,7 @@ func SendDisconnectionEmailG(projIndex int, to string) error {
 		"We are constantly monitoring this situation and will be continuing to send you emails on the same.\n\n" +
 		"Please feel free to write to support with your queries in the meantime."
 	body := startString + "\n\n\n" + footerString
-	return sendMail(body, to)
+	return email.SendMail(body, to)
 }
 
 // SendContractNotification sends a notification after an entity signs a contract
@@ -271,7 +239,7 @@ func SendContractNotification(Hash1 string, Hash2 string, Hash3 string, Hash4 st
 		"Your fourth hash is: https://testnet.steexp.com/tx/" + Hash4 + "\n" +
 		"Your fifth hash is: https://testnet.steexp.com/tx/" + Hash5 + "\n\n\n" +
 		footerString
-	return sendMail(body, to)
+	return email.SendMail(body, to)
 }
 
 // SendTellerShutdownEmail sends the platform an email notifying that the teller has shut down
@@ -283,7 +251,7 @@ func SendTellerShutdownEmail(from string, projIndex string, deviceId string, tx1
 		"Tx2: https://testnet.steexp.com/tx/" + tx2 + "\n\n" +
 		"Please tend to this situation at the earliest." + "\n\n\n" +
 		footerString
-	return sendMail(body, consts.PlatformEmail)
+	return email.SendMail(body, consts.PlatformEmail)
 }
 
 // SendTellerPaymentFailedEmail is a notification ot the platform that the teller's payback routine has been disturbed
@@ -292,7 +260,7 @@ func SendTellerPaymentFailedEmail(from string, projIndex string, deviceId string
 		"We're writing to let you know that the teller encountered an error, didn't result in automatic payback and requires your immediate action. " +
 		"Please tend to this situation at the earliest." + "\n\n\n" +
 		footerString
-	return sendMail(body, consts.PlatformEmail)
+	return email.SendMail(body, consts.PlatformEmail)
 }
 
 // SendTellerDownEmail is an email to the platform notifying that the teller for a particular project is down.
@@ -301,7 +269,7 @@ func SendTellerDownEmail(projIndex int, recpIndex int) error {
 		" installed on behalf of recipient with index: " + utils.ItoS(recpIndex) + " has not been responding to pings for a while. Please take action at " +
 		"the earliest," + "\n\n\n" +
 		footerString
-	return sendMail(body, consts.PlatformEmail)
+	return email.SendMail(body, consts.PlatformEmail)
 }
 
 // SendSecretsEmail is an email to trusted social contacts notifying that a user has shared a secret with them
@@ -310,19 +278,19 @@ func SendSecretsEmail(userEmail string, email1 string, email2 string, email3 str
 		" has designated you as a trusted entity. Towards this, we request that you keep the attached secret in a safe and secure place and provide " +
 		"it to the above user in case they request for it. \n\n" + "SECRET:\n\n"
 	body1 := bodyBase + secret1 + "\n\n\n" + footerString
-	err := sendMail(body1, email1)
+	err := email.SendMail(body1, email1)
 	if err != nil {
 		return err
 	}
 
 	body2 := bodyBase + secret2 + "\n\n\n" + footerString
-	err = sendMail(body2, email2)
+	err = email.SendMail(body2, email2)
 	if err != nil {
 		return err
 	}
 
 	body3 := bodyBase + secret3 + "\n\n\n" + footerString
-	err = sendMail(body3, email3)
+	err = email.SendMail(body3, email3)
 	if err != nil {
 		return err
 	}
@@ -331,10 +299,10 @@ func SendSecretsEmail(userEmail string, email1 string, email2 string, email3 str
 }
 
 // SendPasswordResetEmail sends a password reset email to the email address of the user
-func SendPasswordResetEmail(email string, vCode string) error {
+func SendPasswordResetEmail(to string, vCode string) error {
 	body := "Greetings from the opensolar platform! \n\nWe're writing to let you know that you requested a password reset recently\n\n" +
 		"Please use this given code along with the link attached in order to reset your password\n\n" +
 		"VERIFICATION CODE: " + vCode + "\n\n\n" + footerString
 
-	return sendMail(body, email)
+	return email.SendMail(body, to)
 }

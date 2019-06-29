@@ -6,7 +6,7 @@ import (
 	"log"
 	"strings"
 
-	utils "github.com/YaleOpenLab/openx/utils"
+	utils "github.com/Varunram/essentials/utils"
 	"github.com/chzyer/readline"
 )
 

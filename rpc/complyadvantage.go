@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 
+	erpc "github.com/Varunram/essentials/rpc"
 	consts "github.com/YaleOpenLab/openx/consts"
 )
 
@@ -115,7 +116,7 @@ func PostAndSendCA(w http.ResponseWriter, r *http.Request, body string, payload 
 	data, err := PostRequestCA(body, payload)
 	if err != nil {
 		log.Println("did not receive success response", err)
-		responseHandler(w, StatusBadRequest)
+		erpc.ResponseHandler(w, erpc.StatusBadRequest)
 		return
 	}
 	log.Println(string(data))
@@ -123,25 +124,25 @@ func PostAndSendCA(w http.ResponseWriter, r *http.Request, body string, payload 
 	err = json.Unmarshal(data, &x)
 	if err != nil {
 		log.Println("did not unmarshal json", err)
-		responseHandler(w, StatusInternalServerError)
+		erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 		return
 	}
-	MarshalSend(w, x)
+	erpc.MarshalSend(w, x)
 }
 
 func searchComplyAdvantage() {
 	http.HandleFunc("/user/ca/search", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
-		checkOrigin(w, r)
+		erpc.CheckGet(w, r)
+		erpc.CheckOrigin(w, r)
 
 		_, err := UserValidateHelper(w, r)
 		if err != nil {
-			responseHandler(w, StatusUnauthorized)
+			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
 		if r.URL.Query()["name"] == nil || r.URL.Query()["birthyear"] == nil {
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -182,28 +183,28 @@ type caAllUserResponse struct {
 
 func getAllCAUsers() {
 	http.HandleFunc("/admin/ca/users/all", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
-		checkOrigin(w, r)
+		erpc.CheckGet(w, r)
+		erpc.CheckOrigin(w, r)
 
 		_, err := UserValidateHelper(w, r)
 		if err != nil {
-			responseHandler(w, StatusUnauthorized)
+			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
 		body := "https://api.complyadvantage.com/users?api_key=" + consts.KYCAPIKey
-		data, err := GetRequest(body)
+		data, err := erpc.GetRequest(body)
 		if err != nil {
-			responseHandler(w, StatusInternalServerError)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
 
 		var x caAllUserResponse
 		err = x.UnmarshalJSON(data)
 		if err != nil {
-			responseHandler(w, StatusInternalServerError)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
-		MarshalSend(w, x)
+		erpc.MarshalSend(w, x)
 	})
 }

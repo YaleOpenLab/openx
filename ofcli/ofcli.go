@@ -6,17 +6,17 @@ import (
 	"log"
 	"os"
 
+	ipfs "github.com/Varunram/essentials/ipfs"
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
-	ipfs "github.com/YaleOpenLab/openx/ipfs"
 	// platform "github.com/YaleOpenLab/openx/platforms"
+	stablecoin "github.com/Varunram/essentials/crypto/stablecoin"
+	wallet "github.com/Varunram/essentials/crypto/xlm/wallet"
+	scan "github.com/Varunram/essentials/scan"
+	utils "github.com/Varunram/essentials/utils"
 	solar "github.com/YaleOpenLab/openx/platforms/opensolar"
 	rpc "github.com/YaleOpenLab/openx/rpc"
-	scan "github.com/YaleOpenLab/openx/scan"
-	stablecoin "github.com/YaleOpenLab/openx/stablecoin"
-	utils "github.com/YaleOpenLab/openx/utils"
-	wallet "github.com/YaleOpenLab/openx/xlm/wallet"
-	// xlm "github.com/YaleOpenLab/openx/xlm"
+	// xlm "github.com/Varunram/essentials/crypto/xlm"
 	flags "github.com/jessevdk/go-flags"
 )
 

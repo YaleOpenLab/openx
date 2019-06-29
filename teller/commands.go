@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	xlm "github.com/YaleOpenLab/openx/xlm"
+	xlm "github.com/Varunram/essentials/crypto/xlm"
 )
 
 // commands.go has a list of all the commands supported by the teller. This is intentionally

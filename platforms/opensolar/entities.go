@@ -4,11 +4,11 @@ import (
 	"github.com/pkg/errors"
 	"strings"
 
+	xlm "github.com/Varunram/essentials/crypto/xlm"
+	wallet "github.com/Varunram/essentials/crypto/xlm/wallet"
+	utils "github.com/Varunram/essentials/utils"
 	database "github.com/YaleOpenLab/openx/database"
 	notif "github.com/YaleOpenLab/openx/notif"
-	utils "github.com/YaleOpenLab/openx/utils"
-	xlm "github.com/YaleOpenLab/openx/xlm"
-	wallet "github.com/YaleOpenLab/openx/xlm/wallet"
 	"github.com/boltdb/bolt"
 )
 

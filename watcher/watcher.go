@@ -8,8 +8,9 @@ import (
 	"strings"
 	"time"
 
+	erpc "github.com/Varunram/essentials/rpc"
+	utils "github.com/Varunram/essentials/utils"
 	rpc "github.com/YaleOpenLab/openx/rpc"
-	utils "github.com/YaleOpenLab/openx/utils"
 	"github.com/spf13/viper"
 )
 
@@ -34,7 +35,7 @@ func main() {
 
 	for {
 		payload := strings.NewReader("access_token=" + accessToken)
-		data, err := rpc.PutRequest(body, payload)
+		data, err := erpc.PutRequest(body, payload)
 		if err != nil {
 			log.Println("did not receive success response", err)
 			return

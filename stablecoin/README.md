@@ -1,3 +1,0 @@
-# Package Stablecoin
-
-Package stablecoin contains a dummy stablecoin that will interact with the platform as described above. One needs to send xlm to the stablecoin's address and can get back STABLEUSD in return. In a real world scenario, the stablecoin would accept wire transfers and issue stablecoin in return. The platform could technically accept USD via a payment provider like Stripe or PayPal but is at a risk of chargebacks, so its safer to depend on a stablecoin issuer who'd handle the risk on our behalf for a fee.  This might also depend on jurisdiction (eg. where the receiving bank is based and whether it allows for chargebacks).

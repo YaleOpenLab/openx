@@ -4,17 +4,17 @@ import (
 	"log"
 	"time"
 
+	stablecoin "github.com/Varunram/essentials/crypto/stablecoin"
+	xlm "github.com/Varunram/essentials/crypto/xlm"
+	assets "github.com/Varunram/essentials/crypto/xlm/assets"
+	issuer "github.com/Varunram/essentials/crypto/xlm/issuer"
+	wallet "github.com/Varunram/essentials/crypto/xlm/wallet"
+	utils "github.com/Varunram/essentials/utils"
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
 	models "github.com/YaleOpenLab/openx/models"
 	notif "github.com/YaleOpenLab/openx/notif"
 	oracle "github.com/YaleOpenLab/openx/oracle"
-	stablecoin "github.com/YaleOpenLab/openx/stablecoin"
-	utils "github.com/YaleOpenLab/openx/utils"
-	xlm "github.com/YaleOpenLab/openx/xlm"
-	assets "github.com/YaleOpenLab/openx/xlm/assets"
-	issuer "github.com/YaleOpenLab/openx/xlm/issuer"
-	wallet "github.com/YaleOpenLab/openx/xlm/wallet"
 	"github.com/pkg/errors"
 )
 

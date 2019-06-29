@@ -3,9 +3,9 @@ package database
 import (
 	"github.com/pkg/errors"
 
-	oracle "github.com/YaleOpenLab/openx/oracle"
-	utils "github.com/YaleOpenLab/openx/utils"
-	xlm "github.com/YaleOpenLab/openx/xlm"
+	tickers "github.com/Varunram/essentials/crypto/exchangetickers"
+	xlm "github.com/Varunram/essentials/crypto/xlm"
+	utils "github.com/Varunram/essentials/utils"
 	"github.com/boltdb/bolt"
 )
 
@@ -173,7 +173,7 @@ func (a *Investor) CanInvest(targetBalance string) bool {
 	}
 
 	// need to fetch the oracle price here for the order
-	oraclePrice := oracle.ExchangeXLMforUSD(xlmBalance)
+	oraclePrice := tickers.ExchangeXLMforUSD(xlmBalance)
 	if (utils.StoF(usdBalance) > utils.StoF(targetBalance)) || oraclePrice > utils.StoF(targetBalance) {
 		// return true since the user has enough USD balance to pay for the order
 		return true

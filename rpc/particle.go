@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	//utils "github.com/YaleOpenLab/openx/utils"
+	//utils "github.com/Varunram/essentials/utils"
+	erpc "github.com/Varunram/essentials/rpc"
 	"io"
 	"strings"
 )
@@ -117,30 +118,30 @@ type ParticleEventStream struct {
 
 // GetAndSendJson is a handler that makes a get request and returns json data
 func GetAndSendJson(w http.ResponseWriter, r *http.Request, body string, x interface{}) {
-	data, err := GetRequest(body)
+	data, err := erpc.GetRequest(body)
 	if err != nil {
 		log.Println("did not get response", err)
-		responseHandler(w, StatusBadRequest)
+		erpc.ResponseHandler(w, erpc.StatusBadRequest)
 		return
 	}
 	// now data is in byte, we need the other structure now
 	err = json.Unmarshal(data, &x)
 	if err != nil {
 		log.Println("did not unmarshal json", err)
-		responseHandler(w, StatusInternalServerError)
+		erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 		return
 	}
-	MarshalSend(w, x)
+	erpc.MarshalSend(w, x)
 }
 
 // GetAndSendByte is a handler that makes a get request and returns byte data. THis is used
 // in cases for which we don;t know the format of the returned data, so we can't parse
 // what stuff is in here.
 func GetAndSendByte(w http.ResponseWriter, r *http.Request, body string) {
-	data, err := GetRequest(body)
+	data, err := erpc.GetRequest(body)
 	if err != nil {
 		log.Println("did not get response", err)
-		responseHandler(w, StatusBadRequest)
+		erpc.ResponseHandler(w, erpc.StatusBadRequest)
 		return
 	}
 
@@ -149,20 +150,20 @@ func GetAndSendByte(w http.ResponseWriter, r *http.Request, body string) {
 
 // PutAndSend is a handler that PUTs data and returns the response
 func PutAndSend(w http.ResponseWriter, r *http.Request, body string, payload io.Reader) {
-	data, err := PutRequest(body, payload)
+	data, err := erpc.PutRequest(body, payload)
 	if err != nil {
 		log.Println("did not receive success response", err)
-		responseHandler(w, StatusBadRequest)
+		erpc.ResponseHandler(w, erpc.StatusBadRequest)
 		return
 	}
 	var x ParticlePingResponse
 	err = json.Unmarshal(data, &x)
 	if err != nil {
 		log.Println("did not unmarshal json", err)
-		responseHandler(w, StatusInternalServerError)
+		erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 		return
 	}
-	MarshalSend(w, x)
+	erpc.MarshalSend(w, x)
 }
 
 // listAllDevices lists all the devices registered to the user holding the specific access token
@@ -170,11 +171,11 @@ func listAllDevices() {
 	// make a curl request out to lcoalhost and get the ping response
 	http.HandleFunc("/particle/devices", func(w http.ResponseWriter, r *http.Request) {
 		// validate if the person requesting this is a vlaid user on the platform
-		checkGet(w, r)
-		checkOrigin(w, r)
+		erpc.CheckGet(w, r)
+		erpc.CheckOrigin(w, r)
 		_, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["accessToken"] == nil {
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -188,11 +189,11 @@ func listAllDevices() {
 // listProductInfo liusts all the producsts belonging to the user with the access token
 func listProductInfo() {
 	http.HandleFunc("/particle/productinfo", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
-		checkOrigin(w, r)
+		erpc.CheckGet(w, r)
+		erpc.CheckOrigin(w, r)
 		_, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["accessToken"] == nil || r.URL.Query()["productInfo"] == nil {
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -209,11 +210,11 @@ func listProductInfo() {
 func getDeviceInfo() {
 	http.HandleFunc("/particle/deviceinfo", func(w http.ResponseWriter, r *http.Request) {
 		// validate if the person requesting this is a vlaid user on the platform
-		checkGet(w, r)
-		checkOrigin(w, r)
+		erpc.CheckGet(w, r)
+		erpc.CheckOrigin(w, r)
 		_, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["accessToken"] == nil || r.URL.Query()["deviceId"] == nil {
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -230,11 +231,11 @@ func getDeviceInfo() {
 // dashboard of sorts where people can see if their devices are online or not
 func pingDevice() {
 	http.HandleFunc("/particle/deviceping", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
-		checkOrigin(w, r)
+		erpc.CheckGet(w, r)
+		erpc.CheckOrigin(w, r)
 		_, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["accessToken"] == nil || r.URL.Query()["deviceId"] == nil {
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -252,11 +253,11 @@ func pingDevice() {
 // in rainbow colors or not
 func signalDevice() {
 	http.HandleFunc("/particle/devicesignal", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
-		checkOrigin(w, r)
+		erpc.CheckGet(w, r)
+		erpc.CheckOrigin(w, r)
 		_, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["signal"] == nil || r.URL.Query()["accessToken"] == nil {
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -264,7 +265,7 @@ func signalDevice() {
 		deviceId := r.URL.Query()["deviceId"][0]
 		signal := r.URL.Query()["signal"][0]
 		if signal != "on" && signal != "off" {
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -285,11 +286,11 @@ func signalDevice() {
 // serialNumberInfo gets the device id of a device on recipt of the serial number
 func serialNumberInfo() {
 	http.HandleFunc("/particle/getdeviceid", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
-		checkOrigin(w, r)
+		erpc.CheckGet(w, r)
+		erpc.CheckOrigin(w, r)
 		_, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["serialNumber"] == nil || r.URL.Query()["accessToken"] == nil {
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -305,11 +306,11 @@ func serialNumberInfo() {
 // getDiagnosticsLast gets a list of the last diagnostic report that belongs to the specific device
 func getDiagnosticsLast() {
 	http.HandleFunc("/particle/diag/last", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
-		checkOrigin(w, r)
+		erpc.CheckGet(w, r)
+		erpc.CheckOrigin(w, r)
 		_, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["accessToken"] == nil || r.URL.Query()["deviceId"] == nil {
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -325,11 +326,11 @@ func getDiagnosticsLast() {
 // accessToken for authentication
 func getAllDiagnostics() {
 	http.HandleFunc("/particle/diag/all", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
-		checkOrigin(w, r)
+		erpc.CheckGet(w, r)
+		erpc.CheckOrigin(w, r)
 		_, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["accessToken"] == nil || r.URL.Query()["deviceId"] == nil {
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -344,11 +345,11 @@ func getAllDiagnostics() {
 // getParticleUserInfo gets the information of a particular user associated with an accessToken
 func getParticleUserInfo() {
 	http.HandleFunc("/particle/user/info", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
-		checkOrigin(w, r)
+		erpc.CheckGet(w, r)
+		erpc.CheckOrigin(w, r)
 		_, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["accessToken"] == nil {
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -362,11 +363,11 @@ func getParticleUserInfo() {
 // getAllSims gets the informatiomn of all sim card that areassociated with the particular accessToken
 func getAllSims() {
 	http.HandleFunc("/particle/sims", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
-		checkOrigin(w, r)
+		erpc.CheckGet(w, r)
+		erpc.CheckOrigin(w, r)
 		_, err := UserValidateHelper(w, r)
 		if err != nil || r.URL.Query()["accessToken"] == nil {
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 

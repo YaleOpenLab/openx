@@ -10,12 +10,12 @@ import (
 	"time"
 	//"encoding/json"
 
+	ipfs "github.com/Varunram/essentials/ipfs"
+	utils "github.com/Varunram/essentials/utils"
 	consts "github.com/YaleOpenLab/openx/consts"
-	ipfs "github.com/YaleOpenLab/openx/ipfs"
 	oracle "github.com/YaleOpenLab/openx/oracle"
-	utils "github.com/YaleOpenLab/openx/utils"
 	//	rpc "github.com/YaleOpenLab/openx/rpc"
-	xlm "github.com/YaleOpenLab/openx/xlm"
+	xlm "github.com/Varunram/essentials/crypto/xlm"
 )
 
 // BlockStamp gets the latest block hash

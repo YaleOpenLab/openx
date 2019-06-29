@@ -5,16 +5,17 @@ import (
 	"log"
 	"time"
 
+	xlm "github.com/Varunram/essentials/crypto/xlm"
+	assets "github.com/Varunram/essentials/crypto/xlm/assets"
+	escrow "github.com/Varunram/essentials/crypto/xlm/escrow"
+	issuer "github.com/Varunram/essentials/crypto/xlm/issuer"
+	wallet "github.com/Varunram/essentials/crypto/xlm/wallet"
+	utils "github.com/Varunram/essentials/utils"
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
 	model "github.com/YaleOpenLab/openx/models/munibond"
 	notif "github.com/YaleOpenLab/openx/notif"
 	oracle "github.com/YaleOpenLab/openx/oracle"
-	utils "github.com/YaleOpenLab/openx/utils"
-	xlm "github.com/YaleOpenLab/openx/xlm"
-	assets "github.com/YaleOpenLab/openx/xlm/assets"
-	issuer "github.com/YaleOpenLab/openx/xlm/issuer"
-	wallet "github.com/YaleOpenLab/openx/xlm/wallet"
 )
 
 // This script represents the smart contract that powers a project in this particular platform. Designed to be monolithic by design
@@ -444,14 +445,14 @@ func sendRecipientAssets(projIndex int) error {
 		return errors.Wrap(err, "couldn't decrypt seed")
 	}
 
-	escrowPubkey, err := InitEscrow(project.Index, consts.EscrowPwd, recipient.U.StellarWallet.PublicKey, recpSeed)
+	escrowPubkey, err := escrow.InitEscrow(project.Index, consts.EscrowPwd, recipient.U.StellarWallet.PublicKey, recpSeed)
 	if err != nil {
 		return errors.Wrap(err, "error while initializing issuer")
 	}
 
 	log.Println("successfully setup escrow")
 	project.EscrowPubkey = escrowPubkey
-	err = TransferFundsToEscrow(project.TotalValue, project.Index, project.EscrowPubkey)
+	err = escrow.TransferFundsToEscrow(project.TotalValue, project.Index, project.EscrowPubkey)
 	if err != nil {
 		log.Println(err)
 		return errors.Wrap(err, "could not transfer funds to the escrow, quitting!")
@@ -576,7 +577,7 @@ func DistributePayments(recipientSeed string, escrowPubkey string, projIndex int
 		// send x to this pubkey
 		txAmount := percentage * amountGivenBack
 		// here we send funds from the 2of2 multisig. Platform signs by default
-		err = SendFundsFromEscrow(project.EscrowPubkey, pubkey, recipientSeed, utils.FtoS(txAmount), "returns")
+		err = escrow.SendFundsFromEscrow(project.EscrowPubkey, pubkey, recipientSeed, utils.FtoS(txAmount), "returns")
 		if err != nil {
 			log.Println(err) // if there is an error with one payback, doesn't mean we should stop and wait for the others
 			continue

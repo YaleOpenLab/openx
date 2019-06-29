@@ -5,10 +5,11 @@ import (
 	"log"
 	"net/http"
 
+	erpc "github.com/Varunram/essentials/rpc"
+	utils "github.com/Varunram/essentials/utils"
 	database "github.com/YaleOpenLab/openx/database"
 	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
 	opzones "github.com/YaleOpenLab/openx/platforms/ozones"
-	utils "github.com/YaleOpenLab/openx/utils"
 )
 
 func setupEntityRPCs() {
@@ -26,7 +27,7 @@ func setupEntityRPCs() {
 // EntityValidateHelper is a helper that helps validate an entity
 func EntityValidateHelper(w http.ResponseWriter, r *http.Request) (opensolar.Entity, error) {
 	// first validate the investor or anyone would be able to set device ids
-	checkGet(w, r)
+	erpc.CheckGet(w, r)
 	var prepInvestor opensolar.Entity
 	// need to pass the pwhash param here
 	if r.URL.Query() == nil || r.URL.Query()["username"] == nil ||
@@ -45,77 +46,77 @@ func EntityValidateHelper(w http.ResponseWriter, r *http.Request) (opensolar.Ent
 // validateEntity is an endpoint that vlaidates is a specific entity is registered on the platform
 func validateEntity() {
 	http.HandleFunc("/entity/validate", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
+		erpc.CheckGet(w, r)
 		prepEntity, err := EntityValidateHelper(w, r)
 		if err != nil {
 			log.Println("Error while validating entity", err)
-			responseHandler(w, StatusUnauthorized)
+			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
-		MarshalSend(w, prepEntity)
+		erpc.MarshalSend(w, prepEntity)
 	})
 }
 
 // getStage0Contracts gets a list of all the pre origianted contracts on the platform
 func getStage0Contracts() {
 	http.HandleFunc("/entity/stage0", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
+		erpc.CheckGet(w, r)
 		prepEntity, err := EntityValidateHelper(w, r)
 		if err != nil {
 			log.Println("Error while validating entity", err)
-			responseHandler(w, StatusUnauthorized)
+			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
 		x, err := opensolar.RetrieveOriginatorProjects(opensolar.Stage0.Number, prepEntity.U.Index)
 		if err != nil {
 			log.Println("Error while retrieving originator project", err)
-			responseHandler(w, StatusInternalServerError)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
-		MarshalSend(w, x)
+		erpc.MarshalSend(w, x)
 	})
 }
 
 // getStage1Contracts gets a list of all the originated contracts on the platform
 func getStage1Contracts() {
 	http.HandleFunc("/entity/stage1", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
+		erpc.CheckGet(w, r)
 		prepEntity, err := EntityValidateHelper(w, r)
 		if err != nil {
 			log.Println("Error while validating entity", err)
-			responseHandler(w, StatusUnauthorized)
+			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
 		x, err := opensolar.RetrieveOriginatorProjects(opensolar.Stage1.Number, prepEntity.U.Index)
 		if err != nil {
 			log.Println("Error while retrieving originator projects", err)
-			responseHandler(w, StatusInternalServerError)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
-		MarshalSend(w, x)
+		erpc.MarshalSend(w, x)
 	})
 }
 
 // getStage2Contracts gets a list of all the proposed contracts on the platform
 func getStage2Contracts() {
 	http.HandleFunc("/entity/stage2", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
+		erpc.CheckGet(w, r)
 		prepEntity, err := EntityValidateHelper(w, r)
 		if err != nil {
 			log.Println("Error while validating entity", err)
-			responseHandler(w, StatusUnauthorized)
+			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
 		x, err := opensolar.RetrieveContractorProjects(opensolar.Stage2.Number, prepEntity.U.Index)
 		if err != nil {
 			log.Println("Error while retrieving contractor projects", err)
-			responseHandler(w, StatusInternalServerError)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
-		MarshalSend(w, x)
+		erpc.MarshalSend(w, x)
 	})
 }
 
@@ -124,22 +125,22 @@ func getStage2Contracts() {
 func addCollateral() {
 	//func (contractor *Entity) AddCollateral(amount float64, data string) error {
 	http.HandleFunc("/entity/addcollateral", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
+		erpc.CheckGet(w, r)
 		prepEntity, err := EntityValidateHelper(w, r)
 		if err != nil {
-			responseHandler(w, StatusUnauthorized)
+			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 		if r.URL.Query()["amount"] == nil || r.URL.Query()["collateral"] == nil {
 			log.Println("Error while validating entity", err)
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
 		collateralAmount, err := utils.StoFWithCheck(r.URL.Query()["amount"][0])
 		if err != nil {
 			log.Println("Error while converting string to float", err)
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -147,11 +148,11 @@ func addCollateral() {
 		err = prepEntity.AddCollateral(collateralAmount, collateralData)
 		if err != nil {
 			log.Println("Error while adding collateral", err)
-			responseHandler(w, StatusInternalServerError)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
 
-		responseHandler(w, StatusOK)
+		erpc.ResponseHandler(w, erpc.StatusOK)
 	})
 }
 
@@ -161,13 +162,13 @@ func addCollateral() {
 // http://localhost:8080/entity/newproject/opensolar?username=samuel&pwhash=9a768ace36ff3d1771d5c145a544de3d68343b2e76093cb7b2a8ea89ac7f1a20c852e6fc1d71275b43abffefac381c5b906f55c3bcff4225353d02f1d3498758&TotalValue=10500&MoneyRaised=0&Years=5&InterestRate=5.5&Location=Bahams&PanelSize="15x24solarpanels"&Inverter=niceinverter&ChargeRegulator=electro&ControlPanel=nsa&CommBox=satellite&ACTransfer=tesla&SolarCombiner=solarcity&Batteries=siemens&IoTHub=rpi3&Metadata=innovaitveprojectoestablishspacestations&OriginatorFee=105.12&recpIndex=1&AuctionType=blind&PaybackPeriod=2
 func createOpensolarProject() {
 	http.HandleFunc("/entity/newproject/opensolar", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
-		checkOrigin(w, r)
+		erpc.CheckGet(w, r)
+		erpc.CheckOrigin(w, r)
 
 		prepEntity, err := EntityValidateHelper(w, r)
 		if err != nil {
 			log.Println("Error while validating entity", err)
-			responseHandler(w, StatusUnauthorized)
+			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
@@ -182,13 +183,13 @@ func createOpensolarProject() {
 			r.URL.Query()["IoTHub"] == nil || r.URL.Query()["Metadata"] == nil || r.URL.Query()["OriginatorFee"] == nil ||
 			r.URL.Query()["recpIndex"] == nil || r.URL.Query()["AuctionType"] == nil || r.URL.Query()["PaybackPeriod"] == nil {
 			log.Println("Bad request, required params missing!")
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
 		allProjects, err := opensolar.RetrieveAllProjects()
 		if err != nil {
-			responseHandler(w, StatusInternalServerError)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
 
@@ -198,39 +199,39 @@ func createOpensolarProject() {
 		x.TotalValue, err = utils.StoFWithCheck(r.URL.Query()["TotalValue"][0])
 		if err != nil {
 			log.Println("param passed not float, quitting!")
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 		x.EstimatedAcquisition, err = utils.StoICheck(r.URL.Query()["Years"][0])
 		if err != nil {
 			log.Println("param passed not int, quitting!")
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 		x.InterestRate, err = utils.StoFWithCheck(r.URL.Query()["InterestRate"][0])
 		if err != nil {
 			log.Println("param passed not int, quitting!")
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 		x.OriginatorFee, err = utils.StoFWithCheck(r.URL.Query()["OriginatorFee"][0])
 		if err != nil {
 			log.Println("ORiginator fee not float, quitting!")
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
 		x.RecipientIndex, err = utils.StoICheck(r.URL.Query()["recpIndex"][0])
 		if err != nil {
 			log.Println("passed recipient index not int, quitting!")
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
 		_, err = database.RetrieveRecipient(x.RecipientIndex)
 		if err != nil {
 			log.Println("could not retrieve recipient, quitting!")
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -238,7 +239,7 @@ func createOpensolarProject() {
 		x.PaybackPeriod, err = utils.StoICheck(r.URL.Query()["PaybackPeriod"][0])
 		if err != nil {
 			log.Println("payback period not integer, quitting!")
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -268,11 +269,11 @@ func createOpensolarProject() {
 
 		err = x.Save()
 		if err != nil {
-			responseHandler(w, StatusInternalServerError)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
 
-		MarshalSend(w, x)
+		erpc.MarshalSend(w, x)
 	})
 }
 
@@ -281,19 +282,19 @@ func createOpensolarProject() {
 // allow a shift between entity roles)
 func proposeOpensolarProject() {
 	http.HandleFunc("/entity/proposeproject/opensolar", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
-		checkOrigin(w, r)
+		erpc.CheckGet(w, r)
+		erpc.CheckOrigin(w, r)
 
 		prepEntity, err := EntityValidateHelper(w, r)
 		if err != nil {
 			log.Println("Error while validating entity", err)
-			responseHandler(w, StatusUnauthorized)
+			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
 		if r.URL.Query()["projIndex"] == nil || r.URL.Query()["fee"] == nil {
 			log.Println("missing required params, quitting!")
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -306,13 +307,13 @@ func proposeOpensolarProject() {
 		x, err := opensolar.RetrieveProject(projIndex)
 		if err != nil {
 			log.Println("couldn't retrieve project with index")
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 		}
 
 		fee, err := utils.StoFWithCheck(r.URL.Query()["fee"][0])
 		if err != nil {
 			log.Println("fee passed not integer, quitting!")
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 		}
 
 		// the below are the parameters we need to change. Add more here after consulting
@@ -324,24 +325,24 @@ func proposeOpensolarProject() {
 
 		err = x.Save()
 		if err != nil {
-			responseHandler(w, StatusInternalServerError)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
 
-		MarshalSend(w, x)
+		erpc.MarshalSend(w, x)
 	})
 }
 
 // http://localhost:8080/entity/newproject/opzone/constructionbond?username=samuel&pwhash=9a768ace36ff3d1771d5c145a544de3d68343b2e76093cb7b2a8ea89ac7f1a20c852e6fc1d71275b43abffefac381c5b906f55c3bcff4225353d02f1d3498758&Title=opzonetest&Location=SFBay&Description=Mocksecription&InstrumentType=OpZoneConstruction&Amount=10million&CostOfUnit=200000&NoOfUnits=50&SecurityType=SEC1&Tax=10pcofffed&MaturationDate=2040&InterestRate=5.5&Rating=AAA&BondIssuer=FEDGOV&BondHolders=BHolder&Underwriter=WellsFargo
 func createOpzonesCBond() {
 	http.HandleFunc("/entity/newproject/opzone/constructionbond", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
-		checkOrigin(w, r)
+		erpc.CheckGet(w, r)
+		erpc.CheckOrigin(w, r)
 
 		_, err := EntityValidateHelper(w, r)
 		if err != nil {
 			log.Println("Error while validating entity", err)
-			responseHandler(w, StatusUnauthorized)
+			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
@@ -351,7 +352,7 @@ func createOpzonesCBond() {
 			r.URL.Query()["MaturationDate"] == nil || r.URL.Query()["InterestRate"] == nil || r.URL.Query()["Rating"] == nil ||
 			r.URL.Query()["BondIssuer"] == nil || r.URL.Query()["BondHolders"] == nil || r.URL.Query()["Underwriter"] == nil {
 			log.Println("required params missing, quitting!")
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 		}
 
 		var x opzones.ConstructionBond
@@ -359,25 +360,25 @@ func createOpzonesCBond() {
 		x.CostOfUnit, err = utils.StoFWithCheck(r.URL.Query()["CostOfUnit"][0])
 		if err != nil {
 			log.Println("param passed not float, quitting!")
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 		x.NoOfUnits, err = utils.StoICheck(r.URL.Query()["NoOfUnits"][0])
 		if err != nil {
 			log.Println("param passed not int, quitting!")
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 		x.InterestRate, err = utils.StoFWithCheck(r.URL.Query()["InterestRate"][0])
 		if err != nil {
 			log.Println("param passed not float, quitting!")
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 		allCBonds, err := opzones.RetrieveAllConstructionBonds()
 		if err != nil {
 			log.Println("error while retreiveing all construction bonds, quitting!")
-			responseHandler(w, StatusInternalServerError)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
 		x.Index = len(allCBonds) + 1
@@ -400,24 +401,24 @@ func createOpzonesCBond() {
 		err = x.Save()
 		if err != nil {
 			log.Println("error while saving project")
-			responseHandler(w, StatusInternalServerError)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
 
-		MarshalSend(w, x)
+		erpc.MarshalSend(w, x)
 	})
 }
 
 // http://localhost:8080/entity/newproject/opzone/lucoop?username=samuel&pwhash=9a768ace36ff3d1771d5c145a544de3d68343b2e76093cb7b2a8ea89ac7f1a20c852e6fc1d71275b43abffefac381c5b906f55c3bcff4225353d02f1d3498758&Title=lucoop&Location=SFBay&Description=adfemolivingunitcoop&TypeOfUnit=transformable&Amount=300&SecurityType=SEC1&MaturationDate=2040&MonthlyPayment=3000&MemberRights=memberrights&InterestRate=5.5&Rating=AAA&BondIssuer=BWriter&Underwriter=WellsFargo&recpIndex=1
 func createOpzonesLuCoop() {
 	http.HandleFunc("/entity/newproject/opzone/lucoop", func(w http.ResponseWriter, r *http.Request) {
-		checkGet(w, r)
-		checkOrigin(w, r)
+		erpc.CheckGet(w, r)
+		erpc.CheckOrigin(w, r)
 
 		_, err := EntityValidateHelper(w, r)
 		if err != nil {
 			log.Println("Error while validating entity", err)
-			responseHandler(w, StatusUnauthorized)
+			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
@@ -428,7 +429,7 @@ func createOpzonesLuCoop() {
 			r.URL.Query()["MemberRights"] == nil || r.URL.Query()["InterestRate"] == nil || r.URL.Query()["Rating"] == nil ||
 			r.URL.Query()["BondIssuer"] == nil || r.URL.Query()["Underwriter"] == nil || r.URL.Query()["recpIndex"] == nil {
 			log.Println("required params not passed, quitting!")
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -439,7 +440,7 @@ func createOpzonesLuCoop() {
 		x.Amount, err = utils.StoFWithCheck(r.URL.Query()["Amount"][0])
 		if err != nil {
 			log.Println("param passed not float, quitting!")
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 		x.SecurityType = r.URL.Query()["SecurityType"][0]
@@ -447,14 +448,14 @@ func createOpzonesLuCoop() {
 		x.MonthlyPayment, err = utils.StoFWithCheck(r.URL.Query()["MonthlyPayment"][0])
 		if err != nil {
 			log.Println("param passed not float, quitting!")
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 		x.MemberRights = r.URL.Query()["MemberRights"][0]
 		x.InterestRate, err = utils.StoFWithCheck(r.URL.Query()["InterestRate"][0])
 		if err != nil {
 			log.Println("param passed not float, quitting!")
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 		x.Rating = r.URL.Query()["Rating"][0]
@@ -464,14 +465,14 @@ func createOpzonesLuCoop() {
 		x.RecipientIndex, err = utils.StoICheck(r.URL.Query()["recpIndex"][0])
 		if err != nil {
 			log.Println("recpIndex not int, quitting!")
-			responseHandler(w, StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
 		allLuCoops, err := opzones.RetrieveAllLivingUnitCoops()
 		if err != nil {
 			log.Println("Couldn't retriev all living unit coops, quitting!")
-			responseHandler(w, StatusInternalServerError)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
 
@@ -482,10 +483,10 @@ func createOpzonesLuCoop() {
 		err = x.Save()
 		if err != nil {
 			log.Println("error while saving project")
-			responseHandler(w, StatusInternalServerError)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
 
-		MarshalSend(w, x)
+		erpc.MarshalSend(w, x)
 	})
 }

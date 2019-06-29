@@ -5,11 +5,11 @@ import (
 	"github.com/pkg/errors"
 	"log"
 
+	xlm "github.com/Varunram/essentials/crypto/xlm"
+	scan "github.com/Varunram/essentials/scan"
 	database "github.com/YaleOpenLab/openx/database"
 	platform "github.com/YaleOpenLab/openx/platforms"
 	solar "github.com/YaleOpenLab/openx/platforms/opensolar"
-	scan "github.com/YaleOpenLab/openx/scan"
-	xlm "github.com/YaleOpenLab/openx/xlm"
 )
 
 // StartPlatform starts the platform
