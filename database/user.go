@@ -1,13 +1,13 @@
 package database
 
 import (
-	"crypto/ecdsa"
 	"encoding/base32"
 	"github.com/pkg/errors"
 	"log"
 
 	aes "github.com/Varunram/essentials/aes"
 	algorand "github.com/Varunram/essentials/crypto/algorand"
+	ethereum "github.com/Varunram/essentials/crypto/eth"
 	xlm "github.com/Varunram/essentials/crypto/xlm"
 	assets "github.com/Varunram/essentials/crypto/xlm/assets"
 	wallet "github.com/Varunram/essentials/crypto/xlm/wallet"
@@ -16,8 +16,6 @@ import (
 	utils "github.com/Varunram/essentials/utils"
 	consts "github.com/YaleOpenLab/openx/consts"
 	"github.com/boltdb/bolt"
-	"github.com/ethereum/go-ethereum/common/hexutil"
-	crypto "github.com/ethereum/go-ethereum/crypto"
 )
 
 // User is a metastrucutre that contains commonly used keys within a single umbrella
@@ -28,7 +26,7 @@ type User struct {
 	Name string
 	// Name of the primary stakeholder involved (principal trustee of school, for eg.)
 	StellarWallet  StellWallet
-	AlgorandWallet AlgoWallet
+	AlgorandWallet algorand.AlgorandWallet
 	// PublicKey denotes the public key of the recipient
 	City string
 	// the city of residence of the resident
@@ -79,7 +77,7 @@ type User struct {
 	SecondaryWallet Wallet
 	// SecondaryWallet defines a higher level wallet which can be imagined to be similar to a savings account
 
-	EthereumWallet EthWallet
+	EthereumWallet ethereum.EthereumWallet
 	// EthereumWallet defines a separate wallet for ethereum which people can use to control their ERC721 RECs
 
 	PendingDocuments map[string]string
@@ -96,11 +94,6 @@ type User struct {
 	TwoFASecret string // the 2FA secret that users can use to authenticate with something like Google Authenticator
 
 	AnchorKYC AnchorKYCHelper // kyc stuff required by AnchorUSD
-}
-
-type AlgoWallet struct {
-	WalletName string
-	WalletID   string
 }
 
 // KycStruct contains the parameters required by the kyc partner for querynig kyc compliance
@@ -141,13 +134,6 @@ type StellWallet struct {
 	PublicKey     string
 	EncryptedSeed []byte
 	SeedPwhash    string
-}
-
-// EthWallet contains the structures needed for an ethereum wallet
-type EthWallet struct {
-	PrivateKey string
-	PublicKey  string
-	Address    string
 }
 
 // Wallet contains the stuff that we need for a wallet.
@@ -367,8 +353,7 @@ func (a *User) GenKeys(seedpwd string, options ...string) error {
 			var err error
 			password := seedpwd
 
-			a.AlgorandWallet.WalletName = "algowl" + utils.GetRandomString(10)
-			a.AlgorandWallet.WalletID, err = algorand.CreateNewWallet(a.AlgorandWallet.WalletName, password)
+			a.AlgorandWallet, err = algorand.GenNewWallet("algowl", password)
 			if err != nil {
 				return errors.Wrap(err, "couldn't create new wallet id, quitting")
 			}
@@ -426,25 +411,9 @@ func (a *User) GenKeys(seedpwd string, options ...string) error {
 		return errors.Wrap(err, "error while encrypting seed")
 	}
 
-	ecdsaPrivkey, err := crypto.GenerateKey()
+	a.EthereumWallet, err = ethereum.GenEthWallet()
 	if err != nil {
-		return errors.Wrap(err, "could not generate an ethereum keypair, quitting!")
-	}
-
-	privateKeyBytes := crypto.FromECDSA(ecdsaPrivkey)
-	a.EthereumWallet.PrivateKey = hexutil.Encode(privateKeyBytes)[2:]
-	a.EthereumWallet.Address = crypto.PubkeyToAddress(ecdsaPrivkey.PublicKey).Hex()
-
-	publicKeyECDSA, ok := ecdsaPrivkey.Public().(*ecdsa.PublicKey)
-	if !ok {
-		return errors.Wrap(err, "error casting public key to ECDSA")
-	}
-
-	publicKeyBytes := crypto.FromECDSAPub(publicKeyECDSA)
-	a.EthereumWallet.PublicKey = hexutil.Encode(publicKeyBytes)[4:] // an ethereum address is 65 bytes long and hte first byte is 0x04 for DER encoding, so we omit that
-
-	if crypto.PubkeyToAddress(*publicKeyECDSA).Hex() != a.EthereumWallet.Address {
-		return errors.Wrap(err, "addresses don't match, quitting!")
+		return errors.Wrap(err, "error while generating ethereum wallet, quitting")
 	}
 
 	err = a.Save()

@@ -1,8 +1,6 @@
 package rpc
 
 import (
-	"encoding/json"
-	"log"
 	"net/http"
 	//utils "github.com/Varunram/essentials/utils"
 	erpc "github.com/Varunram/essentials/rpc"
@@ -116,56 +114,6 @@ type ParticleEventStream struct {
 	Coreid      string `json:"coreid"`
 }
 
-// GetAndSendJson is a handler that makes a get request and returns json data
-func GetAndSendJson(w http.ResponseWriter, r *http.Request, body string, x interface{}) {
-	data, err := erpc.GetRequest(body)
-	if err != nil {
-		log.Println("did not get response", err)
-		erpc.ResponseHandler(w, erpc.StatusBadRequest)
-		return
-	}
-	// now data is in byte, we need the other structure now
-	err = json.Unmarshal(data, &x)
-	if err != nil {
-		log.Println("did not unmarshal json", err)
-		erpc.ResponseHandler(w, erpc.StatusInternalServerError)
-		return
-	}
-	erpc.MarshalSend(w, x)
-}
-
-// GetAndSendByte is a handler that makes a get request and returns byte data. THis is used
-// in cases for which we don;t know the format of the returned data, so we can't parse
-// what stuff is in here.
-func GetAndSendByte(w http.ResponseWriter, r *http.Request, body string) {
-	data, err := erpc.GetRequest(body)
-	if err != nil {
-		log.Println("did not get response", err)
-		erpc.ResponseHandler(w, erpc.StatusBadRequest)
-		return
-	}
-
-	w.Write(data)
-}
-
-// PutAndSend is a handler that PUTs data and returns the response
-func PutAndSend(w http.ResponseWriter, r *http.Request, body string, payload io.Reader) {
-	data, err := erpc.PutRequest(body, payload)
-	if err != nil {
-		log.Println("did not receive success response", err)
-		erpc.ResponseHandler(w, erpc.StatusBadRequest)
-		return
-	}
-	var x ParticlePingResponse
-	err = json.Unmarshal(data, &x)
-	if err != nil {
-		log.Println("did not unmarshal json", err)
-		erpc.ResponseHandler(w, erpc.StatusInternalServerError)
-		return
-	}
-	erpc.MarshalSend(w, x)
-}
-
 // listAllDevices lists all the devices registered to the user holding the specific access token
 func listAllDevices() {
 	// make a curl request out to lcoalhost and get the ping response
@@ -182,7 +130,7 @@ func listAllDevices() {
 		accessToken := r.URL.Query()["accessToken"][0]
 		body := "https://api.particle.io/v1/devices?access_token=" + accessToken
 		var x []ParticleDevice
-		GetAndSendJson(w, r, body, x)
+		erpc.GetAndSendJson(w, r, body, x)
 	})
 }
 
@@ -202,7 +150,7 @@ func listProductInfo() {
 
 		body := "https://api.particle.io/v1/products/" + productInfo + "/devices?access_token=" + accessToken
 		var x ParticleProductInfo
-		GetAndSendJson(w, r, body, x)
+		erpc.GetAndSendJson(w, r, body, x)
 	})
 }
 
@@ -223,7 +171,7 @@ func getDeviceInfo() {
 
 		body := "https://api.particle.io/v1/devices/" + deviceId + "?access_token=" + accessToken
 		var x ParticleDevice
-		GetAndSendJson(w, r, body, x)
+		erpc.GetAndSendJson(w, r, body, x)
 	})
 }
 
@@ -244,7 +192,7 @@ func pingDevice() {
 		body := "https://api.particle.io/v1/devices/" + deviceId + "/ping"
 		payload := strings.NewReader("access_token=" + accessToken)
 
-		PutAndSend(w, r, body, payload)
+		erpc.PutAndSend(w, r, body, payload)
 	})
 }
 
@@ -279,7 +227,7 @@ func signalDevice() {
 			payload = strings.NewReader("signal=" + "0" + "&access_token=" + accessToken)
 		}
 
-		PutAndSend(w, r, body, payload)
+		erpc.PutAndSend(w, r, body, payload)
 	})
 }
 
@@ -299,7 +247,7 @@ func serialNumberInfo() {
 
 		body := "https://api.particle.io/v1/serial_numbers/" + serialNumber + "?access_token=" + accessToken
 		var x SerialNumberResponse
-		GetAndSendJson(w, r, body, x)
+		erpc.GetAndSendJson(w, r, body, x)
 	})
 }
 
@@ -318,7 +266,7 @@ func getDiagnosticsLast() {
 		deviceId := r.URL.Query()["deviceId"][0]
 
 		body := "https://api.particle.io/v1/diagnostics/" + deviceId + "/last?access_token=" + accessToken
-		GetAndSendByte(w, r, body)
+		erpc.GetAndSendByte(w, r, body)
 	})
 }
 
@@ -338,7 +286,7 @@ func getAllDiagnostics() {
 		deviceId := r.URL.Query()["deviceId"][0]
 
 		body := "https://api.particle.io/v1/diagnostics/" + deviceId + "?access_token=" + accessToken
-		GetAndSendByte(w, r, body)
+		erpc.GetAndSendByte(w, r, body)
 	})
 }
 
@@ -356,7 +304,7 @@ func getParticleUserInfo() {
 		accessToken := r.URL.Query()["accessToken"][0]
 		body := "https://api.particle.io/v1/user?access_token=" + accessToken
 		var x ParticleUser
-		GetAndSendJson(w, r, body, x)
+		erpc.GetAndSendJson(w, r, body, x)
 	})
 }
 
@@ -374,6 +322,6 @@ func getAllSims() {
 		accessToken := r.URL.Query()["accessToken"][0]
 
 		body := "https://api.particle.io/v1/sims?access_token=" + accessToken
-		GetAndSendByte(w, r, body)
+		erpc.GetAndSendByte(w, r, body)
 	})
 }
