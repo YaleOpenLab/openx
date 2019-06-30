@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"time"
+	"encoding/json"
 
 	consts "github.com/YaleOpenLab/openx/consts"
 	notif "github.com/YaleOpenLab/openx/notif"
@@ -297,8 +298,7 @@ func MonitorTeller(projIndex int) {
 		}
 
 		var x statusResponse
-
-		err = x.UnmarshalJSON(data)
+		err = json.Unmarshal(data, &x)
 		if err != nil {
 			log.Println("error while unmarshalling data", err)
 			notif.SendTellerDownEmail(project.Index, project.RecipientIndex)

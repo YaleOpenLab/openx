@@ -200,7 +200,7 @@ func getAllCAUsers() {
 		}
 
 		var x caAllUserResponse
-		err = x.UnmarshalJSON(data)
+		err = json.Unmarshal(data, &x)
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return

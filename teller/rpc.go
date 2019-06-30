@@ -55,7 +55,7 @@ func GetProjectIndex(assetName string) (int, error) {
 		return -1, err
 	}
 	var x solar.SolarProjectArray
-	err = x.UnmarshalJSON(data)
+	err = json.Unmarshal(data, &x)
 	if err != nil {
 		return -1, err
 	}
@@ -74,7 +74,7 @@ func LoginToPlatform(username string, pwhash string) error {
 		return err
 	}
 	var x database.Recipient
-	err = x.UnmarshalJSON(data)
+	err = json.Unmarshal(data, &x)
 	if err != nil {
 		return err
 	}
@@ -227,7 +227,7 @@ func GetLocalProjectDetails(projIndex string) (solar.Project, error) {
 		return x, err
 	}
 
-	err = x.UnmarshalJSON(data)
+	err = json.Unmarshal(data, &x)
 	if err != nil {
 		log.Println(err)
 		return x, err
