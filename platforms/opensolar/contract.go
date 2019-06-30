@@ -445,14 +445,14 @@ func sendRecipientAssets(projIndex int) error {
 		return errors.Wrap(err, "couldn't decrypt seed")
 	}
 
-	escrowPubkey, err := escrow.InitEscrow(project.Index, consts.EscrowPwd, recipient.U.StellarWallet.PublicKey, recpSeed)
+	escrowPubkey, err := escrow.InitEscrow(project.Index, consts.EscrowPwd, recipient.U.StellarWallet.PublicKey, recpSeed, consts.PlatformSeed)
 	if err != nil {
 		return errors.Wrap(err, "error while initializing issuer")
 	}
 
 	log.Println("successfully setup escrow")
 	project.EscrowPubkey = escrowPubkey
-	err = escrow.TransferFundsToEscrow(project.TotalValue, project.Index, project.EscrowPubkey)
+	err = escrow.TransferFundsToEscrow(project.TotalValue, project.Index, project.EscrowPubkey, consts.PlatformSeed)
 	if err != nil {
 		log.Println(err)
 		return errors.Wrap(err, "could not transfer funds to the escrow, quitting!")
@@ -577,7 +577,7 @@ func DistributePayments(recipientSeed string, escrowPubkey string, projIndex int
 		// send x to this pubkey
 		txAmount := percentage * amountGivenBack
 		// here we send funds from the 2of2 multisig. Platform signs by default
-		err = escrow.SendFundsFromEscrow(project.EscrowPubkey, pubkey, recipientSeed, utils.FtoS(txAmount), "returns")
+		err = escrow.SendFundsFromEscrow(project.EscrowPubkey, pubkey, recipientSeed, consts.PlatformSeed, utils.FtoS(txAmount), "returns")
 		if err != nil {
 			log.Println(err) // if there is an error with one payback, doesn't mean we should stop and wait for the others
 			continue

@@ -11,11 +11,11 @@ import (
 	xlm "github.com/Varunram/essentials/crypto/xlm"
 	assets "github.com/Varunram/essentials/crypto/xlm/assets"
 	wallet "github.com/Varunram/essentials/crypto/xlm/wallet"
+	edb "github.com/Varunram/essentials/database"
 	googauth "github.com/Varunram/essentials/googauth"
 	recovery "github.com/Varunram/essentials/sss"
 	utils "github.com/Varunram/essentials/utils"
 	consts "github.com/YaleOpenLab/openx/consts"
-	"github.com/boltdb/bolt"
 )
 
 // User is a metastrucutre that contains commonly used keys within a single umbrella
@@ -178,124 +178,71 @@ func NewUser(uname string, pwd string, seedpwd string, Name string) (User, error
 
 // Save inserts a passed User object into the database
 func (a *User) Save() error {
-	db, err := OpenDB()
-	if err != nil {
-		return errors.Wrap(err, "Error while opening database")
-	}
-	defer db.Close()
-	err = db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(UserBucket)
-		encoded, err := a.MarshalJSON()
-		if err != nil {
-			return errors.Wrap(err, "Error while marshaling json")
-		}
-		return b.Put([]byte(utils.ItoB(a.Index)), encoded)
-	})
-	return err
+	return edb.Save(consts.DbDir, InvestorBucket, a, a.Index)
 }
 
 // RetrieveAllUsersWithoutKyc retrieves all users without kyc
 func RetrieveAllUsersWithoutKyc() ([]User, error) {
 	var arr []User
-	db, err := OpenDB()
-	if err != nil {
-		return arr, errors.Wrap(err, "Error while opening database")
-	}
-	defer db.Close()
 
-	err = db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket(UserBucket)
-		for i := 1; ; i++ {
-			var rUser User
-			x := b.Get(utils.ItoB(i))
-			if x == nil {
-				return nil
-			}
-			err := rUser.UnmarshalJSON(x)
-			if err != nil {
-				return errors.Wrap(err, "Error while unmarshalling json")
-			}
-			if !rUser.Kyc {
-				arr = append(arr, rUser)
-			}
+	users, err := RetrieveAllUsers()
+	if err != nil {
+		return arr, errors.Wrap(err, "error while retrieving all users from database")
+	}
+
+	for _, user := range users {
+		if !user.Kyc {
+			arr = append(arr, user)
 		}
-	})
-	return arr, err
+	}
+
+	return arr, nil
 }
 
 // RetrieveAllUsersWithKyc retrieves all users with kyc
 func RetrieveAllUsersWithKyc() ([]User, error) {
+	// RetrieveAllUsersWithoutKyc retrieves all users without kyc
 	var arr []User
-	db, err := OpenDB()
-	if err != nil {
-		return arr, errors.Wrap(err, "Error while opening database")
-	}
-	defer db.Close()
 
-	err = db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket(UserBucket)
-		for i := 1; ; i++ {
-			var rUser User
-			x := b.Get(utils.ItoB(i))
-			if x == nil {
-				return nil
-			}
-			err := rUser.UnmarshalJSON(x)
-			if err != nil {
-				return errors.Wrap(err, "Error while unmarshalling json")
-			}
-			if rUser.Kyc {
-				arr = append(arr, rUser)
-			}
+	users, err := RetrieveAllUsers()
+	if err != nil {
+		return arr, errors.Wrap(err, "error while retrieving all users from database")
+	}
+
+	for _, user := range users {
+		if user.Kyc {
+			arr = append(arr, user)
 		}
-	})
-	return arr, err
+	}
+
+	return arr, nil
 }
 
 // RetrieveAllUsers gets a list of all User in the database
 func RetrieveAllUsers() ([]User, error) {
-	var arr []User
-	db, err := OpenDB()
+	var users []User
+	x, err := edb.RetrieveAllKeys(consts.DbDir, UserBucket)
 	if err != nil {
-		return arr, errors.Wrap(err, "Error while opening database")
+		return users, errors.Wrap(err, "error while retrieving all keys")
 	}
-	defer db.Close()
 
-	err = db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket(UserBucket)
-		for i := 1; ; i++ {
-			var rUser User
-			x := b.Get(utils.ItoB(i))
-			if x == nil {
-				return nil
-			}
-			err := rUser.UnmarshalJSON(x)
-			if err != nil {
-				return errors.Wrap(err, "Error while unmarshalling json")
-			}
-			arr = append(arr, rUser)
-		}
-	})
-	return arr, err
+	for _, value := range x {
+		users = append(users, value.(User))
+	}
+
+	return users, nil
 }
 
 // RetrieveUser retrieves a particular User indexed by key from the database
 func RetrieveUser(key int) (User, error) {
-	var inv User
-	db, err := OpenDB()
+
+	var user User
+	x, err := edb.Retrieve(consts.DbDir, UserBucket, key)
 	if err != nil {
-		return inv, errors.Wrap(err, "error while opening database")
+		return user, errors.Wrap(err, "error while retrieving key from bucket")
 	}
-	defer db.Close()
-	err = db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket(UserBucket)
-		x := b.Get(utils.ItoB(key))
-		if x == nil {
-			return errors.New("retrieved user nil, quitting!")
-		}
-		return inv.UnmarshalJSON(x)
-	})
-	return inv, err
+
+	return x.(User), nil
 }
 
 // ValidateSeedpwd acts as a pre verify function so we don't try to decrypt the encrypted seed
@@ -311,35 +258,18 @@ func ValidateSeedpwd(name string, pwhash string, seedpwd string) (User, error) {
 
 // ValidateUser validates a particular user
 func ValidateUser(name string, pwhash string) (User, error) {
-	var inv User
-	temp, err := RetrieveAllUsers()
+	var dummy User
+	users, err := RetrieveAllUsers()
 	if err != nil {
-		return inv, errors.Wrap(err, "error while retrieving all users from database")
+		return dummy, errors.Wrap(err, "error while retrieving all users from database")
 	}
-	limit := len(temp) + 1
-	db, err := OpenDB()
-	if err != nil {
-		return inv, errors.Wrap(err, "could not open db, quitting!")
-	}
-	defer db.Close()
-	err = db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket(UserBucket)
-		for i := 1; i < limit; i++ {
-			var rUser User
-			x := b.Get(utils.ItoB(i))
-			err := rUser.UnmarshalJSON(x)
-			if err != nil {
-				return errors.Wrap(err, "could not unmarshal json, quitting!")
-			}
-			// check names
-			if rUser.Username == name && rUser.Pwhash == pwhash {
-				inv = rUser
-				return nil
-			}
+
+	for _, user := range users {
+		if user.Username == name && user.Pwhash == pwhash {
+			return user, nil
 		}
-		return errors.New("Not Found")
-	})
-	return inv, err
+	}
+	return dummy, errors.New("could not find user with requested credentials")
 }
 
 // GenKeys generates a keypair for the user
@@ -424,34 +354,18 @@ func (a *User) GenKeys(seedpwd string, options ...string) error {
 // wants to signup on the platform
 func CheckUsernameCollision(uname string) (User, error) {
 	var dummy User
-	temp, err := RetrieveAllUsers()
+	users, err := RetrieveAllUsers()
 	if err != nil {
 		return dummy, errors.Wrap(err, "error while retrieving all users from database")
 	}
-	limit := len(temp) + 1
-	db, err := OpenDB()
-	if err != nil {
-		return dummy, errors.Wrap(err, "error while opening database")
-	}
-	defer db.Close()
-	err = db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket(UserBucket)
-		for i := 1; i < limit; i++ {
-			var rUser User
-			x := b.Get(utils.ItoB(i))
-			err := rUser.UnmarshalJSON(x)
-			if err != nil {
-				return errors.Wrap(err, "error while unmarshalling json")
-			}
-			// check names
-			if rUser.Username == uname {
-				dummy = rUser
-				return errors.New("Username collision")
-			}
+
+	for _, user := range users {
+		if user.Username == uname {
+			return user, errors.New("username collision observed, quitting")
 		}
-		return nil
-	})
-	return dummy, err
+	}
+
+	return dummy, nil
 }
 
 // Authorize authorizes a user
@@ -533,31 +447,19 @@ func (a *User) IncreaseTrustLimit(seedpwd string, trust string) error {
 
 // SearchWithEmailId searches for a given user who has the given email id
 func SearchWithEmailId(email string) (User, error) {
-	var foundUser User
-	db, err := OpenDB()
+	var dummy User
+	users, err := RetrieveAllUsers()
 	if err != nil {
-		return foundUser, errors.Wrap(err, "Error while opening database")
+		return dummy, errors.Wrap(err, "error while retrieving all users from database")
 	}
-	defer db.Close()
 
-	err = db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket(UserBucket)
-		for i := 1; ; i++ {
-			var rUser User
-			x := b.Get(utils.ItoB(i))
-			if x == nil {
-				return nil
-			}
-			err := rUser.UnmarshalJSON(x)
-			if err != nil {
-				return errors.Wrap(err, "Error while unmarshalling json")
-			}
-			if rUser.Email == email {
-				foundUser = rUser
-			}
+	for _, user := range users {
+		if user.Email == email {
+			return user, nil
 		}
-	})
-	return foundUser, err
+	}
+
+	return dummy, errors.New("could not find user with requested email id, quitting")
 }
 
 // MoveFundsFromSecondaryWallet moves funds from the secondary wallet to the primary wallet

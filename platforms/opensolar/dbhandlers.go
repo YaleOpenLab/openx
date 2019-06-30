@@ -3,73 +3,40 @@ package opensolar
 import (
 	"github.com/pkg/errors"
 
-	utils "github.com/Varunram/essentials/utils"
+	edb "github.com/Varunram/essentials/database"
+	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
-	"github.com/boltdb/bolt"
 )
 
 // Save or Insert inserts a specific Project into the database
 func (a *Project) Save() error {
-	db, err := database.OpenDB()
-	if err != nil {
-		return errors.Wrap(err, "couldn't open db")
-	}
-	defer db.Close()
-	err = db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(database.ProjectsBucket)
-		encoded, err := a.MarshalJSON()
-		if err != nil {
-			return errors.Wrap(err, "couldn't marshal json")
-		}
-		return b.Put([]byte(utils.ItoB(a.Index)), encoded)
-	})
-	return err
+	return edb.Save(consts.DbDir, database.ProjectsBucket, a, a.Index)
 }
 
 // RetrieveProject retrieves the project with the specified index from the database
 func RetrieveProject(key int) (Project, error) {
 	var inv Project
-	db, err := database.OpenDB()
+	x, err := edb.Retrieve(consts.DbDir, database.ProjectsBucket, key)
 	if err != nil {
-		return inv, errors.Wrap(err, "couldn't open db")
+		return inv, errors.Wrap(err, "error while retrieving key from bucket")
 	}
-	defer db.Close()
-	err = db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket(database.ProjectsBucket)
-		x := b.Get(utils.ItoB(key))
-		if x == nil {
-			return errors.New("Retrieved project nil")
-		}
-		return inv.UnmarshalJSON(x)
-	})
-	return inv, err
+
+	return x.(Project), nil
 }
 
 // RetrieveAllProjects retrieves all projects from the database
 func RetrieveAllProjects() ([]Project, error) {
-	var arr []Project
-	db, err := database.OpenDB()
+	var projects []Project
+	x, err := edb.RetrieveAllKeys(consts.DbDir, database.ProjectsBucket)
 	if err != nil {
-		return arr, errors.Wrap(err, "couldn't open db")
+		return projects, errors.Wrap(err, "error while retrieving all keys")
 	}
-	defer db.Close()
-	err = db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket(database.ProjectsBucket)
-		for i := 1; ; i++ {
-			var rProject Project
-			x := b.Get(utils.ItoB(i))
-			if x == nil {
-				break
-			}
-			err := rProject.UnmarshalJSON(x)
-			if err != nil {
-				return errors.Wrap(err, "couldn't marshal json")
-			}
-			arr = append(arr, rProject)
-		}
-		return nil
-	})
-	return arr, err
+
+	for _, value := range x {
+		projects = append(projects, value.(Project))
+	}
+
+	return projects, nil
 }
 
 // RetrieveProjectsAtStage retrieves projects at a specific stage
@@ -78,30 +45,19 @@ func RetrieveProjectsAtStage(stage int) ([]Project, error) {
 	if stage > 9 { // check for this and fail early instead of wasting compute time on this
 		return arr, errors.Wrap(errors.New("stage can not be greater than 9, quitting!"), "stage can not be greater than 9, quitting!")
 	}
-	db, err := database.OpenDB()
+
+	projects, err := RetrieveAllProjects()
 	if err != nil {
-		return arr, errors.Wrap(err, "couldn't open db")
+		return arr, err
 	}
-	defer db.Close()
-	err = db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket(database.ProjectsBucket)
-		for i := 1; ; i++ {
-			var rProject Project
-			x := b.Get(utils.ItoB(i))
-			if x == nil {
-				break
-			}
-			err := rProject.UnmarshalJSON(x)
-			if err != nil {
-				return errors.Wrap(err, "couldn't marshal json")
-			}
-			if rProject.Stage == stage {
-				arr = append(arr, rProject)
-			}
+
+	for _, project := range projects {
+		if project.Stage == stage {
+			arr = append(arr, project)
 		}
-		return nil
-	})
-	return arr, err
+	}
+
+	return projects, nil
 }
 
 // RetrieveContractorProjects retrieves projects that are associated with a specific contractor
@@ -110,29 +66,19 @@ func RetrieveContractorProjects(stage int, index int) ([]Project, error) {
 	if stage > 9 { // check for this and fail early instead of wasting compute time on this
 		return arr, errors.Wrap(errors.New("stage can not be greater than 9, quitting!"), "stage can not be greater than 9, quitting!")
 	}
-	db, err := database.OpenDB()
+
+	projects, err := RetrieveAllProjects()
 	if err != nil {
-		return arr, errors.Wrap(err, "couldn't open db")
+		return arr, err
 	}
-	defer db.Close()
-	err = db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket(database.ProjectsBucket)
-		for i := 1; ; i++ {
-			var rProject Project
-			x := b.Get(utils.ItoB(i))
-			if x == nil {
-				return nil // key does not exist
-			}
-			err := rProject.UnmarshalJSON(x)
-			if err != nil {
-				return errors.Wrap(err, "couldn't marshal json")
-			}
-			if rProject.Stage == stage && rProject.ContractorIndex == index {
-				arr = append(arr, rProject)
-			}
+
+	for _, project := range projects {
+		if project.Stage == stage && project.ContractorIndex == index {
+			arr = append(arr, project)
 		}
-	})
-	return arr, err
+	}
+
+	return projects, nil
 }
 
 // RetrieveOriginatorProjects retrieves projects that are associated with a specific originator
@@ -141,29 +87,19 @@ func RetrieveOriginatorProjects(stage int, index int) ([]Project, error) {
 	if stage > 9 { // check for this and fail early instead of wasting compute time on this
 		return arr, errors.Wrap(errors.New("stage can not be greater than 9, quitting!"), "stage can not be greater than 9, quitting!")
 	}
-	db, err := database.OpenDB()
+
+	projects, err := RetrieveAllProjects()
 	if err != nil {
-		return arr, errors.Wrap(err, "couldn't open db")
+		return arr, err
 	}
-	defer db.Close()
-	err = db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket(database.ProjectsBucket)
-		for i := 1; ; i++ {
-			var rProject Project
-			x := b.Get(utils.ItoB(i))
-			if x == nil {
-				return nil
-			}
-			err := rProject.UnmarshalJSON(x)
-			if err != nil {
-				return errors.Wrap(err, "couldn't marshal json")
-			}
-			if rProject.Stage == stage && rProject.OriginatorIndex == index {
-				arr = append(arr, rProject)
-			}
+
+	for _, project := range projects {
+		if project.Stage == stage && project.OriginatorIndex == index {
+			arr = append(arr, project)
 		}
-	})
-	return arr, err
+	}
+
+	return projects, nil
 }
 
 // RetrieveRecipientProjects retrieves projects that are associated with a specific originator
@@ -172,59 +108,38 @@ func RetrieveRecipientProjects(stage int, index int) ([]Project, error) {
 	if stage > 9 { // check for this and fail early instead of wasting compute time on this
 		return arr, errors.Wrap(errors.New("stage can not be greater than 9, quitting!"), "stage can not be greater than 9, quitting!")
 	}
-	db, err := database.OpenDB()
+
+	projects, err := RetrieveAllProjects()
 	if err != nil {
-		return arr, errors.Wrap(err, "couldn't open db")
+		return arr, err
 	}
-	defer db.Close()
-	err = db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket(database.ProjectsBucket)
-		for i := 1; ; i++ {
-			var rProject Project
-			x := b.Get(utils.ItoB(i))
-			if x == nil {
-				return nil
-			}
-			err := rProject.UnmarshalJSON(x)
-			if err != nil {
-				return errors.Wrap(err, "couldn't marshal json")
-			}
-			if rProject.Stage == stage && rProject.RecipientIndex == index {
-				arr = append(arr, rProject)
-			}
+
+	for _, project := range projects {
+		if project.Stage == stage && project.RecipientIndex == index {
+			arr = append(arr, project)
 		}
-	})
-	return arr, err
+	}
+
+	return projects, nil
 }
 
 // RetrieveLockedProjects retrieves all the projects that are locked and are waiting
 // for the recipient to unlock them
 func RetrieveLockedProjects() ([]Project, error) {
 	var arr []Project
-	db, err := database.OpenDB()
+
+	projects, err := RetrieveAllProjects()
 	if err != nil {
-		return arr, errors.Wrap(err, "couldn't open db")
+		return arr, err
 	}
-	defer db.Close()
-	err = db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket(database.ProjectsBucket)
-		for i := 1; ; i++ {
-			var rProject Project
-			x := b.Get(utils.ItoB(i))
-			if x == nil {
-				break
-			}
-			err := rProject.UnmarshalJSON(x)
-			if err != nil {
-				return errors.Wrap(err, "couldn't marshal json")
-			}
-			if rProject.Lock {
-				arr = append(arr, rProject)
-			}
+
+	for _, project := range projects {
+		if project.Lock {
+			arr = append(arr, project)
 		}
-		return nil
-	})
-	return arr, err
+	}
+
+	return projects, nil
 }
 
 // SaveOriginatorMoU saves the MoU's hash in the platform's database

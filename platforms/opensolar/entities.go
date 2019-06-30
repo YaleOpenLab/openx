@@ -6,10 +6,11 @@ import (
 
 	xlm "github.com/Varunram/essentials/crypto/xlm"
 	wallet "github.com/Varunram/essentials/crypto/xlm/wallet"
+	edb "github.com/Varunram/essentials/database"
 	utils "github.com/Varunram/essentials/utils"
+	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
 	notif "github.com/YaleOpenLab/openx/notif"
-	"github.com/boltdb/bolt"
 )
 
 // Entity defines a common structure for contractors, developers and originators. Will be split
@@ -78,130 +79,52 @@ type Entity struct {
 	// of first loss
 }
 
-// Save stores the entity in the database
 func (a *Entity) Save() error {
-	db, err := database.OpenDB()
-	if err != nil {
-		return errors.Wrap(err, "couldn't open db")
-	}
-	defer db.Close()
-	err = db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(database.ContractorBucket)
-		encoded, err := a.MarshalJSON()
-		if err != nil {
-			return errors.Wrap(err, "couldn't marshal json")
-		}
-		return b.Put([]byte(utils.ItoB(a.U.Index)), encoded)
-	})
-	return err
+	return edb.Save(consts.DbDir, database.ContractorBucket, a, a.U.Index)
 }
 
 // RetrieveAllEntitiesWithoutRole gets all the entities in the opensolar platform
 func RetrieveAllEntitiesWithoutRole() ([]Entity, error) {
-	var arr []Entity
-	temp, err := database.RetrieveAllUsers()
+	var users []Entity
+	x, err := edb.RetrieveAllKeys(consts.DbDir, database.ContractorBucket)
 	if err != nil {
-		return arr, errors.Wrap(err, "couldn't retrieve all users from db")
+		return users, errors.Wrap(err, "error while retrieving all keys")
 	}
-	limit := len(temp) + 1
-	db, err := database.OpenDB()
-	if err != nil {
-		return arr, errors.Wrap(err, "couldn't open db")
-	}
-	defer db.Close()
 
-	err = db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket(database.ContractorBucket)
-		for i := 1; i < limit; i++ {
-			var rContractor Entity
-			x := b.Get(utils.ItoB(i))
-			if x == nil {
-				// might be some other user like an investor or recipient
-				continue
-			}
-			err := rContractor.UnmarshalJSON(x)
-			if err != nil {
-				return errors.Wrap(err, "couldn't marshal json")
-			}
-			arr = append(arr, rContractor)
-		}
-		return nil
-	})
-	return arr, err
+	for _, value := range x {
+		users = append(users, value.(Entity))
+	}
+
+	return users, nil
 }
 
 // RetrieveAllEntities gets all the proposed contracts for a particular recipient
 func RetrieveAllEntities(role string) ([]Entity, error) {
-	var arr []Entity
-	temp, err := database.RetrieveAllUsers()
+	var entities []Entity
+	x, err := edb.RetrieveAllKeys(consts.DbDir, database.ContractorBucket)
 	if err != nil {
-		return arr, errors.Wrap(err, "couldn't retrieve all users from db")
+		return entities, errors.Wrap(err, "error while retrieving all keys")
 	}
-	limit := len(temp) + 1
-	db, err := database.OpenDB()
-	if err != nil {
-		return arr, errors.Wrap(err, "couldn't open db")
-	}
-	defer db.Close()
 
-	err = db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket(database.ContractorBucket)
-		for i := 1; i < limit; i++ {
-			var rContractor Entity
-			x := b.Get(utils.ItoB(i))
-			if x == nil {
-				// might be some other user like an investor or recipient
-				continue
-			}
-			err := rContractor.UnmarshalJSON(x)
-			if err != nil {
-				return errors.Wrap(err, "couldn't unmarshal json")
-			}
-			switch role {
-			case "contractor":
-				if !rContractor.Contractor {
-					continue
-				}
-			case "developer":
-				if !rContractor.Developer {
-					continue
-				}
-			case "originator":
-				if !rContractor.Originator {
-					continue
-				}
-			case "guarantor":
-				if !rContractor.Guarantor {
-					continue
-				}
-			default:
-				continue
-				// default is to add all contractentities to the array
-			}
-			arr = append(arr, rContractor)
+	for _, value := range x {
+		entity := value.(Entity)
+		if entity.Contractor || entity.Originator || entity.Guarantor || entity.Developer {
+			entities = append(entities, entity)
 		}
-		return nil
-	})
-	return arr, err
+	}
+
+	return entities, nil
 }
 
 // RetrieveEntityHelper is a helper associated with the RetrieveEntity function
 func RetrieveEntityHelper(key int) (Entity, error) {
-	var a Entity
-	db, err := database.OpenDB()
+	var dummy Entity
+	x, err := edb.Retrieve(consts.DbDir, database.ContractorBucket, key)
 	if err != nil {
-		return a, errors.Wrap(err, "couldn't open db")
+		return dummy, errors.Wrap(err, "error while retrieving key from bucket")
 	}
-	defer db.Close()
-	err = db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket(database.ContractorBucket)
-		x := b.Get(utils.ItoB(key))
-		if x == nil {
-			return errors.New("Retrieving entity returns nil, quitting!")
-		}
-		return a.UnmarshalJSON(x)
-	})
-	return a, err
+
+	return x.(Entity), nil
 }
 
 // RetrieveEntity retrieves a specific entity from the database

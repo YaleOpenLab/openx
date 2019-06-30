@@ -5,8 +5,9 @@ import (
 
 	tickers "github.com/Varunram/essentials/crypto/exchangetickers"
 	xlm "github.com/Varunram/essentials/crypto/xlm"
+	edb "github.com/Varunram/essentials/database"
 	utils "github.com/Varunram/essentials/utils"
-	"github.com/boltdb/bolt"
+	consts "github.com/YaleOpenLab/openx/consts"
 )
 
 // Investor defines the investor structure
@@ -50,40 +51,19 @@ func NewInvestor(uname string, pwd string, seedpwd string, Name string) (Investo
 
 // Save inserts a passed Investor object into the database
 func (a *Investor) Save() error {
-	db, err := OpenDB()
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-	err = db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(InvestorBucket)
-		encoded, err := a.MarshalJSON()
-		if err != nil {
-			return errors.Wrap(err, "error while marshaling json struct")
-		}
-		return b.Put([]byte(utils.ItoB(a.U.Index)), encoded)
-	})
-	return err
+	return edb.Save(consts.DbDir, InvestorBucket, a, a.U.Index)
 }
 
 // RetrieveInvestorHelper is a helper function associated with the RetrieveInvestor function
 func RetrieveInvestorHelper(key int) (Investor, error) {
+
 	var inv Investor
-	db, err := OpenDB()
+	x, err := edb.Retrieve(consts.DbDir, InvestorBucket, key)
 	if err != nil {
-		return inv, errors.Wrap(err, "failed to open db")
+		return inv, errors.Wrap(err, "error while retrieving key from bucket")
 	}
-	defer db.Close()
-	err = db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket(InvestorBucket)
-		x := b.Get(utils.ItoB(key))
-		if x == nil {
-			// no investor with the specific details
-			return errors.New("No investor found with required credentials")
-		}
-		return inv.UnmarshalJSON(x)
-	})
-	return inv, err
+
+	return x.(Investor), nil
 }
 
 // RetrieveInvestor retrieves a particular investor indexed by key from the database
@@ -101,41 +81,19 @@ func RetrieveInvestor(key int) (Investor, error) {
 	return inv, inv.Save()
 }
 
-// RetrieveAllInvestors gets a list of all investors in the database
+// RetrieveAllUsers gets a list of all User in the database
 func RetrieveAllInvestors() ([]Investor, error) {
-	// this route is broken because it reads through keys sequentially
-	// need to see keys until the length of the users database
-	var arr []Investor
-	temp, err := RetrieveAllUsers()
+	var investors []Investor
+	x, err := edb.RetrieveAllKeys(consts.DbDir, InvestorBucket)
 	if err != nil {
-		return arr, errors.Wrap(err, "failed to retrieve all users")
+		return investors, errors.Wrap(err, "error while retrieving all keys")
 	}
-	limit := len(temp) + 1
-	db, err := OpenDB()
-	if err != nil {
-		return arr, errors.Wrap(err, "failed to open db")
-	}
-	defer db.Close()
 
-	err = db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket(InvestorBucket)
-		for i := 1; i < limit; i++ {
-			var rInvestor Investor
-			x := b.Get(utils.ItoB(i))
-			if x == nil {
-				// this is where the key does not exist, we search until limit, so don't error out
-				continue
-			}
-			err := rInvestor.UnmarshalJSON(x)
-			if err != nil {
-				// error in unmarshalling this struct, error out
-				return errors.Wrap(err, "failed to unmarshal json")
-			}
-			arr = append(arr, rInvestor)
-		}
-		return nil
-	})
-	return arr, err
+	for _, value := range x {
+		investors = append(investors, value.(Investor))
+	}
+
+	return investors, nil
 }
 
 // ValidateInvestor is a function to validate the investors username and password to log them into the platform, and find the details related to the investor

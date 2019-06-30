@@ -3,8 +3,8 @@ package database
 import (
 	"github.com/pkg/errors"
 
-	utils "github.com/Varunram/essentials/utils"
-	"github.com/boltdb/bolt"
+	edb "github.com/Varunram/essentials/database"
+	consts "github.com/YaleOpenLab/openx/consts"
 )
 
 // Recipient defines the recipient structure
@@ -52,77 +52,33 @@ func NewRecipient(uname string, pwd string, seedpwd string, Name string) (Recipi
 
 // Save saves a given recipient's details
 func (a *Recipient) Save() error {
-	db, err := OpenDB()
-	if err != nil {
-		return errors.Wrap(err, "Error while opening database")
-	}
-	defer db.Close()
-	err = db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(RecipientBucket)
-		encoded, err := a.MarshalJSON()
-		if err != nil {
-			return errors.Wrap(err, "Error while marshaling json")
-		}
-		return b.Put([]byte(utils.ItoB(a.U.Index)), encoded)
-	})
-	return err
+	return edb.Save(consts.DbDir, RecipientBucket, a, a.U.Index)
 }
 
 // RetrieveAllRecipients gets a list of all Recipient in the database
 func RetrieveAllRecipients() ([]Recipient, error) {
-	var arr []Recipient
-	temp, err := RetrieveAllUsers()
+	var recps []Recipient
+	x, err := edb.RetrieveAllKeys(consts.DbDir, RecipientBucket)
 	if err != nil {
-		return arr, errors.Wrap(err, "Error while retreiving all users from database")
+		return recps, errors.Wrap(err, "error while retrieving all keys")
 	}
-	limit := len(temp) + 1
-	db, err := OpenDB()
-	if err != nil {
-		return arr, errors.Wrap(err, "Error while opening database")
-	}
-	defer db.Close()
 
-	err = db.View(func(tx *bolt.Tx) error {
-		// this is Update to cover the case where the  bucket doesn't exists and we're
-		// trying to retrieve a list of keys
-		b := tx.Bucket(RecipientBucket)
-		i := 1
-		for ; i < limit; i++ {
-			var rRecipient Recipient
-			x := b.Get(utils.ItoB(i))
-			if x == nil {
-				// this is where the key does not exist
-				continue
-			}
-			err := rRecipient.UnmarshalJSON(x)
-			if err != nil {
-				return errors.Wrap(err, "Error while unmarshalling json")
-			}
-			arr = append(arr, rRecipient)
-		}
-		return nil
-	})
-	return arr, err
+	for _, value := range x {
+		recps = append(recps, value.(Recipient))
+	}
+
+	return recps, nil
 }
 
 // RetrieveRecipientHelper is a helper associated with the RetrieveRecipient function
 func RetrieveRecipientHelper(key int) (Recipient, error) {
-	var rec Recipient
-	db, err := OpenDB()
+	var recp Recipient
+	x, err := edb.Retrieve(consts.DbDir, RecipientBucket, key)
 	if err != nil {
-		return rec, errors.Wrap(err, "Error while opening database")
+		return recp, errors.Wrap(err, "error while retrieving key from bucket")
 	}
-	defer db.Close()
-	err = db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket(RecipientBucket)
-		x := b.Get(utils.ItoB(key))
-		if x == nil {
-			// there is no key with the specific details
-			return errors.New("Recipient not found!")
-		}
-		return rec.UnmarshalJSON(x)
-	})
-	return rec, err
+
+	return x.(Recipient), nil
 }
 
 // RetrieveRecipient retrieves a specific recipient from the database
