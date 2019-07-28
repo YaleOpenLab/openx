@@ -154,7 +154,11 @@ func payback() {
 		}
 
 		recpIndex := prepRecipient.U.Index
-		projIndex := utils.StoI(r.URL.Query()["projIndex"][0])
+		projIndex, err := utils.ToInt(r.URL.Query()["projIndex"][0])
+		if err != nil {
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
 		assetName := r.URL.Query()["assetName"][0]
 		seedpwd := r.URL.Query()["seedpwd"][0]
 		amount := r.URL.Query()["amount"][0]
@@ -415,7 +419,7 @@ func unlockOpenSolar() {
 		}
 
 		seedpwd := r.URL.Query()["seedpwd"][0]
-		projIndex, err := utils.StoICheck(r.URL.Query()["projIndex"][0])
+		projIndex, err := utils.ToInt(r.URL.Query()["projIndex"][0])
 		if err != nil {
 			log.Println("did not parse to integer", err)
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
@@ -476,7 +480,13 @@ func finalizeProject() {
 			return
 		}
 
-		projIndex := utils.StoI(r.URL.Query()["projIndex"][0])
+		projIndex, err := utils.ToInt(r.URL.Query()["projIndex"][0])
+		if err != nil {
+			log.Println("did not parse to integer", err)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+
 		project, err := opensolar.RetrieveProject(projIndex)
 		if err != nil {
 			log.Println("did not retrieve project", err)
@@ -510,7 +520,13 @@ func originateProject() {
 			return
 		}
 
-		projIndex := utils.StoI(r.URL.Query()["projIndex"][0])
+		projIndex, err := utils.ToInt(r.URL.Query()["projIndex"][0])
+		if err != nil {
+			log.Println("did not parse to integer", err)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+
 		err = opensolar.RecipientAuthorize(projIndex, recipient.U.Index)
 		if err != nil {
 			log.Println("did not authorize project", err)
@@ -566,7 +582,7 @@ func unlockCBond() {
 		}
 
 		seedpwd := r.URL.Query()["seedpwd"][0]
-		projIndex, err := utils.StoICheck(r.URL.Query()["projIndex"][0])
+		projIndex, err := utils.ToInt(r.URL.Query()["projIndex"][0])
 		if err != nil {
 			log.Println("did not parse to integer", err)
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)

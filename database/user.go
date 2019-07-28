@@ -2,6 +2,7 @@ package database
 
 import (
 	"encoding/base32"
+	"encoding/json"
 	"github.com/pkg/errors"
 	"log"
 
@@ -13,9 +14,9 @@ import (
 	wallet "github.com/Varunram/essentials/crypto/xlm/wallet"
 	edb "github.com/Varunram/essentials/database"
 	googauth "github.com/Varunram/essentials/googauth"
-	recovery "github.com/Varunram/essentials/sss"
 	utils "github.com/Varunram/essentials/utils"
 	consts "github.com/YaleOpenLab/openx/consts"
+	recovery "github.com/bithyve/research/sss"
 )
 
 // User is a metastrucutre that contains commonly used keys within a single umbrella
@@ -227,7 +228,12 @@ func RetrieveAllUsers() ([]User, error) {
 	}
 
 	for _, value := range x {
-		users = append(users, value.(User))
+		var temp User
+		err := json.Unmarshal(value, &temp)
+		if err != nil {
+			return users, errors.New("error while unmarshalling json, quitting")
+		}
+		users = append(users, temp)
 	}
 
 	return users, nil
@@ -242,7 +248,8 @@ func RetrieveUser(key int) (User, error) {
 		return user, errors.Wrap(err, "error while retrieving key from bucket")
 	}
 
-	return x.(User), nil
+	err = json.Unmarshal(x, &user)
+	return user, err
 }
 
 // ValidateSeedpwd acts as a pre verify function so we don't try to decrypt the encrypted seed
@@ -436,8 +443,22 @@ func (a *User) IncreaseTrustLimit(seedpwd string, trust string) error {
 	// we now have the seed, so we should upgrade the trustlimit by the margin requested. The margin passed here
 	// must not include the old trustlimit
 
-	trustLimit := utils.StoF(trust) + utils.StoF(consts.StablecoinTrustLimit)
-	_, err = assets.TrustAsset(consts.StablecoinCode, consts.StableCoinAddress, utils.FtoS(trustLimit), seed)
+	trustFloat, err := utils.ToFloat(trust)
+	if err != nil {
+		return err
+	}
+
+	stlFloat, err := utils.ToFloat(consts.StablecoinTrustLimit)
+	if err != nil {
+
+		return err
+	}
+
+	trustLimit, err := utils.ToString(trustFloat + stlFloat)
+	if err != nil {
+		return err
+	}
+	_, err = assets.TrustAsset(consts.StablecoinCode, consts.StableCoinAddress, trustLimit, seed)
 	if err != nil {
 		return errors.Wrap(err, "couldn't trust asset, quitting!")
 	}
@@ -464,7 +485,7 @@ func SearchWithEmailId(email string) (User, error) {
 
 // MoveFundsFromSecondaryWallet moves funds from the secondary wallet to the primary wallet
 func (a *User) MoveFundsFromSecondaryWallet(amount string, seedpwd string) error {
-	amountI, err := utils.StoFWithCheck(amount)
+	amountI, err := utils.ToFloat(amount)
 	if err != nil {
 		return errors.Wrap(err, "amount not float, quitting")
 	}
@@ -480,7 +501,12 @@ func (a *User) MoveFundsFromSecondaryWallet(amount string, seedpwd string) error
 		return errors.Wrap(err, "could not get xlm balance of secondary account")
 	}
 
-	if amountI > utils.StoF(secFunds) {
+	secFundsFloat, err := utils.ToFloat(secFunds)
+	if err != nil {
+		return err
+	}
+
+	if amountI > secFundsFloat {
 		return errors.New("amount to be transferred is greater than the funds available in the secondary account, quitting")
 	}
 
@@ -509,7 +535,15 @@ func (a *User) SweepSecondaryWallet(seedpwd string) error {
 		return errors.Wrap(err, "could not get xlm balance of secondary account")
 	}
 
-	secFundsWithMinbal := utils.FtoS(utils.StoF(secFunds) - 5)
+	secFundsTemp, err := utils.ToFloat(secFunds)
+	if err != nil {
+		return err
+	}
+
+	secFundsWithMinbal, err := utils.ToString(secFundsTemp - 5)
+	if err != nil {
+		return err
+	}
 	// send the tx over
 	_, txhash, err := xlm.SendXLM(a.StellarWallet.PublicKey, secFundsWithMinbal, secSeed, "fund transfer to secondary")
 	if err != nil {

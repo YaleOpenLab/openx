@@ -48,10 +48,16 @@ func parseProject(r *http.Request) (platform.Project, error) {
 	}
 
 	prepProject.PanelSize = r.FormValue("PanelSize")
-	prepProject.TotalValue = utils.StoF(r.FormValue("TotalValue"))
+	prepProject.TotalValue, err = utils.ToFloat(r.FormValue("TotalValue"))
+	if err != nil {
+		return prepProject, err
+	}
 	prepProject.State = r.FormValue("Location")
 	prepProject.Metadata = r.FormValue("Metadata")
-	prepProject.Stage = utils.StoI(r.FormValue("Stage"))
+	prepProject.Stage, err = utils.ToInt(r.FormValue("Stage"))
+	if err != nil {
+		return prepProject, err
+	}
 	prepProject.MoneyRaised = 0
 	prepProject.BalLeft = float64(0)
 	prepProject.DateInitiated = utils.Timestamp()
@@ -113,7 +119,11 @@ func getProject() {
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
-		uKey := utils.StoI(r.URL.Query()["index"][0])
+		uKey, err := utils.ToInt(r.URL.Query()["index"][0])
+		if err != nil {
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
 		contract, err := platform.RetrieveProject(uKey)
 		if err != nil {
 			log.Println("did not retrieve project", err)
@@ -146,7 +156,7 @@ func getProjectsAtIndex() {
 			return
 		}
 
-		index, err := utils.StoICheck(r.URL.Query()["index"][0])
+		index, err := utils.ToInt(r.URL.Query()["index"][0])
 		if err != nil {
 			log.Println("Passed index not an integer, quitting!")
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)

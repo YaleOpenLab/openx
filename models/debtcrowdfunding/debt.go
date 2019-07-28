@@ -21,7 +21,7 @@ func Invest(projIndex int, invIndex int, invAssetCode string, invSeed string,
 	invAmount string, trustLimit string, investorIndices []int, application string) error {
 
 	issuerPath := consts.OpzonesIssuerDir
-	issuerPubkey, issuerSeed, err := wallet.RetrieveSeed(issuer.CreatePath(issuerPath, projIndex), consts.IssuerSeedPwd)
+	issuerPubkey, issuerSeed, err := wallet.RetrieveSeed(issuer.GetPath(issuerPath, projIndex), consts.IssuerSeedPwd)
 	if err != nil {
 		return errors.Wrap(err, "Unable to retrieve issuer seed")
 	}
@@ -35,7 +35,11 @@ func Invest(projIndex int, invIndex int, invAssetCode string, invSeed string,
 		return err
 	}
 
-	stableTxHash, err := SendUSDToPlatform(invSeed, invAmount, "Opzones investment: "+utils.ItoS(projIndex))
+	projIndexString, err := utils.ToString(projIndex)
+	if err != nil {
+		return err
+	}
+	stableTxHash, err := SendUSDToPlatform(invSeed, invAmount, "Opzones investment: "+projIndexString)
 	if err != nil {
 		log.Println("Unable to send STABELUSD to platform", err)
 		return err
@@ -57,7 +61,12 @@ func Invest(projIndex int, invIndex int, invAssetCode string, invSeed string,
 	}
 	log.Printf("Sent InvestorAsset %s to investor %s with txhash %s", invAssetCode, investor.U.StellarWallet.PublicKey, investorAssetHash)
 	// investor asset sent, update a.Params's BalLeft
-	investor.AmountInvested += utils.StoF(invAmount)
+
+	invAmountF, err := utils.ToFloat(invAmount)
+	if err != nil {
+		return err
+	}
+	investor.AmountInvested += invAmountF
 	if application == "constructionBond" {
 		investor.InvestedBonds = append(investor.InvestedBonds, invAssetCode)
 	} else if application == "livingunitcoop" {
@@ -85,7 +94,7 @@ func ReceiveBond(issuerPath string, recpIndex int, projIndex int, debtAssetCode 
 		return err
 	}
 
-	issuerPubkey, issuerSeed, err := wallet.RetrieveSeed(issuer.CreatePath(issuerPath, projIndex), consts.IssuerSeedPwd)
+	issuerPubkey, issuerSeed, err := wallet.RetrieveSeed(issuer.GetPath(issuerPath, projIndex), consts.IssuerSeedPwd)
 	if err != nil {
 		log.Println("Unable to retrieve issuer seed", err)
 		return err
@@ -93,14 +102,20 @@ func ReceiveBond(issuerPath string, recpIndex int, projIndex int, debtAssetCode 
 
 	// this investment asset is a one way asset ie the recipient need not pay this back to the platform since these funds
 	// would be used in the unit's construction
-	debtTrustHash, err := assets.TrustAsset(debtAssetCode, issuerPubkey, utils.FtoS(totalValue), recpSeed)
+
+	totalValueS, err := utils.ToString(totalValue)
+	if err != nil {
+		return err
+	}
+
+	debtTrustHash, err := assets.TrustAsset(debtAssetCode, issuerPubkey, totalValueS, recpSeed)
 	if err != nil {
 		log.Println("Error while trusting investment asset", err)
 		return err
 	}
 	log.Printf("Recipient Trusts Investment asset %s with txhash %s", debtAssetCode, debtTrustHash)
 
-	_, recpDebtAssetHash, err := assets.SendAssetFromIssuer(debtAssetCode, recipient.U.StellarWallet.PublicKey, utils.FtoS(totalValue), issuerSeed, issuerPubkey) // same amount as investment
+	_, recpDebtAssetHash, err := assets.SendAssetFromIssuer(debtAssetCode, recipient.U.StellarWallet.PublicKey, totalValueS, issuerSeed, issuerPubkey) // same amount as investment
 	if err != nil {
 		log.Println("Error while sending investment asset", err)
 		return err

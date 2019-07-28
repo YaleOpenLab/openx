@@ -1,6 +1,7 @@
 package opensolar
 
 import (
+	"encoding/json"
 	"github.com/pkg/errors"
 	"strings"
 
@@ -92,7 +93,12 @@ func RetrieveAllEntitiesWithoutRole() ([]Entity, error) {
 	}
 
 	for _, value := range x {
-		users = append(users, value.(Entity))
+		var temp Entity
+		err = json.Unmarshal(value, &temp)
+		if err != nil {
+			return users, errors.New("could not unmarshal json")
+		}
+		users = append(users, temp)
 	}
 
 	return users, nil
@@ -107,7 +113,11 @@ func RetrieveAllEntities(role string) ([]Entity, error) {
 	}
 
 	for _, value := range x {
-		entity := value.(Entity)
+		var entity Entity
+		err = json.Unmarshal(value, &entity)
+		if err != nil {
+			return entities, errors.New("could not unmarshal entity")
+		}
 		if entity.Contractor || entity.Originator || entity.Guarantor || entity.Developer {
 			entities = append(entities, entity)
 		}
@@ -118,13 +128,14 @@ func RetrieveAllEntities(role string) ([]Entity, error) {
 
 // RetrieveEntityHelper is a helper associated with the RetrieveEntity function
 func RetrieveEntityHelper(key int) (Entity, error) {
-	var dummy Entity
+	var entity Entity
 	x, err := edb.Retrieve(consts.DbDir, database.ContractorBucket, key)
 	if err != nil {
-		return dummy, errors.Wrap(err, "error while retrieving key from bucket")
+		return entity, errors.Wrap(err, "error while retrieving key from bucket")
 	}
 
-	return x.(Entity), nil
+	err = json.Unmarshal(x, &entity)
+	return entity, err
 }
 
 // RetrieveEntity retrieves a specific entity from the database
@@ -259,7 +270,10 @@ func AgreeToContractConditions(contractHash string, projIndex string,
 	fourthPart := messageHash[84:112]
 	fifthPart := messageHash[112:140]
 
-	timeStamp := utils.I64toS(utils.Unix())
+	timeStamp, err := utils.ToString(utils.Unix())
+	if err != nil {
+		return err
+	}
 	_, firstHash, err := xlm.SendXLM(user.StellarWallet.PublicKey, timeStamp, seed, firstPart)
 	if err != nil {
 		return errors.Wrap(err, "couldn't send tx 1")

@@ -207,7 +207,7 @@ func getUserInfo() {
 			return
 		}
 
-		index, err := utils.StoICheck(r.URL.Query()["index"][0])
+		index, err := utils.ToInt(r.URL.Query()["index"][0])
 		if err != nil {
 			log.Println(err)
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)

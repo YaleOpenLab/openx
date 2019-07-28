@@ -23,7 +23,7 @@ func MonthlyBill() string {
 	// the average energy consumption in puerto rico seems to be 5,657 kWh or about
 	// 471 kWH per household. lets take 600 accounting for a 20% error margin.
 	averageConsumption := float64(600)
-	avgString := utils.FtoS(priceOfElectricity * averageConsumption)
+	avgString, _ := utils.ToString(priceOfElectricity * averageConsumption)
 	return avgString
 }
 

@@ -44,7 +44,7 @@ func InitializePlatform() error {
 	}
 	// platform doesn't exist or user doesn't have encrypted file. Ask
 	log.Println("DO YOU HAVE YOUR RAW SEED? IF SO, ENTER SEED. ELSE ENTER N")
-	seed, err = scan.ScanForString()
+	seed, err = scan.ScanString()
 	if err != nil {
 		return errors.Wrap(err, "couldn't scan raw string")
 	}
@@ -56,7 +56,7 @@ func InitializePlatform() error {
 		if err != nil {
 			return err
 		}
-		publicKey, seed, err = wallet.NewSeed(consts.PlatformSeedFile, password)
+		publicKey, seed, err = wallet.NewSeedStore(consts.PlatformSeedFile, password)
 		if err != nil {
 			return errors.Wrap(err, "couldn't retrieve seed")
 		}
@@ -72,9 +72,15 @@ func InitializePlatform() error {
 		if err != nil {
 			return err
 		}
-		publicKey, err = wallet.RetrieveAndStorePubkey(seed, consts.PlatformSeedFile, password)
+
+		publicKey, err = wallet.ReturnPubkey(seed)
 		if err != nil {
-			return errors.Wrap(err, "error while retrieving and storing pubkey")
+			return err
+		}
+
+		err = wallet.StoreSeed(seed, password, consts.PlatformSeed)
+		if err != nil {
+			return err
 		}
 	}
 	_ = xlm.GetXLM(publicKey) // the API request errors out even on success, so
@@ -111,9 +117,12 @@ func RefillPlatform(publicKey string) error {
 		return err
 	}
 	// balance is in string, convert to int
-	balanceI := utils.StoF(balance)
-	log.Println("Platform's balance is: ", balanceI)
-	if balanceI < 21 { // 1 to account for fees
+	balanceF, err := utils.ToFloat(balance)
+	if err != nil {
+		return err
+	}
+	log.Println("Platform's balance is: ", balanceF)
+	if balanceF < 21 { // 1 to account for fees
 		// get coins if balance is this low
 		log.Println("Refilling platform balance")
 		err := xlm.GetXLM(publicKey)

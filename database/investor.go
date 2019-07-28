@@ -1,6 +1,7 @@
 package database
 
 import (
+	"encoding/json"
 	"github.com/pkg/errors"
 
 	tickers "github.com/Varunram/essentials/crypto/exchangetickers"
@@ -63,7 +64,8 @@ func RetrieveInvestorHelper(key int) (Investor, error) {
 		return inv, errors.Wrap(err, "error while retrieving key from bucket")
 	}
 
-	return x.(Investor), nil
+	err = json.Unmarshal(x, &inv)
+	return inv, err
 }
 
 // RetrieveInvestor retrieves a particular investor indexed by key from the database
@@ -90,7 +92,12 @@ func RetrieveAllInvestors() ([]Investor, error) {
 	}
 
 	for _, value := range x {
-		investors = append(investors, value.(Investor))
+		var temp Investor
+		err := json.Unmarshal(value, &temp)
+		if err != nil {
+			return investors, errors.New("error while unmarshalling json, quitting")
+		}
+		investors = append(investors, temp)
 	}
 
 	return investors, nil
@@ -132,7 +139,18 @@ func (a *Investor) CanInvest(targetBalance string) bool {
 
 	// need to fetch the oracle price here for the order
 	oraclePrice := tickers.ExchangeXLMforUSD(xlmBalance)
-	if (utils.StoF(usdBalance) > utils.StoF(targetBalance)) || oraclePrice > utils.StoF(targetBalance) {
+
+	usdBalanceF, err := utils.ToFloat(usdBalance)
+	if err != nil {
+		return false
+	}
+
+	targetBalanceF, err := utils.ToFloat(targetBalance)
+	if err != nil {
+		return false
+	}
+
+	if usdBalanceF > targetBalanceF || oraclePrice > targetBalanceF {
 		// return true since the user has enough USD balance to pay for the order
 		return true
 	}
