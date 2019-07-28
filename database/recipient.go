@@ -1,6 +1,7 @@
 package database
 
 import (
+	"encoding/json"
 	"github.com/pkg/errors"
 
 	edb "github.com/Varunram/essentials/database"
@@ -64,7 +65,12 @@ func RetrieveAllRecipients() ([]Recipient, error) {
 	}
 
 	for _, value := range x {
-		recps = append(recps, value.(Recipient))
+		var temp Recipient
+		err := json.Unmarshal(value, &temp)
+		if err != nil {
+			return recps, errors.New("error while unmarshalling json, quitting")
+		}
+		recps = append(recps, temp)
 	}
 
 	return recps, nil
@@ -78,7 +84,8 @@ func RetrieveRecipientHelper(key int) (Recipient, error) {
 		return recp, errors.Wrap(err, "error while retrieving key from bucket")
 	}
 
-	return x.(Recipient), nil
+	err = json.Unmarshal(x, &recp)
+	return recp, err
 }
 
 // RetrieveRecipient retrieves a specific recipient from the database

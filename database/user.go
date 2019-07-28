@@ -2,6 +2,7 @@ package database
 
 import (
 	"encoding/base32"
+	"encoding/json"
 	"github.com/pkg/errors"
 	"log"
 
@@ -13,9 +14,9 @@ import (
 	wallet "github.com/Varunram/essentials/crypto/xlm/wallet"
 	edb "github.com/Varunram/essentials/database"
 	googauth "github.com/Varunram/essentials/googauth"
-	recovery "github.com/bithyve/research/sss"
 	utils "github.com/Varunram/essentials/utils"
 	consts "github.com/YaleOpenLab/openx/consts"
+	recovery "github.com/bithyve/research/sss"
 )
 
 // User is a metastrucutre that contains commonly used keys within a single umbrella
@@ -227,7 +228,12 @@ func RetrieveAllUsers() ([]User, error) {
 	}
 
 	for _, value := range x {
-		users = append(users, value.(User))
+		var temp User
+		err := json.Unmarshal(value, &temp)
+		if err != nil {
+			return users, errors.New("error while unmarshalling json, quitting")
+		}
+		users = append(users, temp)
 	}
 
 	return users, nil
@@ -242,7 +248,8 @@ func RetrieveUser(key int) (User, error) {
 		return user, errors.Wrap(err, "error while retrieving key from bucket")
 	}
 
-	return x.(User), nil
+	err = json.Unmarshal(x, &user)
+	return user, err
 }
 
 // ValidateSeedpwd acts as a pre verify function so we don't try to decrypt the encrypted seed
