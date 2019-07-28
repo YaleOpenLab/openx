@@ -9,7 +9,6 @@ import (
 	xlm "github.com/Varunram/essentials/crypto/xlm"
 	assets "github.com/Varunram/essentials/crypto/xlm/assets"
 	wallet "github.com/Varunram/essentials/crypto/xlm/wallet"
-	utils "github.com/Varunram/essentials/utils"
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
 	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
@@ -487,11 +486,11 @@ func bootstrapInvestor(invName, invDescription string) (database.Investor, strin
 	}
 	// trust the stablecoin issuer and give the investor a fixed number of stableusd to invest
 	// this helps prevent calling the exchange function that is implicitly called in the payment function
-	_, err = assets.TrustAsset(consts.StablecoinCode, consts.StablecoinPublicKey, "10000000000", invSeed)
+	_, err = assets.TrustAsset(consts.StablecoinCode, consts.StablecoinPublicKey, 10000000000, invSeed)
 	if err != nil {
 		return investor1, "", err
 	}
-	_, _, err = assets.SendAssetFromIssuer(consts.StablecoinCode, investor1.U.StellarWallet.PublicKey, "1000000", consts.StablecoinSeed, consts.StablecoinPublicKey)
+	_, _, err = assets.SendAssetFromIssuer(consts.StablecoinCode, investor1.U.StellarWallet.PublicKey, 1000000, consts.StablecoinSeed, consts.StablecoinPublicKey)
 	if err != nil {
 		return investor1, "", err
 	}
@@ -551,11 +550,7 @@ func oneInvestor(projIndex int, invName string, invDescription string, recpName 
 		return err
 	}
 
-	totalValueString, err := utils.ToString(project.TotalValue)
-	if err != nil {
-		return err
-	}
-	err = opensolar.Invest(projIndex, investor1.U.Index, totalValueString, invSeed)
+	err = opensolar.Invest(projIndex, investor1.U.Index, project.TotalValue, invSeed)
 	if err != nil {
 		return err
 	}
@@ -580,7 +575,7 @@ func oneInvestor(projIndex int, invName string, invDescription string, recpName 
 }
 
 func threeInvestor(projIndex int, invName1 string, invDescription1 string, invName2 string, invDescription2 string,
-	invName3 string, invDescription3 string, invAmount1 string, invAmount2 string, invAmount3 string,
+	invName3 string, invDescription3 string, invAmount1 float64, invAmount2 float64, invAmount3 float64,
 	recpName string, recpDescription string) error {
 
 	project, err := opensolar.RetrieveProject(projIndex)
@@ -656,8 +651,8 @@ func threeInvestor(projIndex int, invName1 string, invDescription1 string, invNa
 
 func sixInvestor(projIndex int, invName1 string, invDescription1 string, invName2 string, invDescription2 string,
 	invName3 string, invDescription3 string, invName4 string, invDescription4 string, invName5 string, invDescription5 string,
-	invName6 string, invDescription6 string, invAmount1 string, invAmount2 string, invAmount3 string, invAmount4 string,
-	invAmount5 string, invAmount6 string, recpName string, recpDescription string) error {
+	invName6 string, invDescription6 string, invAmount1 float64, invAmount2 float64, invAmount3 float64, invAmount4 float64,
+	invAmount5 float64, invAmount6 float64, recpName string, recpDescription string) error {
 
 	project, err := opensolar.RetrieveProject(projIndex)
 	if err != nil {
@@ -777,7 +772,7 @@ func populateDynamicData1kw() error {
 func populateDynamicData1mw() error {
 	// setup all the entities involved with the project here
 	err := threeInvestor(5, "OZFunds@test.com", "OZ FundCo", "GreenBank@test.com", "NH Green Bank", "TaxEquity@test.com", "Lancaster Lumber Mill Coop",
-		"1000000", "400000", "100000", "LancasterHigh@test.com", "Lancaster Elementary School")
+		1000000, 400000, 100000, "LancasterHigh@test.com", "Lancaster Elementary School")
 	if err != nil {
 		return err
 	}
@@ -805,7 +800,7 @@ func populateDynamicData10kw() error {
 
 	err := sixInvestor(6, "MatthewMoroney@test.com", "Matthew Moroney", "FranzHochstrasser@test.com", "Franz Hochstrasser", "CTGreenBank@test.com", "Connecticut Green Bank",
 		"YaleUniversity@test.com", "Yale University Community Fund", "JeromeGreen@test.com", "Jerome Green", "OpenSolarFund@test.com", "Open Solar Revolving Fund",
-		"4000", "4000", "4000", "4000", "4000", "10000", "colhouse@test.com", "Columbus House Foundation")
+		4000, 4000, 4000, 4000, 4000, 10000, "colhouse@test.com", "Columbus House Foundation")
 
 	if err != nil {
 		return err

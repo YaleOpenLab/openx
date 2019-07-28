@@ -472,13 +472,13 @@ func populateAdditionalData() error {
 	}
 
 	// send the pasto school account some money so we can demo using it on the frontend
-	txhash, err := assets.TrustAsset(consts.StablecoinCode, consts.StablecoinPublicKey, "10000000000", seed)
+	txhash, err := assets.TrustAsset(consts.StablecoinCode, consts.StablecoinPublicKey, 10000000000, seed)
 	if err != nil {
 		return err
 	}
 	log.Println("TX HASH for dci trusting stableUSD: ", txhash)
 
-	_, txhash, err = assets.SendAssetFromIssuer(consts.StablecoinCode, recp.U.StellarWallet.PublicKey, "600", consts.StablecoinSeed, consts.StablecoinPublicKey)
+	_, txhash, err = assets.SendAssetFromIssuer(consts.StablecoinCode, recp.U.StellarWallet.PublicKey, 600, consts.StablecoinSeed, consts.StablecoinPublicKey)
 	if err != nil {
 		log.Println("SEED: ", consts.StablecoinSeed)
 		return err
@@ -496,13 +496,13 @@ func populateAdditionalData() error {
 	}
 
 	// send the pasto school account some money so we can demo using it on the frontend
-	txhash, err = assets.TrustAsset(consts.StablecoinCode, consts.StablecoinPublicKey, "10000000000", seed)
+	txhash, err = assets.TrustAsset(consts.StablecoinCode, consts.StablecoinPublicKey, 10000000000, seed)
 	if err != nil {
 		return err
 	}
 	log.Println("TX HASH for pasto school trusting stableUSD: ", txhash)
 
-	_, txhash, err = assets.SendAssetFromIssuer(consts.StablecoinCode, recp.U.StellarWallet.PublicKey, "600", consts.StablecoinSeed, consts.StablecoinPublicKey)
+	_, txhash, err = assets.SendAssetFromIssuer(consts.StablecoinCode, recp.U.StellarWallet.PublicKey, 600, consts.StablecoinSeed, consts.StablecoinPublicKey)
 	if err != nil {
 		log.Println("SEED: ", consts.StablecoinSeed)
 		return err
@@ -520,13 +520,13 @@ func populateAdditionalData() error {
 	}
 
 	// send the pasto school account some money so we can demo using it on the frontend
-	txhash, err = assets.TrustAsset(consts.StablecoinCode, consts.StablecoinPublicKey, "10000000000", seed)
+	txhash, err = assets.TrustAsset(consts.StablecoinCode, consts.StablecoinPublicKey, 10000000000, seed)
 	if err != nil {
 		return err
 	}
 	log.Println("TX HASH for pasto school sec wallet trusting stableUSD: ", txhash)
 
-	_, txhash, err = assets.SendAssetFromIssuer(consts.StablecoinCode, recp.U.SecondaryWallet.PublicKey, "10000", consts.StablecoinSeed, consts.StablecoinPublicKey)
+	_, txhash, err = assets.SendAssetFromIssuer(consts.StablecoinCode, recp.U.SecondaryWallet.PublicKey, 10000, consts.StablecoinSeed, consts.StablecoinPublicKey)
 	if err != nil {
 		log.Println("SEED: ", consts.StablecoinSeed)
 		return err
@@ -538,11 +538,11 @@ func populateAdditionalData() error {
 		log.Fatal(err)
 	}
 
-	_, err = assets.TrustAsset(consts.StablecoinCode, consts.StablecoinPublicKey, "10000000000", invSeed)
+	_, err = assets.TrustAsset(consts.StablecoinCode, consts.StablecoinPublicKey, 10000000000, invSeed)
 	if err != nil {
 		log.Fatal(err)
 	}
-	_, _, err = assets.SendAssetFromIssuer(consts.StablecoinCode, investor1.U.StellarWallet.PublicKey, "1000000", consts.StablecoinSeed, consts.StablecoinPublicKey)
+	_, _, err = assets.SendAssetFromIssuer(consts.StablecoinCode, investor1.U.StellarWallet.PublicKey, 1000000, consts.StablecoinSeed, consts.StablecoinPublicKey)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -564,11 +564,11 @@ func populateAdditionalData() error {
 		log.Fatal(err)
 	}
 
-	_, err = assets.TrustAsset(consts.StablecoinCode, consts.StablecoinPublicKey, "10000000000", recpSeed)
+	_, err = assets.TrustAsset(consts.StablecoinCode, consts.StablecoinPublicKey, 10000000000, recpSeed)
 	if err != nil {
 		log.Fatal(err)
 	}
-	_, _, err = assets.SendAssetFromIssuer(consts.StablecoinCode, recp1.U.StellarWallet.PublicKey, "1000000", consts.StablecoinSeed, consts.StablecoinPublicKey)
+	_, _, err = assets.SendAssetFromIssuer(consts.StablecoinCode, recp1.U.StellarWallet.PublicKey, 1000000, consts.StablecoinSeed, consts.StablecoinPublicKey)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -129,28 +129,23 @@ func (a *Investor) ChangeVotingBalance(votes float64) error {
 func (a *Investor) CanInvest(targetBalance string) bool {
 	usdBalance, err := xlm.GetAssetBalance(a.U.StellarWallet.PublicKey, "STABLEUSD")
 	if err != nil {
-		usdBalance = "0"
+		usdBalance = 0
 	}
 
 	xlmBalance, err := xlm.GetNativeBalance(a.U.StellarWallet.PublicKey)
 	if err != nil {
-		xlmBalance = "0"
+		xlmBalance = 0
 	}
 
 	// need to fetch the oracle price here for the order
 	oraclePrice := tickers.ExchangeXLMforUSD(xlmBalance)
-
-	usdBalanceF, err := utils.ToFloat(usdBalance)
-	if err != nil {
-		return false
-	}
 
 	targetBalanceF, err := utils.ToFloat(targetBalance)
 	if err != nil {
 		return false
 	}
 
-	if usdBalanceF > targetBalanceF || oraclePrice > targetBalanceF {
+	if usdBalance > targetBalanceF || oraclePrice > targetBalanceF {
 		// return true since the user has enough USD balance to pay for the order
 		return true
 	}

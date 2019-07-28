@@ -18,7 +18,7 @@ import (
 
 // Invest invests in a particular project
 func Invest(projIndex int, invIndex int, invAssetCode string, invSeed string,
-	invAmount string, trustLimit string, investorIndices []int, application string) error {
+	invAmount float64, trustLimit float64, investorIndices []int, application string) error {
 
 	issuerPath := consts.OpzonesIssuerDir
 	issuerPubkey, issuerSeed, err := wallet.RetrieveSeed(issuer.GetPath(issuerPath, projIndex), consts.IssuerSeedPwd)
@@ -103,19 +103,14 @@ func ReceiveBond(issuerPath string, recpIndex int, projIndex int, debtAssetCode 
 	// this investment asset is a one way asset ie the recipient need not pay this back to the platform since these funds
 	// would be used in the unit's construction
 
-	totalValueS, err := utils.ToString(totalValue)
-	if err != nil {
-		return err
-	}
-
-	debtTrustHash, err := assets.TrustAsset(debtAssetCode, issuerPubkey, totalValueS, recpSeed)
+	debtTrustHash, err := assets.TrustAsset(debtAssetCode, issuerPubkey, totalValue, recpSeed)
 	if err != nil {
 		log.Println("Error while trusting investment asset", err)
 		return err
 	}
 	log.Printf("Recipient Trusts Investment asset %s with txhash %s", debtAssetCode, debtTrustHash)
 
-	_, recpDebtAssetHash, err := assets.SendAssetFromIssuer(debtAssetCode, recipient.U.StellarWallet.PublicKey, totalValueS, issuerSeed, issuerPubkey) // same amount as investment
+	_, recpDebtAssetHash, err := assets.SendAssetFromIssuer(debtAssetCode, recipient.U.StellarWallet.PublicKey, totalValue, issuerSeed, issuerPubkey) // same amount as investment
 	if err != nil {
 		log.Println("Error while sending investment asset", err)
 		return err
@@ -145,6 +140,6 @@ func ReceiveBond(issuerPath string, recpIndex int, projIndex int, debtAssetCode 
 }
 
 // SendUSDToPlatform can be used to send USD back to the platform
-func SendUSDToPlatform(invSeed string, invAmount string, memo string) (string, error) {
+func SendUSDToPlatform(invSeed string, invAmount float64, memo string) (string, error) {
 	return models.SendUSDToPlatform(invSeed, invAmount, memo)
 }

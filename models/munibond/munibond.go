@@ -19,7 +19,7 @@ import (
 )
 
 // MunibondInvest invests in a specific munibond
-func MunibondInvest(issuerPath string, invIndex int, invSeed string, invAmount string,
+func MunibondInvest(issuerPath string, invIndex int, invSeed string, invAmount float64,
 	projIndex int, invAssetCode string, totalValue float64, seedInvestmentFactor float64) error {
 	// offer user to exchange xlm for stableusd and invest directly if the user does not have stableusd
 	// this should be a menu on the Frontend but here we do this automatically
@@ -51,11 +51,8 @@ func MunibondInvest(issuerPath string, invIndex int, invSeed string, invAmount s
 	}
 
 	InvestorAsset := assets.CreateAsset(invAssetCode, issuerPubkey)
-	totalValueS, err := utils.ToString(totalValue)
-	if err != nil {
-		return err
-	}
-	invTrustTxHash, err := assets.TrustAsset(InvestorAsset.GetCode(), issuerPubkey, totalValueS, invSeed)
+
+	invTrustTxHash, err := assets.TrustAsset(InvestorAsset.GetCode(), issuerPubkey, totalValue, invSeed)
 	if err != nil {
 		return errors.Wrap(err, "Error while trusting investor asset")
 	}
@@ -111,12 +108,12 @@ func MunibondReceive(issuerPath string, recpIndex int, projIndex int, debtAssetI
 		years = 1
 	}
 
-	pbAmtTrust, err := utils.ToString(years * 12 * 2) // two way exchange possible, to account for errors
+	pbAmtTrust, err := utils.ToFloat(years * 12 * 2) // two way exchange possible, to account for errors
 	if err != nil {
 		return err
 	}
 
-	paybackTrustHash, err := assets.TrustAsset(PaybackAsset.GetCode(), issuerPubkey, pbAmtTrust, recpSeed)
+	paybackTrustHash, err := assets.TrustAsset(PaybackAsset.GetCode(), issuerPubkey, float64(years * 12 * 2), recpSeed)
 	if err != nil {
 		return errors.Wrap(err, "Error while trusting Payback Asset")
 	}
@@ -128,21 +125,14 @@ func MunibondReceive(issuerPath string, recpIndex int, projIndex int, debtAssetI
 	}
 
 	log.Printf("Sent PaybackAsset to recipient %s with txhash %s", recipient.U.StellarWallet.PublicKey, paybackAssetHash)
-	totalValueS2, err := utils.ToString(totalValue * 2)
-	if err != nil {
-		return err
-	}
-	debtTrustHash, err := assets.TrustAsset(DebtAsset.GetCode(), issuerPubkey, totalValueS2, recpSeed)
+
+	debtTrustHash, err := assets.TrustAsset(DebtAsset.GetCode(), issuerPubkey, totalValue * 2, recpSeed)
 	if err != nil {
 		return errors.Wrap(err, "Error while trusting debt asset")
 	}
 	log.Printf("Recipient Trusts Debt asset %s with txhash %s", DebtAsset.GetCode(), debtTrustHash)
 
-	totalValueS, err := utils.ToString(totalValue)
-	if err != nil {
-		return err
-	}
-	_, recpDebtAssetHash, err := assets.SendAssetFromIssuer(DebtAsset.GetCode(), recipient.U.StellarWallet.PublicKey, totalValueS, issuerSeed, issuerPubkey) // same amount as debt
+	_, recpDebtAssetHash, err := assets.SendAssetFromIssuer(DebtAsset.GetCode(), recipient.U.StellarWallet.PublicKey, totalValue, issuerSeed, issuerPubkey) // same amount as debt
 	if err != nil {
 		return errors.Wrap(err, "Error while sending debt asset")
 	}
@@ -204,7 +194,7 @@ func sendPaymentNotif(recpIndex int, projIndex int, paybackPeriod int, email str
 
 // MunibondPayback is used by the recipient to pay the platform back. Here, we pay the
 // project escrow instead of the platform since it would be responsible for redistribution of funds
-func MunibondPayback(issuerPath string, recpIndex int, amount string, recipientSeed string, projIndex int,
+func MunibondPayback(issuerPath string, recpIndex int, amount float64, recipientSeed string, projIndex int,
 	assetName string, projectInvestors []int, totalValue float64, escrowPubkey string) (float64, error) {
 
 	recipient, err := database.RetrieveRecipient(recpIndex)
@@ -228,12 +218,7 @@ func MunibondPayback(issuerPath string, recpIndex int, amount string, recipientS
 		return -1, err
 	}
 
-	amountS, err := utils.ToFloat(amount)
-	if err != nil {
-		return -1, err
-	}
-
-	if amountS < mBillFloat {
+	if amount < mBillFloat {
 		return -1, errors.New("amount paid is less than amount needed. Please refill your main account")
 	}
 
@@ -299,6 +284,6 @@ func MunibondPayback(issuerPath string, recpIndex int, amount string, recipientS
 }
 
 // SendUSDToPlatform is used to send usd back to the platform
-func SendUSDToPlatform(invSeed string, invAmount string, memo string) (string, error) {
+func SendUSDToPlatform(invSeed string, invAmount float64, memo string) (string, error) {
 	return models.SendUSDToPlatform(invSeed, invAmount, memo)
 }

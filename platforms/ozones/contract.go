@@ -107,22 +107,19 @@ func preInvestmentLivingCoop(projIndex int, invIndex int, invAmount string) (Liv
 }
 
 // InvestInLivingUnitCoop invests in a particular living coop
-func InvestInLivingUnitCoop(projIndex int, invIndex int, invAmount string, invSeed string,
+func InvestInLivingUnitCoop(projIndex int, invIndex int, invAmount float64, invSeed string,
 	recpSeed string) error {
 	// we want to invest in this specific bond
 	var err error
 
-	project, err := preInvestmentLivingCoop(projIndex, invIndex, invAmount)
+	invAmountS, _ := utils.ToString(invAmount)
+	project, err := preInvestmentLivingCoop(projIndex, invIndex, invAmountS)
 	if err != nil {
 		return errors.Wrap(err, "could not check pre investment conditions in living unit coop")
 	}
 
-	pAS, err := utils.ToString(project.Amount)
-	if err != nil {
-		return err
-	}
 	err = model.Invest(projIndex, invIndex, project.InvestorAssetCode, invSeed,
-		invAmount, pAS, project.ResidentIndices, "livingunitcoop")
+		invAmount, project.Amount, project.ResidentIndices, "livingunitcoop")
 	if err != nil {
 		return errors.Wrap(err, "could not invest in living unit coop")
 	}
@@ -136,19 +133,17 @@ func InvestInLivingUnitCoop(projIndex int, invIndex int, invAmount string, invSe
 }
 
 // InvestInConstructionBond invests in a particular construction bonm
-func InvestInConstructionBond(projIndex int, invIndex int, invAmount string, invSeed string) error {
+func InvestInConstructionBond(projIndex int, invIndex int, invAmount float64, invSeed string) error {
 	// we want to invest in this specific bond
 	var err error
 
-	project, err := preInvestmentConstructionBonds(projIndex, invIndex, invAmount)
+	invAmountS, _ := utils.ToString(invAmount)
+	project, err := preInvestmentConstructionBonds(projIndex, invIndex, invAmountS)
 	if err != nil {
 		return errors.Wrap(err, "could not check pre investment conditions in construction bond")
 	}
 
-	trustLimit, err := utils.ToString(project.CostOfUnit * float64(project.NoOfUnits))
-	if err != nil {
-		return err
-	}
+	trustLimit := project.CostOfUnit * float64(project.NoOfUnits)
 
 	err = model.Invest(projIndex, invIndex, project.InvestorAssetCode, invSeed,
 		invAmount, trustLimit, project.InvestorIndices, "constructionbond")
@@ -292,7 +287,7 @@ func UnlockProject(username string, pwhash string, projIndex int, seedpwd string
 	return nil
 }
 
-func (project *ConstructionBond) updateConstructionBondAfterInvestment(invAmount string, invIndex int) error {
+func (project *ConstructionBond) updateConstructionBondAfterInvestment(invAmount float64, invIndex int) error {
 	project.InvestorIndices = append(project.InvestorIndices, invIndex)
 	iAS, err := utils.ToFloat(invAmount)
 	if err != nil {
@@ -302,7 +297,7 @@ func (project *ConstructionBond) updateConstructionBondAfterInvestment(invAmount
 	return project.Save()
 }
 
-func (project *LivingUnitCoop) updateLivingUnitCoopAfterInvestment(invAmount string, invIndex int) error {
+func (project *LivingUnitCoop) updateLivingUnitCoopAfterInvestment(invAmount float64, invIndex int) error {
 	project.ResidentIndices = append(project.ResidentIndices, invIndex)
 	project.UnitsSold += 1
 	return project.Save()
