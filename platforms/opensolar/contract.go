@@ -319,37 +319,24 @@ func (project *Project) updateProjectAfterInvestment(invAmount string, invIndex 
 
 		log.Println(investor.U.StellarWallet.PublicKey, project.InvestorAssetCode)
 
-		var balanceS1 string
-		var balanceS2 string
-		var balanceF1 float64
-		var balanceF2 float64
+		var balance1 float64
+		var balance2 float64
 
-		balanceS1, err = xlm.GetAssetBalance(investor.U.StellarWallet.PublicKey, project.InvestorAssetCode)
+		balance1, err = xlm.GetAssetBalance(investor.U.StellarWallet.PublicKey, project.InvestorAssetCode)
 		if err != nil {
-			balanceS1 = "0"
+			balance1 = 0
 			// return errors.Wrap(err, "error while retrieving asset balance, quitting")
 		}
 
-		balanceF1, err = utils.ToFloat(balanceS1)
+		balance2, err = xlm.GetAssetBalance(investor.U.StellarWallet.PublicKey, project.SeedAssetCode)
 		if err != nil {
-			return errors.Wrap(err, "error while converting to float, quitting")
-		}
-
-		balanceS2, err = xlm.GetAssetBalance(investor.U.StellarWallet.PublicKey, project.SeedAssetCode)
-		if err != nil {
-			balanceS2 = "0"
+			balance2 = 0
 			// do nothing, since the user hasn't invested in seed assets yet
 			// return errors.Wrap(err, "error while retrieving asset balance, quitting")
 		}
 
-		balanceF2, err = utils.ToFloat(balanceS2)
-		if err != nil {
-			return errors.Wrap(err, "error while converting to float, quitting")
-		}
-
-		balanceF := balanceF1 + balanceF2
-
-		percentageInvestment := balanceF / project.TotalValue
+		balance := balance1 + balance2
+		percentageInvestment := balance / project.TotalValue
 		project.InvestorMap[investor.U.StellarWallet.PublicKey] = percentageInvestment
 	}
 
