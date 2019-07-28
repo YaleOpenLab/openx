@@ -7,6 +7,7 @@ import (
 	stablecoin "github.com/Varunram/essentials/crypto/stablecoin"
 	wallet "github.com/Varunram/essentials/crypto/xlm/wallet"
 	erpc "github.com/Varunram/essentials/rpc"
+	utils "github.com/Varunram/essentials/utils"
 )
 
 // this file handles the RPCs necessary for converting a fixed amount of XLM into
@@ -105,7 +106,12 @@ func getAnchorUSD() {
 				return
 			}
 
-			amount := r.URL.Query()["amount"][0] // amount that the person wants to get. This must be in USD
+			amount, err := utils.ToFloat(r.URL.Query()["amount"][0]) // amount that the person wants to get. This must be in USD
+			if err != nil {
+				log.Println(err)
+				erpc.ResponseHandler(w, erpc.StatusBadRequest)
+				return
+			}
 
 			txhash, err := stablecoin.GetAnchorUSD(seed, amount)
 			if err != nil {

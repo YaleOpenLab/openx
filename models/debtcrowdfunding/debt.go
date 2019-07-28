@@ -18,7 +18,7 @@ import (
 
 // Invest invests in a particular project
 func Invest(projIndex int, invIndex int, invAssetCode string, invSeed string,
-	invAmount string, trustLimit string, investorIndices []int, application string) error {
+	invAmount string, trustLimit float64, investorIndices []int, application string) error {
 
 	issuerPath := consts.OpzonesIssuerDir
 	issuerPubkey, issuerSeed, err := wallet.RetrieveSeed(issuer.GetPath(issuerPath, projIndex), consts.IssuerSeedPwd)
@@ -108,7 +108,7 @@ func ReceiveBond(issuerPath string, recpIndex int, projIndex int, debtAssetCode 
 		return err
 	}
 
-	debtTrustHash, err := assets.TrustAsset(debtAssetCode, issuerPubkey, totalValueS, recpSeed)
+	debtTrustHash, err := assets.TrustAsset(debtAssetCode, issuerPubkey, totalValue, recpSeed)
 	if err != nil {
 		log.Println("Error while trusting investment asset", err)
 		return err

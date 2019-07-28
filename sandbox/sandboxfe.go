@@ -487,7 +487,7 @@ func bootstrapInvestor(invName, invDescription string) (database.Investor, strin
 	}
 	// trust the stablecoin issuer and give the investor a fixed number of stableusd to invest
 	// this helps prevent calling the exchange function that is implicitly called in the payment function
-	_, err = assets.TrustAsset(consts.StablecoinCode, consts.StablecoinPublicKey, "10000000000", invSeed)
+	_, err = assets.TrustAsset(consts.StablecoinCode, consts.StablecoinPublicKey, 10000000000, invSeed)
 	if err != nil {
 		return investor1, "", err
 	}

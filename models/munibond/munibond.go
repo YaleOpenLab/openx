@@ -51,11 +51,8 @@ func MunibondInvest(issuerPath string, invIndex int, invSeed string, invAmount s
 	}
 
 	InvestorAsset := assets.CreateAsset(invAssetCode, issuerPubkey)
-	totalValueS, err := utils.ToString(totalValue)
-	if err != nil {
-		return err
-	}
-	invTrustTxHash, err := assets.TrustAsset(InvestorAsset.GetCode(), issuerPubkey, totalValueS, invSeed)
+
+	invTrustTxHash, err := assets.TrustAsset(InvestorAsset.GetCode(), issuerPubkey, totalValue, invSeed)
 	if err != nil {
 		return errors.Wrap(err, "Error while trusting investor asset")
 	}
@@ -116,7 +113,7 @@ func MunibondReceive(issuerPath string, recpIndex int, projIndex int, debtAssetI
 		return err
 	}
 
-	paybackTrustHash, err := assets.TrustAsset(PaybackAsset.GetCode(), issuerPubkey, pbAmtTrust, recpSeed)
+	paybackTrustHash, err := assets.TrustAsset(PaybackAsset.GetCode(), issuerPubkey, float64(years * 12 * 2), recpSeed)
 	if err != nil {
 		return errors.Wrap(err, "Error while trusting Payback Asset")
 	}
@@ -128,11 +125,8 @@ func MunibondReceive(issuerPath string, recpIndex int, projIndex int, debtAssetI
 	}
 
 	log.Printf("Sent PaybackAsset to recipient %s with txhash %s", recipient.U.StellarWallet.PublicKey, paybackAssetHash)
-	totalValueS2, err := utils.ToString(totalValue * 2)
-	if err != nil {
-		return err
-	}
-	debtTrustHash, err := assets.TrustAsset(DebtAsset.GetCode(), issuerPubkey, totalValueS2, recpSeed)
+
+	debtTrustHash, err := assets.TrustAsset(DebtAsset.GetCode(), issuerPubkey, totalValue * 2, recpSeed)
 	if err != nil {
 		return errors.Wrap(err, "Error while trusting debt asset")
 	}

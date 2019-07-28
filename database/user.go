@@ -241,7 +241,6 @@ func RetrieveAllUsers() ([]User, error) {
 
 // RetrieveUser retrieves a particular User indexed by key from the database
 func RetrieveUser(key int) (User, error) {
-
 	var user User
 	x, err := edb.Retrieve(consts.DbDir, UserBucket, key)
 	if err != nil {
@@ -433,7 +432,7 @@ func TopReputationUsers() ([]User, error) {
 }
 
 // IncreaseTrustLimit increases the trustl imit of a specific user towards the STABLEUSD asset
-func (a *User) IncreaseTrustLimit(seedpwd string, trust string) error {
+func (a *User) IncreaseTrustLimit(seedpwd string, trust float64) error {
 
 	seed, err := wallet.DecryptSeed(a.StellarWallet.EncryptedSeed, seedpwd)
 	if err != nil {
@@ -443,22 +442,7 @@ func (a *User) IncreaseTrustLimit(seedpwd string, trust string) error {
 	// we now have the seed, so we should upgrade the trustlimit by the margin requested. The margin passed here
 	// must not include the old trustlimit
 
-	trustFloat, err := utils.ToFloat(trust)
-	if err != nil {
-		return err
-	}
-
-	stlFloat, err := utils.ToFloat(consts.StablecoinTrustLimit)
-	if err != nil {
-
-		return err
-	}
-
-	trustLimit, err := utils.ToString(trustFloat + stlFloat)
-	if err != nil {
-		return err
-	}
-	_, err = assets.TrustAsset(consts.StablecoinCode, consts.StableCoinAddress, trustLimit, seed)
+	_, err = assets.TrustAsset(consts.StablecoinCode, consts.StableCoinAddress, trust + consts.StablecoinTrustLimit, seed)
 	if err != nil {
 		return errors.Wrap(err, "couldn't trust asset, quitting!")
 	}

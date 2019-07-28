@@ -528,7 +528,11 @@ func trustAsset() {
 		}
 		assetCode := r.URL.Query()["assetCode"][0]
 		assetIssuer := r.URL.Query()["assetIssuer"][0]
-		limit := r.URL.Query()["limit"][0]
+		limit, err := utils.ToFloat(r.URL.Query()["limit"][0])
+		if err != nil {
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
 
 		seedpwd := r.URL.Query()["seedpwd"][0]
 		seed, err := wallet.DecryptSeed(prepUser.StellarWallet.EncryptedSeed, seedpwd)
@@ -742,7 +746,11 @@ func increaseTrustLimit() {
 		}
 
 		// now the user is validated, we need to call the db function to increase the trust limit
-		trust := r.URL.Query()["trust"][0]
+		trust, err := utils.ToFloat(r.URL.Query()["trust"][0])
+		if err != nil {
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
 		seedpwd := r.URL.Query()["seedpwd"][0]
 
 		err = prepUser.IncreaseTrustLimit(seedpwd, trust)

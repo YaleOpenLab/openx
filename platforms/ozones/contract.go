@@ -117,12 +117,8 @@ func InvestInLivingUnitCoop(projIndex int, invIndex int, invAmount string, invSe
 		return errors.Wrap(err, "could not check pre investment conditions in living unit coop")
 	}
 
-	pAS, err := utils.ToString(project.Amount)
-	if err != nil {
-		return err
-	}
 	err = model.Invest(projIndex, invIndex, project.InvestorAssetCode, invSeed,
-		invAmount, pAS, project.ResidentIndices, "livingunitcoop")
+		invAmount, project.Amount, project.ResidentIndices, "livingunitcoop")
 	if err != nil {
 		return errors.Wrap(err, "could not invest in living unit coop")
 	}
@@ -145,10 +141,7 @@ func InvestInConstructionBond(projIndex int, invIndex int, invAmount string, inv
 		return errors.Wrap(err, "could not check pre investment conditions in construction bond")
 	}
 
-	trustLimit, err := utils.ToString(project.CostOfUnit * float64(project.NoOfUnits))
-	if err != nil {
-		return err
-	}
+	trustLimit := project.CostOfUnit * float64(project.NoOfUnits)
 
 	err = model.Invest(projIndex, invIndex, project.InvestorAssetCode, invSeed,
 		invAmount, trustLimit, project.InvestorIndices, "constructionbond")
