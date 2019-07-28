@@ -2,11 +2,11 @@ package opensolar
 
 import (
 	"crypto/tls"
+	"encoding/json"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
-	"encoding/json"
 
 	consts "github.com/YaleOpenLab/openx/consts"
 	notif "github.com/YaleOpenLab/openx/notif"

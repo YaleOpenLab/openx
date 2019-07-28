@@ -14,7 +14,7 @@ import (
 	wallet "github.com/Varunram/essentials/crypto/xlm/wallet"
 	ipfs "github.com/Varunram/essentials/ipfs"
 	erpc "github.com/Varunram/essentials/rpc"
-	recovery "github.com/Varunram/essentials/sss"
+	recovery "github.com/bithyve/research/sss"
 	utils "github.com/Varunram/essentials/utils"
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
