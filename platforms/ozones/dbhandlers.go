@@ -1,8 +1,8 @@
 package ozones
 
 import (
-	"github.com/pkg/errors"
 	"encoding/json"
+	"github.com/pkg/errors"
 
 	edb "github.com/Varunram/essentials/database"
 	consts "github.com/YaleOpenLab/openx/consts"

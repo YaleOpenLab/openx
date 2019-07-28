@@ -39,9 +39,15 @@ func ParseConfig(args []string) (bool, string, error) {
 	if err != nil {
 		return false, "", err
 	}
-	port := utils.ItoS(consts.DefaultRpcPort)
+	port, err := utils.ToString(consts.DefaultRpcPort)
+	if err != nil {
+		return false, "", err
+	}
 	if opts.Port != 0 {
-		port = utils.ItoS(opts.Port)
+		port, err = utils.ToString(opts.Port)
+		if err != nil {
+			return false, "", err
+		}
 	}
 	return opts.Insecure, port, nil
 }

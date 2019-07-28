@@ -551,7 +551,11 @@ func oneInvestor(projIndex int, invName string, invDescription string, recpName 
 		return err
 	}
 
-	err = opensolar.Invest(projIndex, investor1.U.Index, utils.FtoS(project.TotalValue), invSeed)
+	totalValueString, err := utils.ToString(project.TotalValue)
+	if err != nil {
+		return err
+	}
+	err = opensolar.Invest(projIndex, investor1.U.Index, totalValueString, invSeed)
 	if err != nil {
 		return err
 	}

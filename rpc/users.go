@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"crypto/tls"
+	"encoding/json"
 	"errors"
 	"io/ioutil"
 	"log"
@@ -340,14 +341,14 @@ func getIpfsHash() {
 		}
 
 		hashString := r.URL.Query()["string"][0]
-		hash, err := ipfs.AddStringToIpfs(hashString)
+		hash, err := ipfs.IpfsAddString(hashString)
 		if err != nil {
 			log.Println("did not add string to ipfs", err)
 			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
 
-		hashCheck, err := ipfs.GetStringFromIpfs(hash)
+		hashCheck, err := ipfs.IpfsGetString(hash)
 		if err != nil || hashCheck != hashString {
 			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
@@ -373,7 +374,11 @@ func authKyc() {
 			return
 		}
 
-		uInput := utils.StoI(r.URL.Query()["userIndex"][0])
+		uInput, err := utils.ToInt(r.URL.Query()["userIndex"][0])
+		if err != nil {
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
 		err = prepUser.Authorize(uInput)
 		if err != nil {
 			log.Println("did not authorize user", err)
@@ -593,7 +598,7 @@ func uploadFile() {
 			return
 		}
 
-		hashString, err := ipfs.IpfsHashData(data)
+		hashString, err := ipfs.IpfsAddBytes(data)
 		if err != nil {
 			log.Println("did not hash data to ipfs", err)
 			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
@@ -711,7 +716,7 @@ func tellerPing() {
 
 		var x erpc.StatusResponse
 
-		err = x.UnmarshalJSON(data)
+		err = json.Unmarshal(data, &x)
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
@@ -774,7 +779,7 @@ func addContractHash() {
 		}
 		choice := r.URL.Query()["choice"][0]
 		hashString := r.URL.Query()["choicestr"][0]
-		projIndex, err := utils.StoICheck(r.URL.Query()["projIndex"][0])
+		projIndex, err := utils.ToInt(r.URL.Query()["projIndex"][0])
 		if err != nil {
 			log.Println("passed project index not int, quitting!")
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
@@ -1102,7 +1107,7 @@ func sweepFunds() {
 			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
-		xlmBalanceF, err := utils.StoFWithCheck(xlmBalance)
+		xlmBalanceF, err := utils.ToFloat(xlmBalance)
 		if err != nil {
 			log.Println(err)
 			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
@@ -1118,7 +1123,11 @@ func sweepFunds() {
 		xlmBalanceF -= 5
 		// now we have the xlm balance, shift funds to the other account as requested by the user.
 		sweepAmt := math.Round(xlmBalanceF)
-		sweepStr := utils.FtoS(sweepAmt)
+		sweepStr, err := utils.ToString(sweepAmt)
+		if err != nil {
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+			return
+		}
 		_, txhash, err := xlm.SendXLM(transferAddress, sweepStr, seed, "sweep funds")
 		if err != nil {
 			log.Println(err)
@@ -1176,7 +1185,7 @@ func sweepAsset() {
 			return
 		}
 
-		assetBalanceF, err := utils.StoFWithCheck(assetBalance)
+		assetBalanceF, err := utils.ToFloat(assetBalance)
 		if err != nil {
 			log.Println(err)
 			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
@@ -1193,7 +1202,11 @@ func sweepAsset() {
 		}
 
 		sweepAmt := math.Round(assetBalanceF)
-		sweepStr := utils.FtoS(sweepAmt)
+		sweepStr, err := utils.ToString(sweepAmt)
+		if err != nil {
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+			return
+		}
 
 		_, txhash, err := assets.SendAsset(assetName, issuerPubkey, destination, sweepStr, seed, "sweeping funds")
 		if err != nil {
@@ -1316,7 +1329,7 @@ func giveStarRating() {
 		feedbackStr := r.URL.Query()["feedback"][0]
 		uIndex := r.URL.Query()["userIndex"][0]
 
-		feedback, err := utils.StoICheck(feedbackStr)
+		feedback, err := utils.ToInt(feedbackStr)
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
@@ -1328,7 +1341,7 @@ func giveStarRating() {
 			return
 		}
 
-		userIndex, err := utils.StoICheck(uIndex)
+		userIndex, err := utils.ToInt(uIndex)
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return

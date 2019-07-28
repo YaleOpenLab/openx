@@ -542,7 +542,7 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 
 	// Also, wouldnt it make sense to make the 'Ownership Flip or Handoff' as a separate function? Since this will have to trigger changes in a registry?
 	project.BalLeft -= (1 - pct) * aF // the balance left should be the percenteage paid towards the asset, which is the monthly bill. THe re st goes into  ownership
-	project.AmountOwed -= aF        // subtract the amount owed so we can track progress of payments in the monitorPaybacks loop
+	project.AmountOwed -= aF          // subtract the amount owed so we can track progress of payments in the monitorPaybacks loop
 	project.OwnershipShift += pct
 	project.DateLastPaid = utils.Unix()
 

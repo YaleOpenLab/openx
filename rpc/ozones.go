@@ -46,20 +46,18 @@ func getCoopDetails() {
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
-		uKey := utils.StoI(r.URL.Query()["index"][0])
+		uKey, err := utils.ToInt(r.URL.Query()["index"][0])
+		if err != nil {
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
 		bond, err := opzones.RetrieveLivingUnitCoop(uKey)
 		if err != nil {
 			log.Println("did not retrieve coop", err)
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
-		bondJson, err := bond.MarshalJSON()
-		if err != nil {
-			log.Println("did not marhsal json", err)
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
-			return
-		}
-		erpc.WriteToHandler(w, bondJson)
+		erpc.MarshalSend(w, bond)
 	})
 }
 
@@ -73,7 +71,11 @@ func getBondDetails() {
 			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
-		uKey := utils.StoI(r.URL.Query()["index"][0])
+		uKey, err := utils.ToInt(r.URL.Query()["index"][0])
+		if err != nil {
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
 		bond, err := opzones.RetrieveConstructionBond(uKey)
 		if err != nil {
 			log.Println("did not retrieve bond", err)

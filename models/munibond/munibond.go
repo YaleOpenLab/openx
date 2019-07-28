@@ -128,7 +128,7 @@ func MunibondReceive(issuerPath string, recpIndex int, projIndex int, debtAssetI
 	}
 
 	log.Printf("Sent PaybackAsset to recipient %s with txhash %s", recipient.U.StellarWallet.PublicKey, paybackAssetHash)
-	totalValueS2, err := utils.ToString(totalValue*2)
+	totalValueS2, err := utils.ToString(totalValue * 2)
 	if err != nil {
 		return err
 	}

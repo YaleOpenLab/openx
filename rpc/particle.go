@@ -130,7 +130,7 @@ func listAllDevices() {
 		accessToken := r.URL.Query()["accessToken"][0]
 		body := "https://api.particle.io/v1/devices?access_token=" + accessToken
 		var x []ParticleDevice
-		erpc.GetAndSendJson(w, r, body, x)
+		erpc.GetAndSendJson(w, body, x)
 	})
 }
 
@@ -150,7 +150,7 @@ func listProductInfo() {
 
 		body := "https://api.particle.io/v1/products/" + productInfo + "/devices?access_token=" + accessToken
 		var x ParticleProductInfo
-		erpc.GetAndSendJson(w, r, body, x)
+		erpc.GetAndSendJson(w, body, x)
 	})
 }
 
@@ -171,7 +171,7 @@ func getDeviceInfo() {
 
 		body := "https://api.particle.io/v1/devices/" + deviceId + "?access_token=" + accessToken
 		var x ParticleDevice
-		erpc.GetAndSendJson(w, r, body, x)
+		erpc.GetAndSendJson(w, body, x)
 	})
 }
 
@@ -192,7 +192,7 @@ func pingDevice() {
 		body := "https://api.particle.io/v1/devices/" + deviceId + "/ping"
 		payload := strings.NewReader("access_token=" + accessToken)
 
-		erpc.PutAndSend(w, r, body, payload)
+		erpc.PutAndSend(w, body, payload)
 	})
 }
 
@@ -227,7 +227,7 @@ func signalDevice() {
 			payload = strings.NewReader("signal=" + "0" + "&access_token=" + accessToken)
 		}
 
-		erpc.PutAndSend(w, r, body, payload)
+		erpc.PutAndSend(w, body, payload)
 	})
 }
 
@@ -247,7 +247,7 @@ func serialNumberInfo() {
 
 		body := "https://api.particle.io/v1/serial_numbers/" + serialNumber + "?access_token=" + accessToken
 		var x SerialNumberResponse
-		erpc.GetAndSendJson(w, r, body, x)
+		erpc.GetAndSendJson(w, body, x)
 	})
 }
 
@@ -266,7 +266,7 @@ func getDiagnosticsLast() {
 		deviceId := r.URL.Query()["deviceId"][0]
 
 		body := "https://api.particle.io/v1/diagnostics/" + deviceId + "/last?access_token=" + accessToken
-		erpc.GetAndSendByte(w, r, body)
+		erpc.GetAndSendByte(w, body)
 	})
 }
 
@@ -286,7 +286,7 @@ func getAllDiagnostics() {
 		deviceId := r.URL.Query()["deviceId"][0]
 
 		body := "https://api.particle.io/v1/diagnostics/" + deviceId + "?access_token=" + accessToken
-		erpc.GetAndSendByte(w, r, body)
+		erpc.GetAndSendByte(w, body)
 	})
 }
 
@@ -304,7 +304,7 @@ func getParticleUserInfo() {
 		accessToken := r.URL.Query()["accessToken"][0]
 		body := "https://api.particle.io/v1/user?access_token=" + accessToken
 		var x ParticleUser
-		erpc.GetAndSendJson(w, r, body, x)
+		erpc.GetAndSendJson(w, body, x)
 	})
 }
 
@@ -322,6 +322,6 @@ func getAllSims() {
 		accessToken := r.URL.Query()["accessToken"][0]
 
 		body := "https://api.particle.io/v1/sims?access_token=" + accessToken
-		erpc.GetAndSendByte(w, r, body)
+		erpc.GetAndSendByte(w, body)
 	})
 }
