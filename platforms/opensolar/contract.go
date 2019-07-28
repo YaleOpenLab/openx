@@ -152,9 +152,13 @@ func preInvestmentCheck(projIndex int, invIndex int, invAmount string) (Project,
 		return project, errors.New("Investor has less balance than what is required to invest in this project")
 	}
 
+	iAF, err := utils.ToFloat(invAmount)
+	if err != nil {
+		return project, err
+	}
 	// check if investment amount is greater than or equal to the project requirements
-	if utils.StoF(invAmount) > project.TotalValue-project.MoneyRaised {
-		log.Println(utils.StoF(invAmount), project.TotalValue, project.MoneyRaised)
+	if iAF > project.TotalValue-project.MoneyRaised {
+		log.Println(iAF, project.TotalValue, project.MoneyRaised)
 		return project, errors.New("Investment amount greater than what is required! Adjust your investment")
 	}
 
@@ -202,7 +206,12 @@ func SeedInvest(projIndex int, invIndex int, invAmount string, invSeed string) e
 		return errors.New("investment models other than munibonds are not supported right now, quitting")
 	}
 
-	if project.SeedInvestmentCap < utils.StoF(invAmount) {
+	iAF, err := utils.ToFloat(invAmount)
+	if err != nil {
+		return err
+	}
+
+	if project.SeedInvestmentCap < iAF {
 		return errors.New("you can't invest more than what the seed investment cap permits you to, quitting")
 	}
 
@@ -274,7 +283,12 @@ func Invest(projIndex int, invIndex int, invAmount string, invSeed string) error
 func (project *Project) updateProjectAfterInvestment(invAmount string, invIndex int) error {
 	// MW: It seems that all your messages strings relate to errors, but not to confirmed transactions. It would be useful to add those
 	var err error
-	project.MoneyRaised += utils.StoF(invAmount)
+	iAF, err := utils.ToFloat(invAmount)
+	if err != nil {
+		return err
+	}
+
+	project.MoneyRaised += iAF
 	project.InvestorIndices = append(project.InvestorIndices, invIndex)
 	log.Println("INV INDEX: ", invIndex)
 	err = project.Save()
@@ -319,7 +333,7 @@ func (project *Project) updateProjectAfterInvestment(invAmount string, invIndex 
 			// return errors.Wrap(err, "error while retrieving asset balance, quitting")
 		}
 
-		balanceF1, err = utils.StoFWithCheck(balanceS1)
+		balanceF1, err = utils.ToFloat(balanceS1)
 		if err != nil {
 			return errors.Wrap(err, "error while converting to float, quitting")
 		}
@@ -331,7 +345,7 @@ func (project *Project) updateProjectAfterInvestment(invAmount string, invIndex 
 			// return errors.Wrap(err, "error while retrieving asset balance, quitting")
 		}
 
-		balanceF2, err = utils.StoFWithCheck(balanceS2)
+		balanceF2, err = utils.ToFloat(balanceS2)
 		if err != nil {
 			return errors.Wrap(err, "error while converting to float, quitting")
 		}
@@ -521,10 +535,14 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 		return errors.Wrap(err, "Error while paying back the issuer")
 	}
 
-	// MW: Ownership of asset could shift as payments happen, or flip at the end.
+	aF, err := utils.ToFloat(amount)
+	if err != nil {
+		return err
+	}
+
 	// Also, wouldnt it make sense to make the 'Ownership Flip or Handoff' as a separate function? Since this will have to trigger changes in a registry?
-	project.BalLeft -= (1 - pct) * utils.StoF(amount) // the balance left should be the percenteage paid towards the asset, which is the monthly bill. THe re st goes into  ownership
-	project.AmountOwed -= utils.StoF(amount)          // subtract the amount owed so we can track progress of payments in the monitorPaybacks loop
+	project.BalLeft -= (1 - pct) * aF // the balance left should be the percenteage paid towards the asset, which is the monthly bill. THe re st goes into  ownership
+	project.AmountOwed -= aF        // subtract the amount owed so we can track progress of payments in the monitorPaybacks loop
 	project.OwnershipShift += pct
 	project.DateLastPaid = utils.Unix()
 
@@ -548,8 +566,13 @@ func Payback(recpIndex int, projIndex int, assetName string, amount string, reci
 		return errors.Wrap(err, "coudln't save project")
 	}
 
+	aI, err := utils.ToInt(amount)
+	if err != nil {
+		return err
+	}
+
 	// TODO: we need to distribute funds which were paid back to all the parties involved, but we do so only for the investor here
-	err = DistributePayments(recipientSeed, project.EscrowPubkey, projIndex, utils.StoI(amount))
+	err = DistributePayments(recipientSeed, project.EscrowPubkey, projIndex, aI)
 	if err != nil {
 		return errors.Wrap(err, "error while distributing payments")
 	}
@@ -577,7 +600,12 @@ func DistributePayments(recipientSeed string, escrowPubkey string, projIndex int
 		// send x to this pubkey
 		txAmount := percentage * amountGivenBack
 		// here we send funds from the 2of2 multisig. Platform signs by default
-		err = escrow.SendFundsFromEscrow(project.EscrowPubkey, pubkey, recipientSeed, consts.PlatformSeed, utils.FtoS(txAmount), "returns")
+		txAS, err := utils.ToString(txAmount)
+		if err != nil {
+			return err
+		}
+
+		err = escrow.SendFundsFromEscrow(project.EscrowPubkey, pubkey, recipientSeed, consts.PlatformSeed, txAS, "returns")
 		if err != nil {
 			log.Println(err) // if there is an error with one payback, doesn't mean we should stop and wait for the others
 			continue
@@ -589,9 +617,15 @@ func DistributePayments(recipientSeed string, escrowPubkey string, projIndex int
 // CalculatePayback calculates the amount of payback assets that must be issued in relation
 // to the total amount invested in the project
 func (project Project) CalculatePayback(amount string) string {
-	amountF := utils.StoF(amount)
+	amountF, err := utils.ToFloat(amount)
+	if err != nil {
+		return ""
+	}
 	amountPB := (amountF / float64(project.TotalValue)) * float64(project.EstimatedAcquisition*12)
-	amountPBString := utils.FtoS(amountPB)
+	amountPBString, err := utils.ToString(amountPB)
+	if err != nil {
+		return "" // return nothing since we want to differnetiate erros from normal payback
+	}
 	return amountPBString
 }
 
@@ -671,7 +705,13 @@ func monitorPaybacks(recpIndex int, projIndex int) {
 			}
 			// we have sent out emails to investors, send an email to the guarantor and cover first losses of investors
 			notif.SendDisconnectionEmailG(projIndex, guarantor.U.Email)
-			err = CoverFirstLoss(project.Index, guarantor.U.Index, utils.FtoS(project.AmountOwed))
+			amountOwed, err := utils.ToString(project.AmountOwed)
+			if err != nil {
+				log.Println(err)
+				time.Sleep(consts.OneWeekInSecond)
+				continue
+			}
+			err = CoverFirstLoss(project.Index, guarantor.U.Index, amountOwed)
 			if err != nil {
 				log.Println(err)
 				time.Sleep(consts.OneWeekInSecond)
@@ -713,9 +753,17 @@ func CoverFirstLoss(projIndex int, entityIndex int, amount string) error {
 		return errors.New("guarantor index does not match with entity's index in database")
 	}
 
-	if entity.FirstLossGuaranteeAmt < utils.StoF(amount) {
+	aF, err := utils.ToFloat(amount)
+	if err != nil {
+		return err
+	}
+
+	if entity.FirstLossGuaranteeAmt < aF {
 		log.Println("amount required greater than what guarantor agreed to provide, adjusting first loss to cover for what's available")
-		amount = utils.FtoS(entity.FirstLossGuaranteeAmt)
+		amount, err := utils.ToString(entity.FirstLossGuaranteeAmt)
+		if err != nil {
+			return err
+		}
 	}
 	// we now need to send funds from the gurantor's account to the escrow
 	seed, err := wallet.DecryptSeed(entity.U.StellarWallet.EncryptedSeed, entity.FirstLossGuarantee) //
