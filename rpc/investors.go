@@ -154,7 +154,13 @@ func invest() {
 			return
 		}
 
-		projIndex := utils.StoI(r.URL.Query()["projIndex"][0])
+		projIndex, err := utils.ToInt(r.URL.Query()["projIndex"][0])
+		if err != nil {
+			log.Println("error while converting project index to int: ", err)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+
 		amount := r.URL.Query()["amount"][0]
 		investorPubkey, err := wallet.ReturnPubkey(investorSeed)
 		if err != nil {
@@ -216,13 +222,19 @@ func voteTowardsProject() {
 			return
 		}
 
-		votes, err := utils.StoFWithCheck(r.URL.Query()["votes"][0])
+		votes, err := utils.ToFloat(r.URL.Query()["votes"][0])
 		if err != nil {
 			log.Println("votes not float, quitting")
 			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
-		projIndex := utils.StoI(r.URL.Query()["projIndex"][0])
+		projIndex, err := utils.ToInt(r.URL.Query()["projIndex"][0])
+		if err != nil {
+			log.Println("error while converting project index to int: ", err)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+
 		err = opensolar.VoteTowardsProposedProject(investor.U.Index, votes, projIndex)
 		if err != nil {
 			log.Println("did not vote towards proposed project", err)
@@ -355,7 +367,13 @@ func investInConstructionBond() {
 		}
 
 		invAmount := r.URL.Query()["amount"][0]
-		projIndex := utils.StoI(r.URL.Query()["projIndex"][0])
+
+		projIndex, err := utils.ToInt(r.URL.Query()["projIndex"][0])
+		if err != nil {
+			log.Println("error while converting project index to int: ", err)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
 		seedpwd := r.URL.Query()["seedpwd"][0]
 
 		invSeed, err := wallet.DecryptSeed(prepInvestor.U.StellarWallet.EncryptedSeed, seedpwd)
@@ -393,7 +411,12 @@ func investInLivingUnitCoop() {
 		}
 
 		invAmount := r.URL.Query()["amount"][0]
-		projIndex := utils.StoI(r.URL.Query()["projIndex"][0])
+		projIndex, err := utils.ToInt(r.URL.Query()["projIndex"][0])
+		if err != nil {
+			log.Println("error while converting project index to int: ", err)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
 		seedpwd := r.URL.Query()["seedpwd"][0]
 
 		invSeed, err := wallet.DecryptSeed(prepInvestor.U.StellarWallet.EncryptedSeed, seedpwd)

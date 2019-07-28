@@ -760,7 +760,7 @@ func CoverFirstLoss(projIndex int, entityIndex int, amount string) error {
 
 	if entity.FirstLossGuaranteeAmt < aF {
 		log.Println("amount required greater than what guarantor agreed to provide, adjusting first loss to cover for what's available")
-		amount, err := utils.ToString(entity.FirstLossGuaranteeAmt)
+		amount, err = utils.ToString(entity.FirstLossGuaranteeAmt)
 		if err != nil {
 			return err
 		}

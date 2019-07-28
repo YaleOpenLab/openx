@@ -137,7 +137,7 @@ func addCollateral() {
 			return
 		}
 
-		collateralAmount, err := utils.StoFWithCheck(r.URL.Query()["amount"][0])
+		collateralAmount, err := utils.ToFloat(r.URL.Query()["amount"][0])
 		if err != nil {
 			log.Println("Error while converting string to float", err)
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
@@ -196,32 +196,32 @@ func createOpensolarProject() {
 		// parse the parameters whhich are db intensive first and error out
 		// so we don't make  too many db calls
 		var x opensolar.Project
-		x.TotalValue, err = utils.StoFWithCheck(r.URL.Query()["TotalValue"][0])
+		x.TotalValue, err = utils.ToFloat(r.URL.Query()["TotalValue"][0])
 		if err != nil {
 			log.Println("param passed not float, quitting!")
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
-		x.EstimatedAcquisition, err = utils.StoICheck(r.URL.Query()["Years"][0])
+		x.EstimatedAcquisition, err = utils.ToInt(r.URL.Query()["Years"][0])
 		if err != nil {
 			log.Println("param passed not int, quitting!")
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
-		x.InterestRate, err = utils.StoFWithCheck(r.URL.Query()["InterestRate"][0])
+		x.InterestRate, err = utils.ToFloat(r.URL.Query()["InterestRate"][0])
 		if err != nil {
 			log.Println("param passed not int, quitting!")
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
-		x.OriginatorFee, err = utils.StoFWithCheck(r.URL.Query()["OriginatorFee"][0])
+		x.OriginatorFee, err = utils.ToFloat(r.URL.Query()["OriginatorFee"][0])
 		if err != nil {
 			log.Println("ORiginator fee not float, quitting!")
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
-		x.RecipientIndex, err = utils.StoICheck(r.URL.Query()["recpIndex"][0])
+		x.RecipientIndex, err = utils.ToInt(r.URL.Query()["recpIndex"][0])
 		if err != nil {
 			log.Println("passed recipient index not int, quitting!")
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
@@ -236,7 +236,7 @@ func createOpensolarProject() {
 		}
 
 		x.AuctionType = r.URL.Query()["AuctionType"][0]
-		x.PaybackPeriod, err = utils.StoICheck(r.URL.Query()["PaybackPeriod"][0])
+		x.PaybackPeriod, err = utils.ToInt(r.URL.Query()["PaybackPeriod"][0])
 		if err != nil {
 			log.Println("payback period not integer, quitting!")
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
@@ -298,7 +298,7 @@ func proposeOpensolarProject() {
 			return
 		}
 
-		projIndex, err := utils.StoICheck(r.URL.Query()["projIndex"][0])
+		projIndex, err := utils.ToInt(r.URL.Query()["projIndex"][0])
 		if err != nil {
 			log.Println("project idnex not int, quitting!")
 			return
@@ -310,7 +310,7 @@ func proposeOpensolarProject() {
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 		}
 
-		fee, err := utils.StoFWithCheck(r.URL.Query()["fee"][0])
+		fee, err := utils.ToFloat(r.URL.Query()["fee"][0])
 		if err != nil {
 			log.Println("fee passed not integer, quitting!")
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
@@ -357,19 +357,19 @@ func createOpzonesCBond() {
 
 		var x opzones.ConstructionBond
 
-		x.CostOfUnit, err = utils.StoFWithCheck(r.URL.Query()["CostOfUnit"][0])
+		x.CostOfUnit, err = utils.ToFloat(r.URL.Query()["CostOfUnit"][0])
 		if err != nil {
 			log.Println("param passed not float, quitting!")
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
-		x.NoOfUnits, err = utils.StoICheck(r.URL.Query()["NoOfUnits"][0])
+		x.NoOfUnits, err = utils.ToInt(r.URL.Query()["NoOfUnits"][0])
 		if err != nil {
 			log.Println("param passed not int, quitting!")
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
-		x.InterestRate, err = utils.StoFWithCheck(r.URL.Query()["InterestRate"][0])
+		x.InterestRate, err = utils.ToFloat(r.URL.Query()["InterestRate"][0])
 		if err != nil {
 			log.Println("param passed not float, quitting!")
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
@@ -437,7 +437,7 @@ func createOpzonesLuCoop() {
 		x.Location = r.URL.Query()["Location"][0]
 		x.Description = r.URL.Query()["Description"][0]
 		x.TypeOfUnit = r.URL.Query()["TypeOfUnit"][0]
-		x.Amount, err = utils.StoFWithCheck(r.URL.Query()["Amount"][0])
+		x.Amount, err = utils.ToFloat(r.URL.Query()["Amount"][0])
 		if err != nil {
 			log.Println("param passed not float, quitting!")
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
@@ -445,14 +445,14 @@ func createOpzonesLuCoop() {
 		}
 		x.SecurityType = r.URL.Query()["SecurityType"][0]
 		x.MaturationDate = r.URL.Query()["MaturationDate"][0]
-		x.MonthlyPayment, err = utils.StoFWithCheck(r.URL.Query()["MonthlyPayment"][0])
+		x.MonthlyPayment, err = utils.ToFloat(r.URL.Query()["MonthlyPayment"][0])
 		if err != nil {
 			log.Println("param passed not float, quitting!")
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 		x.MemberRights = r.URL.Query()["MemberRights"][0]
-		x.InterestRate, err = utils.StoFWithCheck(r.URL.Query()["InterestRate"][0])
+		x.InterestRate, err = utils.ToFloat(r.URL.Query()["InterestRate"][0])
 		if err != nil {
 			log.Println("param passed not float, quitting!")
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
@@ -462,7 +462,7 @@ func createOpzonesLuCoop() {
 		x.BondIssuer = r.URL.Query()["BondIssuer"][0]
 		x.Underwriter = r.URL.Query()["Underwriter"][0]
 
-		x.RecipientIndex, err = utils.StoICheck(r.URL.Query()["recpIndex"][0])
+		x.RecipientIndex, err = utils.ToInt(r.URL.Query()["recpIndex"][0])
 		if err != nil {
 			log.Println("recpIndex not int, quitting!")
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)

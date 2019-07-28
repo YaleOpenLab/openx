@@ -1,6 +1,7 @@
 package opensolar
 
 import (
+	"encoding/json"
 	"github.com/pkg/errors"
 
 	edb "github.com/Varunram/essentials/database"
@@ -21,7 +22,8 @@ func RetrieveProject(key int) (Project, error) {
 		return inv, errors.Wrap(err, "error while retrieving key from bucket")
 	}
 
-	return x.(Project), nil
+	err = json.Unmarshal(x, &inv)
+	return inv, err
 }
 
 // RetrieveAllProjects retrieves all projects from the database
@@ -33,7 +35,12 @@ func RetrieveAllProjects() ([]Project, error) {
 	}
 
 	for _, value := range x {
-		projects = append(projects, value.(Project))
+		var temp Project
+		err = json.Unmarshal(value, &temp)
+		if err != nil {
+			return projects, errors.New("could not unmarshal json")
+		}
+		projects = append(projects, temp)
 	}
 
 	return projects, nil
