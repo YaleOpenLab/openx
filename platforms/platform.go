@@ -96,7 +96,7 @@ func InitializePlatform() error {
 		return err
 	}
 
-	_, _, err = assets.SendAssetFromIssuer(consts.StablecoinCode, publicKey, "10", consts.StablecoinSeed, consts.StablecoinPublicKey)
+	_, _, err = assets.SendAssetFromIssuer(consts.StablecoinCode, publicKey, 10, consts.StablecoinSeed, consts.StablecoinPublicKey)
 	if err != nil {
 		log.Println("SEED: ", consts.StablecoinSeed)
 		return err

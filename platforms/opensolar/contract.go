@@ -191,9 +191,10 @@ func preInvestmentCheck(projIndex int, invIndex int, invAmount string) (Project,
 }
 
 // SeedInvest is the seed investment function of the opensolar platform
-func SeedInvest(projIndex int, invIndex int, invAmount string, invSeed string) error {
+func SeedInvest(projIndex int, invIndex int, invAmount float64, invSeed string) error {
 
-	project, err := preInvestmentCheck(projIndex, invIndex, invAmount)
+	invAmountS, _ := utils.ToString(invAmount)
+	project, err := preInvestmentCheck(projIndex, invIndex, invAmountS)
 	if err != nil {
 		return errors.Wrap(err, "error while performing pre investment check")
 	}
@@ -206,12 +207,7 @@ func SeedInvest(projIndex int, invIndex int, invAmount string, invSeed string) e
 		return errors.New("investment models other than munibonds are not supported right now, quitting")
 	}
 
-	iAF, err := utils.ToFloat(invAmount)
-	if err != nil {
-		return err
-	}
-
-	if project.SeedInvestmentCap < iAF {
+	if project.SeedInvestmentCap < invAmount {
 		return errors.New("you can't invest more than what the seed investment cap permits you to, quitting")
 	}
 
@@ -226,7 +222,7 @@ func SeedInvest(projIndex int, invIndex int, invAmount string, invSeed string) e
 			return errors.Wrap(err, "error while investing")
 		}
 
-		err = project.updateProjectAfterInvestment(invAmount, invIndex)
+		err = project.updateProjectAfterInvestment(invAmountS, invIndex)
 		if err != nil {
 			return errors.Wrap(err, "couldn't update project after investment")
 		}
@@ -238,11 +234,12 @@ func SeedInvest(projIndex int, invIndex int, invAmount string, invSeed string) e
 }
 
 // Invest is the main invest function of the opensolar platform
-func Invest(projIndex int, invIndex int, invAmount string, invSeed string) error {
+func Invest(projIndex int, invIndex int, invAmount float64, invSeed string) error {
 	var err error
 
+	invAmountS, _ := utils.ToString(invAmount)
 	// run preinvestment checks to make sure everything is okay
-	project, err := preInvestmentCheck(projIndex, invIndex, invAmount)
+	project, err := preInvestmentCheck(projIndex, invIndex, invAmountS)
 	if err != nil {
 		return errors.Wrap(err, "pre investment check failed")
 	}
@@ -268,7 +265,7 @@ func Invest(projIndex int, invIndex int, invAmount string, invSeed string) error
 		}
 
 		// once the investment is complete, update the project and store in the database
-		err = project.updateProjectAfterInvestment(invAmount, invIndex)
+		err = project.updateProjectAfterInvestment(invAmountS, invIndex)
 		if err != nil {
 			return errors.Wrap(err, "failed to update project after investment")
 		}
@@ -518,7 +515,7 @@ func (project *Project) updateProjectAfterAcceptance() error {
 // (or we could setup a payment provider which accepts fiat + crypto and do this ourselves)
 
 // Payback is called by the recipient when he chooses to pay towards the project according to the payback interval
-func Payback(recpIndex int, projIndex int, assetName string, amount string, recipientSeed string) error {
+func Payback(recpIndex int, projIndex int, assetName string, amount float64, recipientSeed string) error {
 
 	project, err := RetrieveProject(projIndex)
 	if err != nil {
@@ -705,13 +702,7 @@ func monitorPaybacks(recpIndex int, projIndex int) {
 			}
 			// we have sent out emails to investors, send an email to the guarantor and cover first losses of investors
 			notif.SendDisconnectionEmailG(projIndex, guarantor.U.Email)
-			amountOwed, err := utils.ToString(project.AmountOwed)
-			if err != nil {
-				log.Println(err)
-				time.Sleep(consts.OneWeekInSecond)
-				continue
-			}
-			err = CoverFirstLoss(project.Index, guarantor.U.Index, amountOwed)
+			err = CoverFirstLoss(project.Index, guarantor.U.Index, project.AmountOwed)
 			if err != nil {
 				log.Println(err)
 				time.Sleep(consts.OneWeekInSecond)
@@ -736,7 +727,7 @@ func addWaterfallAccount(projIndex int, pubkey string, amount float64) error {
 }
 
 // CoverFirstLoss covers first loss for investors byu sending funds from the guarantor's account
-func CoverFirstLoss(projIndex int, entityIndex int, amount string) error {
+func CoverFirstLoss(projIndex int, entityIndex int, amount float64) error {
 	// cover first loss for the project specified
 	project, err := RetrieveProject(projIndex)
 	if err != nil {
@@ -753,17 +744,9 @@ func CoverFirstLoss(projIndex int, entityIndex int, amount string) error {
 		return errors.New("guarantor index does not match with entity's index in database")
 	}
 
-	aF, err := utils.ToFloat(amount)
-	if err != nil {
-		return err
-	}
-
-	if entity.FirstLossGuaranteeAmt < aF {
+	if entity.FirstLossGuaranteeAmt < amount {
 		log.Println("amount required greater than what guarantor agreed to provide, adjusting first loss to cover for what's available")
-		amount, err = utils.ToString(entity.FirstLossGuaranteeAmt)
-		if err != nil {
-			return err
-		}
+		amount = entity.FirstLossGuaranteeAmt
 	}
 	// we now need to send funds from the gurantor's account to the escrow
 	seed, err := wallet.DecryptSeed(entity.U.StellarWallet.EncryptedSeed, entity.FirstLossGuarantee) //

@@ -161,7 +161,11 @@ func payback() {
 		}
 		assetName := r.URL.Query()["assetName"][0]
 		seedpwd := r.URL.Query()["seedpwd"][0]
-		amount := r.URL.Query()["amount"][0]
+		amount, err := utils.ToFloat(r.URL.Query()["amount"][0])
+		if err != nil {
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
 
 		recipientSeed, err := wallet.DecryptSeed(prepRecipient.U.StellarWallet.EncryptedSeed, seedpwd)
 		if err != nil {

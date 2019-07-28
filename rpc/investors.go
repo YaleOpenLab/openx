@@ -161,7 +161,12 @@ func invest() {
 			return
 		}
 
-		amount := r.URL.Query()["amount"][0]
+		amount, err := utils.ToFloat(r.URL.Query()["amount"][0])
+		if err != nil {
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+
 		investorPubkey, err := wallet.ReturnPubkey(investorSeed)
 		if err != nil {
 			log.Println("did not return pubkey", err)
@@ -299,7 +304,11 @@ func invAssetInv() {
 		}
 
 		destination := r.URL.Query()["destination"][0]
-		amount := r.URL.Query()["amount"][0]
+		amount, err := utils.ToFloat(r.URL.Query()["amount"][0])
+		if err != nil {
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
 
 		found := true
 		for _, elem := range prepInvestor.U.LocalAssets {
@@ -366,7 +375,11 @@ func investInConstructionBond() {
 			return
 		}
 
-		invAmount := r.URL.Query()["amount"][0]
+		invAmount, err := utils.ToFloat(r.URL.Query()["amount"][0])
+		if err != nil {
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
 
 		projIndex, err := utils.ToInt(r.URL.Query()["projIndex"][0])
 		if err != nil {
@@ -410,7 +423,12 @@ func investInLivingUnitCoop() {
 			return
 		}
 
-		invAmount := r.URL.Query()["amount"][0]
+		invAmount, err := utils.ToFloat(r.URL.Query()["amount"][0])
+		if err != nil {
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+
 		projIndex, err := utils.ToInt(r.URL.Query()["projIndex"][0])
 		if err != nil {
 			log.Println("error while converting project index to int: ", err)

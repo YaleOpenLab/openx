@@ -478,7 +478,7 @@ func populateAdditionalData() error {
 	}
 	log.Println("TX HASH for dci trusting stableUSD: ", txhash)
 
-	_, txhash, err = assets.SendAssetFromIssuer(consts.StablecoinCode, recp.U.StellarWallet.PublicKey, "600", consts.StablecoinSeed, consts.StablecoinPublicKey)
+	_, txhash, err = assets.SendAssetFromIssuer(consts.StablecoinCode, recp.U.StellarWallet.PublicKey, 600, consts.StablecoinSeed, consts.StablecoinPublicKey)
 	if err != nil {
 		log.Println("SEED: ", consts.StablecoinSeed)
 		return err
@@ -502,7 +502,7 @@ func populateAdditionalData() error {
 	}
 	log.Println("TX HASH for pasto school trusting stableUSD: ", txhash)
 
-	_, txhash, err = assets.SendAssetFromIssuer(consts.StablecoinCode, recp.U.StellarWallet.PublicKey, "600", consts.StablecoinSeed, consts.StablecoinPublicKey)
+	_, txhash, err = assets.SendAssetFromIssuer(consts.StablecoinCode, recp.U.StellarWallet.PublicKey, 600, consts.StablecoinSeed, consts.StablecoinPublicKey)
 	if err != nil {
 		log.Println("SEED: ", consts.StablecoinSeed)
 		return err
@@ -526,7 +526,7 @@ func populateAdditionalData() error {
 	}
 	log.Println("TX HASH for pasto school sec wallet trusting stableUSD: ", txhash)
 
-	_, txhash, err = assets.SendAssetFromIssuer(consts.StablecoinCode, recp.U.SecondaryWallet.PublicKey, "10000", consts.StablecoinSeed, consts.StablecoinPublicKey)
+	_, txhash, err = assets.SendAssetFromIssuer(consts.StablecoinCode, recp.U.SecondaryWallet.PublicKey, 10000, consts.StablecoinSeed, consts.StablecoinPublicKey)
 	if err != nil {
 		log.Println("SEED: ", consts.StablecoinSeed)
 		return err
@@ -542,7 +542,7 @@ func populateAdditionalData() error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	_, _, err = assets.SendAssetFromIssuer(consts.StablecoinCode, investor1.U.StellarWallet.PublicKey, "1000000", consts.StablecoinSeed, consts.StablecoinPublicKey)
+	_, _, err = assets.SendAssetFromIssuer(consts.StablecoinCode, investor1.U.StellarWallet.PublicKey, 1000000, consts.StablecoinSeed, consts.StablecoinPublicKey)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -568,7 +568,7 @@ func populateAdditionalData() error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	_, _, err = assets.SendAssetFromIssuer(consts.StablecoinCode, recp1.U.StellarWallet.PublicKey, "1000000", consts.StablecoinSeed, consts.StablecoinPublicKey)
+	_, _, err = assets.SendAssetFromIssuer(consts.StablecoinCode, recp1.U.StellarWallet.PublicKey, 1000000, consts.StablecoinSeed, consts.StablecoinPublicKey)
 	if err != nil {
 		log.Fatal(err)
 	}

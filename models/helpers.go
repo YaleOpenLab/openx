@@ -15,7 +15,7 @@ import (
 // by all the investment models that exist
 
 // SendUSDToPlatform sends STABLEUSD back to the platform for investment
-func SendUSDToPlatform(invSeed string, invAmount string, memo string) (string, error) {
+func SendUSDToPlatform(invSeed string, invAmount float64, memo string) (string, error) {
 	// send stableusd to the platform (not the issuer) since the issuer will be locked
 	// and we can't use the funds. We also need ot be able to redeem the stablecoin for fiat
 	// so we can't burn them
@@ -51,12 +51,7 @@ func SendUSDToPlatform(invSeed string, invAmount string, memo string) (string, e
 		return txhash, err
 	}
 
-	iAS, err := utils.ToFloat(invAmount)
-	if err != nil {
-		return txhash, err
-	}
-
-	if npBS-opBS < iAS-1 {
+	if npBS-opBS < invAmount-1 {
 		return txhash, errors.New("Sent amount doesn't match with investment amount")
 	}
 	return txhash, nil

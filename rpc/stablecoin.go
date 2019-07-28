@@ -39,7 +39,12 @@ func getTestStableCoin() {
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
-		amount := r.URL.Query()["amount"][0] // in string
+		amount, err := utils.ToFloat(r.URL.Query()["amount"][0])
+		if err != nil {
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+
 		receiverPubkey, err := wallet.ReturnPubkey(receiverSeed)
 		if err != nil {
 			log.Println("did not return pubkey", err)
