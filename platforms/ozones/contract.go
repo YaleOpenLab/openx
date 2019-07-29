@@ -17,7 +17,7 @@ import (
 )
 
 // preInvestmentConstructionBonds defines the pre investment conditions pertaining to construction bonds
-func preInvestmentConstructionBonds(projIndex int, invIndex int, invAmount string) (ConstructionBond, error) {
+func preInvestmentConstructionBonds(projIndex int, invIndex int, invAmount float64) (ConstructionBond, error) {
 
 	project, err := RetrieveConstructionBond(projIndex)
 	if err != nil {
@@ -62,7 +62,7 @@ func preInvestmentConstructionBonds(projIndex int, invIndex int, invAmount strin
 }
 
 // preInvestmentConstructionBonds defines the pre investment conditions pertaining to living unit coops
-func preInvestmentLivingCoop(projIndex int, invIndex int, invAmount string) (LivingUnitCoop, error) {
+func preInvestmentLivingCoop(projIndex int, invIndex int, invAmount float64) (LivingUnitCoop, error) {
 
 	project, err := RetrieveLivingUnitCoop(projIndex)
 	if err != nil {
@@ -112,8 +112,7 @@ func InvestInLivingUnitCoop(projIndex int, invIndex int, invAmount float64, invS
 	// we want to invest in this specific bond
 	var err error
 
-	invAmountS, _ := utils.ToString(invAmount)
-	project, err := preInvestmentLivingCoop(projIndex, invIndex, invAmountS)
+	project, err := preInvestmentLivingCoop(projIndex, invIndex, invAmount)
 	if err != nil {
 		return errors.Wrap(err, "could not check pre investment conditions in living unit coop")
 	}
@@ -137,8 +136,7 @@ func InvestInConstructionBond(projIndex int, invIndex int, invAmount float64, in
 	// we want to invest in this specific bond
 	var err error
 
-	invAmountS, _ := utils.ToString(invAmount)
-	project, err := preInvestmentConstructionBonds(projIndex, invIndex, invAmountS)
+	project, err := preInvestmentConstructionBonds(projIndex, invIndex, invAmount)
 	if err != nil {
 		return errors.Wrap(err, "could not check pre investment conditions in construction bond")
 	}

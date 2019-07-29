@@ -65,11 +65,7 @@ func MunibondInvest(issuerPath string, invIndex int, invSeed string, invAmount f
 
 	log.Printf("Sent InvAsset %s to investor %s with txhash %s", InvestorAsset.GetCode(), investor.U.StellarWallet.PublicKey, invAssetTxHash)
 
-	invAmountF, err := utils.ToFloat(invAmount)
-	if err != nil {
-		return err
-	}
-	investor.AmountInvested += invAmountF //  / seedInvestmentFactor -> figure out after demo
+	investor.AmountInvested += invAmount //  / seedInvestmentFactor -> figure out after demo
 	investor.InvestedSolarProjects = append(investor.InvestedSolarProjects, InvestorAsset.GetCode())
 	investor.InvestedSolarProjectsIndices = append(investor.InvestedSolarProjectsIndices, projIndex)
 	// keep note of who all invested in this asset (even though it should be easy
@@ -113,7 +109,7 @@ func MunibondReceive(issuerPath string, recpIndex int, projIndex int, debtAssetI
 		return err
 	}
 
-	paybackTrustHash, err := assets.TrustAsset(PaybackAsset.GetCode(), issuerPubkey, float64(years * 12 * 2), recpSeed)
+	paybackTrustHash, err := assets.TrustAsset(PaybackAsset.GetCode(), issuerPubkey, float64(years*12*2), recpSeed)
 	if err != nil {
 		return errors.Wrap(err, "Error while trusting Payback Asset")
 	}
@@ -126,7 +122,7 @@ func MunibondReceive(issuerPath string, recpIndex int, projIndex int, debtAssetI
 
 	log.Printf("Sent PaybackAsset to recipient %s with txhash %s", recipient.U.StellarWallet.PublicKey, paybackAssetHash)
 
-	debtTrustHash, err := assets.TrustAsset(DebtAsset.GetCode(), issuerPubkey, totalValue * 2, recpSeed)
+	debtTrustHash, err := assets.TrustAsset(DebtAsset.GetCode(), issuerPubkey, totalValue*2, recpSeed)
 	if err != nil {
 		return errors.Wrap(err, "Error while trusting debt asset")
 	}
@@ -213,12 +209,8 @@ func MunibondPayback(issuerPath string, recpIndex int, amount float64, recipient
 	}
 
 	log.Println("Retrieved average price from oracle: ", monthlyBill)
-	mBillFloat, err := utils.ToFloat(monthlyBill)
-	if err != nil {
-		return -1, err
-	}
 
-	if amount < mBillFloat {
+	if amount < monthlyBill {
 		return -1, errors.New("amount paid is less than amount needed. Please refill your main account")
 	}
 
@@ -228,17 +220,8 @@ func MunibondPayback(issuerPath string, recpIndex int, amount float64, recipient
 	}
 
 	StableBalance, err := xlm.GetAssetBalance(recipient.U.StellarWallet.PublicKey, "STABLEUSD")
-	sbF, err := utils.ToFloat(StableBalance)
-	if err != nil {
-		return -1, err
-	}
 
-	aF, err := utils.ToFloat(amount)
-	if err != nil {
-		return -1, err
-	}
-
-	if err != nil || (sbF < aF) {
+	if err != nil || (StableBalance < amount) {
 		return -1, errors.Wrap(err, "You do not have the required stablecoin balance, please refill")
 	}
 
@@ -263,7 +246,7 @@ func MunibondPayback(issuerPath string, recpIndex int, amount float64, recipient
 	}
 	log.Printf("Paid %s back to platform in DebtAsset, txhash %s ", amount, debtPaybackHash)
 
-	ownershipAmt := aF - mBillFloat
+	ownershipAmt := amount - monthlyBill
 	ownershipPct := ownershipAmt / totalValue
 	if recipient.U.Notification {
 		notif.SendPaybackNotifToRecipient(projIndex, recipient.U.Email, stableUSDHash, debtPaybackHash)

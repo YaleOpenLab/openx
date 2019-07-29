@@ -133,7 +133,7 @@ func VoteTowardsProposedProject(invIndex int, votes float64, projectIndex int) e
 }
 
 // preInvestmentChecks associated with the opensolar platform when an Investor bids an investment amount of a specific project
-func preInvestmentCheck(projIndex int, invIndex int, invAmount string) (Project, error) {
+func preInvestmentCheck(projIndex int, invIndex int, invAmount float64) (Project, error) {
 	var project Project
 	var investor database.Investor
 	var err error
@@ -152,13 +152,8 @@ func preInvestmentCheck(projIndex int, invIndex int, invAmount string) (Project,
 		return project, errors.New("Investor has less balance than what is required to invest in this project")
 	}
 
-	iAF, err := utils.ToFloat(invAmount)
-	if err != nil {
-		return project, err
-	}
 	// check if investment amount is greater than or equal to the project requirements
-	if iAF > project.TotalValue-project.MoneyRaised {
-		log.Println(iAF, project.TotalValue, project.MoneyRaised)
+	if invAmount > project.TotalValue-project.MoneyRaised {
 		return project, errors.New("Investment amount greater than what is required! Adjust your investment")
 	}
 
@@ -193,8 +188,7 @@ func preInvestmentCheck(projIndex int, invIndex int, invAmount string) (Project,
 // SeedInvest is the seed investment function of the opensolar platform
 func SeedInvest(projIndex int, invIndex int, invAmount float64, invSeed string) error {
 
-	invAmountS, _ := utils.ToString(invAmount)
-	project, err := preInvestmentCheck(projIndex, invIndex, invAmountS)
+	project, err := preInvestmentCheck(projIndex, invIndex, invAmount)
 	if err != nil {
 		return errors.Wrap(err, "error while performing pre investment check")
 	}
@@ -222,7 +216,7 @@ func SeedInvest(projIndex int, invIndex int, invAmount float64, invSeed string) 
 			return errors.Wrap(err, "error while investing")
 		}
 
-		err = project.updateProjectAfterInvestment(invAmountS, invIndex)
+		err = project.updateAfterInvestment(invAmount, invIndex)
 		if err != nil {
 			return errors.Wrap(err, "couldn't update project after investment")
 		}
@@ -237,9 +231,8 @@ func SeedInvest(projIndex int, invIndex int, invAmount float64, invSeed string) 
 func Invest(projIndex int, invIndex int, invAmount float64, invSeed string) error {
 	var err error
 
-	invAmountS, _ := utils.ToString(invAmount)
 	// run preinvestment checks to make sure everything is okay
-	project, err := preInvestmentCheck(projIndex, invIndex, invAmountS)
+	project, err := preInvestmentCheck(projIndex, invIndex, invAmount)
 	if err != nil {
 		return errors.Wrap(err, "pre investment check failed")
 	}
@@ -265,7 +258,7 @@ func Invest(projIndex int, invIndex int, invAmount float64, invSeed string) erro
 		}
 
 		// once the investment is complete, update the project and store in the database
-		err = project.updateProjectAfterInvestment(invAmountS, invIndex)
+		err = project.updateAfterInvestment(invAmount, invIndex)
 		if err != nil {
 			return errors.Wrap(err, "failed to update project after investment")
 		}
@@ -276,16 +269,12 @@ func Invest(projIndex int, invIndex int, invAmount float64, invSeed string) erro
 	}
 }
 
-// the updateProjectAfterInvestment of the opensolar platform
-func (project *Project) updateProjectAfterInvestment(invAmount string, invIndex int) error {
+// the updateAfterInvestment of the opensolar platform
+func (project *Project) updateAfterInvestment(invAmount float64, invIndex int) error {
 	// MW: It seems that all your messages strings relate to errors, but not to confirmed transactions. It would be useful to add those
 	var err error
-	iAF, err := utils.ToFloat(invAmount)
-	if err != nil {
-		return err
-	}
 
-	project.MoneyRaised += iAF
+	project.MoneyRaised += invAmount
 	project.InvestorIndices = append(project.InvestorIndices, invIndex)
 	log.Println("INV INDEX: ", invIndex)
 	err = project.Save()
@@ -519,14 +508,9 @@ func Payback(recpIndex int, projIndex int, assetName string, amount float64, rec
 		return errors.Wrap(err, "Error while paying back the issuer")
 	}
 
-	aF, err := utils.ToFloat(amount)
-	if err != nil {
-		return err
-	}
-
 	// Also, wouldnt it make sense to make the 'Ownership Flip or Handoff' as a separate function? Since this will have to trigger changes in a registry?
-	project.BalLeft -= (1 - pct) * aF // the balance left should be the percenteage paid towards the asset, which is the monthly bill. THe re st goes into  ownership
-	project.AmountOwed -= aF          // subtract the amount owed so we can track progress of payments in the monitorPaybacks loop
+	project.BalLeft -= (1 - pct) * amount // the balance left should be the percenteage paid towards the asset, which is the monthly bill. THe re st goes into  ownership
+	project.AmountOwed -= amount          // subtract the amount owed so we can track progress of payments in the monitorPaybacks loop
 	project.OwnershipShift += pct
 	project.DateLastPaid = utils.Unix()
 
@@ -550,13 +534,8 @@ func Payback(recpIndex int, projIndex int, assetName string, amount float64, rec
 		return errors.Wrap(err, "coudln't save project")
 	}
 
-	aI, err := utils.ToInt(amount)
-	if err != nil {
-		return err
-	}
-
 	// TODO: we need to distribute funds which were paid back to all the parties involved, but we do so only for the investor here
-	err = DistributePayments(recipientSeed, project.EscrowPubkey, projIndex, aI)
+	err = DistributePayments(recipientSeed, project.EscrowPubkey, projIndex, amount)
 	if err != nil {
 		return errors.Wrap(err, "error while distributing payments")
 	}
@@ -565,7 +544,7 @@ func Payback(recpIndex int, projIndex int, assetName string, amount float64, rec
 }
 
 // DistributePayments distributes the return promised as part of the project back to investors and pays the other entities involved in the project
-func DistributePayments(recipientSeed string, escrowPubkey string, projIndex int, amount int) error {
+func DistributePayments(recipientSeed string, escrowPubkey string, projIndex int, amount float64) error {
 	// this should act as the service which redistributes payments received out to the parties involved
 	// amount is the amount that we want to give back to the investors and other entities involved
 	project, err := RetrieveProject(projIndex)
@@ -579,17 +558,12 @@ func DistributePayments(recipientSeed string, escrowPubkey string, projIndex int
 	}
 	fixedRate := 0.05 // 5 % of the total investment as return or something similar. Should not be hardcoded
 	// and must be read from the project data. But hardcoded for now.
-	amountGivenBack := fixedRate * float64(amount)
+	amountGivenBack := fixedRate * amount
 	for pubkey, percentage := range project.InvestorMap {
 		// send x to this pubkey
 		txAmount := percentage * amountGivenBack
 		// here we send funds from the 2of2 multisig. Platform signs by default
-		txAS, err := utils.ToString(txAmount)
-		if err != nil {
-			return err
-		}
-
-		err = escrow.SendFundsFromEscrow(project.EscrowPubkey, pubkey, recipientSeed, consts.PlatformSeed, txAS, "returns")
+		err = escrow.SendFundsFromEscrow(project.EscrowPubkey, pubkey, recipientSeed, consts.PlatformSeed, txAmount, "returns")
 		if err != nil {
 			log.Println(err) // if there is an error with one payback, doesn't mean we should stop and wait for the others
 			continue
@@ -600,17 +574,9 @@ func DistributePayments(recipientSeed string, escrowPubkey string, projIndex int
 
 // CalculatePayback calculates the amount of payback assets that must be issued in relation
 // to the total amount invested in the project
-func (project Project) CalculatePayback(amount string) string {
-	amountF, err := utils.ToFloat(amount)
-	if err != nil {
-		return ""
-	}
-	amountPB := (amountF / float64(project.TotalValue)) * float64(project.EstimatedAcquisition*12)
-	amountPBString, err := utils.ToString(amountPB)
-	if err != nil {
-		return "" // return nothing since we want to differnetiate erros from normal payback
-	}
-	return amountPBString
+func (project Project) CalculatePayback(amount float64) float64 {
+	amountPB := (amount / float64(project.TotalValue)) * float64(project.EstimatedAcquisition*12)
+	return amountPB
 }
 
 // monitorPaybacks monitors whether the user is paying back regularly towards the given project
@@ -642,7 +608,7 @@ func monitorPaybacks(recpIndex int, projIndex int) {
 		}
 		timeElapsed := float64(utils.Unix() - project.DateLastPaid) // this would be in seconds (unix time)
 		factor := timeElapsed / period
-		project.AmountOwed += factor * oracle.MonthlyBillInFloat() // add the amount owed only if the time elapsed is more than one payback period
+		project.AmountOwed += factor * oracle.MonthlyBill() // add the amount owed only if the time elapsed is more than one payback period
 		// Reputation adjustments based on payback history:
 		if factor <= 1 {
 			// don't do anything since the user has been paying back regularly
