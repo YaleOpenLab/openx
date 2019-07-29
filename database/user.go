@@ -367,7 +367,7 @@ func (a *User) IncreaseTrustLimit(seedpwd string, trust float64) error {
 	// we now have the seed, so we should upgrade the trustlimit by the margin requested. The margin passed here
 	// must not include the old trustlimit
 
-	_, err = assets.TrustAsset(consts.StablecoinCode, consts.StableCoinAddress, trust+consts.StablecoinTrustLimit, seed)
+	_, err = assets.TrustAsset(consts.StablecoinCode, consts.StablecoinPublicKey, trust+consts.StablecoinTrustLimit, seed)
 	if err != nil {
 		return errors.Wrap(err, "couldn't trust asset, quitting!")
 	}
