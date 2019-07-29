@@ -6,9 +6,11 @@ package rpc
 // frontend is in react. Not many advantages per se and this works fine, so I guess
 // we'll stay with this one for a while
 import (
-	erpc "github.com/Varunram/essentials/rpc"
 	"log"
 	"net/http"
+
+	erpc "github.com/Varunram/essentials/rpc"
+	utils "github.com/Varunram/essentials/utils"
 )
 
 // API documentation over at the apidocs repo
@@ -16,7 +18,7 @@ import (
 // StartServer runs on the server side ie the server with the frontend.
 // having to define specific endpoints for this because this
 // is the system that would be used by the backend, so has to be built secure.
-func StartServer(port string, insecure bool) {
+func StartServer(portx int, insecure bool) {
 	// we have a sub handlers for each major entity. These handlers
 	// call the relevant internal endpoints and return a erpc.StatusResponse message.
 	// we also have to process data from the pi itself, and that should have its own
@@ -44,6 +46,12 @@ func StartServer(port string, insecure bool) {
 	setupStagesHandlers()
 	setupAnchorHandlers()
 	setupCAHandlers()
+
+	port, err := utils.ToString(portx)
+	if err != nil {
+		log.Fatal("Port not string")
+	}
+
 	log.Println("Starting RPC Server on Port: ", port)
 	if insecure {
 		log.Fatal(http.ListenAndServe(":"+port, nil))

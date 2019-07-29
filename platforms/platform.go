@@ -8,7 +8,6 @@ import (
 	assets "github.com/Varunram/essentials/crypto/xlm/assets"
 	wallet "github.com/Varunram/essentials/crypto/xlm/wallet"
 	scan "github.com/Varunram/essentials/scan"
-	utils "github.com/Varunram/essentials/utils"
 	consts "github.com/YaleOpenLab/openx/consts"
 	"github.com/pkg/errors"
 )
@@ -116,13 +115,9 @@ func RefillPlatform(publicKey string) error {
 	if err != nil {
 		return err
 	}
-	// balance is in string, convert to int
-	balanceF, err := utils.ToFloat(balance)
-	if err != nil {
-		return err
-	}
-	log.Println("Platform's balance is: ", balanceF)
-	if balanceF < 21 { // 1 to account for fees
+
+	log.Println("Platform's balance is: ", balance)
+	if balance < 21 { // 1 to account for fees
 		// get coins if balance is this low
 		log.Println("Refilling platform balance")
 		err := xlm.GetXLM(publicKey)
