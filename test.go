@@ -14,7 +14,7 @@ import (
 	// oracle "github.com/YaleOpenLab/openx/oracle"
 	algorand "github.com/Varunram/essentials/crypto/algorand"
 	stablecoin "github.com/Varunram/essentials/crypto/stablecoin"
-	utils "github.com/Varunram/essentials/utils"
+	// utils "github.com/Varunram/essentials/utils"
 	// scan "github.com/YaleOpenLab/openx/scan"
 	// wallet "github.com/YaleOpenLab/openx/wallet"
 	// xlm "github.com/YaleOpenLab/openx/xlm"
@@ -34,20 +34,14 @@ var opts struct {
 }
 
 // ParseConfig parses CLI parameters passed
-func ParseConfig(args []string) (bool, string, error) {
+func ParseConfig(args []string) (bool, int, error) {
 	_, err := flags.ParseArgs(&opts, args)
 	if err != nil {
-		return false, "", err
+		return false, -1, err
 	}
-	port, err := utils.ToString(consts.DefaultRpcPort)
-	if err != nil {
-		return false, "", err
-	}
+	port := consts.DefaultRpcPort
 	if opts.Port != 0 {
-		port, err = utils.ToString(opts.Port)
-		if err != nil {
-			return false, "", err
-		}
+		port = opts.Port
 	}
 	return opts.Insecure, port, nil
 }

@@ -104,10 +104,7 @@ func MunibondReceive(issuerPath string, recpIndex int, projIndex int, debtAssetI
 		years = 1
 	}
 
-	pbAmtTrust, err := utils.ToFloat(years * 12 * 2) // two way exchange possible, to account for errors
-	if err != nil {
-		return err
-	}
+	pbAmtTrust := float64(years * 12 * 2)
 
 	paybackTrustHash, err := assets.TrustAsset(PaybackAsset.GetCode(), issuerPubkey, float64(years*12*2), recpSeed)
 	if err != nil {
@@ -225,17 +222,13 @@ func MunibondPayback(issuerPath string, recpIndex int, amount float64, recipient
 		return -1, errors.Wrap(err, "You do not have the required stablecoin balance, please refill")
 	}
 
-	if projIndex == 4 {
-		escrowPubkey = "GB2MLKOMRHXJQRX3ZCBLAZ2PMJOYHMFXQUR525CNCSPKBE643FRQNZBM"
-	}
-	log.Println("ESCROW PUBKEY: ", escrowPubkey)
 	projIndexString, err := utils.ToString(projIndex)
 	if err != nil {
 		return -1, err
 	}
+
 	_, stableUSDHash, err := assets.SendAsset(consts.StablecoinCode, consts.StableCoinAddress, escrowPubkey, amount, recipientSeed, "Opensolar payback: "+projIndexString)
 	if err != nil {
-		log.Println("ESCROW PUBKEY: ", escrowPubkey)
 		return -1, errors.Wrap(err, "Error while sending STABLEUSD back")
 	}
 	log.Printf("Paid %s back to platform in stableUSD, txhash %s ", amount, stableUSDHash)

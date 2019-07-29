@@ -28,12 +28,8 @@ func preInvestmentConstructionBonds(projIndex int, invIndex int, invAmount float
 	if err != nil {
 		return project, errors.Wrap(err, "couldn't retrieve investor from db")
 	}
-	// check if investment amount is greater than the cost of a unit
-	iAF, err := utils.ToFloat(invAmount)
-	if err != nil {
-		return project, err
-	}
-	rem := float64(iAF) / project.CostOfUnit
+
+	rem := invAmount / project.CostOfUnit
 	if math.Floor(rem) == 0 {
 		return project, errors.New("You are trying to invest more than a unit's cost, do you want to invest in two units?")
 	}
@@ -74,11 +70,7 @@ func preInvestmentLivingCoop(projIndex int, invIndex int, invAmount float64) (Li
 		return project, errors.Wrap(err, "couldn't retrieve investor from db")
 	}
 	// check if investment amount is greater than the cost of a unit
-	iAS, err := utils.ToFloat(invAmount)
-	if err != nil {
-		return project, err
-	}
-	if iAS != project.MonthlyPayment {
+	if invAmount != project.MonthlyPayment {
 		return project, errors.New("You are trying to invest more than a unit's cost, do you want to invest in two units?")
 	}
 
@@ -287,11 +279,7 @@ func UnlockProject(username string, pwhash string, projIndex int, seedpwd string
 
 func (project *ConstructionBond) updateConstructionBondAfterInvestment(invAmount float64, invIndex int) error {
 	project.InvestorIndices = append(project.InvestorIndices, invIndex)
-	iAS, err := utils.ToFloat(invAmount)
-	if err != nil {
-		return err
-	}
-	project.AmountRaised += iAS
+	project.AmountRaised += invAmount
 	return project.Save()
 }
 
