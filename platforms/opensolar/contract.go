@@ -708,7 +708,7 @@ func CoverFirstLoss(projIndex int, entityIndex int, amount float64) error {
 	}
 
 	// we have the escrow's pubkey, transfer funds to the escrow
-	_, txhash, err := assets.SendAsset(consts.StablecoinCode, consts.StableCoinAddress, project.EscrowPubkey, amount, seed, "first loss guarantee")
+	_, txhash, err := assets.SendAsset(consts.StablecoinCode, consts.StablecoinPublicKey, project.EscrowPubkey, amount, seed, "first loss guarantee")
 	if err != nil {
 		return errors.Wrap(err, "could not transfer asset to escrow, quitting")
 	}

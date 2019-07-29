@@ -227,7 +227,7 @@ func MunibondPayback(issuerPath string, recpIndex int, amount float64, recipient
 		return -1, err
 	}
 
-	_, stableUSDHash, err := assets.SendAsset(consts.StablecoinCode, consts.StableCoinAddress, escrowPubkey, amount, recipientSeed, "Opensolar payback: "+projIndexString)
+	_, stableUSDHash, err := assets.SendAsset(consts.StablecoinCode, consts.StablecoinPublicKey, escrowPubkey, amount, recipientSeed, "Opensolar payback: "+projIndexString)
 	if err != nil {
 		return -1, errors.Wrap(err, "Error while sending STABLEUSD back")
 	}

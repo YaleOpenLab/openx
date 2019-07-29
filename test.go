@@ -49,6 +49,7 @@ func ParseConfig(args []string) (bool, int, error) {
 // StartPlatform starts the platform
 func StartPlatform() error {
 
+	consts.SetConsts()
 	database.CreateHomeDir()
 	var err error
 	// init stablecoin before platform so we don't have to create a stablecoin in case our dbdir is wiped
