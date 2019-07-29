@@ -406,7 +406,11 @@ func sendXLM() {
 		}
 
 		destination := r.URL.Query()["destination"][0]
-		amount := r.URL.Query()["amount"][0]
+		amount, err := utils.ToFloat(r.URL.Query()["amount"][0])
+		if err != nil {
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
 
 		seedpwd := r.URL.Query()["seedpwd"][0]
 		seed, err := wallet.DecryptSeed(prepUser.StellarWallet.EncryptedSeed, seedpwd)
@@ -1131,12 +1135,7 @@ func sweepFunds() {
 		xlmBalanceF -= 5
 		// now we have the xlm balance, shift funds to the other account as requested by the user.
 		sweepAmt := math.Round(xlmBalanceF)
-		sweepStr, err := utils.ToString(sweepAmt)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
-			return
-		}
-		_, txhash, err := xlm.SendXLM(transferAddress, sweepStr, seed, "sweep funds")
+		_, txhash, err := xlm.SendXLM(transferAddress, sweepAmt, seed, "sweep funds")
 		if err != nil {
 			log.Println(err)
 			erpc.ResponseHandler(w, erpc.StatusInternalServerError)

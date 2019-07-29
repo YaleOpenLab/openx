@@ -1,14 +1,10 @@
 package database
 
 import (
-	"encoding/json"
 	"github.com/pkg/errors"
 
 	tickers "github.com/Varunram/essentials/crypto/exchangetickers"
 	xlm "github.com/Varunram/essentials/crypto/xlm"
-	edb "github.com/Varunram/essentials/database"
-	utils "github.com/Varunram/essentials/utils"
-	consts "github.com/YaleOpenLab/openx/consts"
 )
 
 // Investor defines the investor structure
@@ -50,70 +46,6 @@ func NewInvestor(uname string, pwd string, seedpwd string, Name string) (Investo
 	return a, err
 }
 
-// Save inserts a passed Investor object into the database
-func (a *Investor) Save() error {
-	return edb.Save(consts.DbDir, InvestorBucket, a, a.U.Index)
-}
-
-// RetrieveInvestorHelper is a helper function associated with the RetrieveInvestor function
-func RetrieveInvestorHelper(key int) (Investor, error) {
-
-	var inv Investor
-	x, err := edb.Retrieve(consts.DbDir, InvestorBucket, key)
-	if err != nil {
-		return inv, errors.Wrap(err, "error while retrieving key from bucket")
-	}
-
-	err = json.Unmarshal(x, &inv)
-	return inv, err
-}
-
-// RetrieveInvestor retrieves a particular investor indexed by key from the database
-func RetrieveInvestor(key int) (Investor, error) {
-	var inv Investor
-	user, err := RetrieveUser(key)
-	if err != nil {
-		return inv, err
-	}
-	inv, err = RetrieveInvestorHelper(key)
-	if err != nil {
-		return inv, err
-	}
-	inv.U = &user
-	return inv, inv.Save()
-}
-
-// RetrieveAllUsers gets a list of all User in the database
-func RetrieveAllInvestors() ([]Investor, error) {
-	var investors []Investor
-	x, err := edb.RetrieveAllKeys(consts.DbDir, InvestorBucket)
-	if err != nil {
-		return investors, errors.Wrap(err, "error while retrieving all keys")
-	}
-
-	for _, value := range x {
-		var temp Investor
-		err := json.Unmarshal(value, &temp)
-		if err != nil {
-			return investors, errors.New("error while unmarshalling json, quitting")
-		}
-		investors = append(investors, temp)
-	}
-
-	return investors, nil
-}
-
-// ValidateInvestor is a function to validate the investors username and password to log them into the platform, and find the details related to the investor
-// This is separate from the publicKey/seed pair (which are stored encrypted in the database); since we can help users change their password, but we can't help them retrieve their seed.
-func ValidateInvestor(name string, pwhash string) (Investor, error) {
-	var rec Investor
-	user, err := ValidateUser(name, pwhash)
-	if err != nil {
-		return rec, errors.Wrap(err, "failed to validate user")
-	}
-	return RetrieveInvestor(user.Index)
-}
-
 // AddVotingBalance adds / subtracts voting balance
 func (a *Investor) ChangeVotingBalance(votes float64) error {
 	// this function is caled when we want to refund the user with the votes once
@@ -126,7 +58,7 @@ func (a *Investor) ChangeVotingBalance(votes float64) error {
 }
 
 // CanInvest checks whether an investor has the required balance to invest in a project
-func (a *Investor) CanInvest(targetBalance string) bool {
+func (a *Investor) CanInvest(targetBalance float64) bool {
 	usdBalance, err := xlm.GetAssetBalance(a.U.StellarWallet.PublicKey, "STABLEUSD")
 	if err != nil {
 		usdBalance = 0
@@ -140,32 +72,9 @@ func (a *Investor) CanInvest(targetBalance string) bool {
 	// need to fetch the oracle price here for the order
 	oraclePrice := tickers.ExchangeXLMforUSD(xlmBalance)
 
-	targetBalanceF, err := utils.ToFloat(targetBalance)
-	if err != nil {
-		return false
-	}
-
-	if usdBalance > targetBalanceF || oraclePrice > targetBalanceF {
+	if usdBalance > targetBalance || oraclePrice > targetBalance {
 		// return true since the user has enough USD balance to pay for the order
 		return true
 	}
 	return false
-}
-
-// TopReputationInvestors gets a list of all the investors with top reputation
-func TopReputationInvestors() ([]Investor, error) {
-	allInvestors, err := RetrieveAllInvestors()
-	if err != nil {
-		return allInvestors, errors.Wrap(err, "failed to retrieve all investors")
-	}
-	for i := range allInvestors {
-		for j := range allInvestors {
-			if allInvestors[i].U.Reputation > allInvestors[j].U.Reputation {
-				tmp := allInvestors[i]
-				allInvestors[i] = allInvestors[j]
-				allInvestors[j] = tmp
-			}
-		}
-	}
-	return allInvestors, nil
 }

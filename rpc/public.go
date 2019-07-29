@@ -169,7 +169,7 @@ func getRecpTopReputationPublic() {
 	http.HandleFunc("/public/recipient/reputation/top", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
-		allRecps, err := database.TopReputationRecipient()
+		allRecps, err := database.TopReputationRecipients()
 		if err != nil {
 			log.Println("did not retrieve all top reputaiton recipients", err)
 			erpc.ResponseHandler(w, erpc.StatusInternalServerError)

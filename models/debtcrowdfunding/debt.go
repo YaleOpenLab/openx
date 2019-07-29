@@ -62,11 +62,7 @@ func Invest(projIndex int, invIndex int, invAssetCode string, invSeed string,
 	log.Printf("Sent InvestorAsset %s to investor %s with txhash %s", invAssetCode, investor.U.StellarWallet.PublicKey, investorAssetHash)
 	// investor asset sent, update a.Params's BalLeft
 
-	invAmountF, err := utils.ToFloat(invAmount)
-	if err != nil {
-		return err
-	}
-	investor.AmountInvested += invAmountF
+	investor.AmountInvested += invAmount
 	if application == "constructionBond" {
 		investor.InvestedBonds = append(investor.InvestedBonds, invAssetCode)
 	} else if application == "livingunitcoop" {

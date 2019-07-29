@@ -42,7 +42,7 @@ var StablecoinPublicKey = ""                                                    
 var StablecoinSeed = ""                                                              // seed of the address issuing STABLEUSD
 var StableCoinSeedFile = HomeDir + "/stablecoinseed.hex"                             // path where the stablecoin's seed is stored
 const StableCoinAddress = "GDJE64WOXDXLEK7RDURVYEJ5Y5XFHS6OQZCS3SHO4EEMTABEIJXF6SZ5" // address of the stablecoin must be a constant for the payment listener daemon to work properly
-var StablecoinTrustLimit = float64(1000000000)                                              // the limit that the investor trusts the stablecoin issuer for / the max number of STABLEUSD that can be granted to a specific user
+var StablecoinTrustLimit = float64(1000000000)                                       // the limit that the investor trusts the stablecoin issuer for / the max number of STABLEUSD that can be granted to a specific user
 
 // teller related consts
 var TellerHomeDir = os.Getenv("HOME") + "/.openx/teller"       // the home directory of the teller executable

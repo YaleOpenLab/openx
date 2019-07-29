@@ -2,7 +2,6 @@ package database
 
 import (
 	"encoding/base32"
-	"encoding/json"
 	"github.com/pkg/errors"
 	"log"
 
@@ -12,7 +11,6 @@ import (
 	xlm "github.com/Varunram/essentials/crypto/xlm"
 	assets "github.com/Varunram/essentials/crypto/xlm/assets"
 	wallet "github.com/Varunram/essentials/crypto/xlm/wallet"
-	edb "github.com/Varunram/essentials/database"
 	googauth "github.com/Varunram/essentials/googauth"
 	utils "github.com/Varunram/essentials/utils"
 	consts "github.com/YaleOpenLab/openx/consts"
@@ -177,11 +175,6 @@ func NewUser(uname string, pwd string, seedpwd string, Name string) (User, error
 	return a, err // since user is a meta structure, insert it and then return the function
 }
 
-// Save inserts a passed User object into the database
-func (a *User) Save() error {
-	return edb.Save(consts.DbDir, InvestorBucket, a, a.Index)
-}
-
 // RetrieveAllUsersWithoutKyc retrieves all users without kyc
 func RetrieveAllUsersWithoutKyc() ([]User, error) {
 	var arr []User
@@ -219,38 +212,6 @@ func RetrieveAllUsersWithKyc() ([]User, error) {
 	return arr, nil
 }
 
-// RetrieveAllUsers gets a list of all User in the database
-func RetrieveAllUsers() ([]User, error) {
-	var users []User
-	x, err := edb.RetrieveAllKeys(consts.DbDir, UserBucket)
-	if err != nil {
-		return users, errors.Wrap(err, "error while retrieving all keys")
-	}
-
-	for _, value := range x {
-		var temp User
-		err := json.Unmarshal(value, &temp)
-		if err != nil {
-			return users, errors.New("error while unmarshalling json, quitting")
-		}
-		users = append(users, temp)
-	}
-
-	return users, nil
-}
-
-// RetrieveUser retrieves a particular User indexed by key from the database
-func RetrieveUser(key int) (User, error) {
-	var user User
-	x, err := edb.Retrieve(consts.DbDir, UserBucket, key)
-	if err != nil {
-		return user, errors.Wrap(err, "error while retrieving key from bucket")
-	}
-
-	err = json.Unmarshal(x, &user)
-	return user, err
-}
-
 // ValidateSeedpwd acts as a pre verify function so we don't try to decrypt the encrypted seed
 // each time a malicious entity tries to guess the password.
 func ValidateSeedpwd(name string, pwhash string, seedpwd string) (User, error) {
@@ -260,22 +221,6 @@ func ValidateSeedpwd(name string, pwhash string, seedpwd string) (User, error) {
 	} else {
 		return user, errors.New("errored out in seedpwd validation, quitting")
 	}
-}
-
-// ValidateUser validates a particular user
-func ValidateUser(name string, pwhash string) (User, error) {
-	var dummy User
-	users, err := RetrieveAllUsers()
-	if err != nil {
-		return dummy, errors.Wrap(err, "error while retrieving all users from database")
-	}
-
-	for _, user := range users {
-		if user.Username == name && user.Pwhash == pwhash {
-			return user, nil
-		}
-	}
-	return dummy, errors.New("could not find user with requested credentials")
 }
 
 // GenKeys generates a keypair for the user
@@ -411,26 +356,6 @@ func (a *User) ChangeReputation(reputation float64) error {
 	return a.Save()
 }
 
-// TopReputationUsers gets the users with top reputation
-func TopReputationUsers() ([]User, error) {
-	// these reputation functions should mostly be used by the frontend through the
-	// RPC to display to other users what other users' reputation is.
-	allUsers, err := RetrieveAllUsers()
-	if err != nil {
-		return allUsers, errors.Wrap(err, "error while retrieving all users from database")
-	}
-	for i := range allUsers {
-		for j := range allUsers {
-			if allUsers[i].Reputation > allUsers[j].Reputation {
-				tmp := allUsers[i]
-				allUsers[i] = allUsers[j]
-				allUsers[j] = tmp
-			}
-		}
-	}
-	return allUsers, nil
-}
-
 // IncreaseTrustLimit increases the trustl imit of a specific user towards the STABLEUSD asset
 func (a *User) IncreaseTrustLimit(seedpwd string, trust float64) error {
 
@@ -442,7 +367,7 @@ func (a *User) IncreaseTrustLimit(seedpwd string, trust float64) error {
 	// we now have the seed, so we should upgrade the trustlimit by the margin requested. The margin passed here
 	// must not include the old trustlimit
 
-	_, err = assets.TrustAsset(consts.StablecoinCode, consts.StableCoinAddress, trust + consts.StablecoinTrustLimit, seed)
+	_, err = assets.TrustAsset(consts.StablecoinCode, consts.StableCoinAddress, trust+consts.StablecoinTrustLimit, seed)
 	if err != nil {
 		return errors.Wrap(err, "couldn't trust asset, quitting!")
 	}
@@ -468,11 +393,7 @@ func SearchWithEmailId(email string) (User, error) {
 }
 
 // MoveFundsFromSecondaryWallet moves funds from the secondary wallet to the primary wallet
-func (a *User) MoveFundsFromSecondaryWallet(amount string, seedpwd string) error {
-	amountI, err := utils.ToFloat(amount)
-	if err != nil {
-		return errors.Wrap(err, "amount not float, quitting")
-	}
+func (a *User) MoveFundsFromSecondaryWallet(amount float64, seedpwd string) error {
 	// unlock secondary account
 	secSeed, err := wallet.DecryptSeed(a.SecondaryWallet.EncryptedSeed, seedpwd)
 	if err != nil {
@@ -485,12 +406,7 @@ func (a *User) MoveFundsFromSecondaryWallet(amount string, seedpwd string) error
 		return errors.Wrap(err, "could not get xlm balance of secondary account")
 	}
 
-	secFundsFloat, err := utils.ToFloat(secFunds)
-	if err != nil {
-		return err
-	}
-
-	if amountI > secFundsFloat {
+	if amount > secFunds {
 		return errors.New("amount to be transferred is greater than the funds available in the secondary account, quitting")
 	}
 
@@ -519,17 +435,8 @@ func (a *User) SweepSecondaryWallet(seedpwd string) error {
 		return errors.Wrap(err, "could not get xlm balance of secondary account")
 	}
 
-	secFundsTemp, err := utils.ToFloat(secFunds)
-	if err != nil {
-		return err
-	}
-
-	secFundsWithMinbal, err := utils.ToString(secFundsTemp - 5)
-	if err != nil {
-		return err
-	}
 	// send the tx over
-	_, txhash, err := xlm.SendXLM(a.StellarWallet.PublicKey, secFundsWithMinbal, secSeed, "fund transfer to secondary")
+	_, txhash, err := xlm.SendXLM(a.StellarWallet.PublicKey, secFunds-5, secSeed, "fund transfer to secondary")
 	if err != nil {
 		return errors.Wrap(err, "error while transferring funds to secondary account, quitting")
 	}
