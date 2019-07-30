@@ -22,4 +22,4 @@ server.crt
 server.key
 algorand/chain
 algorand/algorand
-database/blah
+blah

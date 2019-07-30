@@ -231,13 +231,13 @@ func MunibondPayback(issuerPath string, recpIndex int, amount float64, recipient
 	if err != nil {
 		return -1, errors.Wrap(err, "Error while sending STABLEUSD back")
 	}
-	log.Printf("Paid %s back to platform in stableUSD, txhash %s ", amount, stableUSDHash)
+	log.Println("Paid", amount, " back to platform in stableUSD, txhash", stableUSDHash)
 
 	_, debtPaybackHash, err := assets.SendAssetToIssuer(assetName, issuerPubkey, amount, recipientSeed)
 	if err != nil {
 		return -1, errors.Wrap(err, "Error while sending debt asset back")
 	}
-	log.Printf("Paid %s back to platform in DebtAsset, txhash %s ", amount, debtPaybackHash)
+	log.Println("Paid", amount,  " back to platform in DebtAsset, txhash", debtPaybackHash)
 
 	ownershipAmt := amount - monthlyBill
 	ownershipPct := ownershipAmt / totalValue

@@ -9,30 +9,8 @@ import (
 )
 
 func TestOracle(t *testing.T) {
-	var err error
-	bill := MonthlyBill()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if bill != "120.000000" {
-		t.Fatalf("Oracle does not output constant value")
-	}
-	billF := MonthlyBillInFloat()
-	if err != nil {
-		t.Fatal(err)
-	}
+	billF := MonthlyBill()
 	if billF != 120.0 {
 		t.Fatalf("Oracle does not output constant value")
-	}
-	exchangeFloat := ExchangeXLMforUSD("1")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if exchangeFloat != 10000000 {
-		t.Fatalf("Exchange value does not match")
-	}
-	_, err = XLMUSD()
-	if err != nil {
-		t.Fatalf("unable to call exchange API for response")
 	}
 }
