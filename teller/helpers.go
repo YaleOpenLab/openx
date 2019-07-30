@@ -55,7 +55,7 @@ func endHandler() error {
 		"Ipfs HashChainHeader: " + HashChainHeader
 	// note that we don't commit the latest hash chain header's hash here because this gives us a tighter timeline
 	// to audit what really happened
-	ipfsHash, err := ipfs.AddStringToIpfs(hashString)
+	ipfsHash, err := ipfs.IpfsAddString(hashString)
 	if err != nil {
 		log.Println(err)
 	}
@@ -83,11 +83,11 @@ func splitAndSend2Tx(memo string) (string, string, error) {
 	// 10 padding chars + 46 (ipfs hash length) characters
 	firstHalf := memo[:28]
 	secondHalf := memo[28:]
-	_, tx1, err := xlm.SendXLM(RecpPublicKey, "1", RecpSeed, firstHalf)
+	_, tx1, err := xlm.SendXLM(RecpPublicKey, 1, RecpSeed, firstHalf)
 	if err != nil {
 		return "", "", err
 	}
-	_, tx2, err := xlm.SendXLM(RecpPublicKey, "1", RecpSeed, secondHalf)
+	_, tx2, err := xlm.SendXLM(RecpPublicKey, 1, RecpSeed, secondHalf)
 	if err != nil {
 		return "", "", err
 	}
@@ -122,7 +122,7 @@ func updateState() {
 		// TODO: replace this with real data rather than fake data that we have here
 		// use rest api for ipfs since this may be too heavy to load on a pi. If not, we can shift
 		// this to the pi as well to achieve a s tate of good decentralization of information.
-		ipfsHash, err := ipfs.AddStringToIpfs("Device ID: " + DeviceId + " UPDATESTATE" + subcommand)
+		ipfsHash, err := ipfs.IpfsAddString("Device ID: " + DeviceId + " UPDATESTATE" + subcommand)
 		if err != nil {
 			log.Println("Error while fetching ipfs hash", err)
 			time.Sleep(consts.TellerPollInterval)
@@ -142,12 +142,12 @@ func updateState() {
 		// But we do need to track this somehow, so maybe hash the device id and "STATUPS: "
 		// so we can track if but others viewing the blockchain can't (since the deviceId is assumed
 		// to be unique)
-		_, hash1, err := xlm.SendXLM(RecpPublicKey, utils.I64toS(utils.Unix()), RecpSeed, ipfsHash[:28])
+		_, hash1, err := xlm.SendXLM(RecpPublicKey, float64(utils.Unix()), RecpSeed, ipfsHash[:28])
 		if err != nil {
 			log.Println(err)
 		}
 
-		_, hash2, err := xlm.SendXLM(RecpPublicKey, utils.I64toS(utils.Unix()), RecpSeed, ipfsHash[29:])
+		_, hash2, err := xlm.SendXLM(RecpPublicKey, float64(utils.Unix()), RecpSeed, ipfsHash[29:])
 		if err != nil {
 			log.Println(err)
 		}
@@ -239,7 +239,7 @@ func storeDataLocal() {
 			// we have a blockchain within a blockchain
 			// log.Println("size limit reached, taking action")
 			file.Close()
-			fileHash, err := ipfs.IpfsHashFile(path)
+			fileHash, err := ipfs.IpfsAddBytes([]byte(path))
 			if err != nil {
 				log.Println("Couldn't hash file: ", err)
 			}
@@ -268,7 +268,7 @@ func commitDataShutdown() {
 	// retrieve data from local storage
 	path := consts.TellerHomeDir + "/data.txt"
 
-	fileHash, err := ipfs.IpfsHashFile(path)
+	fileHash, err := ipfs.IpfsAddBytes([]byte(path))
 	if err != nil {
 		log.Println("Couldn't hash file: ", err)
 	}

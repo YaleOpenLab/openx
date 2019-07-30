@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	xlm "github.com/Varunram/essentials/crypto/xlm"
+	utils "github.com/Varunram/essentials/utils"
 )
 
 // commands.go has a list of all the commands supported by the teller. This is intentionally
@@ -66,7 +67,7 @@ func ParseInput(input []string) {
 			}
 
 			subsubcommand := input[2]
-			var balance string
+			var balance float64
 			var err error
 			ColorOutput("Displaying balance in "+subsubcommand+" for user: ", WhiteColor)
 
@@ -81,7 +82,13 @@ func ParseInput(input []string) {
 				log.Println(err)
 				return
 			}
-			ColorOutput(balance, MagentaColor)
+
+			balanceS, err := utils.ToString(balance)
+			if err != nil {
+				log.Println(err)
+				return
+			}
+			ColorOutput(balanceS, MagentaColor)
 		case "info":
 			var err error
 			LocalProject, err = GetLocalProjectDetails(LocalProjIndex)

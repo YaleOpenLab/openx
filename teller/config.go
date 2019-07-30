@@ -34,7 +34,10 @@ func StartTeller() error {
 	password := utils.SHA3hash(viper.Get("password").(string)) // password of the recipient on the platform
 	ApiUrl = viper.Get("apiurl").(string)                      // ApiUrl of the remote / local openx node
 	mapskey := viper.Get("mapskey").(string)                   // google maps API key
-	LocalProjIndex = utils.ItoS(viper.Get("projIndex").(int))  // get the project index which should be in the config file
+	LocalProjIndex, err = utils.ToString(viper.Get("projIndex").(int))  // get the project index which should be in the config file
+	if err != nil {
+		return err
+	}
 	AssetName = viper.Get("assetName").(string)                // used to double check before starting the teller
 	SwytchUsername = viper.Get("susername").(string)
 	SwytchPassword = viper.Get("spassword").(string)
@@ -46,7 +49,11 @@ func StartTeller() error {
 		return errors.Wrap(err, "couldn't get project index")
 	}
 
-	if utils.ItoS(projIndex) != LocalProjIndex {
+	projIndexS, err := utils.ToString(projIndex)
+	if err != nil {
+		return err
+	}
+	if projIndexS != LocalProjIndex {
 		log.Println("Project indices don't match, quitting!")
 		return errors.New("Project indices don't match, quitting!")
 	}

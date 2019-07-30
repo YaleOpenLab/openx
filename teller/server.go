@@ -2,6 +2,7 @@ package main
 
 import (
 	//"fmt"
+	"encoding/json"
 	"log"
 	"net/http"
 
@@ -45,7 +46,7 @@ func hashChainHeaderHandler() {
 		checkGet(w, r)
 		var x HCHeaderResponse
 		x.Hash = HashChainHeader
-		xJson, err := x.MarshalJSON()
+		xJson, err := json.Marshal(x)
 		if err != nil {
 			responseHandler(w, r, erpc.StatusInternalServerError)
 			return
@@ -64,7 +65,13 @@ func setupRoutes() {
 // are accessible frmo outside localhost
 func startServer(port int) {
 	setupRoutes()
-	err := http.ListenAndServeTLS(":"+utils.ItoS(port), "ssl/server.crt", "ssl/server.key", nil)
+
+	portString, err := utils.ToString(port)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = http.ListenAndServeTLS(":"+portString, "ssl/server.crt", "ssl/server.key", nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}

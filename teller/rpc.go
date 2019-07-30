@@ -38,12 +38,16 @@ func PingRpc() error {
 	}
 	var x erpc.StatusResponse
 	// now data is in byte, we need the other structure now
-	err = x.UnmarshalJSON(data)
+	err = json.Unmarshal(data, &x)
 	if err != nil {
 		return err
 	}
 	// the result would be the status of the platform
-	ColorOutput("PLATFORM STATUS: "+utils.ItoS(x.Code), GreenColor)
+	codeString, err := utils.ToString(x.Code)
+	if err != nil {
+		return err
+	}
+	ColorOutput("PLATFORM STATUS: "+codeString, GreenColor)
 	return nil
 }
 
@@ -84,7 +88,11 @@ func LoginToPlatform(username string, pwhash string) error {
 }
 
 // ProjectPayback pays back to the platform
-func ProjectPayback(assetName string, amount string) error {
+func ProjectPayback(assetName string, amountx float64) error {
+	amount, err := utils.ToString(amountx)
+	if err != nil {
+		return err
+	}
 	// retrieve project index
 	log.Println("PAYMENT BODY: ", ApiUrl+"/recipient/payback?"+"username="+LocalRecipient.U.Username+
 		"&pwhash="+LocalRecipient.U.Pwhash+"&projIndex="+LocalProjIndex+"&assetName="+LocalProject.DebtAssetCode+"&seedpwd="+
@@ -96,7 +104,7 @@ func ProjectPayback(assetName string, amount string) error {
 		return err
 	}
 	var x erpc.StatusResponse
-	err = x.UnmarshalJSON(data)
+	err = json.Unmarshal(data, &x)
 	if err != nil {
 		return err
 	}
@@ -116,7 +124,7 @@ func SetDeviceId(username string, pwhash string, deviceId string) error {
 		return err
 	}
 	var x erpc.StatusResponse
-	err = x.UnmarshalJSON(data)
+	err = json.Unmarshal(data, &x)
 	if err != nil {
 		return err
 	}
@@ -129,14 +137,18 @@ func SetDeviceId(username string, pwhash string, deviceId string) error {
 
 // StoreStartTime stores that start time of this particular instance
 func StoreStartTime() error {
+	unixString, err := utils.ToString(utils.Unix())
+	if err != nil {
+		return err
+	}
 	data, err := erpc.GetRequest(ApiUrl + "/recipient/startdevice?" + "username=" + LocalRecipient.U.Username +
-		"&pwhash=" + LocalRecipient.U.Pwhash + "&start=" + utils.I64toS(utils.Unix()))
+		"&pwhash=" + LocalRecipient.U.Pwhash + "&start=" + unixString)
 	if err != nil {
 		return err
 	}
 
 	var x erpc.StatusResponse
-	err = x.UnmarshalJSON(data)
+	err = json.Unmarshal(data, &x)
 	if err != nil {
 		return err
 	}
@@ -162,7 +174,7 @@ func StoreLocation(mapskey string) error {
 
 	log.Println("DATA: ", data)
 	var x erpc.StatusResponse
-	err = x.UnmarshalJSON(data)
+	err = json.Unmarshal(data, &x)
 	if err != nil {
 		return err
 	}
@@ -183,7 +195,7 @@ func GetPlatformEmail() error {
 	}
 
 	var x rpc.PlatformEmailResponse
-	err = x.UnmarshalJSON(data)
+	err = json.Unmarshal(data, &x)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -205,7 +217,7 @@ func SendDeviceShutdownEmail(tx1 string, tx2 string) error {
 	}
 
 	var x erpc.StatusResponse
-	err = x.UnmarshalJSON(data)
+	err = json.Unmarshal(data, &x)
 	if err != nil {
 		return err
 	}
@@ -247,7 +259,7 @@ func SendDevicePaybackFailedEmail() error {
 	}
 
 	var x erpc.StatusResponse
-	err = x.UnmarshalJSON(data)
+	err = json.Unmarshal(data, &x)
 	if err != nil {
 		return err
 	}
@@ -268,7 +280,7 @@ func StoreStateHistory(hash string) error {
 	}
 
 	var x erpc.StatusResponse
-	err = x.UnmarshalJSON(data)
+	err = json.Unmarshal(data, &x)
 	if err != nil {
 		return err
 	}
