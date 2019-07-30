@@ -3,19 +3,8 @@ notifications:
   email: false
 language: go
 go:
-  - 1.11.x
-before_install:
-  - go get github.com/stellar/go
-  - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-  - cd ${TRAVIS_HOME}/gopath/src/github.com/stellar/go
-  #- echo -e "Host *\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
-  #- rm Gopkg.lock
-  - dep ensure -v
-  - cd ${TRAVIS_HOME}/gopath/src/github.com/YaleOpenLab/openx
-  - go get -u github.com/mailru/easyjson/...
-  - go get github.com/pkg/errors
+  - 1.12.x
 script:
-  - easyjson -all database/user.go database/recipient.go database/investor.go rpc/rpc.go platforms/opensolar/opensolar.go platforms/ozones/ozones.go rpc/users.go platforms/opensolar/entities.go
   - go test --tags="travis" -race -coverprofile=coverage.txt -covermode=atomic ./...
 after_success:
 - bash <(curl -s https://codecov.io/bash)
