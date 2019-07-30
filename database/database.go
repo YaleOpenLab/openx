@@ -33,10 +33,10 @@ func CreateHomeDir() {
 
 // OpenDB opens the db
 func OpenDB() (*bolt.DB, error) {
-	return edb.CreateDB(consts.DbDir+"/openx.db", ProjectsBucket, InvestorBucket, RecipientBucket, ContractorBucket, UserBucket, BondBucket, CoopBucket, InspectorBucket)
+	return edb.CreateDB(consts.DbDir, ProjectsBucket, InvestorBucket, RecipientBucket, ContractorBucket, UserBucket, BondBucket, CoopBucket, InspectorBucket)
 }
 
 // DeleteKeyFromBucket deletes a given key from the bucket
 func DeleteKeyFromBucket(key int, bucketName []byte) error {
-	return edb.DeleteKeyFromBucket(consts.DbDir+"/openx.db", key, bucketName)
+	return edb.DeleteKeyFromBucket(consts.DbDir, key, bucketName)
 }

@@ -41,7 +41,7 @@ func NewInvestor(uname string, pwd string, seedpwd string, Name string) (Investo
 		return a, errors.Wrap(err, "error while creating a new user")
 	}
 	a.U = &user
-	a.AmountInvested = float64(0)
+	a.AmountInvested = float64(-1)
 	err = a.Save()
 	return a, err
 }

@@ -3,229 +3,40 @@
 package database
 
 import (
+	"encoding/json"
 	"log"
 	"os"
 	"testing"
 	"time"
 
+	xlm "github.com/Varunram/essentials/crypto/xlm"
+	assets "github.com/Varunram/essentials/crypto/xlm/assets"
+	wallet "github.com/Varunram/essentials/crypto/xlm/wallet"
 	consts "github.com/YaleOpenLab/openx/consts"
-	xlm "github.com/YaleOpenLab/openx/xlm"
-	assets "github.com/YaleOpenLab/openx/xlm/assets"
-	wallet "github.com/YaleOpenLab/openx/xlm/wallet"
 	build "github.com/stellar/go/txnbuild"
 )
 
 // go test --tags="all" -coverprofile=test.txt .
 func TestDb(t *testing.T) {
 	var err error
-	CreateHomeDir()                       // create home directory if it doesn't exist yet
-	os.Remove(consts.DbDir + "/openx.db") // remove the database file, if it exists
-	consts.DbDir = "blah"                 // set to a false db so that we can test errors arising from OpenDB()
-	_, err = OpenDB()
-	if err == nil { // wrong dir, so should error out
-		t.Fatalf("Able to open database with wrong path")
-	}
-	// The following tests should fail because the db path is invalid and OpenDB() would fail
-	err = DeleteKeyFromBucket(1, UserBucket)
-	if err == nil {
-		t.Fatalf("Able to delete from database with wrong path")
-	}
-	inv, err := NewInvestor("investor1", "blah", "blah", "Investor1")
-	if err == nil {
-		t.Fatalf("Able to create investor in database with wrong path")
-	}
-	var i1 Investor
-	err = i1.Save()
-	if err == nil {
-		t.Fatalf("Able to create investor in database with wrong path")
-	}
-	_, err = RetrieveInvestor(1)
-	if err == nil {
-		t.Fatalf("Able to retrieve investor in database with wrong path")
-	}
-	_, err = RetrieveAllInvestors()
-	if err == nil {
-		t.Fatalf("Able to retrieve investors in an invalid db, quitting!")
-	}
-	recp, err := NewRecipient("recipient1", "blah", "blah", "Recipient1")
-	if err == nil {
-		t.Fatalf("Able to create recipient in database with wrong path")
-	}
-	var r1 Recipient
-	err = r1.Save()
-	if err == nil {
-		t.Fatalf("Able to save recipient in database with wrong path")
-	}
-	_, err = RetrieveAllRecipients()
-	if err == nil {
-		t.Fatalf("Able to retrieve all recipients in database with wrong path")
-	}
-	_, err = RetrieveRecipient(1)
-	if err == nil {
-		t.Fatalf("Able to retrieve recipient in database with wrong path")
-	}
-	user, err := NewUser("user1", "blah", "blah", "User1")
-	if err == nil {
-		t.Fatalf("Able to retrieve create user in database with wrong path")
-	}
-	var u1 User
-	err = u1.Save()
-	if err == nil {
-		t.Fatalf("Able to create user in database with wrong path")
-	}
-	_, err = RetrieveAllUsers()
-	if err == nil {
-		t.Fatalf("Able to retrieve all users in database with wrong path")
-	}
-	_, err = RetrieveUser(1)
-	if err == nil {
-		t.Fatalf("Able to retrieve user in database with wrong path")
-	}
-	_, err = ValidateUser("blah", "blah")
-	if err == nil {
-		t.Fatalf("Able to validate user in database with wrong path")
-	}
-	_, err = RetrieveAllUsersWithoutKyc()
-	if err == nil {
-		t.Fatalf("Able to retrieve users in database with invalid path")
-	}
-	_, err = RetrieveAllUsersWithKyc()
-	if err == nil {
-		t.Fatalf("Able to retrieve users in database with invalid path")
-	}
-	_, err = CheckUsernameCollision("blah")
-	if err == nil {
-		t.Fatalf("Able to check collision in database with invalid path")
-	}
-	_, err = TopReputationUsers()
-	if err == nil {
-		t.Fatalf("Able to retrieve users in database with invalid path")
-	}
-	err = AddInspector(user.Index)
-	if err == nil {
-		t.Fatalf("Able to add inspector in database with invalid path")
-	}
-	_, err = TopReputationRecipient()
-	if err == nil {
-		t.Fatalf("Able to retrieve top recipients in database with invalid path")
-	}
-	var xu User
-	err = xu.ChangeReputation(1.0)
-	if err == nil {
-		t.Fatalf("Able to change reputation in database with invalid path")
-	}
-	_, err = TopReputationInvestors()
-	if err == nil {
-		t.Fatalf("able to retrieve top investors in database with invalid path")
-	}
-	err = xu.IncreaseTrustLimit("blah", "1")
-	if err == nil {
-		t.Fatalf("Able to increase trust limit in database with invalid path")
-	}
-	_, err = SearchWithEmailId("blahx@blah.com")
-	if err == nil {
-		t.Fatalf("user with invalid email exists")
-	}
-	var xf User
-	err = xf.MoveFundsFromSecondaryWallet("10", "blah")
-	if err == nil {
-		t.Fatal(err)
-	}
-	err = xf.SweepSecondaryWallet("blah")
-	if err == nil {
-		t.Fatal(err)
-	}
-	// set the db directory back to normal so that we can test stuff which goes inside the db
-	consts.DbDir = os.Getenv("HOME") + "/.openx/database"
-	err = os.MkdirAll(consts.DbDir, os.ModePerm) // create the db
-	if err != nil {
-		t.Fatal(err)
-	}
-	// we need to check if we error out while creating buckets. The only way to do that
-	// is to set the bucket names to an invalid string so that boltdb errors out and
-	// we try to catch that error. Bit ugly, but no other wya than setting and unsetting names
-	ProjectsBucket = []byte("")
-	x, err := OpenDB()
-	if err == nil {
-		t.Fatalf("Invalid bucket name")
-	}
-	x.Close()
-	ProjectsBucket = []byte("Projects")
-	InvestorBucket = []byte("")
-	x, err = OpenDB()
-	if err == nil {
-		t.Fatalf("Invalid bucket name")
-	}
-	x.Close()
-	InvestorBucket = []byte("Investors")
-	RecipientBucket = []byte("")
-	x, err = OpenDB()
-	if err == nil {
-		t.Fatalf("Invalid bucket name")
-	}
-	x.Close()
-	RecipientBucket = []byte("Recipients")
-	ContractorBucket = []byte("")
-	x, err = OpenDB()
-	if err == nil {
-		t.Fatalf("Invalid bucket name")
-	}
-	x.Close()
-	ContractorBucket = []byte("Contractors")
-	UserBucket = []byte("")
-	x, err = OpenDB()
-	if err == nil {
-		t.Fatalf("Invalid bucket name")
-	}
-	x.Close()
-	UserBucket = []byte("Users")
-	BondBucket = []byte("")
-	x, err = OpenDB()
-	if err == nil {
-		t.Fatalf("Invalid bucket name")
-	}
-	x.Close()
-	BondBucket = []byte("Bonds")
-	CoopBucket = []byte("")
-	x, err = OpenDB()
-	if err == nil {
-		t.Fatalf("Invalid bucket name")
-	}
-	x.Close()
-	CoopBucket = []byte("Coop")
-	InspectorBucket = []byte("")
-	x, err = OpenDB()
-
-	if err == nil {
-		t.Fatalf("Invalid bucket name")
-	}
-	x.Close()
-	InspectorBucket = []byte("Inspector")
-	// even though we set the names back to their originals above, have this snippet
-	// here so that its easier to audit the tests without having to worry about
-	// typos while setting the bucket names back to what they were
-	CoopBucket = []byte("Coop")
-	ProjectsBucket = []byte("Projects")
-	InvestorBucket = []byte("Investors")
-	RecipientBucket = []byte("Recipients")
-	ContractorBucket = []byte("Contractors")
-	UserBucket = []byte("Users")
-	BondBucket = []byte("Bonds")
-	CoopBucket = []byte("Coop")
-	InspectorBucket = []byte("Inspector")
+	consts.SetConsts()
+	CreateHomeDir()         // create home directory if it doesn't exist yet
+	consts.DbDir = "blah"   // set to a false db so that we can test errors arising from OpenDB()
+	os.Remove(consts.DbDir) // remove the test database file, if it exists
 	db, err := OpenDB()
 	if err != nil {
 		t.Fatal(err)
 	}
 	db.Close() // close immmediately after check
-	inv, err = NewInvestor("investor1", "blah", "blah", "Investor1")
+	inv, err := NewInvestor("investor1", "blah", "blah", "Investor1")
 	if err != nil {
 		t.Fatal(err)
 	}
-	xc, _ := RetrieveAllInvestors()
+	xc, err := RetrieveAllInvestors()
 	if len(xc) != 1 {
-		t.Fatalf("ERROR!")
+		t.Fatal(err)
 	}
+
 	// try retrieving existing stuff
 	inv1, err := RetrieveInvestor(1)
 	if err != nil {
@@ -235,7 +46,7 @@ func TestDb(t *testing.T) {
 		t.Fatalf("Investor names don't match, quitting!")
 	}
 	// func NewRecipient(uname string, pwd string, seedpwd string, Name string) (Recipient, error) {
-	recp, err = NewRecipient("recipient1", "blah", "blah", "Recipient1")
+	recp, err := NewRecipient("recipient1", "blah", "blah", "Recipient1")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -249,7 +60,13 @@ func TestDb(t *testing.T) {
 		t.Fatalf("Recipient usernames don't match. quitting!")
 	}
 
-	user, err = NewUser("user1", "blah", "blah", "User1")
+	allRec, err := RetrieveAllRecipients()
+	if err != nil || len(allRec) != 1 {
+		log.Println("length of all recipients not 1")
+		t.Fatal(err)
+	}
+
+	user, err := NewUser("user1", "blah", "blah", "User1")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -261,7 +78,7 @@ func TestDb(t *testing.T) {
 
 	_, err = RetrieveRecipient(1000)
 	if err == nil {
-		t.Fatalf("Investor shouldn't exist, but does, quitting!")
+		t.Fatalf("Recipient shouldn't exist, but does, quitting!")
 	}
 
 	user1, err := RetrieveUser(user.Index)
@@ -277,29 +94,11 @@ func TestDb(t *testing.T) {
 		t.Fatalf("Investor shouldn't exist, but does, quitting!")
 	}
 
-	// test length of users in bucket
-	allInv, err := RetrieveAllInvestors()
+	allUsers, err := RetrieveAllUsers()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(allInv) != 1 {
-		log.Println("UNKNOWN: ", len(allInv))
-		t.Fatalf("Unknown investors existing, quitting!")
-	}
-
-	allRec, err := RetrieveAllRecipients()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(allRec) != 1 {
-		t.Fatalf("Unknown recipients existing, quitting!")
-	}
-
-	allUser, err := RetrieveAllUsers()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(allUser) != 3 {
+	if len(allUsers) != 3 {
 		t.Fatalf("Unknown users existing, quitting!")
 	}
 
@@ -352,7 +151,7 @@ func TestDb(t *testing.T) {
 	}
 
 	// check CanInvest Route
-	if inv.CanInvest("1000") {
+	if inv.CanInvest(1000) {
 		t.Fatalf("CanInvest Returns true!")
 	}
 
@@ -378,7 +177,7 @@ func TestDb(t *testing.T) {
 		t.Fatal(err)
 	}
 	time.Sleep(5 * time.Second)
-	err = inv.U.IncreaseTrustLimit("blah", "10")
+	err = inv.U.IncreaseTrustLimit("blah", 10)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -387,12 +186,12 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	hash, err := assets.TrustAsset("blah", recp.U.StellarWallet.PublicKey, "100", invSeed)
+	hash, err := assets.TrustAsset("blah", recp.U.StellarWallet.PublicKey, 100, invSeed)
 	if err != nil {
 		t.Fatal(err)
 	}
 	log.Println("HASH IS: ", hash)
-	_, err = assets.TrustAsset("blah", recp.U.StellarWallet.PublicKey, "-1", "blah")
+	_, err = assets.TrustAsset("blah", recp.U.StellarWallet.PublicKey, -1, "blah")
 	if err == nil {
 		t.Fatalf("can trust asset with invalid s eed!")
 	}
@@ -401,7 +200,7 @@ func TestDb(t *testing.T) {
 		t.Fatal(err)
 	}
 	_ = build.CreditAsset{"blah2", pkSeed} // this account doesn't exist yet, so this should fail
-	_, err = assets.TrustAsset("blah2", "", "-1", "blah")
+	_, err = assets.TrustAsset("blah2", "", -1, "blah")
 	if err == nil {
 		t.Fatalf("can trust invalid asset")
 	}
@@ -476,7 +275,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = TopReputationRecipient()
+	_, err = TopReputationRecipients()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -504,11 +303,11 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = inv.U.MoveFundsFromSecondaryWallet("10", "blah")
+	err = inv.U.MoveFundsFromSecondaryWallet(10, "blah")
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = inv.U.MoveFundsFromSecondaryWallet("blah", "blah")
+	err = inv.U.MoveFundsFromSecondaryWallet(-1, "blah")
 	if err == nil {
 		t.Fatalf("not able to catch invalid amount error")
 	}
@@ -532,7 +331,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = TopReputationRecipient()
+	_, err = TopReputationRecipients()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -548,13 +347,13 @@ func TestDb(t *testing.T) {
 	var blahuser User
 	blah.U = &blahuser
 	blah.U.Name = "Cool"
-	blahBytes, err := blah.MarshalJSON()
+	blahBytes, err := json.Marshal(blah)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	var uBlah Investor
-	err = uBlah.UnmarshalJSON(blahBytes)
+	err = json.Unmarshal(blahBytes, &uBlah)
 	if err != nil {
 		t.Fatal(err)
 	}

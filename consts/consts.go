@@ -64,7 +64,7 @@ func SetConsts() {
 }
 
 var HomeDir = os.Getenv("HOME") + "/.openx"          // home directory where we store everything
-var DbDir = HomeDir + "/database"                    // the directory where the database is stored (project info, user info, etc)
+var DbDir = HomeDir + "/database/openx.db"                    // the directory where the database is stored (project info, user info, etc)
 var OpenSolarIssuerDir = HomeDir + "/projects/"      // the directory where we store opensolar projects' issuer seeds
 var OpzonesIssuerDir = HomeDir + "/opzones/"         // the directory where we store ozpones projects' issuer seeds
 var PlatformSeedFile = HomeDir + "/platformseed.hex" // where the platform's seed is stored
@@ -91,7 +91,7 @@ var SixWeeksInSecond = time.Duration(3628800 * time.Second) // six months in sec
 var CutDownPeriod = time.Duration(4838400 * time.Second)    // period when we direct power to the grid
 
 // teller related consts
-var TellerHomeDir = HomeDir + "/teller"       // the home directory of the teller executable
+var TellerHomeDir = HomeDir + "/teller"                        // the home directory of the teller executable
 var TellerMaxLocalStorageSize = 2000                           // in bytes, tweak this later to something like 10M after testing
 var TellerPollInterval = time.Duration(30000 * time.Second)    // frequency with which the teller of a particular system is polled
 var LoginRefreshInterval = time.Duration(5 * 60 * time.Second) // every 5 minutes we refresh the teller to import the changes on the platform

@@ -11,7 +11,7 @@ import (
 // this file contains commong methods that are repeated across interfaces
 // Save inserts a passed User object into the database
 func (a *User) Save() error {
-	return edb.Save(consts.DbDir, InvestorBucket, a, a.Index)
+	return edb.Save(consts.DbDir, UserBucket, a, a.Index)
 }
 
 // Save inserts a passed Investor object into the database
@@ -22,18 +22,6 @@ func (a *Investor) Save() error {
 // Save saves a given recipient's details
 func (a *Recipient) Save() error {
 	return edb.Save(consts.DbDir, RecipientBucket, a, a.U.Index)
-}
-
-// RetrieveRecipientHelper is a helper associated with the RetrieveRecipient function
-func RetrieveRecipientHelper(key int) (Recipient, error) {
-	var recp Recipient
-	x, err := edb.Retrieve(consts.DbDir, RecipientBucket, key)
-	if err != nil {
-		return recp, errors.Wrap(err, "error while retrieving key from bucket")
-	}
-
-	err = json.Unmarshal(x, &recp)
-	return recp, err
 }
 
 // RetrieveUser retrieves a particular User indexed by key from the database
@@ -115,7 +103,14 @@ func RetrieveAllUsers() ([]User, error) {
 // RetrieveAllUsers gets a list of all User in the database
 func RetrieveAllInvestors() ([]Investor, error) {
 	var arr []Investor
-	x, err := edb.RetrieveAllKeys(consts.DbDir, InvestorBucket)
+
+	allUsers, err := RetrieveAllUsers()
+	if err != nil {
+		return arr, errors.Wrap(err, "could not retrieve all users from db")
+	}
+
+	lim := len(allUsers)
+	x, err := edb.RetrieveAllKeysLim(consts.DbDir, InvestorBucket, lim)
 	if err != nil {
 		return arr, errors.Wrap(err, "error while retrieving all keys")
 	}
@@ -124,18 +119,27 @@ func RetrieveAllInvestors() ([]Investor, error) {
 		var temp Investor
 		err := json.Unmarshal(value, &temp)
 		if err != nil {
-			return arr, errors.New("error while unmarshalling json, quitting")
+			return arr, errors.Wrap(err, "error while unmarshalling json, quitting")
 		}
-		arr = append(arr, temp)
+		if temp.U.Index != 0 {
+			arr = append(arr, temp)
+		}
 	}
 
 	return arr, nil
 }
 
-// RetrieveAllRecipients gets a list of all Recipient in the database
+// RetrieveAllRecipients gets a list of all Recipients in the database
 func RetrieveAllRecipients() ([]Recipient, error) {
 	var arr []Recipient
-	x, err := edb.RetrieveAllKeys(consts.DbDir, RecipientBucket)
+
+	allUsers, err := RetrieveAllUsers()
+	if err != nil {
+		return arr, errors.Wrap(err, "could not retrieve all users from db")
+	}
+
+	lim := len(allUsers)
+	x, err := edb.RetrieveAllKeysLim(consts.DbDir, RecipientBucket, lim)
 	if err != nil {
 		return arr, errors.Wrap(err, "error while retrieving all keys")
 	}
@@ -144,9 +148,11 @@ func RetrieveAllRecipients() ([]Recipient, error) {
 		var temp Recipient
 		err := json.Unmarshal(value, &temp)
 		if err != nil {
-			return arr, errors.New("error while unmarshalling json, quitting")
+			return arr, errors.Wrap(err, "error while unmarshalling json, quitting")
 		}
-		arr = append(arr, temp)
+		if temp.U.Index != 0 {
+			arr = append(arr, temp)
+		}
 	}
 
 	return arr, nil
