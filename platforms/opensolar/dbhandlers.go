@@ -1,6 +1,7 @@
 package opensolar
 
 import (
+	//"log"
 	"encoding/json"
 	"github.com/pkg/errors"
 
@@ -64,7 +65,7 @@ func RetrieveProjectsAtStage(stage int) ([]Project, error) {
 		}
 	}
 
-	return projects, nil
+	return arr, nil
 }
 
 // RetrieveContractorProjects retrieves projects that are associated with a specific contractor
@@ -85,7 +86,7 @@ func RetrieveContractorProjects(stage int, index int) ([]Project, error) {
 		}
 	}
 
-	return projects, nil
+	return arr, nil
 }
 
 // RetrieveOriginatorProjects retrieves projects that are associated with a specific originator
@@ -106,7 +107,7 @@ func RetrieveOriginatorProjects(stage int, index int) ([]Project, error) {
 		}
 	}
 
-	return projects, nil
+	return arr, nil
 }
 
 // RetrieveRecipientProjects retrieves projects that are associated with a specific originator
@@ -127,7 +128,7 @@ func RetrieveRecipientProjects(stage int, index int) ([]Project, error) {
 		}
 	}
 
-	return projects, nil
+	return arr, nil
 }
 
 // RetrieveLockedProjects retrieves all the projects that are locked and are waiting
@@ -146,7 +147,7 @@ func RetrieveLockedProjects() ([]Project, error) {
 		}
 	}
 
-	return projects, nil
+	return arr, nil
 }
 
 // SaveOriginatorMoU saves the MoU's hash in the platform's database

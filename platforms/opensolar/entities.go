@@ -107,7 +107,14 @@ func RetrieveAllEntitiesWithoutRole() ([]Entity, error) {
 // RetrieveAllEntities gets all the proposed contracts for a particular recipient
 func RetrieveAllEntities(role string) ([]Entity, error) {
 	var entities []Entity
-	x, err := edb.RetrieveAllKeys(consts.DbDir, database.ContractorBucket)
+
+	allUsers, err := database.RetrieveAllUsers()
+	if err != nil {
+		return entities, errors.Wrap(err, "could not retrieve all users from db")
+	}
+
+	lim := len(allUsers)
+	x, err := edb.RetrieveAllKeysLim(consts.DbDir, database.ContractorBucket, lim)
 	if err != nil {
 		return entities, errors.Wrap(err, "error while retrieving all keys")
 	}
@@ -118,7 +125,10 @@ func RetrieveAllEntities(role string) ([]Entity, error) {
 		if err != nil {
 			return entities, errors.New("could not unmarshal entity")
 		}
-		if entity.Contractor || entity.Originator || entity.Guarantor || entity.Developer {
+		if entity.Contractor && role == "contractor" ||
+			entity.Originator && role == "originator" ||
+			entity.Guarantor && role == "guarantor" ||
+			entity.Developer && role == "developer" {
 			entities = append(entities, entity)
 		}
 	}

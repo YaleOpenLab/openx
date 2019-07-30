@@ -9,189 +9,23 @@ import (
 
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
-	xlm "github.com/YaleOpenLab/openx/xlm"
+	xlm "github.com/Varunram/essentials/crypto/xlm"
+	multisig "github.com/Varunram/essentials/crypto/xlm/multisig"
+	escrow "github.com/Varunram/essentials/crypto/xlm/escrow"
 )
 
 // go test --tags="all" -coverprofile=test.txt .
 func TestDb(t *testing.T) {
 	var err error
-	os.Remove(os.Getenv("HOME") + "/.openx/database/" + "/openx.db")
-	err = os.MkdirAll(os.Getenv("HOME")+"/.openx/database", os.ModePerm)
+	consts.SetConsts()
+	consts.DbDir = "blah"
+	os.Remove(consts.DbDir)
+	testDb, err := database.OpenDB()
 	if err != nil {
-		t.Fatal(err)
+		log.Fatal(err)
 	}
-	oldDbDir := consts.DbDir
-	consts.DbDir = "blah" // set to a false db so that we can test errors arising from OpenDB()
-	x1, err := newEntity("OrigTest", "pwd", "blah", "NameOrigTest", "123 ABC Street", "OrigDescription", "originator")
-	if err == nil {
-		t.Fatalf("Able to create entity with invalid db, quitting!")
-	}
-	_, err = x1.Propose("100 16x32 panels", 28000, "Puerto Rico", 6, "LEED+ Gold rated panels and this is random data out of nowhere and we supply our own devs and provide insurance guarantee as well. Dual audit maintenance upto 1 year. Returns capped as per defaults", 1, 1, "blind")
-	// 1 for retrieving martin as the recipient and 1 is the project Index
-	if err == nil {
-		t.Fatalf("Able to propose contract with invalid db, quitting!")
-	}
-	_, err = x1.Originate("100 16x24 panels on a solar rooftop", 14000, "Puerto Rico", 5, "ABC School in XYZ peninsula", 1, "blind") // 1 is the index for martin
-	if err == nil {
-		t.Fatal("Able to originate contract with invalid db, quitting!")
-	}
-	err = RecipientAuthorize(1, 1)
-	if err == nil {
-		t.Fatalf("Able to promote contract even with invalid db, quitting!")
-	}
-	var y1 Project
-	err = y1.Save()
-	if err == nil {
-		t.Fatalf("Able to save file even though no db is present, quitting!")
-	}
-	_, err = RetrieveProject(1)
-	if err == nil {
-		t.Fatalf("Able to retrieve project with invalid db, quitting!")
-	}
-	_, err = RetrieveAllProjects()
-	if err == nil {
-		t.Fatalf("Able to retrieve projects with invalid db, quitting!")
-	}
-	_, err = RetrieveProjectsAtStage(1)
-	if err == nil {
-		t.Fatalf("Able to retrieve stage projects with invalid db, quitting!")
-	}
-	_, err = RetrieveContractorProjects(1, 1)
-	if err == nil {
-		t.Fatalf("Able to retrieve contractor projects with invalid db, quitting!")
-	}
-	_, err = RetrieveContractorProjects(10, 1)
-	if err == nil {
-		t.Fatalf("Able to retrieve contractor projects with stage greater than 9, quitting!")
-	}
-	_, err = RetrieveOriginatorProjects(1, 1)
-	if err == nil {
-		t.Fatalf("Able to retrieve originated projects with invalid db, quitting!")
-	}
-	_, err = RetrieveOriginatorProjects(10, 1)
-	if err == nil {
-		t.Fatalf("Able to retrieve originated projects with stage greater than 9, quitting!")
-	}
-	_, err = RetrieveRecipientProjects(1, 1)
-	if err == nil {
-		t.Fatalf("Able to retrieve recipient projects with invalid db, quitting!")
-	}
-	_, err = RetrieveRecipientProjects(10, 1)
-	if err == nil {
-		t.Fatalf("Able to retrieve recipient projects with stage greater than 9, quitting!")
-	}
-	_, err = RetrieveLockedProjects()
-	if err == nil {
-		t.Fatalf("able to retrieve project in invalid db, quitting")
-	}
-	err = VoteTowardsProposedProject(-1, 1, 1)
-	if err == nil {
-		t.Fatalf("Can vote towards a non existent proposed project, quitting!")
-	}
-	var xyz1 Entity
-	err = xyz1.Save()
-	if err == nil {
-		t.Fatalf("Can save entity which doesn't exist?")
-	}
-	_, err = RetrieveAllEntities("guarantor")
-	if err == nil {
-		t.Fatalf("Can retrieve contract entities from invalid db, quitting!")
-	}
-	_, err = RetrieveEntity(1)
-	if err == nil {
-		t.Fatalf("Can retrieve entity in invalid db, quitting!")
-	}
-	err = RepInstalledProject(1, 1)
-	if err == nil {
-		t.Fatal("Can increase reputation in database with invalid path")
-	}
-	err = RepOriginatedProject(1, 1)
-	if err == nil {
-		t.Fatalf("Can increase reputation in database with invalid path")
-	}
-	_, err = TopReputationEntities("contractor")
-	if err == nil {
-		t.Fatal("Able to retrieve entity with invalid db, quitting!")
-	}
-	_, err = TopReputationEntitiesWithoutRole()
-	if err == nil {
-		t.Fatal("Able to retrieve entities with invalid db, quitting!")
-	}
-	_, err = RetrieveAllEntitiesWithoutRole()
-	if err == nil {
-		t.Fatal("Able to retrieve entities with invalid db, quitting!")
-	}
-	err = SaveOriginatorMoU(1, "blah")
-	if err == nil {
-		t.Fatalf("Able to save hash in invalid db, quitting!")
-	}
-	err = SaveContractHash(1, "blah")
-	if err == nil {
-		t.Fatalf("Able to save hash in invalid db, quitting!")
-	}
-	err = SaveInvPlatformContract(1, "blah")
-	if err == nil {
-		t.Fatalf("Able to save hash in invalid db, quitting!")
-	}
-	err = SaveRecPlatformContract(1, "blah")
-	if err == nil {
-		t.Fatalf("Able to save hash in invalid db, quitting!")
-	}
-	if VerifyBeforeAuthorizing(1) {
-		t.Fatalf("Can verify with invalid db, quitting!")
-	}
-	_, err = preInvestmentCheck(1, 1, "")
-	if err == nil {
-		t.Fatalf("PreInvestmentCheck succeeds, quitting!")
-	}
-	err = Invest(1, 1, "", "")
-	if err == nil {
-		t.Fatalf("Invest succeeds, quitting!")
-	}
-	err = SeedInvest(1, 1, "", "")
-	if err == nil {
-		t.Fatalf("SeedInvest succeeds, quitting!")
-	}
-	err = CoverFirstLoss(1, 1, "100")
-	if err == nil {
-		t.Fatalf("guarantor covering first loss works in presence of invalid db")
-	}
-	_, err = ValidateEntity("invalid", "invalid")
-	if err == nil {
-		t.Fatalf("able to validate invalid entity")
-	}
-	err = AgreeToContractConditions("hash", "1", "blah", 1, "blah")
-	if err == nil {
-		t.Fatalf("able to retrieve user in presence of invalid db")
-	}
-	var tmpProj Project
-	err = tmpProj.updateProjectAfterInvestment("0", 1)
-	if err == nil {
-		t.Fatalf("Can updateProjectAfterAcceptance in the prsence of an invalid db")
-	}
-	tmpProj.SetStage(5)
-	if err == nil {
-		t.Fatalf("Setting stage works with invalid db, quitting!")
-	}
-	tmpProj.SetStage(6)
-	if err == nil {
-		t.Fatalf("Setting stage works with invalid db, quitting!")
-	}
-	tmpProj.SetStage(3)
-	if err == nil {
-		t.Fatalf("Setting stage works with invalid db, quitting!")
-	}
-	consts.DbDir = oldDbDir
-	db, err := database.OpenDB()
-	if err != nil {
-		t.Fatal(err)
-	}
-	db.Close() // close immmediately after check
-	// investors entity testing over, test recipients below in the same way
-	// now we repeat the same tests for all other entities
-	// connections and the other for non RPC connections
-	// now we repeat the same tests for all other entities
-	// connections and the other for non RPC connections
+	testDb.Close()
+
 	inv, err := database.NewInvestor("inv1", "blah", "blah", "cool")
 	if err != nil {
 		t.Fatal(err)
@@ -301,6 +135,7 @@ func TestDb(t *testing.T) {
 		t.Fatal(err)
 	}
 	// tests for originators
+	// TODO: change this to originator
 	contractor, err = newEntity("OrigTest", "pwd", "blah", "NameOrigTest", "123 ABC Street", "OrigDescription", "originator")
 	if err != nil {
 		t.Fatal(err)
@@ -331,13 +166,7 @@ func TestDb(t *testing.T) {
 		t.Fatalf("Category which does not exist exists?")
 	}
 	if len(allOrigs) != 2 || allOrigs[0].U.Name != "NameOrigTest2" {
-		log.Println(allOrigs)
-		x, err := RetrieveAllEntitiesWithoutRole()
-		if err != nil {
-			log.Fatal(err)
-		}
-		log.Println(x)
-		t.Fatal("Names don't match, quitting!")
+		t.Fatal("Name doesn't match, quitting!")
 	}
 	_, err = RetrieveAllEntities("guarantor")
 	if err != nil {
@@ -520,8 +349,8 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	chk := project2.CalculatePayback("100")
-	if chk != "0.257143" {
+	chk := project2.CalculatePayback(100)
+	if chk != 0.2571428571428571 {
 		log.Println(chk)
 		t.Fatalf("Balance doesn't match , quitting!")
 	}
@@ -730,7 +559,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = CoverFirstLoss(project.Index, guarantor.U.Index, "100")
+	err = CoverFirstLoss(project.Index, guarantor.U.Index, 100)
 	if err == nil {
 		t.Fatalf("guarantor covering first loss works, quitting")
 	}
@@ -759,7 +588,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = Payback(1, 1, "", "", "")
+	err = Payback(1, 1, "", 1, "")
 	if err == nil {
 		t.Fatal("Invalid params not caught, exiting!")
 	}
@@ -768,7 +597,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = Payback(1, project.Index, "", "", "")
+	err = Payback(1, project.Index, "", 1, "")
 	if err == nil {
 		t.Fatal("Invalid params not caught, exiting!")
 	}
@@ -836,7 +665,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = preInvestmentCheck(project.Index, inv.U.Index, "")
+	_, err = preInvestmentCheck(project.Index, inv.U.Index, 1)
 	if err == nil {
 		// it should error out at the canInvest call
 		t.Fatalf("PreInvestmentCheck succeeds, quitting!")
@@ -871,13 +700,13 @@ func TestDb(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	escrowPubkey, err := initMultisigEscrow(pubkey1)
+	escrowPubkey, err := multisig.New2of2(pubkey1, consts.PlatformPublicKey)
 	if err != nil {
 		log.Println(err)
 		t.Fatal(err)
 	}
 
-	err = SendFundsFromEscrow(escrowPubkey, pubkey1, seed1, "1", "")
+	err = escrow.SendFundsFromEscrow(escrowPubkey, pubkey1, seed1, consts.PlatformSeed, 1, "")
 	if err != nil {
 		t.Fatal(err)
 	}
