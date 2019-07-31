@@ -41,7 +41,7 @@ func SetConsts() {
 	algorand.SetConsts("http://localhost:50435", "df6740f7618f699b0417f764b6447fa7e690f9514c73cd60184314ae16141030",
 		"http://localhost:51976", "755071c9616f4ebac31512e4db7993dc056f12790d94d634e978a66dfc44ce9b")
 
-	xlm.SetConsts(10)
+	xlm.SetConsts(10, Mainnet)
 
 	ipfs.SetConsts(10)
 
@@ -64,7 +64,7 @@ func SetConsts() {
 }
 
 var HomeDir = os.Getenv("HOME") + "/.openx"          // home directory where we store everything
-var DbDir = HomeDir + "/database/openx.db"                    // the directory where the database is stored (project info, user info, etc)
+var DbDir = HomeDir + "/database/openx.db"           // the directory where the database is stored (project info, user info, etc)
 var OpenSolarIssuerDir = HomeDir + "/projects/"      // the directory where we store opensolar projects' issuer seeds
 var OpzonesIssuerDir = HomeDir + "/opzones/"         // the directory where we store ozpones projects' issuer seeds
 var PlatformSeedFile = HomeDir + "/platformseed.hex" // where the platform's seed is stored
@@ -80,6 +80,7 @@ var PlatformPublicKey = ""                           // set this to empty and st
 var PlatformEmail = ""                               // email so we can send notifications to the platform when needed
 var PlatformSeed = ""                                // set this to empty and store during runtime
 var KYCAPIKey = ""                                   // API key to call the KYC provider's API
+var Mainnet bool
 
 var Tlsport = 443                                           // default port for ssl
 var DefaultRpcPort = 8080                                   // the default port on which the rpc server of the platform starts. Defaults to HTTPS

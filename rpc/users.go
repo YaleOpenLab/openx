@@ -494,6 +494,13 @@ func askForCoins() {
 	http.HandleFunc("/user/askxlm", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
+
+		if consts.Mainnet {
+			log.Println("Openx is in mainnet mode, can't ask for coins")
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+
 		prepUser, err := UserValidateHelper(w, r)
 		if err != nil {
 			log.Println("did not validate user", err)
