@@ -29,16 +29,16 @@ func StartTeller() error {
 	}
 
 	PlatformPublicKey = viper.Get("platformPublicKey").(string)
-	LocalSeedPwd = viper.Get("seedpwd").(string)               // seed password used to unlock the seed of the recipient on the platform
-	username := viper.Get("username").(string)                 // username of the recipient on the platform
-	password := utils.SHA3hash(viper.Get("password").(string)) // password of the recipient on the platform
-	ApiUrl = viper.Get("apiurl").(string)                      // ApiUrl of the remote / local openx node
-	mapskey := viper.Get("mapskey").(string)                   // google maps API key
-	LocalProjIndex, err = utils.ToString(viper.Get("projIndex").(int))  // get the project index which should be in the config file
+	LocalSeedPwd = viper.Get("seedpwd").(string)                       // seed password used to unlock the seed of the recipient on the platform
+	username := viper.Get("username").(string)                         // username of the recipient on the platform
+	password := utils.SHA3hash(viper.Get("password").(string))         // password of the recipient on the platform
+	ApiUrl = viper.Get("apiurl").(string)                              // ApiUrl of the remote / local openx node
+	mapskey := viper.Get("mapskey").(string)                           // google maps API key
+	LocalProjIndex, err = utils.ToString(viper.Get("projIndex").(int)) // get the project index which should be in the config file
 	if err != nil {
 		return err
 	}
-	AssetName = viper.Get("assetName").(string)                // used to double check before starting the teller
+	AssetName = viper.Get("assetName").(string) // used to double check before starting the teller
 	SwytchUsername = viper.Get("susername").(string)
 	SwytchPassword = viper.Get("spassword").(string)
 	SwytchClientid = viper.Get("sclientid").(string)

@@ -106,7 +106,7 @@ func MunibondReceive(issuerPath string, recpIndex int, projIndex int, debtAssetI
 
 	pbAmtTrust := float64(years * 12 * 2)
 
-	paybackTrustHash, err := assets.TrustAsset(PaybackAsset.GetCode(), issuerPubkey, float64(years*12*2), recpSeed)
+	paybackTrustHash, err := assets.TrustAsset(PaybackAsset.GetCode(), issuerPubkey, pbAmtTrust, recpSeed)
 	if err != nil {
 		return errors.Wrap(err, "Error while trusting Payback Asset")
 	}
@@ -237,7 +237,7 @@ func MunibondPayback(issuerPath string, recpIndex int, amount float64, recipient
 	if err != nil {
 		return -1, errors.Wrap(err, "Error while sending debt asset back")
 	}
-	log.Println("Paid", amount,  " back to platform in DebtAsset, txhash", debtPaybackHash)
+	log.Println("Paid", amount, " back to platform in DebtAsset, txhash", debtPaybackHash)
 
 	ownershipAmt := amount - monthlyBill
 	ownershipPct := ownershipAmt / totalValue

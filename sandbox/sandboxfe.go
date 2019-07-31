@@ -265,13 +265,6 @@ func populateStaticData1kw() error {
 	project.ExplorePageSummary.Rating = project.Rating
 	project.ExplorePageSummary.Tax = "N/A"
 	project.ExplorePageSummary.ETA = project.EstimatedAcquisition
-	project.DPIntroImage = "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/1.jpg"
-	project.OHeroImage = "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/3.jpg"
-	project.OImages = append(project.OImages, "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/2.jpg", "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/5.jpg")
-	project.AImages = append(project.AImages, "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/7.png", "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/9.png", "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/normal.png")
-	project.EImages = append(project.EImages, "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/6.jpg", "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/8.png", "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/10.png", "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/11.png")
-	project.CEImages = append(project.CEImages, "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/12.png", "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/13.png", "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/14.png", "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/15.png")
-	project.BNImages = append(project.PSImages, "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/16.png", "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/17.png", "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/18.png", "https://images.openx.solar/OpenSolarProjects/7_YaleMIT/19.png")
 	project.OriginatorIndex = 1
 	project.GuarantorIndex = 5
 	project.ContractorIndex = 2
@@ -316,14 +309,6 @@ func populateStaticData1mw() error {
 	project.ExplorePageSummary.Tax = "N/A"
 	project.ExplorePageSummary.ETA = project.EstimatedAcquisition
 
-	project.DPIntroImage = "https://images.openx.solar/OpenSolarProjects/4_NH_Lancaster/1.png"
-	project.OHeroImage = "https://images.openx.solar/OpenSolarProjects/4_NH_Lancaster/1.png"
-	project.OImages = append(project.OImages, "https://images.openx.solar/OpenSolarProjects/4_NH_Lancaster/6.jpg", "https://images.openx.solar/OpenSolarProjects/4_NH_Lancaster/7.jpg", "https://images.openx.solar/OpenSolarProjects/4_NH_Lancaster/4.jpg", "https://images.openx.solar/OpenSolarProjects/4_NH_Lancaster/3.jpg")
-	project.AImages = append(project.AImages, "https://images.openx.solar/OpenSolarProjects/4_NH_Lancaster/2.jpg", "https://images.openx.solar/OpenSolarProjects/4_NH_Lancaster/normal.png")
-	project.EImages = append(project.EImages, "https://images.openx.solar/OpenSolarProjects/4_NH_Lancaster/9.png", "https://images.openx.solar/OpenSolarProjects/4_NH_Lancaster/8.png")
-	project.CEImages = append(project.CEImages, "https://images.openx.solar/OpenSolarProjects/4_NH_Lancaster/5.jpg")
-	project.BNImages = append(project.BNImages, "https://images.openx.solar/OpenSolarProjects/4_NH_Lancaster/10.png", "https://images.openx.solar/OpenSolarProjects/4_NH_Lancaster/11.png", "https://images.openx.solar/OpenSolarProjects/4_NH_Lancaster/1.png")
-
 	project.OriginatorIndex = 16
 	project.GuarantorIndex = 15
 	project.ContractorIndex = 6
@@ -353,16 +338,6 @@ func populateStaticData10kw() error {
 	project.ExplorePageSummary.Rating = project.Rating
 	project.ExplorePageSummary.Tax = "N/A"
 	project.ExplorePageSummary.ETA = project.EstimatedAcquisition
-
-	project.DPIntroImage = "https://images.openx.solar/OpenSolarProjects/8_NewHaven/3.png"
-	project.OHeroImage = ""
-	project.OImages = append(project.OImages, "https://images.openx.solar/OpenSolarProjects/8_NewHaven/4.jpg", "https://images.openx.solar/OpenSolarProjects/8_NewHaven/12.jpg")
-	project.OOImages = append(project.OOImages, "https://images.openx.solar/OpenSolarProjects/8_NewHaven/6.jpg")
-	project.AImages = append(project.AImages, "https://images.openx.solar/OpenSolarProjects/8_NewHaven/7.jpg", "https://images.openx.solar/OpenSolarProjects/8_NewHaven/normal.png")
-	project.EImages = append(project.EImages, "https://images.openx.solar/OpenSolarProjects/8_NewHaven/9.jpg", "https://images.openx.solar/OpenSolarProjects/8_NewHaven/10.jpg")
-	project.CEImages = append(project.CEImages, "https://images.openx.solar/OpenSolarProjects/8_NewHaven/12.jpg")
-	project.PSImages = append(project.PSImages, "https://images.openx.solar/OpenSolarProjects/8_NewHaven/11.jpg")
-	project.BNImages = append(project.BNImages, "")
 
 	project.OriginatorIndex = 22
 	project.GuarantorIndex = 24
@@ -408,16 +383,6 @@ func populateStaticData10MW() error {
 	project.ExplorePageSummary.Tax = "N/A"
 	project.ExplorePageSummary.ETA = project.EstimatedAcquisition
 
-	project.DPIntroImage = "https://images.openx.solar/OpenSolarProjects/2_PR_Bonds/1.jpg"
-	project.OHeroImage = "https://images.openx.solar/OpenSolarProjects/2_PR_Bonds/10.png"
-	project.OImages = append(project.OImages, "https://images.openx.solar/OpenSolarProjects/2_PR_Bonds/3.jpg", "https://images.openx.solar/OpenSolarProjects/2_PR_Bonds/8.jpg")
-	project.OOImages = append(project.OOImages, "")
-	project.AImages = append(project.AImages, "https://images.openx.solar/OpenSolarProjects/2_PR_Bonds/9.png", "https://images.openx.solar/OpenSolarProjects/2_PR_Bonds/normal.png", "https://images.openx.solar/OpenSolarProjects/2_PR_Bonds/2.jpg")
-	project.EImages = append(project.EImages, "https://images.openx.solar/OpenSolarProjects/2_PR_Bonds/11.png", "https://images.openx.solar/OpenSolarProjects/2_PR_Bonds/12.png", "https://images.openx.solar/OpenSolarProjects/2_PR_Bonds/13.png")
-	project.CEImages = append(project.CEImages, "https://images.openx.solar/OpenSolarProjects/2_PR_Bonds/7.jpg", "https://images.openx.solar/OpenSolarProjects/2_PR_Bonds/14.jpg", "https://images.openx.solar/OpenSolarProjects/2_PR_Bonds/15.jpg", "https://images.openx.solar/OpenSolarProjects/2_PR_Bonds/16.jpg")
-	project.PSImages = append(project.PSImages, "https://images.openx.solar/OpenSolarProjects/2_PR_Bonds/17.jpg")
-	project.BNImages = append(project.BNImages, "")
-
 	err = project.Save()
 	if err != nil {
 		return err
@@ -454,11 +419,6 @@ func populateStaticData100KW() error {
 	project.ExplorePageSummary.Tax = "N/A"
 	project.ExplorePageSummary.ETA = project.EstimatedAcquisition
 
-	project.DPIntroImage = "https://images.openx.solar/OpenSolarProjects/1_Rwanda/9.jpg"
-	project.OImages = append(project.OImages, "https://images.openx.solar/OpenSolarProjects/1_Rwanda/2.jpg", "https://images.openx.solar/OpenSolarProjects/1_Rwanda/10.jpg")
-	project.AImages = append(project.AImages, "https://images.openx.solar/OpenSolarProjects/1_Rwanda/5.jpg", "https://images.openx.solar/OpenSolarProjects/1_Rwanda/normal.png")
-	project.EImages = append(project.EImages, "https://images.openx.solar/OpenSolarProjects/1_Rwanda/6.jpg")
-	project.CEImages = append(project.CEImages, "https://images.openx.solar/OpenSolarProjects/1_Rwanda/8.jpg", "https://images.openx.solar/OpenSolarProjects/1_Rwanda/1.jpg", "https://images.openx.solar/OpenSolarProjects/1_Rwanda/11.jpg", "https://images.openx.solar/OpenSolarProjects/1_Rwanda/7.jpg")
 	err = project.Save()
 	if err != nil {
 		return err
