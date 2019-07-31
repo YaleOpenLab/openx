@@ -133,7 +133,7 @@ func VoteTowardsProposedProject(invIndex int, votes float64, projectIndex int) e
 }
 
 // preInvestmentChecks associated with the opensolar platform when an Investor bids an investment amount of a specific project
-func preInvestmentCheck(projIndex int, invIndex int, invAmount float64) (Project, error) {
+func preInvestmentCheck(projIndex int, invIndex int, invAmount float64, seed string) (Project, error) {
 	var project Project
 	var investor database.Investor
 	var err error
@@ -152,6 +152,14 @@ func preInvestmentCheck(projIndex int, invIndex int, invAmount float64) (Project
 		return project, errors.New("Investor has less balance than what is required to invest in this project")
 	}
 
+	pubkey, err := wallet.ReturnPubkey(seed)
+	if err != nil {
+		return project, errors.Wrap(err, "could not get pubkey from seed")
+	}
+
+	if !xlm.AccountExists(pubkey) {
+		return project, errors.New("accoutn doesn't exist yet, quitting")
+	}
 	// check if investment amount is greater than or equal to the project requirements
 	if invAmount > project.TotalValue-project.MoneyRaised {
 		return project, errors.New("Investment amount greater than what is required! Adjust your investment")
@@ -188,7 +196,7 @@ func preInvestmentCheck(projIndex int, invIndex int, invAmount float64) (Project
 // SeedInvest is the seed investment function of the opensolar platform
 func SeedInvest(projIndex int, invIndex int, invAmount float64, invSeed string) error {
 
-	project, err := preInvestmentCheck(projIndex, invIndex, invAmount)
+	project, err := preInvestmentCheck(projIndex, invIndex, invAmount, invSeed)
 	if err != nil {
 		return errors.Wrap(err, "error while performing pre investment check")
 	}
@@ -232,7 +240,7 @@ func Invest(projIndex int, invIndex int, invAmount float64, invSeed string) erro
 	var err error
 
 	// run preinvestment checks to make sure everything is okay
-	project, err := preInvestmentCheck(projIndex, invIndex, invAmount)
+	project, err := preInvestmentCheck(projIndex, invIndex, invAmount, invSeed)
 	if err != nil {
 		return errors.Wrap(err, "pre investment check failed")
 	}
@@ -243,6 +251,7 @@ func Invest(projIndex int, invIndex int, invAmount float64, invSeed string) erro
 
 	if project.Chain == "stellar" || project.Chain == "" {
 		if project.Stage != 4 {
+			// if the project is not at stage 4 due to some reason, catch it here
 			if project.Stage == 1 || project.Stage == 2 {
 				// need to redirect it to the seedinvest function
 				return SeedInvest(projIndex, invIndex, invAmount, invSeed)
@@ -262,7 +271,6 @@ func Invest(projIndex int, invIndex int, invAmount float64, invSeed string) erro
 		if err != nil {
 			return errors.Wrap(err, "failed to update project after investment")
 		}
-
 		return err
 	} else {
 		return errors.New("other chain investment not supported right now")
@@ -337,7 +345,6 @@ func (project *Project) updateAfterInvestment(invAmount float64, invIndex int) e
 	return nil
 }
 
-// MW: Why does the recipient have to unlock the project? Why is the project locked in the first place?
 // sendRecipientNotification sends the notification to the recipient requesting them
 // to logon to the platform and unlock the project that has just been invested in
 func (project *Project) sendRecipientNotification() error {
@@ -466,12 +473,11 @@ func sendRecipientAssets(projIndex int) error {
 	return nil
 }
 
-// - PROJECT INVESTMENT UPDATES THROUGHOUT 'THE RAISE' IN STAGE 7 --
 // updateProjectAfterAcceptance updates the project after acceptance of investment
 // by the recipient
 func (project *Project) updateProjectAfterAcceptance() error {
 
-	project.BalLeft = float64(project.TotalValue)
+	project.BalLeft = project.TotalValue
 	project.Stage = Stage5.Number // set to stage 5 (after the raise is done, we need to wait for people to actually construct the solar panels)
 
 	err := project.Save()
@@ -483,7 +489,6 @@ func (project *Project) updateProjectAfterAcceptance() error {
 	return nil
 }
 
-// -- SOLAR OFFTAKING PAYMENTS IN STAGE 7 --
 // Payback pays the platform back in STABLEUSD and DebtAsset and receives PaybackAssets
 // in return. Price to be paid per month depends on the electricity consumed by the recipient
 // in the particular time frame
@@ -508,7 +513,6 @@ func Payback(recpIndex int, projIndex int, assetName string, amount float64, rec
 		return errors.Wrap(err, "Error while paying back the issuer")
 	}
 
-	// Also, wouldnt it make sense to make the 'Ownership Flip or Handoff' as a separate function? Since this will have to trigger changes in a registry?
 	project.BalLeft -= (1 - pct) * amount // the balance left should be the percenteage paid towards the asset, which is the monthly bill. THe re st goes into  ownership
 	project.AmountOwed -= amount          // subtract the amount owed so we can track progress of payments in the monitorPaybacks loop
 	project.OwnershipShift += pct
@@ -556,8 +560,14 @@ func DistributePayments(recipientSeed string, escrowPubkey string, projIndex int
 		log.Println("project", project.Index, "'s escrow locked, can't send funds")
 		return errors.New("project escrow locked, can't send funds")
 	}
-	fixedRate := 0.05 // 5 % of the total investment as return or something similar. Should not be hardcoded
-	// and must be read from the project data. But hardcoded for now.
+
+	var fixedRate float64
+	if project.InterestRate != 0 {
+		fixedRate = project.InterestRate
+	} else {
+		fixedRate = 0.05 // 5 % interest rate if rate not defined earlier
+	}
+
 	amountGivenBack := fixedRate * amount
 	for pubkey, percentage := range project.InvestorMap {
 		// send x to this pubkey
@@ -575,7 +585,7 @@ func DistributePayments(recipientSeed string, escrowPubkey string, projIndex int
 // CalculatePayback calculates the amount of payback assets that must be issued in relation
 // to the total amount invested in the project
 func (project Project) CalculatePayback(amount float64) float64 {
-	amountPB := (amount / float64(project.TotalValue)) * float64(project.EstimatedAcquisition*12)
+	amountPB := (amount / project.TotalValue) * float64(project.EstimatedAcquisition*12)
 	return amountPB
 }
 
@@ -606,8 +616,8 @@ func monitorPaybacks(recpIndex int, projIndex int) {
 		if period == 0 {
 			period = 1 // for the test suite
 		}
-		timeElapsed := float64(utils.Unix() - project.DateLastPaid) // this would be in seconds (unix time)
-		factor := timeElapsed / period
+		timeElapsed := utils.Unix() - project.DateLastPaid // this would be in seconds (unix time)
+		factor := float64(timeElapsed) / period
 		project.AmountOwed += factor * oracle.MonthlyBill() // add the amount owed only if the time elapsed is more than one payback period
 		// Reputation adjustments based on payback history:
 		if factor <= 1 {

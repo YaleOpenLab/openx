@@ -7,11 +7,11 @@ import (
 	"os"
 	"testing"
 
+	xlm "github.com/Varunram/essentials/crypto/xlm"
+	escrow "github.com/Varunram/essentials/crypto/xlm/escrow"
+	multisig "github.com/Varunram/essentials/crypto/xlm/multisig"
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
-	xlm "github.com/Varunram/essentials/crypto/xlm"
-	multisig "github.com/Varunram/essentials/crypto/xlm/multisig"
-	escrow "github.com/Varunram/essentials/crypto/xlm/escrow"
 )
 
 // go test --tags="all" -coverprofile=test.txt .

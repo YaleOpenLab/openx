@@ -115,17 +115,6 @@ type Project struct {
 	CommunityEngagement []CommunityEngagementHelper // the section labelled "Community Engagement" on the frontend
 	ExplorePageSummary  ExplorePageSummaryHelper    // the summary on the explore page tab
 
-	// Define various images part of the frotnend that go itno different sections on the frontend
-	DPIntroImage string   // Intro image
-	OHeroImage   string   // Opportunity page hero
-	OImages      []string // Opportunity Images
-	OOImages     []string // Orignator Images
-	AImages      []string // Architecture
-	EImages      []string // Engineering
-	CEImages     []string // Community Engagement
-	PSImages     []string // Payment Scheme
-	BNImages     []string // Business Images
-
 	// Layout parsers
 	// Different pages have different layout so its necessary to have some identifiers for the same
 	// in order for us to be able to parse what we have correctly.

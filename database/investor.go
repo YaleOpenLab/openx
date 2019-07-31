@@ -41,7 +41,7 @@ func NewInvestor(uname string, pwd string, seedpwd string, Name string) (Investo
 		return a, errors.Wrap(err, "error while creating a new user")
 	}
 	a.U = &user
-	a.AmountInvested = float64(-1)
+	a.AmountInvested = -1.0
 	err = a.Save()
 	return a, err
 }
@@ -71,7 +71,6 @@ func (a *Investor) CanInvest(targetBalance float64) bool {
 
 	// need to fetch the oracle price here for the order
 	oraclePrice := tickers.ExchangeXLMforUSD(xlmBalance)
-
 	if usdBalance > targetBalance || oraclePrice > targetBalance {
 		// return true since the user has enough USD balance to pay for the order
 		return true

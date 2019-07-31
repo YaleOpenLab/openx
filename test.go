@@ -31,6 +31,7 @@ var opts struct {
 	Insecure bool `short:"i" description:"Start the API using http. Not recommended"`
 	Port     int  `short:"p" description:"The port on which the server runs on. Default: HTTPS/8080"`
 	Simulate bool `short:"t" description:"Simulate the test database with demo values (last updated: April 2019)"`
+	Mainnet  bool `short:"m" description:"Switch mainnet mode on"`
 }
 
 // ParseConfig parses CLI parameters passed
@@ -43,6 +44,9 @@ func ParseConfig(args []string) (bool, int, error) {
 	if opts.Port != 0 {
 		port = opts.Port
 	}
+	if opts.Mainnet {
+		consts.Mainnet = true
+	}
 	return opts.Insecure, port, nil
 }
 
@@ -53,8 +57,9 @@ func StartPlatform() error {
 	database.CreateHomeDir()
 	var err error
 	// init stablecoin before platform so we don't have to create a stablecoin in case our dbdir is wiped
-	err = stablecoin.InitStableCoin() // start the stablecoin daemon
+	err = stablecoin.InitStableCoin(consts.Mainnet) // start the stablecoin daemon
 	if err != nil {
+		log.Println("errored out while starting stablecoin")
 		return err
 	}
 
@@ -105,7 +110,7 @@ func StartPlatform() error {
 
 func main() {
 	var err error
-	insecure, port, err := ParseConfig(os.Args)
+	insecure, port, err := ParseConfig(os.Args) // parseconfig should be before StartPlatform to parse the mainnet bool
 	if err != nil {
 		log.Fatal(err)
 	}
