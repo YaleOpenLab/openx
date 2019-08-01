@@ -34,33 +34,31 @@ var KmdAddress string
 var KmdToken string
 
 func SetConsts() {
-	stablecoin.SetConsts("STABLEUSD", "GDJE64WOXDXLEK7RDURVYEJ5Y5XFHS6OQZCS3SHO4EEMTABEIJXF6SZ5",
-		"", os.Getenv("HOME")+"/.openx/stablecoinseed.hex", 1000000000, "USD",
-		"GCKFBEIYV2U22IO2BJ4KVJOIP7XPWQGQFKKWXR6DOSJBV7STMAQSMTGG", 1000000)
 
-	algorand.SetConsts("http://localhost:50435", "df6740f7618f699b0417f764b6447fa7e690f9514c73cd60184314ae16141030",
-		"http://localhost:51976", "755071c9616f4ebac31512e4db7993dc056f12790d94d634e978a66dfc44ce9b")
+	StablecoinCode = "STABLEUSD"
+	StablecoinPublicKey = "GDJE64WOXDXLEK7RDURVYEJ5Y5XFHS6OQZCS3SHO4EEMTABEIJXF6SZ5"
+	StablecoinSeed = ""
+	StableCoinSeedFile = os.Getenv("HOME") + "/.openx/stablecoinseed.hex"
+	StablecoinTrustLimit = 1000000000
+	AnchorUSDCode = "USD"
+	AnchorUSDAddress = "GCKFBEIYV2U22IO2BJ4KVJOIP7XPWQGQFKKWXR6DOSJBV7STMAQSMTGG"
+	AnchorUSDTrustLimit = 1000000
 
-	xlm.SetConsts(10, Mainnet)
+	stablecoin.SetConsts(StablecoinCode, StablecoinPublicKey, StablecoinSeed, StableCoinSeedFile, StablecoinTrustLimit,
+		AnchorUSDCode, AnchorUSDAddress, AnchorUSDTrustLimit)
 
-	ipfs.SetConsts(10)
+	AlgodAddress = "http://localhost:50435"
+	AlgodToken = "df6740f7618f699b0417f764b6447fa7e690f9514c73cd60184314ae16141030"
+	KmdAddress = "http://localhost:51976"
+	KmdToken = "755071c9616f4ebac31512e4db7993dc056f12790d94d634e978a66dfc44ce9b"
 
-	StablecoinCode = stablecoin.StablecoinCode
-	StablecoinPublicKey = stablecoin.StablecoinPublicKey
-	StablecoinSeed = stablecoin.StablecoinSeed
-	StableCoinSeedFile = stablecoin.StableCoinSeedFile
-	StablecoinTrustLimit = stablecoin.StablecoinTrustLimit
-	AnchorUSDCode = stablecoin.AnchorUSDCode
-	AnchorUSDAddress = stablecoin.AnchorUSDAddress
-	AnchorUSDTrustLimit = stablecoin.AnchorUSDTrustLimit
+	algorand.SetConsts(AlgodAddress, AlgodToken, KmdAddress, KmdToken)
 
-	AlgodAddress = algorand.AlgodAddress
-	AlgodToken = algorand.AlgodToken
-	KmdAddress = algorand.KmdAddress
-	KmdToken = algorand.KmdToken
+	RefillAmount = 10
+	xlm.SetConsts(RefillAmount, Mainnet)
 
-	RefillAmount = xlm.RefillAmount
-	IpfsFileLength = ipfs.IpfsFileLength
+	IpfsFileLength = 10
+	ipfs.SetConsts(IpfsFileLength)
 }
 
 var HomeDir = os.Getenv("HOME") + "/.openx"          // home directory where we store everything
