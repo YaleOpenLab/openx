@@ -135,14 +135,9 @@ func searchComplyAdvantage() {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
 
-		_, err := UserValidateHelper(w, r)
+		_, err := CheckReqdParams(w, r, "name", "birthyear")
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-			return
-		}
-
-		if r.URL.Query()["name"] == nil || r.URL.Query()["birthyear"] == nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -186,7 +181,7 @@ func getAllCAUsers() {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
 
-		_, err := UserValidateHelper(w, r)
+		_, err := CheckReqdParams(w, r)
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return

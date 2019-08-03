@@ -8,6 +8,7 @@ import (
 	wallet "github.com/Varunram/essentials/crypto/xlm/wallet"
 	erpc "github.com/Varunram/essentials/rpc"
 	utils "github.com/Varunram/essentials/utils"
+	consts "github.com/YaleOpenLab/openx/consts"
 )
 
 // this file handles the RPCs necessary for converting a fixed amount of XLM into
@@ -23,10 +24,15 @@ func setupStableCoinRPCs() {
 // getStableCoin gets stablecoin in exchange for xlm
 func getTestStableCoin() {
 	http.HandleFunc("/stablecoin/get", func(w http.ResponseWriter, r *http.Request) {
+		if consts.Mainnet {
+			log.Println("test stablecoin not available on testnet")
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
-		user, err := UserValidateHelper(w, r)
-		if err != nil || r.URL.Query()["seedpwd"] == nil || r.URL.Query()["amount"] == nil {
+		user, err := CheckReqdParams(w, r, "seedpwd", "amount")
+		if err != nil {
 			log.Println(err)
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
@@ -70,7 +76,7 @@ func getAnchorUSD() {
 	http.HandleFunc("/anchor/get", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
-		user, err := UserValidateHelper(w, r)
+		user, err := CheckReqdParams(w, r)
 		if err != nil {
 			log.Println(err)
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
