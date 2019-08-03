@@ -45,16 +45,24 @@ func SetConsts() {
 	AnchorUSDTrustLimit = 1000000
 
 	stablecoin.SetConsts(StablecoinCode, StablecoinPublicKey, StablecoinSeed, StableCoinSeedFile, StablecoinTrustLimit,
-		AnchorUSDCode, AnchorUSDAddress, AnchorUSDTrustLimit)
+		AnchorUSDCode, AnchorUSDAddress, AnchorUSDTrustLimit, Mainnet)
 
-	AlgodAddress = "http://localhost:50435"
-	AlgodToken = "df6740f7618f699b0417f764b6447fa7e690f9514c73cd60184314ae16141030"
-	KmdAddress = "http://localhost:51976"
-	KmdToken = "755071c9616f4ebac31512e4db7993dc056f12790d94d634e978a66dfc44ce9b"
+	if !Mainnet {
+		// algorand stuff is only enabled with stellar testnet and not mainnet
+		AlgodAddress = "http://localhost:50435"
+		AlgodToken = "df6740f7618f699b0417f764b6447fa7e690f9514c73cd60184314ae16141030"
+		KmdAddress = "http://localhost:51976"
+		KmdToken = "755071c9616f4ebac31512e4db7993dc056f12790d94d634e978a66dfc44ce9b"
+		algorand.SetConsts(AlgodAddress, AlgodToken, KmdAddress, KmdToken)
+	}
 
-	algorand.SetConsts(AlgodAddress, AlgodToken, KmdAddress, KmdToken)
+	if Mainnet {
+		// if we're on mainnet, there're no free coins, so set refill amount to 0
+		RefillAmount = 0
+	} else {
+		RefillAmount = 10
+	}
 
-	RefillAmount = 10
 	xlm.SetConsts(RefillAmount, Mainnet)
 
 	IpfsFileLength = 10

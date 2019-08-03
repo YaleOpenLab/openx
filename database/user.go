@@ -160,11 +160,12 @@ func NewUser(uname string, pwd string, seedpwd string, Name string) (User, error
 		a.Index = len(allUsers) + 1
 	}
 
-	a.Name = Name
 	err = a.GenKeys(seedpwd)
 	if err != nil {
 		return a, errors.Wrap(err, "Error while generating public and private keys")
 	}
+
+	a.Name = Name
 	a.Username = uname
 	a.Pwhash = utils.SHA3hash(pwd) // store tha sha3 hash
 	// now we have a new User, take this and then send this struct off to be stored in the database
@@ -226,6 +227,9 @@ func ValidateSeedpwd(name string, pwhash string, seedpwd string) (User, error) {
 // GenKeys generates a keypair for the user
 func (a *User) GenKeys(seedpwd string, options ...string) error {
 	if len(options) == 1 {
+		if consts.Mainnet {
+			return errors.New("only stellar supported in mainnet mode, quitting")
+		}
 		chain := options[0]
 		switch chain {
 		case "algorand":
@@ -347,8 +351,6 @@ func AddInspector(userIndex int) error {
 	user.Inspector = true
 	return user.Save()
 }
-
-// these two functions can be used as internal hnadlers and hte RPC can save reputation directly
 
 // IncreaseReputation increases reputation
 func (a *User) ChangeReputation(reputation float64) error {
