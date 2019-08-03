@@ -7,6 +7,7 @@ import (
 	algorand "github.com/Varunram/essentials/crypto/algorand"
 	stablecoin "github.com/Varunram/essentials/crypto/stablecoin"
 	xlm "github.com/Varunram/essentials/crypto/xlm"
+	email "github.com/Varunram/essentials/email"
 	ipfs "github.com/Varunram/essentials/ipfs"
 )
 
@@ -14,8 +15,14 @@ import (
 // For more info about Stellar costs see: https://www.stellar.org/developers/guides/concepts/accounts.html
 
 // Platform consts
-var IpfsFileLength int
-var RefillAmount float64
+var PlatformPublicKey string // set this to empty and store during runtime
+var PlatformEmail string     // email so we can send notifications to the platform when needed
+var PlatformEmailPass string // the password associated with the platform's email id
+var PlatformSeed string      // set this to empty and store during runtime
+var KYCAPIKey string         // API key to call the KYC provider's API
+var Mainnet bool             // bool to denote whether this is mainnet or testnet
+var IpfsFileLength int       // length of the ipfs file hash
+var RefillAmount float64     // refill amount (testnet only)
 
 // stablecoin related consts
 var StablecoinCode string
@@ -34,52 +41,74 @@ var KmdAddress string
 var KmdToken string
 
 func SetConsts() {
+	if Mainnet {
+		// set in house stablecoin paramas to zero to not trade in it
+		StablecoinPublicKey = ""
+		StableCoinSeedFile = ""
+		StablecoinSeed = ""
+		StablecoinTrustLimit = 0
 
-	StablecoinCode = "STABLEUSD"
-	StablecoinPublicKey = "GDJE64WOXDXLEK7RDURVYEJ5Y5XFHS6OQZCS3SHO4EEMTABEIJXF6SZ5"
-	StablecoinSeed = ""
-	StableCoinSeedFile = os.Getenv("HOME") + "/.openx/stablecoinseed.hex"
-	StablecoinTrustLimit = 1000000000
-	AnchorUSDCode = "USD"
-	AnchorUSDAddress = "GCKFBEIYV2U22IO2BJ4KVJOIP7XPWQGQFKKWXR6DOSJBV7STMAQSMTGG"
-	AnchorUSDTrustLimit = 1000000
+		// set anchor mainnet params to exchange
+		AnchorUSDCode = ""    //  TODO: set this as per anchorUSD's input
+		AnchorUSDAddress = "" //  TODO: set this as per anchorUSD's input
+		AnchorUSDTrustLimit = 1000000
+	} else {
+		StablecoinCode = "STABLEUSD"
+		StablecoinPublicKey = "GDJE64WOXDXLEK7RDURVYEJ5Y5XFHS6OQZCS3SHO4EEMTABEIJXF6SZ5"
+		StablecoinSeed = ""
+		StableCoinSeedFile = os.Getenv("HOME") + "/.openx/stablecoinseed.hex"
+		StablecoinTrustLimit = 1000000000
+		// testnet anchor params
+		AnchorUSDCode = "USD"
+		AnchorUSDAddress = "GCKFBEIYV2U22IO2BJ4KVJOIP7XPWQGQFKKWXR6DOSJBV7STMAQSMTGG"
+		AnchorUSDTrustLimit = 1000000
+	}
 
 	stablecoin.SetConsts(StablecoinCode, StablecoinPublicKey, StablecoinSeed, StableCoinSeedFile, StablecoinTrustLimit,
-		AnchorUSDCode, AnchorUSDAddress, AnchorUSDTrustLimit)
+		AnchorUSDCode, AnchorUSDAddress, AnchorUSDTrustLimit, Mainnet)
 
-	AlgodAddress = "http://localhost:50435"
-	AlgodToken = "df6740f7618f699b0417f764b6447fa7e690f9514c73cd60184314ae16141030"
-	KmdAddress = "http://localhost:51976"
-	KmdToken = "755071c9616f4ebac31512e4db7993dc056f12790d94d634e978a66dfc44ce9b"
+	if !Mainnet {
+		// algorand stuff is only enabled with stellar testnet and not mainnet
+		AlgodAddress = "http://localhost:50435"
+		AlgodToken = "df6740f7618f699b0417f764b6447fa7e690f9514c73cd60184314ae16141030"
+		KmdAddress = "http://localhost:51976"
+		KmdToken = "755071c9616f4ebac31512e4db7993dc056f12790d94d634e978a66dfc44ce9b"
+		algorand.SetConsts(AlgodAddress, AlgodToken, KmdAddress, KmdToken)
+	}
 
-	algorand.SetConsts(AlgodAddress, AlgodToken, KmdAddress, KmdToken)
+	if Mainnet {
+		// if we're on mainnet, there're no free coins, so set refill amount to 0
+		RefillAmount = 0
+	} else {
+		RefillAmount = 10
+	}
 
-	RefillAmount = 10
 	xlm.SetConsts(RefillAmount, Mainnet)
+
+	email.SetConsts(PlatformEmail, PlatformEmailPass)
 
 	IpfsFileLength = 10
 	ipfs.SetConsts(IpfsFileLength)
 }
 
+// directories
 var HomeDir = os.Getenv("HOME") + "/.openx"          // home directory where we store everything
 var DbDir = HomeDir + "/database/openx.db"           // the directory where the database is stored (project info, user info, etc)
 var OpenSolarIssuerDir = HomeDir + "/projects/"      // the directory where we store opensolar projects' issuer seeds
 var OpzonesIssuerDir = HomeDir + "/opzones/"         // the directory where we store ozpones projects' issuer seeds
 var PlatformSeedFile = HomeDir + "/platformseed.hex" // where the platform's seed is stored
 var InvestorAssetPrefix = "InvestorAssets_"          // the prefix that will be hashed to give an investor AssetID
-var BondAssetPrefix = "BondAssets_"                  // the prefix that will be hashed to give a bond asset
-var CoopAssetPrefix = "CoopAsset_"                   // the prefix that will be hashed to give the cooperative asset
-var DebtAssetPrefix = "DebtAssets_"                  // the prefix that will be hashed to give a recipient AssetID
-var SeedAssetPrefix = "SeedAssets_"                  // the prefix that will be hashed to give an ivnestor his seed id
-var PaybackAssetPrefix = "PaybackAssets_"            // the prefix that will be hashed to give a payback AssetID
-var IssuerSeedPwd = "blah"                           // the password for unlocking the encrypted file. This must be modified a compile time and kept secret
-var EscrowPwd = "blah"                               // the password used for locking the seed used by the escrow. This must be modified a compile time and kept secret
-var PlatformPublicKey = ""                           // set this to empty and store during runtime
-var PlatformEmail = ""                               // email so we can send notifications to the platform when needed
-var PlatformSeed = ""                                // set this to empty and store during runtime
-var KYCAPIKey = ""                                   // API key to call the KYC provider's API
-var Mainnet bool
 
+// prefixes
+var BondAssetPrefix = "BondAssets_"       // the prefix that will be hashed to give a bond asset
+var CoopAssetPrefix = "CoopAsset_"        // the prefix that will be hashed to give the cooperative asset
+var DebtAssetPrefix = "DebtAssets_"       // the prefix that will be hashed to give a recipient AssetID
+var SeedAssetPrefix = "SeedAssets_"       // the prefix that will be hashed to give an ivnestor his seed id
+var PaybackAssetPrefix = "PaybackAssets_" // the prefix that will be hashed to give a payback AssetID
+var IssuerSeedPwd = "blah"                // the password for unlocking the encrypted file. This must be modified a compile time and kept secret
+var EscrowPwd = "blah"                    // the password used for locking the seed used by the escrow. This must be modified a compile time and kept secret
+
+// ports + number consts
 var Tlsport = 443                                           // default port for ssl
 var DefaultRpcPort = 8080                                   // the default port on which the rpc server of the platform starts. Defaults to HTTPS
 var LockInterval = int64(1 * 60 * 60 * 24 * 3)              // time a recipient is given to unlock the project and redeem investment, right now at 3 days

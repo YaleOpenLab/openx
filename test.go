@@ -52,7 +52,6 @@ func ParseConfig(args []string) (bool, int, error) {
 
 // StartPlatform starts the platform
 func StartPlatform() error {
-
 	consts.SetConsts()
 	database.CreateHomeDir()
 	var err error
@@ -90,21 +89,44 @@ func StartPlatform() error {
 		log.Println("Error while reading platform email from config file")
 		return err
 	}
-	consts.PlatformEmail = viper.Get("platformemail").(string)
-	consts.KYCAPIKey = viper.Get("kycapikey").(string)
 
-	// read algorand values
-	consts.AlgodAddress = viper.Get("algodAddress").(string)
-	consts.AlgodToken = viper.Get("algodToken").(string)
-	consts.KmdAddress = viper.Get("kmdAddress").(string)
-	consts.KmdToken = viper.Get("kmdToken").(string)
-
-	err = algorand.Init()
-	if err != nil {
-		return nil
+	if !viper.IsSet("platformemail") {
+		log.Println("platform email not set")
+	} else {
+		consts.PlatformEmail = viper.GetString("platformemail")
+		log.Println("PLATFORM EMAIL: ", consts.PlatformEmail)
+	}
+	if !viper.IsSet("platformpass") {
+		log.Println("platform email password not set")
+	} else {
+		consts.PlatformEmailPass = viper.Get("password").(string) // interface to string
+	}
+	if !viper.IsSet("kycapikey") {
+		log.Println("kyc api key not set, kyc will be disabled")
+	} else {
+		consts.KYCAPIKey = viper.GetString("kycapikey")
 	}
 
-	log.Println("PLATFORM EMAIL: ", consts.PlatformEmail)
+	if !consts.Mainnet {
+		// alogrand is supported only in testnet mode
+		if viper.IsSet("algodAddress") {
+			consts.AlgodAddress = viper.GetString("algodAddress")
+		}
+		if viper.IsSet("algodToken") {
+			consts.AlgodToken = viper.GetString("algodToken")
+		}
+		if viper.IsSet("kmdAddress") {
+			consts.KmdAddress = viper.GetString("kmdAddress")
+		}
+		if viper.IsSet("kmdToken") {
+			consts.KmdToken = viper.GetString("kmdToken")
+		}
+		err = algorand.Init()
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 

@@ -317,7 +317,7 @@ func getAssetBalance() {
 		asset := r.URL.Query()["asset"][0]
 		balance, err := xlm.GetAssetBalance(pubkey, asset)
 		if err != nil {
-			log.Println("did not get assset balance", err)
+			log.Println("did not get asset balance", err)
 			erpc.ResponseHandler(w, erpc.StatusNotFound)
 			return
 		}
