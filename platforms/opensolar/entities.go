@@ -281,7 +281,7 @@ func AgreeToContractConditions(contractHash string, projIndex string,
 	fifthPart := messageHash[112:140]
 
 	timestamp := float64(utils.Unix())
-	
+
 	_, firstHash, err := xlm.SendXLM(user.StellarWallet.PublicKey, timestamp, seed, firstPart)
 	if err != nil {
 		return errors.Wrap(err, "couldn't send tx 1")
