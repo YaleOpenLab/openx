@@ -53,8 +53,8 @@ func SetConsts() {
 		AnchorUSDAddress = "" //  TODO: set this as per anchorUSD's input
 		AnchorUSDTrustLimit = 1000000
 	} else {
-		StablecoinCode = "STABLEUSD"
-		StablecoinPublicKey = "GDJE64WOXDXLEK7RDURVYEJ5Y5XFHS6OQZCS3SHO4EEMTABEIJXF6SZ5"
+		StablecoinCode = "STABLEUSD" // this is constant across different pubkeys
+		StablecoinPublicKey = "" // set this after running this the first time
 		StablecoinSeed = ""
 		StableCoinSeedFile = os.Getenv("HOME") + "/.openx/stablecoinseed.hex"
 		StablecoinTrustLimit = 1000000000
@@ -93,7 +93,8 @@ func SetConsts() {
 
 // directories
 var HomeDir = os.Getenv("HOME") + "/.openx"          // home directory where we store everything
-var DbDir = HomeDir + "/database/openx.db"           // the directory where the database is stored (project info, user info, etc)
+var DbDir = HomeDir + "/database/"                   // the directory where the database is stored (project info, user info, etc)
+var DbName = "openx.db"                              // the name of the db that we want to store stuff in
 var OpenSolarIssuerDir = HomeDir + "/projects/"      // the directory where we store opensolar projects' issuer seeds
 var OpzonesIssuerDir = HomeDir + "/opzones/"         // the directory where we store ozpones projects' issuer seeds
 var PlatformSeedFile = HomeDir + "/platformseed.hex" // where the platform's seed is stored
