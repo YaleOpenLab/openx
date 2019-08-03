@@ -56,7 +56,7 @@ func StartPlatform() error {
 	database.CreateHomeDir()
 	var err error
 	// init stablecoin before platform so we don't have to create a stablecoin in case our dbdir is wiped
-	err = stablecoin.InitStableCoin(consts.Mainnet) // start the stablecoin daemon
+	consts.StablecoinPublicKey, consts.StablecoinSeed, err = stablecoin.InitStableCoin(consts.Mainnet) // start the stablecoin daemon
 	if err != nil {
 		log.Println("errored out while starting stablecoin")
 		return err

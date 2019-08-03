@@ -12,13 +12,13 @@ import (
 
 // Save or Insert inserts a specific Project into the database
 func (a *Project) Save() error {
-	return edb.Save(consts.DbDir, database.ProjectsBucket, a, a.Index)
+	return edb.Save(consts.DbDir+consts.DbName, database.ProjectsBucket, a, a.Index)
 }
 
 // RetrieveProject retrieves the project with the specified index from the database
 func RetrieveProject(key int) (Project, error) {
 	var inv Project
-	x, err := edb.Retrieve(consts.DbDir, database.ProjectsBucket, key)
+	x, err := edb.Retrieve(consts.DbDir+consts.DbName, database.ProjectsBucket, key)
 	if err != nil {
 		return inv, errors.Wrap(err, "error while retrieving key from bucket")
 	}
@@ -30,7 +30,7 @@ func RetrieveProject(key int) (Project, error) {
 // RetrieveAllProjects retrieves all projects from the database
 func RetrieveAllProjects() ([]Project, error) {
 	var projects []Project
-	x, err := edb.RetrieveAllKeys(consts.DbDir, database.ProjectsBucket)
+	x, err := edb.RetrieveAllKeys(consts.DbDir+consts.DbName, database.ProjectsBucket)
 	if err != nil {
 		return projects, errors.Wrap(err, "error while retrieving all keys")
 	}
