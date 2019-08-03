@@ -11,18 +11,18 @@ import (
 
 // Save saves the changes in a living unit coop
 func (a *LivingUnitCoop) Save() error {
-	return edb.Save(consts.DbDir + consts.DbName, database.CoopBucket, a, a.Index)
+	return edb.Save(consts.DbDir+consts.DbName, database.CoopBucket, a, a.Index)
 }
 
 // Save saves the changes in a construction bond
 func (a *ConstructionBond) Save() error {
-	return edb.Save(consts.DbDir + consts.DbName, database.BondBucket, a, a.Index)
+	return edb.Save(consts.DbDir+consts.DbName, database.BondBucket, a, a.Index)
 }
 
 // RetrieveAllLivingUnitCoops gets a list of all User in the database
 func RetrieveAllLivingUnitCoops() ([]LivingUnitCoop, error) {
 	var arr []LivingUnitCoop
-	x, err := edb.RetrieveAllKeys(consts.DbDir + consts.DbName, database.CoopBucket)
+	x, err := edb.RetrieveAllKeys(consts.DbDir+consts.DbName, database.CoopBucket)
 	if err != nil {
 		return arr, errors.Wrap(err, "error while retrieving all keys")
 	}
@@ -42,7 +42,7 @@ func RetrieveAllLivingUnitCoops() ([]LivingUnitCoop, error) {
 // RetrieveAllConstructionBonds gets a list of all User in the database
 func RetrieveAllConstructionBonds() ([]ConstructionBond, error) {
 	var arr []ConstructionBond
-	x, err := edb.RetrieveAllKeys(consts.DbDir + consts.DbName, database.BondBucket)
+	x, err := edb.RetrieveAllKeys(consts.DbDir+consts.DbName, database.BondBucket)
 	if err != nil {
 		return arr, errors.Wrap(err, "error while retrieving all keys")
 	}
@@ -62,7 +62,7 @@ func RetrieveAllConstructionBonds() ([]ConstructionBond, error) {
 // RetrieveLivingUnitCoop retrieves a specifi coop from the database
 func RetrieveLivingUnitCoop(key int) (LivingUnitCoop, error) {
 	var elem LivingUnitCoop
-	x, err := edb.Retrieve(consts.DbDir + consts.DbName, database.CoopBucket, key)
+	x, err := edb.Retrieve(consts.DbDir+consts.DbName, database.CoopBucket, key)
 	if err != nil {
 		return elem, errors.Wrap(err, "error while retrieving key from bucket")
 	}
@@ -74,7 +74,7 @@ func RetrieveLivingUnitCoop(key int) (LivingUnitCoop, error) {
 // RetrieveConstructionBond retrieves the construction bond from memory
 func RetrieveConstructionBond(key int) (ConstructionBond, error) {
 	var elem ConstructionBond
-	x, err := edb.Retrieve(consts.DbDir + consts.DbName, database.BondBucket, key)
+	x, err := edb.Retrieve(consts.DbDir+consts.DbName, database.BondBucket, key)
 	if err != nil {
 		return elem, errors.Wrap(err, "error while retrieving key from bucket")
 	}

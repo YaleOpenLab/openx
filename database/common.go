@@ -11,23 +11,23 @@ import (
 // this file contains commong methods that are repeated across interfaces
 // Save inserts a passed User object into the database
 func (a *User) Save() error {
-	return edb.Save(consts.DbDir + consts.DbName, UserBucket, a, a.Index)
+	return edb.Save(consts.DbDir+consts.DbName, UserBucket, a, a.Index)
 }
 
 // Save inserts a passed Investor object into the database
 func (a *Investor) Save() error {
-	return edb.Save(consts.DbDir + consts.DbName, InvestorBucket, a, a.U.Index)
+	return edb.Save(consts.DbDir+consts.DbName, InvestorBucket, a, a.U.Index)
 }
 
 // Save saves a given recipient's details
 func (a *Recipient) Save() error {
-	return edb.Save(consts.DbDir + consts.DbName, RecipientBucket, a, a.U.Index)
+	return edb.Save(consts.DbDir+consts.DbName, RecipientBucket, a, a.U.Index)
 }
 
 // RetrieveUser retrieves a particular User indexed by key from the database
 func RetrieveUser(key int) (User, error) {
 	var user User
-	x, err := edb.Retrieve(consts.DbDir + consts.DbName, UserBucket, key)
+	x, err := edb.Retrieve(consts.DbDir+consts.DbName, UserBucket, key)
 	if err != nil {
 		return user, errors.Wrap(err, "error while retrieving key from bucket")
 	}
@@ -44,7 +44,7 @@ func RetrieveInvestor(key int) (Investor, error) {
 		return inv, err
 	}
 
-	x, err := edb.Retrieve(consts.DbDir + consts.DbName, InvestorBucket, key)
+	x, err := edb.Retrieve(consts.DbDir+consts.DbName, InvestorBucket, key)
 	if err != nil {
 		return inv, errors.Wrap(err, "error while retrieving key from bucket")
 	}
@@ -66,7 +66,7 @@ func RetrieveRecipient(key int) (Recipient, error) {
 		return recp, err
 	}
 
-	x, err := edb.Retrieve(consts.DbDir + consts.DbName, RecipientBucket, key)
+	x, err := edb.Retrieve(consts.DbDir+consts.DbName, RecipientBucket, key)
 	if err != nil {
 		return recp, errors.Wrap(err, "error while retrieving key from bucket")
 	}
@@ -83,7 +83,7 @@ func RetrieveRecipient(key int) (Recipient, error) {
 // RetrieveAllUsers gets a list of all User in the database
 func RetrieveAllUsers() ([]User, error) {
 	var arr []User
-	x, err := edb.RetrieveAllKeys(consts.DbDir + consts.DbName, UserBucket)
+	x, err := edb.RetrieveAllKeys(consts.DbDir+consts.DbName, UserBucket)
 	if err != nil {
 		return arr, errors.Wrap(err, "error while retrieving all users")
 	}
@@ -110,7 +110,7 @@ func RetrieveAllInvestors() ([]Investor, error) {
 	}
 
 	lim := len(allUsers)
-	x, err := edb.RetrieveAllKeysLim(consts.DbDir + consts.DbName, InvestorBucket, lim)
+	x, err := edb.RetrieveAllKeysLim(consts.DbDir+consts.DbName, InvestorBucket, lim)
 	if err != nil {
 		return arr, errors.Wrap(err, "error while retrieving all keys lim")
 	}
@@ -139,7 +139,7 @@ func RetrieveAllRecipients() ([]Recipient, error) {
 	}
 
 	lim := len(allUsers)
-	x, err := edb.RetrieveAllKeysLim(consts.DbDir + consts.DbName, RecipientBucket, lim)
+	x, err := edb.RetrieveAllKeysLim(consts.DbDir+consts.DbName, RecipientBucket, lim)
 	if err != nil {
 		return arr, errors.Wrap(err, "error while retrieving all keys")
 	}

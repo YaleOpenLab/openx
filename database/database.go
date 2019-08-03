@@ -29,7 +29,7 @@ var InspectorBucket = []byte("Inspector")
 // CreateHomeDir creates a home directory
 func CreateHomeDir() {
 	edb.CreateDirs(consts.HomeDir, consts.DbDir, consts.OpenSolarIssuerDir, consts.OpzonesIssuerDir)
-	edb.CreateDB(consts.DbDir + consts.DbName, ProjectsBucket, InvestorBucket, RecipientBucket, ContractorBucket, UserBucket, BondBucket, CoopBucket, InspectorBucket)
+	edb.CreateDB(consts.DbDir+consts.DbName, ProjectsBucket, InvestorBucket, RecipientBucket, ContractorBucket, UserBucket, BondBucket, CoopBucket, InspectorBucket)
 }
 
 // OpenDB opens the db
@@ -39,5 +39,5 @@ func OpenDB() (*bolt.DB, error) {
 
 // DeleteKeyFromBucket deletes a given key from the bucket
 func DeleteKeyFromBucket(key int, bucketName []byte) error {
-	return edb.DeleteKeyFromBucket(consts.DbDir + consts.DbName, key, bucketName)
+	return edb.DeleteKeyFromBucket(consts.DbDir+consts.DbName, key, bucketName)
 }

@@ -54,7 +54,7 @@ func SetConsts() {
 		AnchorUSDTrustLimit = 1000000
 	} else {
 		StablecoinCode = "STABLEUSD" // this is constant across different pubkeys
-		StablecoinPublicKey = "" // set this after running this the first time
+		StablecoinPublicKey = ""     // set this after running this the first time
 		StablecoinSeed = ""
 		StableCoinSeedFile = os.Getenv("HOME") + "/.openx/stablecoinseed.hex"
 		StablecoinTrustLimit = 1000000000
