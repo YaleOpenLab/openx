@@ -89,7 +89,7 @@ func intentDeposit() {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
 
-		prepUser, err := UserValidateHelper(w, r)
+		prepUser, err := CheckReqdParams(w, r)
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
@@ -119,7 +119,7 @@ func kycDeposit() {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
 
-		prepUser, err := UserValidateHelper(w, r)
+		prepUser, err := CheckReqdParams(w, r)
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
@@ -154,7 +154,7 @@ func intentWithdraw() {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
 
-		prepUser, err := UserValidateHelper(w, r)
+		prepUser, err := CheckReqdParams(w, r)
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
@@ -186,7 +186,7 @@ func kycWithdraw() {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
 
-		prepUser, err := UserValidateHelper(w, r)
+		prepUser, err := CheckReqdParams(w, r)
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return

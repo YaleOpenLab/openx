@@ -97,13 +97,25 @@ func removeSeedEntity(entity opensolar.Entity) opensolar.Entity {
 	return entity
 }
 
-// UserValidateHelper is a helper that validates a user on the platform
-func UserValidateHelper(w http.ResponseWriter, r *http.Request) (database.User, error) {
+// CheckReqdParams is a helper that validates a user on the platform
+func CheckReqdParams(w http.ResponseWriter, r *http.Request, options ...string) (database.User, error) {
 	var prepUser database.User
 	var err error
 	// need to pass the pwhash param here
-	if r.URL.Query() == nil || r.URL.Query()["username"] == nil || r.URL.Query()["pwhash"] == nil || len(r.URL.Query()["pwhash"][0]) != 128 {
-		return prepUser, errors.New("invalid params passed")
+	if r.URL.Query() == nil {
+		return prepUser, errors.New("url query can't be empty")
+	}
+
+	options = append(options, "username", "pwhash")
+
+	for _, option := range options {
+		if r.URL.Query()[option] == nil {
+			return prepUser, errors.New("required param: " + option + "not specified, quitting")
+		}
+	}
+
+	if len(r.URL.Query()["pwhash"][0]) != 128 {
+		return prepUser, errors.New("pwhash length not 128, quitting")
 	}
 
 	if r.URL.Query()["seedpwd"] != nil {
@@ -139,7 +151,7 @@ func updateUser() {
 	http.HandleFunc("/user/update", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
-		user, err := UserValidateHelper(w, r)
+		user, err := CheckReqdParams(w, r)
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
@@ -212,7 +224,7 @@ func validateUser() {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
 		// need to pass the pwhash param here
-		prepUser, err := UserValidateHelper(w, r)
+		prepUser, err := CheckReqdParams(w, r)
 		if err != nil {
 			log.Println("did not validate user", err)
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
@@ -257,7 +269,7 @@ func getBalances() {
 	http.HandleFunc("/user/balances", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
-		prepUser, err := UserValidateHelper(w, r)
+		prepUser, err := CheckReqdParams(w, r)
 		if err != nil {
 			log.Println("did not validate user", err)
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
@@ -280,7 +292,7 @@ func getXLMBalance() {
 	http.HandleFunc("/user/balance/xlm", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
-		prepUser, err := UserValidateHelper(w, r)
+		prepUser, err := CheckReqdParams(w, r)
 		if err != nil {
 			log.Println("did not validate user", err)
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
@@ -303,13 +315,9 @@ func getAssetBalance() {
 	http.HandleFunc("/user/balance/asset", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
-		prepUser, err := UserValidateHelper(w, r)
+		prepUser, err := CheckReqdParams(w, r, "asset")
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-			return
-		}
-		if r.URL.Query()["asset"] == nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -330,13 +338,9 @@ func getIpfsHash() {
 	http.HandleFunc("/ipfs/hash", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
-		_, err := UserValidateHelper(w, r)
+		_, err := CheckReqdParams(w, r, "string")
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-			return
-		}
-		if r.URL.Query()["string"] == nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -364,13 +368,9 @@ func authKyc() {
 	http.HandleFunc("/user/kyc", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
-		prepUser, err := UserValidateHelper(w, r)
+		prepUser, err := CheckReqdParams(w, r, "userIndex")
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-			return
-		}
-		if r.URL.Query()["userIndex"] == nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -394,14 +394,9 @@ func sendXLM() {
 	http.HandleFunc("/user/sendxlm", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
-		prepUser, err := UserValidateHelper(w, r)
+		prepUser, err := CheckReqdParams(w, r, "destination", "amount", "seedpwd")
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-			return
-		}
-		if r.URL.Query()["destination"] == nil || r.URL.Query()["amount"] == nil ||
-			r.URL.Query()["seedpwd"] == nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -440,13 +435,13 @@ func notKycView() {
 	http.HandleFunc("/user/notkycview", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
-		prepUser, err := UserValidateHelper(w, r)
+		prepUser, err := CheckReqdParams(w, r)
 		if err != nil {
 			log.Println("did not validate user", err)
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
-		if !prepUser.Inspector {
+		if !prepUser.Inspector && !prepUser.Admin {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
@@ -467,13 +462,13 @@ func kycView() {
 	http.HandleFunc("/user/kycview", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
-		prepUser, err := UserValidateHelper(w, r)
+		prepUser, err := CheckReqdParams(w, r)
 		if err != nil {
 			log.Println("did not validate user", err)
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
-		if !prepUser.Inspector {
+		if !prepUser.Inspector && !prepUser.Admin {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
@@ -501,7 +496,7 @@ func askForCoins() {
 			return
 		}
 
-		prepUser, err := UserValidateHelper(w, r)
+		prepUser, err := CheckReqdParams(w, r)
 		if err != nil {
 			log.Println("did not validate user", err)
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
@@ -525,18 +520,13 @@ func trustAsset() {
 		// since this is testnet, give caller coins from the testnet faucet
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
-		prepUser, err := UserValidateHelper(w, r)
+		prepUser, err := CheckReqdParams(w, r, "assetCode", "assetIssuer", "limit", "seedpwd")
 		if err != nil {
 			log.Println("did not validate user", err)
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
-		if r.URL.Query()["assetCode"] == nil || r.URL.Query()["assetIssuer"] == nil || r.URL.Query()["limit"] == nil || r.URL.Query()["seedpwd"] == nil {
-			log.Println("invalid number of params passed")
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
-			return
-		}
 		assetCode := r.URL.Query()["assetCode"][0]
 		assetIssuer := r.URL.Query()["assetIssuer"][0]
 		limit, err := utils.ToFloat(r.URL.Query()["limit"][0])
@@ -565,13 +555,13 @@ func trustAsset() {
 	})
 }
 
-// uploadFile uploads a fil to ipfs and returns the ipfs hash of the uploaded file
+// uploadFile uploads a file to ipfs and returns the ipfs hash of the uploaded file
 // this is a POST request
 func uploadFile() {
 	http.HandleFunc("/upload", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckPost(w, r)
 		erpc.CheckOrigin(w, r)
-		_, err := UserValidateHelper(w, r)
+		_, err := CheckReqdParams(w, r)
 		if err != nil {
 			log.Println("did not validate user", err)
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
@@ -588,6 +578,8 @@ func uploadFile() {
 
 		supportedType := false
 		header := fileHeader.Header.Get("Content-Type")
+		// I guess people could change the content type here and set it to anything they want to, but doesn't
+		// matter since we batch this off to ipfs anyway
 
 		switch header {
 		case "image/jpeg":
@@ -608,7 +600,7 @@ func uploadFile() {
 		// file type is supported, store in ipfs
 		data, err := ioutil.ReadAll(file)
 		if err != nil {
-			log.Println("did not  read", err)
+			log.Println("did not read returned data", err)
 			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
@@ -632,7 +624,7 @@ func platformEmail() {
 	http.HandleFunc("/platformemail", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
-		_, err := UserValidateHelper(w, r)
+		_, err := CheckReqdParams(w, r)
 		if err != nil {
 			log.Println("did not validate user", err)
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
@@ -649,15 +641,9 @@ func sendTellerShutdownEmail() {
 	http.HandleFunc("/tellershutdown", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
-		prepUser, err := UserValidateHelper(w, r)
+		prepUser, err := CheckReqdParams(w, r, "projIndex", "deviceId", "tx1", "tx2")
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-			return
-		}
-		if r.URL.Query()["projIndex"] == nil || r.URL.Query()["deviceId"] == nil ||
-			r.URL.Query()["tx1"] == nil || r.URL.Query()["tx2"] == nil {
-			log.Println("did not validate user", err)
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -674,14 +660,9 @@ func sendTellerFailedPaybackEmail() {
 	http.HandleFunc("/tellerpayback", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
-		prepUser, err := UserValidateHelper(w, r)
+		prepUser, err := CheckReqdParams(w, r, "deviceId", "projIndex")
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-			return
-		}
-		if r.URL.Query()["projIndex"] == nil || r.URL.Query()["deviceId"] == nil {
-			log.Println("did not validate user", err)
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -696,7 +677,7 @@ func tellerPing() {
 	http.HandleFunc("/tellerping", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
-		_, err := UserValidateHelper(w, r)
+		_, err := CheckReqdParams(w, r)
 		if err != nil {
 			log.Println("did not validate user", err)
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
@@ -745,14 +726,9 @@ func increaseTrustLimit() {
 	http.HandleFunc("/user/increasetrustlimit", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
-		prepUser, err := UserValidateHelper(w, r)
+		prepUser, err := CheckReqdParams(w, r, "trust", "seedpwd")
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-			return
-		}
-		if r.URL.Query()["trust"] == nil || r.URL.Query()["seedpwd"] == nil {
-			log.Println("did not validate user", err)
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -781,21 +757,12 @@ func addContractHash() {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
 		var err error
-		_, err = UserValidateHelper(w, r)
+		_, err = CheckReqdParams(w, r, "projIndex", "choice", "choicestr")
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
-		if r.URL.Query()["projIndex"] == nil {
-			log.Println("couldn't validate investor", err)
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
-			return
-		}
-		if r.URL.Query()["choice"] == nil || r.URL.Query()["choicestr"] == nil {
-			log.Println("choice of ipfs hash not given. quitting!")
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
-			return
-		}
+
 		choice := r.URL.Query()["choice"][0]
 		hashString := r.URL.Query()["choicestr"][0]
 		projIndex, err := utils.ToInt(r.URL.Query()["projIndex"][0])
@@ -861,14 +828,9 @@ func sendSecrets() {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
 
-		user, err := UserValidateHelper(w, r)
+		user, err := CheckReqdParams(w, r, "email1", "email2", "email3")
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-			return
-		}
-		if r.URL.Query()["email1"] == nil || r.URL.Query()["email2"] == nil || r.URL.Query()["email3"] == nil {
-			log.Println("couldn't validate investor", err)
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -904,14 +866,9 @@ func mergeSecrets() {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
 
-		_, err := UserValidateHelper(w, r)
+		_, err := CheckReqdParams(w, r, "secret1", "secret2")
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-			return
-		}
-		if r.URL.Query()["secret1"] == nil || r.URL.Query()["secret2"] == nil {
-			log.Println("couldn't validate investor", err)
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -939,15 +896,9 @@ func generateNewSecrets() {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
 
-		user, err := UserValidateHelper(w, r)
+		user, err := CheckReqdParams(w, r, "seedpwd", "email1", "email2", "email3")
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-			return
-		}
-		if r.URL.Query()["seedpwd"] == nil || r.URL.Query()["email1"] == nil ||
-			r.URL.Query()["email2"] == nil || r.URL.Query()["email3"] == nil {
-			log.Println("couldn't validate investor", err)
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -1088,14 +1039,9 @@ func sweepFunds() {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
 
-		prepUser, err := UserValidateHelper(w, r)
+		prepUser, err := CheckReqdParams(w, r, "seedpwd", "destination")
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-			return
-		}
-		if r.URL.Query()["seedpwd"] == nil || r.URL.Query()["destination"] == nil {
-			log.Println("seedpwd or destination missing")
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -1161,15 +1107,9 @@ func sweepAsset() {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
 
-		prepUser, err := UserValidateHelper(w, r)
+		prepUser, err := CheckReqdParams(w, r, "seedpwd", "destination", "assetName", "issuerPubkey")
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-			return
-		}
-		if r.URL.Query()["seedpwd"] == nil || r.URL.Query()["destination"] == nil ||
-			r.URL.Query()["assetName"] == nil || r.URL.Query()["issuerPubkey"] == nil {
-			log.Println("did not validate user", err)
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -1239,7 +1179,7 @@ func validateKYC() {
 		erpc.CheckOrigin(w, r)
 
 		// we first need to check the user params here
-		prepUser, err := UserValidateHelper(w, r)
+		prepUser, err := CheckReqdParams(w, r, "selfie")
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
@@ -1249,12 +1189,6 @@ func validateKYC() {
 		var idType string
 		var id string
 		var verif bool
-
-		if r.URL.Query()["selfie"] == nil {
-			log.Println("selfie for kyc verification not passed, quitting")
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
-			return
-		}
 
 		prepUser.KYC.PersonalPhoto = r.URL.Query()["selfie"][0]
 
@@ -1323,14 +1257,9 @@ func giveStarRating() {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
 
-		prepUser, err := UserValidateHelper(w, r)
+		prepUser, err := CheckReqdParams(w, r, "feedback", "userIndex")
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-			return
-		}
-
-		if r.URL.Query()["feedback"] == nil || r.URL.Query()["userIndex"] == nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -1374,7 +1303,7 @@ func new2fa() {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
 
-		prepUser, err := UserValidateHelper(w, r)
+		prepUser, err := CheckReqdParams(w, r)
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
@@ -1419,14 +1348,9 @@ func auth2fa() {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
 
-		prepUser, err := UserValidateHelper(w, r)
+		prepUser, err := CheckReqdParams(w, r, "password")
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-			return
-		}
-
-		if r.URL.Query()["password"] == nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -1451,18 +1375,10 @@ func addAnchorKYCInfo() {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
 
-		prepUser, err := UserValidateHelper(w, r)
+		prepUser, err := CheckReqdParams(w, r, "name", "bdaymonth", "bdayday", "bdayyear", "taxcountry",
+			"taxid", "addrstreet", "addrcity", "addrpostal", "addrregion", "addrcountry", "addrphone", "primaryphone", "gender")
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-			return
-		}
-
-		if r.URL.Query()["name"] == nil || r.URL.Query()["bdaymonth"] == nil || r.URL.Query()["bdayday"] == nil ||
-			r.URL.Query()["bdayyear"] == nil || r.URL.Query()["taxcountry"] == nil || r.URL.Query()["taxid"] == nil ||
-			r.URL.Query()["addrstreet"] == nil || r.URL.Query()["addrcity"] == nil || r.URL.Query()["addrpostal"] == nil ||
-			r.URL.Query()["addrregion"] == nil || r.URL.Query()["addrcountry"] == nil || r.URL.Query()["addrphone"] == nil ||
-			r.URL.Query()["primaryphone"] == nil || r.URL.Query()["gender"] == nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -1494,15 +1410,12 @@ func addAnchorKYCInfo() {
 // on completion of a contract or on evaluation of feedback proposed by other entities on the system
 func changeReputation() {
 	http.HandleFunc("/user/reputation", func(w http.ResponseWriter, r *http.Request) {
-		user, err := UserValidateHelper(w, r)
+		user, err := CheckReqdParams(w, r, "reputation")
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
-		if r.URL.Query()["reputation"] == nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
-			return
-		}
+
 		reputation, err := strconv.ParseFloat(r.URL.Query()["reputation"][0], 32) // same as StoI but we need to catch the error here
 		if err != nil {
 			log.Println("could not parse float", err)
