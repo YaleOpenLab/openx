@@ -1,6 +1,7 @@
 package database
 
 import (
+	// "log"
 	"encoding/json"
 	"github.com/pkg/errors"
 
@@ -87,7 +88,6 @@ func RetrieveAllUsers() ([]User, error) {
 	if err != nil {
 		return arr, errors.Wrap(err, "error while retrieving all users")
 	}
-
 	for _, value := range x {
 		var temp User
 		err := json.Unmarshal(value, &temp)

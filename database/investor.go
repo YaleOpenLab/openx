@@ -1,6 +1,7 @@
 package database
 
 import (
+	// "log"
 	"github.com/pkg/errors"
 
 	tickers "github.com/Varunram/essentials/crypto/exchangetickers"

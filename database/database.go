@@ -29,7 +29,8 @@ var InspectorBucket = []byte("Inspector")
 // CreateHomeDir creates a home directory
 func CreateHomeDir() {
 	edb.CreateDirs(consts.HomeDir, consts.DbDir, consts.OpenSolarIssuerDir, consts.OpzonesIssuerDir)
-	edb.CreateDB(consts.DbDir+consts.DbName, ProjectsBucket, InvestorBucket, RecipientBucket, ContractorBucket, UserBucket, BondBucket, CoopBucket, InspectorBucket)
+	db, _ := edb.CreateDB(consts.DbDir+consts.DbName, ProjectsBucket, InvestorBucket, RecipientBucket, ContractorBucket, UserBucket, BondBucket, CoopBucket, InspectorBucket)
+	db.Close()
 }
 
 // OpenDB opens the db
