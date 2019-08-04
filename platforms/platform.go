@@ -85,31 +85,42 @@ func InitializePlatform() error {
 		}
 	}
 
-	if !xlm.AccountExists(publicKey) {
-		// ie we're on mainnet and the account doesn't have enough funds to start
-		return errors.New("please refill the platform with xlm to be able to start openx. Min balance: 0.5XLM")
+	if !consts.Mainnet {
+		_, txhash, err := xlm.SetAuthImmutable(seed)
+		log.Println("TX HASH FOR SETOPTIONS: ", txhash)
+		if err != nil {
+			log.Println("ERROR WHILE SETTING OPTIONS")
+		}
+		// make the platform trust the stablecoin for receiving payments
+		txhash, err = assets.TrustAsset(consts.StablecoinCode, consts.StablecoinPublicKey, 10000000000, seed)
+		if err != nil {
+			log.Println("error while trusting stablecoin", consts.StablecoinCode, consts.StablecoinPublicKey, seed)
+			return err
+		}
+
+		_, _, err = assets.SendAssetFromIssuer(consts.StablecoinCode, publicKey, 10, consts.StablecoinSeed, consts.StablecoinPublicKey)
+		if err != nil {
+			log.Println("error while sending stablecoin tp platform")
+			log.Println("SEED: ", consts.StablecoinSeed)
+			return err
+		}
+
+		log.Println("Platform trusts stablecoin: ", txhash)
+	} else {
+		log.Println("mainnet init, stablecoin disabled")
+		if !xlm.AccountExists(publicKey) {
+			// ie we're on mainnet and the account doesn't have enough funds to start
+			return errors.New("please refill the platform with xlm to be able to start openx. Min balance: 0.5XLM")
+		}
+		balance, err := xlm.GetNativeBalance(publicKey)
+		if err != nil {
+			return errors.Wrap(err, "could not get native balance")
+		}
+		if balance < 1.5 { // 0.5 min + 0.5x2 trustlines
+			return errors.New("balance insufficient to run platform")
+		}
 	}
 
-	_, txhash, err := xlm.SetAuthImmutable(seed)
-	log.Println("TX HASH FOR SETOPTIONS: ", txhash)
-	if err != nil {
-		log.Println("ERROR WHILE SETTING OPTIONS")
-	}
-	// make the platform trust the stablecoin for receiving payments
-	txhash, err = assets.TrustAsset(consts.StablecoinCode, consts.StablecoinPublicKey, 10000000000, seed)
-	if err != nil {
-		log.Println("error while trusting stablecoin", consts.StablecoinCode, consts.StablecoinPublicKey, seed)
-		return err
-	}
-
-	_, _, err = assets.SendAssetFromIssuer(consts.StablecoinCode, publicKey, 10, consts.StablecoinSeed, consts.StablecoinPublicKey)
-	if err != nil {
-		log.Println("error while sending stablecoin tp platform")
-		log.Println("SEED: ", consts.StablecoinSeed)
-		return err
-	}
-
-	log.Println("Platform trusts stablecoin: ", txhash)
 	consts.PlatformPublicKey = publicKey
 	consts.PlatformSeed = seed
 	return err
@@ -120,7 +131,7 @@ func InitializePlatform() error {
 func RefillPlatform(publicKey string) error {
 	// check whether the investor has XLM already
 	if consts.Mainnet {
-		return nil // refilling platform has to be done manually in the case of mainnet
+		return errors.New("no provision to refill on mainnet") // refilling platform has to be done manually in the case of mainnet
 	}
 	balance, err := xlm.GetNativeBalance(publicKey)
 	if err != nil {

@@ -41,18 +41,7 @@ var KmdAddress string
 var KmdToken string
 
 func SetConsts() {
-	if Mainnet {
-		// set in house stablecoin paramas to zero to not trade in it
-		StablecoinPublicKey = ""
-		StableCoinSeedFile = ""
-		StablecoinSeed = ""
-		StablecoinTrustLimit = 0
-
-		// set anchor mainnet params to exchange
-		AnchorUSDCode = ""    //  TODO: set this as per anchorUSD's input
-		AnchorUSDAddress = "" //  TODO: set this as per anchorUSD's input
-		AnchorUSDTrustLimit = 1000000
-	} else {
+	if !Mainnet {
 		StablecoinCode = "STABLEUSD" // this is constant across different pubkeys
 		StablecoinPublicKey = ""     // set this after running this the first time
 		StablecoinSeed = ""
@@ -62,33 +51,49 @@ func SetConsts() {
 		AnchorUSDCode = "USD"
 		AnchorUSDAddress = "GCKFBEIYV2U22IO2BJ4KVJOIP7XPWQGQFKKWXR6DOSJBV7STMAQSMTGG"
 		AnchorUSDTrustLimit = 1000000
-	}
 
-	stablecoin.SetConsts(StablecoinCode, StablecoinPublicKey, StablecoinSeed, StableCoinSeedFile, StablecoinTrustLimit,
-		AnchorUSDCode, AnchorUSDAddress, AnchorUSDTrustLimit, Mainnet)
+		stablecoin.SetConsts(StablecoinCode, StablecoinPublicKey, StablecoinSeed, StableCoinSeedFile, StablecoinTrustLimit,
+			AnchorUSDCode, AnchorUSDAddress, AnchorUSDTrustLimit, Mainnet)
 
-	if !Mainnet {
 		// algorand stuff is only enabled with stellar testnet and not mainnet
 		AlgodAddress = "http://localhost:50435"
 		AlgodToken = "df6740f7618f699b0417f764b6447fa7e690f9514c73cd60184314ae16141030"
 		KmdAddress = "http://localhost:51976"
 		KmdToken = "755071c9616f4ebac31512e4db7993dc056f12790d94d634e978a66dfc44ce9b"
 		algorand.SetConsts(AlgodAddress, AlgodToken, KmdAddress, KmdToken)
-	}
 
-	if Mainnet {
-		// if we're on mainnet, there're no free coins, so set refill amount to 0
-		RefillAmount = 0
-	} else {
 		RefillAmount = 10
+		xlm.SetConsts(RefillAmount, Mainnet)
+
+		email.SetConsts(PlatformEmail, PlatformEmailPass)
+
+		IpfsFileLength = 10
+		ipfs.SetConsts(IpfsFileLength)
+	} else {
+		// init mainnet params
+
+		// set in house stablecoin params to zero to not trade in it
+		StablecoinPublicKey = ""
+		StableCoinSeedFile = ""
+		StablecoinSeed = ""
+		StablecoinTrustLimit = 0
+
+		// set anchor mainnet params to exchange
+		AnchorUSDCode = ""    //  TODO: set this as per anchorUSD's input
+		AnchorUSDAddress = "" //  TODO: set this as per anchorUSD's input
+		AnchorUSDTrustLimit = 1000000
+
+		stablecoin.SetConsts(StablecoinCode, StablecoinPublicKey, StablecoinSeed, StableCoinSeedFile, StablecoinTrustLimit,
+			AnchorUSDCode, AnchorUSDAddress, AnchorUSDTrustLimit, Mainnet)
+
+		RefillAmount = 0
+		xlm.SetConsts(RefillAmount, Mainnet)
+
+		email.SetConsts(PlatformEmail, PlatformEmailPass)
+
+		IpfsFileLength = 10
+		ipfs.SetConsts(IpfsFileLength)
 	}
-
-	xlm.SetConsts(RefillAmount, Mainnet)
-
-	email.SetConsts(PlatformEmail, PlatformEmailPass)
-
-	IpfsFileLength = 10
-	ipfs.SetConsts(IpfsFileLength)
 }
 
 // directories

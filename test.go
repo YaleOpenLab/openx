@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"github.com/pkg/errors"
 
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
@@ -67,20 +68,6 @@ func StartPlatform() error {
 		return err
 	}
 
-	allContracts, err := opensolar.RetrieveAllProjects()
-	if err != nil {
-		log.Println("Error retrieving all projects from the database")
-		return err
-	}
-
-	if len(allContracts) == 0 {
-		log.Println("Populating database with test values")
-		err = InsertDummyData(opts.Simulate)
-		if err != nil {
-			return err
-		}
-	}
-
 	viper.SetConfigType("yaml")
 	viper.SetConfigName("config")
 	viper.AddConfigPath(".")
@@ -90,24 +77,21 @@ func StartPlatform() error {
 		return err
 	}
 
-	if !viper.IsSet("platformemail") {
-		log.Println("platform email not set")
-	} else {
-		consts.PlatformEmail = viper.GetString("platformemail")
-		log.Println("PLATFORM EMAIL: ", consts.PlatformEmail)
-	}
-	if !viper.IsSet("platformpass") {
-		log.Println("platform email password not set")
-	} else {
-		consts.PlatformEmailPass = viper.Get("password").(string) // interface to string
-	}
-	if !viper.IsSet("kycapikey") {
-		log.Println("kyc api key not set, kyc will be disabled")
-	} else {
-		consts.KYCAPIKey = viper.GetString("kycapikey")
-	}
-
 	if !consts.Mainnet {
+		allContracts, err := opensolar.RetrieveAllProjects()
+		if err != nil {
+			log.Println("Error retrieving all projects from the database")
+			return err
+		}
+
+		if len(allContracts) == 0 {
+			log.Println("initialziing openx testnet")
+			err = InsertDummyData(opts.Simulate)
+			if err != nil {
+				return err
+			}
+		}
+
 		// alogrand is supported only in testnet mode
 		if viper.IsSet("algodAddress") {
 			consts.AlgodAddress = viper.GetString("algodAddress")
@@ -121,10 +105,49 @@ func StartPlatform() error {
 		if viper.IsSet("kmdToken") {
 			consts.KmdToken = viper.GetString("kmdToken")
 		}
+
 		err = algorand.Init()
 		if err != nil {
 			return err
 		}
+
+		if !viper.IsSet("platformemail") {
+			log.Println("platform email not set")
+		} else {
+			consts.PlatformEmail = viper.GetString("platformemail")
+			log.Println("PLATFORM EMAIL: ", consts.PlatformEmail)
+		}
+		if !viper.IsSet("platformpass") {
+			log.Println("platform email password not set")
+		} else {
+			consts.PlatformEmailPass = viper.Get("password").(string) // interface to string
+		}
+		if !viper.IsSet("kycapikey") {
+			log.Println("kyc api key not set, kyc will be disabled")
+		} else {
+			consts.KYCAPIKey = viper.GetString("kycapikey")
+		}
+
+	} else {
+		log.Println("initializing openx mainnet")
+		err := InitMainnet()
+		if err != nil {
+			return errors.Wrap(err, "failed to seed default values for mainnet")
+		}
+
+		if !viper.IsSet("platformemail") {
+			return errors.New("required param platformemail not found")
+		}
+		if !viper.IsSet("platformpass") {
+			return errors.New("required param platformpass not found")
+		}
+		if !viper.IsSet("kycapikey") {
+			return errors.New("required param kycapikey not found")
+		}
+
+		consts.PlatformEmail = viper.GetString("platformemail")
+		consts.PlatformEmailPass = viper.GetString("password")
+		consts.KYCAPIKey = viper.GetString("kycapikey")
 	}
 
 	return nil

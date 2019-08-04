@@ -4,7 +4,9 @@ import (
 	"github.com/pkg/errors"
 	"log"
 
+	// edb "github.com/Varunram/essentials/database"
 	utils "github.com/Varunram/essentials/utils"
+	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
 	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
 	opzones "github.com/YaleOpenLab/openx/platforms/ozones"
@@ -111,8 +113,12 @@ func InsertDummyData(simulate bool) error {
 	// simulate only if the bool is set to true. Simulates investment for three projects based on the presentation
 	// at the Spring Members' Week Demo 2019
 	if simulate {
-		log.Println("creating sandbox")
-		return sandbox.CreateSandbox()
+		if !consts.Mainnet {
+			log.Println("creating sandbox")
+			return sandbox.CreateSandbox()
+		} else {
+			return errors.New("you're on mainnet, not on a sandbox")
+		}
 	}
 	allRecs, err := database.RetrieveAllRecipients()
 	if err != nil {
@@ -242,7 +248,7 @@ func InsertDummyData(simulate bool) error {
 		return err
 	}
 
-	_, err = originator.Originate("100 16x24 panels on a solar rooftop", 14000, "Puerto Rico", 5, "ABC School in XYZ peninsula", 1, "blind") // 1 is the idnex for martin
+	_, err = originator.Originate("100 16x24 panels on a solar rooftop", 14000, "Puerto Rico", 5, "ABC School in XYZ peninsula", 1, "blind") // 1 is the index for martin
 	if err != nil {
 		return err
 	}
