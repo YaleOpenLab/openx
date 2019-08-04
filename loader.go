@@ -27,8 +27,8 @@ func MainnetLoader() error {
 		return err
 	}
 
-	allUsers, err := database.RetrieveAllUsers()
-	if len(allUsers) == 0 || err != nil {
+	lim, _ := database.RetrieveAllUsersLim()
+	if lim == 0 {
 		// nothing exists, create dbs and buckets
 		log.Println("creating mainnet home dir")
 		database.CreateHomeDir()

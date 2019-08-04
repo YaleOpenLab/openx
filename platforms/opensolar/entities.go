@@ -108,13 +108,7 @@ func RetrieveAllEntitiesWithoutRole() ([]Entity, error) {
 func RetrieveAllEntities(role string) ([]Entity, error) {
 	var entities []Entity
 
-	allUsers, err := database.RetrieveAllUsers()
-	if err != nil {
-		return entities, errors.Wrap(err, "could not retrieve all users from db")
-	}
-
-	lim := len(allUsers)
-	x, err := edb.RetrieveAllKeysLim(consts.DbDir+consts.DbName, database.ContractorBucket, lim)
+	x, err := edb.RetrieveAllKeys(consts.DbDir+consts.DbName, database.ContractorBucket)
 	if err != nil {
 		return entities, errors.Wrap(err, "error while retrieving all keys")
 	}

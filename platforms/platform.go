@@ -59,6 +59,7 @@ func InitializePlatform() error {
 				return errors.New("balance insufficient to run platform")
 			}
 		}
+		return nil
 	}
 	// platform doesn't exist or user doesn't have encrypted file. Ask
 	log.Println("DO YOU HAVE YOUR RAW PLATFORM SEED? IF SO, ENTER SEED. ELSE ENTER N")
@@ -78,11 +79,13 @@ func InitializePlatform() error {
 		if err != nil {
 			return errors.Wrap(err, "couldn't retrieve seed")
 		}
-		if !consts.Mainnet {
-			err = xlm.GetXLM(publicKey)
-			if err != nil {
-				return errors.Wrap(err, "error while getting xlm")
-			}
+		consts.PlatformPublicKey = publicKey
+		consts.PlatformSeed = seed
+
+		// depending on chain, continue exec or quit
+		if consts.Mainnet {
+			// in mainnet, don't init stablecoin
+			return nil
 		}
 	} else {
 		// no file, retrieve pukbey
@@ -102,6 +105,14 @@ func InitializePlatform() error {
 		if err != nil {
 			return err
 		}
+
+		return nil
+	}
+
+	// only testnet exec from here
+	err = xlm.GetXLM(publicKey)
+	if err != nil {
+		return errors.Wrap(err, "error while getting xlm")
 	}
 
 	_, txhash, err := xlm.SetAuthImmutable(seed)
@@ -124,9 +135,6 @@ func InitializePlatform() error {
 	}
 
 	log.Println("Platform trusts stablecoin: ", txhash)
-
-	consts.PlatformPublicKey = publicKey
-	consts.PlatformSeed = seed
 	return err
 }
 

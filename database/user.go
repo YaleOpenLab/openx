@@ -150,16 +150,11 @@ func NewUser(uname string, pwd string, seedpwd string, Name string) (User, error
 	// Store hashed password in the database
 	var a User
 
-	allUsers, err := RetrieveAllUsers()
+	lim, err := RetrieveAllUsersLim()
 	if err != nil {
 		return a, errors.Wrap(err, "Error while retrieving all users from database")
 	}
-	// the ugly indexing thing again, need to think of something better here
-	if len(allUsers) == 0 {
-		a.Index = 1
-	} else {
-		a.Index = len(allUsers) + 1
-	}
+	a.Index = lim + 1
 
 	err = a.GenKeys(seedpwd)
 	if err != nil {
