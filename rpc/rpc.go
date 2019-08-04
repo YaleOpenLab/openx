@@ -46,6 +46,7 @@ func StartServer(portx int, insecure bool) {
 	setupStagesHandlers()
 	setupAnchorHandlers()
 	setupCAHandlers()
+	adminHandlers()
 
 	port, err := utils.ToString(portx)
 	if err != nil {
