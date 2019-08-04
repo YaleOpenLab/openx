@@ -124,14 +124,8 @@ func registerInvestor() {
 func validateInvestor() {
 	http.HandleFunc("/investor/validate", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
-		if r.URL.Query() == nil || r.URL.Query()["username"] == nil || r.URL.Query()["pwhash"] == nil ||
-			len(r.URL.Query()["pwhash"][0]) != 128 { // sha 512 length
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
-			return
-		}
-		prepInvestor, err := database.ValidateInvestor(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
+		prepInvestor, err := InvValidateHelper(w, r)
 		if err != nil {
-			log.Println("did not validate investor", err)
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}

@@ -149,15 +149,8 @@ func validateRecipient() {
 	http.HandleFunc("/recipient/validate", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
-		if r.URL.Query() == nil || r.URL.Query()["username"] == nil ||
-			len(r.URL.Query()["pwhash"][0]) != 128 {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
-			return
-		}
-
-		prepRecipient, err := database.ValidateRecipient(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
+		prepRecipient, err := RecpValidateHelper(w, r)
 		if err != nil {
-			log.Println("did not validate recipient", err)
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
