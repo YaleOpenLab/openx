@@ -1,9 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"github.com/pkg/errors"
 	"log"
-	"fmt"
 
 	algorand "github.com/Varunram/essentials/crypto/algorand"
 	stablecoin "github.com/Varunram/essentials/crypto/stablecoin"
@@ -19,7 +19,7 @@ func MainnetLoader() error {
 	log.Println("initializing openx mainnet..")
 
 	var err error
-	consts.DbDir = consts.HomeDir + "/database/mainnet/" // set mainnet db to open in spearate folder
+	consts.DbDir = consts.HomeDir + "/database/mainnet/"                  // set mainnet db to open in spearate folder
 	consts.PlatformSeedFile = consts.HomeDir + "/mainnetplatformseed.hex" // where the platform's seed is stored
 
 	err = opensolar.InitializePlatform()

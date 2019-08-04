@@ -98,42 +98,46 @@ func registerRecipient() {
 
 		name := r.URL.Query()["name"][0]
 		username := r.URL.Query()["username"][0]
-		pwd := r.URL.Query()["pwd"][0]
+		pwhash := r.URL.Query()["pwhash"][0]
 		seedpwd := r.URL.Query()["seedpwd"][0]
 
-		// check for username collision here. IF the usernamer already exists, fetch details from that and register as investor
-		duplicateUser, err := database.CheckUsernameCollision(username)
+		// check for username collision here. If the username already exists, fetch details from that and register as investor
+		_, err := database.CheckUsernameCollision(username)
 		if err != nil {
-			// username collision, check other fields by fetching user details for the collided user
-			if duplicateUser.Name == name && duplicateUser.Pwhash == utils.SHA3hash(pwd) {
-				// this is the same user who wants to register as an investor now, check if encrypted seed decrypts
-				seed, err := wallet.DecryptSeed(duplicateUser.StellarWallet.EncryptedSeed, seedpwd)
-				if err != nil {
-					erpc.ResponseHandler(w, erpc.StatusInternalServerError)
-					return
-				}
-				pubkey, err := wallet.ReturnPubkey(seed)
-				if err != nil {
-					erpc.ResponseHandler(w, erpc.StatusInternalServerError)
-					return
-				}
-				if pubkey != duplicateUser.StellarWallet.PublicKey {
-					erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-					return
-				}
-				var a database.Recipient
-				a.U = &duplicateUser
-				err = a.Save()
-				if err != nil {
-					erpc.ResponseHandler(w, erpc.StatusInternalServerError)
-					return
-				}
-				erpc.MarshalSend(w, a)
+			// user already exists on the platform, need to retrieve the user
+			user, err := CheckReqdParams(w, r) // check whether this person is a user and has params
+			if err != nil {
+				erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 				return
 			}
+			// username collision, check other fields by fetching user details for the collided user
+			// this is the same user who wants to register as an investor now, check if encrypted seed decrypts
+			seed, err := wallet.DecryptSeed(user.StellarWallet.EncryptedSeed, seedpwd)
+			if err != nil {
+				erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+				return
+			}
+			pubkey, err := wallet.ReturnPubkey(seed)
+			if err != nil {
+				erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+				return
+			}
+			if pubkey != user.StellarWallet.PublicKey {
+				erpc.ResponseHandler(w, erpc.StatusUnauthorized)
+				return
+			}
+			var a database.Recipient
+			a.U = &user
+			err = a.Save()
+			if err != nil {
+				erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+				return
+			}
+			erpc.MarshalSend(w, a)
+			return
 		}
 
-		user, err := database.NewRecipient(username, pwd, seedpwd, name)
+		user, err := database.NewRecipient(username, pwhash, seedpwd, name)
 		if err != nil {
 			log.Println(err)
 			erpc.ResponseHandler(w, erpc.StatusInternalServerError)

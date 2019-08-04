@@ -66,7 +66,8 @@ func registerInvestor() {
 		erpc.CheckOrigin(w, r)
 
 		// to register, we need the name, username and pwhash
-		if r.URL.Query()["name"] == nil || r.URL.Query()["username"] == nil || r.URL.Query()["pwd"] == nil || r.URL.Query()["seedpwd"] == nil {
+		if r.URL.Query()["name"] == nil || r.URL.Query()["username"] == nil ||
+			r.URL.Query()["pwhash"] == nil || r.URL.Query()["seedpwd"] == nil {
 			log.Println("missing basic set of params that can be used ot validate a user")
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
@@ -74,41 +75,46 @@ func registerInvestor() {
 
 		name := r.URL.Query()["name"][0]
 		username := r.URL.Query()["username"][0]
-		pwd := r.URL.Query()["pwd"][0]
+		pwhash := r.URL.Query()["pwhash"][0]
 		seedpwd := r.URL.Query()["seedpwd"][0]
 
-		// check for username collision here. IF the usernamer already exists, fetch details from that and register as investor
-		duplicateUser, err := database.CheckUsernameCollision(username)
+		// check for username collision here. If the username already exists, fetch details from that and register as investor
+		_, err := database.CheckUsernameCollision(username)
 		if err != nil {
-			// username collision, check other fields by fetching user details for the collided user
-			if duplicateUser.Name == name && duplicateUser.Pwhash == utils.SHA3hash(pwd) {
-				// this is the same user who wants to register as an investor now, check if encrypted seed decrypts
-				seed, err := wallet.DecryptSeed(duplicateUser.StellarWallet.EncryptedSeed, seedpwd)
-				if err != nil {
-					erpc.ResponseHandler(w, erpc.StatusInternalServerError)
-					return
-				}
-				pubkey, err := wallet.ReturnPubkey(seed)
-				if err != nil {
-					erpc.ResponseHandler(w, erpc.StatusInternalServerError)
-					return
-				}
-				if pubkey != duplicateUser.StellarWallet.PublicKey {
-					erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-					return
-				}
-				var a database.Investor
-				a.U = &duplicateUser
-				err = a.Save()
-				if err != nil {
-					erpc.ResponseHandler(w, erpc.StatusInternalServerError)
-					return
-				}
-				erpc.MarshalSend(w, a)
+			// user already exists on the platform, need to retrieve the user
+			user, err := CheckReqdParams(w, r) // check whether this person is a user and has params
+			if err != nil {
+				erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 				return
 			}
+			// username collision, check other fields by fetching user details for the collided user
+			// this is the same user who wants to register as an investor now, check if encrypted seed decrypts
+			seed, err := wallet.DecryptSeed(user.StellarWallet.EncryptedSeed, seedpwd)
+			if err != nil {
+				erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+				return
+			}
+			pubkey, err := wallet.ReturnPubkey(seed)
+			if err != nil {
+				erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+				return
+			}
+			if pubkey != user.StellarWallet.PublicKey {
+				erpc.ResponseHandler(w, erpc.StatusUnauthorized)
+				return
+			}
+			var a database.Investor
+			a.U = &user
+			err = a.Save()
+			if err != nil {
+				erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+				return
+			}
+			erpc.MarshalSend(w, a)
+			return
 		}
-		user, err := database.NewInvestor(username, pwd, seedpwd, name)
+
+		user, err := database.NewInvestor(username, pwhash, seedpwd, name)
 		if err != nil {
 			log.Println(err)
 			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
@@ -158,7 +164,6 @@ func invest() {
 		// 3. investment amount
 		// 4. Login username (for the investor)
 		// 5. Login pwhash (for the investor)
-
 		investor, err := InvValidateHelper(w, r, "seedpwd", "projIndex", "amount")
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
@@ -192,17 +197,12 @@ func invest() {
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
-		// splitting the conditions into two since in the future we will be returning
-		// error codes towards each type
+
 		if !xlm.AccountExists(investorPubkey) {
 			erpc.ResponseHandler(w, erpc.StatusNotFound)
 			return
 		}
 
-		// note that while using this route, we can't send the investor assets (maybe)
-		// make it so in the UI that only they can accept an investment so we can get their
-		// seed and send them assets. By not accepting, they would forfeit their investment,
-		// so incentive would be there to unlock the seed.
 		err = opensolar.Invest(projIndex, investor.U.Index, amount, investorSeed)
 		if err != nil {
 			log.Println("did not invest in order", err)
@@ -245,7 +245,7 @@ func voteTowardsProject() {
 	})
 }
 
-// addLocalAssetInv adds a local asset that can be traded in a p2p fashion wihtout direct invlvement
+// addLocalAssetInv adds a local asset that can be traded in a p2p fashion wihtout direct involvement
 // from the platform. The platform can have a UI that will deal with this or this can be
 // made an emualtor only function so that only experienced users use this.
 func addLocalAssetInv() {
@@ -339,8 +339,6 @@ func sendEmail() {
 	})
 }
 
-// curl request attached for convenience
-// curl -X POST -H "Content-Type: application/x-www-form-urlencoded" -H "Origin: localhost" -H "Cache-Control: no-cache" -d 'InvestmentAmount=1000&BondIndex=1&InvIndex=2&seedpwd=x&recpSeedPwd=x' "http://localhost:8080/bond/invest"
 // investInConstructionBond invests a specific amount in a bond of the user's choice
 func investInConstructionBond() {
 	http.HandleFunc("/constructionbond/invest", func(w http.ResponseWriter, r *http.Request) {
