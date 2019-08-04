@@ -38,6 +38,37 @@ func setupRecipientRPCs() {
 	storeStateHash()
 }
 
+// RecpValidateHelper is a helper that helps validates recipients in routes
+func RecpValidateHelper(w http.ResponseWriter, r *http.Request, options ...string) (database.Recipient, error) {
+	// first validate the recipient or anyone would be able to set device ids
+	var prepRecipient database.Recipient
+	var err error
+	// need to pass the pwhash param here
+	if r.URL.Query() == nil {
+		return prepRecipient, errors.New("url query can't be empty")
+	}
+
+	options = append(options, "username", "pwhash")
+
+	for _, option := range options {
+		if r.URL.Query()[option] == nil {
+			return prepRecipient, errors.New("required param: " + option + "not specified, quitting")
+		}
+	}
+
+	if len(r.URL.Query()["pwhash"][0]) != 128 {
+		return prepRecipient, errors.New("pwhash length not 128, quitting")
+	}
+
+	prepRecipient, err = database.ValidateRecipient(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
+	if err != nil {
+		log.Println("did not validate recipient", err)
+		return prepRecipient, err
+	}
+
+	return prepRecipient, nil
+}
+
 // getAllRecipients gets a list of all the recipients who have registered on the platform
 func getAllRecipients() {
 	http.HandleFunc("/recipient/all", func(w http.ResponseWriter, r *http.Request) {
@@ -142,14 +173,9 @@ func payback() {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
 		// this is a get request to make things easier for the teller
-		prepRecipient, err := RecpValidateHelper(w, r)
+		prepRecipient, err := RecpValidateHelper(w, r, "assetName", "amount", "seedpwd", "projIndex")
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-			return
-		}
-		if r.URL.Query()["assetName"] == nil || r.URL.Query()["amount"] == nil ||
-			r.URL.Query()["seedpwd"] == nil || r.URL.Query()["projIndex"] == nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -185,45 +211,19 @@ func payback() {
 	})
 }
 
-// RecpValidateHelper is a helper that helps validates recipients in routes
-func RecpValidateHelper(w http.ResponseWriter, r *http.Request) (database.Recipient, error) {
-	// first validate the recipient or anyone would be able to set device ids
-	erpc.CheckGet(w, r)
-	erpc.CheckOrigin(w, r)
-	var prepRecipient database.Recipient
-	// need to pass the pwhash param here
-	if r.URL.Query() == nil || r.URL.Query()["username"] == nil ||
-		len(r.URL.Query()["pwhash"][0]) != 128 {
-		return prepRecipient, errors.New("invalid params passed")
-	}
-
-	prepRecipient, err := database.ValidateRecipient(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
-	if err != nil {
-		log.Println("did not validate recipient", err)
-		return prepRecipient, err
-	}
-
-	return prepRecipient, nil
-}
-
 // storeDeviceId st ores the recipient's device id from the teller. Called by the teller
 func storeDeviceId() {
 	http.HandleFunc("/recipient/deviceId", func(w http.ResponseWriter, r *http.Request) {
 		// first validate the recipient or anyone would be able to set device ids
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
-		prepRecipient, err := RecpValidateHelper(w, r)
+		prepRecipient, err := RecpValidateHelper(w, r, "deviceId")
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
-		if r.URL.Query()["deviceid"] == nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
-			return
-		}
-
 		// we have the recipient ready. Now set the device id
-		prepRecipient.DeviceId = r.URL.Query()["deviceid"][0]
+		prepRecipient.DeviceId = r.URL.Query()["deviceId"][0]
 		err = prepRecipient.Save()
 		if err != nil {
 			log.Println("did not save recipient", err)
@@ -241,13 +241,9 @@ func storeStartTime() {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
 		// first validate the recipient or anyone would be able to set device ids
-		prepRecipient, err := RecpValidateHelper(w, r)
+		prepRecipient, err := RecpValidateHelper(w, r, "start")
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-			return
-		}
-		if r.URL.Query()["start"] == nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -268,13 +264,9 @@ func storeDeviceLocation() {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
 		// first validate the recipient or anyone would be able to set device ids
-		prepRecipient, err := RecpValidateHelper(w, r)
+		prepRecipient, err := RecpValidateHelper(w, r, "location")
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-			return
-		}
-		if r.URL.Query()["location"] == nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -412,13 +404,9 @@ func unlockOpenSolar() {
 	http.HandleFunc("/recipient/unlock/opensolar", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
-		recipient, err := RecpValidateHelper(w, r)
+		recipient, err := RecpValidateHelper(w, r, "seedpwd", "projIndex")
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-			return
-		}
-		if r.URL.Query()["seedpwd"] == nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -446,13 +434,9 @@ func addEmail() {
 	http.HandleFunc("/recipient/addemail", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
-		recipient, err := RecpValidateHelper(w, r)
+		recipient, err := RecpValidateHelper(w, r, "email")
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-			return
-		}
-		if r.URL.Query()["email"] == nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -474,13 +458,9 @@ func finalizeProject() {
 	http.HandleFunc("/recipient/finalize", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
-		_, err := RecpValidateHelper(w, r)
+		_, err := RecpValidateHelper(w, r, "projIndex")
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-			return
-		}
-		if r.URL.Query()["projIndex"] == nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -514,13 +494,9 @@ func originateProject() {
 	http.HandleFunc("/recipient/originate", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
-		recipient, err := RecpValidateHelper(w, r)
+		recipient, err := RecpValidateHelper(w, r, "projIndex")
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-			return
-		}
-		if r.URL.Query()["projIndex"] == nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -547,13 +523,9 @@ func calculateTrustLimit() {
 	http.HandleFunc("/recipient/trustlimit", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
-		recipient, err := RecpValidateHelper(w, r)
+		recipient, err := RecpValidateHelper(w, r, "assetName")
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-			return
-		}
-		if r.URL.Query()["assetName"] == nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -575,13 +547,9 @@ func unlockCBond() {
 	http.HandleFunc("/recipient/unlock/opzones/cbond", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
-		recipient, err := RecpValidateHelper(w, r)
+		recipient, err := RecpValidateHelper(w, r, "seedpwd")
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-			return
-		}
-		if r.URL.Query()["seedpwd"] == nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -611,13 +579,9 @@ func storeStateHash() {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
 		// first validate the recipient or anyone would be able to set device ids
-		prepRecipient, err := RecpValidateHelper(w, r)
+		prepRecipient, err := RecpValidateHelper(w, r, "hash")
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-			return
-		}
-		if r.URL.Query()["hash"] == nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 

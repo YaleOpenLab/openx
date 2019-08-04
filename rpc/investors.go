@@ -30,6 +30,36 @@ func setupInvestorRPCs() {
 	investInLivingUnitCoop()
 }
 
+// InvValidateHelper is a helper that is used to validate an ivnestor on the platform
+func InvValidateHelper(w http.ResponseWriter, r *http.Request, options ...string) (database.Investor, error) {
+	var prepInvestor database.Investor
+	var err error
+	// need to pass the pwhash param here
+	if r.URL.Query() == nil {
+		return prepInvestor, errors.New("url query can't be empty")
+	}
+
+	options = append(options, "username", "pwhash")
+
+	for _, option := range options {
+		if r.URL.Query()[option] == nil {
+			return prepInvestor, errors.New("required param: " + option + "not specified, quitting")
+		}
+	}
+
+	if len(r.URL.Query()["pwhash"][0]) != 128 {
+		return prepInvestor, errors.New("pwhash length not 128, quitting")
+	}
+
+	prepInvestor, err = database.ValidateInvestor(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
+	if err != nil {
+		log.Println("did not validate investor", err)
+		return prepInvestor, err
+	}
+
+	return prepInvestor, nil
+}
+
 func registerInvestor() {
 	http.HandleFunc("/investor/register", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
@@ -135,13 +165,8 @@ func invest() {
 		// 4. Login username (for the investor)
 		// 5. Login pwhash (for the investor)
 
-		investor, err := InvValidateHelper(w, r)
+		investor, err := InvValidateHelper(w, r, "seedpwd", "projIndex", "amount")
 		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-			return
-		}
-		if r.URL.Query()["seedpwd"] == nil || r.URL.Query()["projIndex"] == nil ||
-			r.URL.Query()["amount"] == nil { // sha 512 length
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
@@ -194,36 +219,12 @@ func invest() {
 	})
 }
 
-// InvValidateHelper is a helper that is used to validate an ivnestor on the platform
-func InvValidateHelper(w http.ResponseWriter, r *http.Request) (database.Investor, error) {
-	// first validate the investor or anyone would be able to set device ids
-	erpc.CheckGet(w, r)
-	var prepInvestor database.Investor
-	// need to pass the pwhash param here
-	if r.URL.Query() == nil || r.URL.Query()["username"] == nil ||
-		len(r.URL.Query()["pwhash"][0]) != 128 {
-		return prepInvestor, errors.New("invalid params passed")
-	}
-
-	prepInvestor, err := database.ValidateInvestor(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
-	if err != nil {
-		log.Println("did not validate investor", err)
-		return prepInvestor, err
-	}
-
-	return prepInvestor, nil
-}
-
 // voteTowardsProject votes towards a specific propsoed project of the user's choice.
 func voteTowardsProject() {
 	http.HandleFunc("/investor/vote", func(w http.ResponseWriter, r *http.Request) {
-		investor, err := InvValidateHelper(w, r)
+		investor, err := InvValidateHelper(w, r, "votes", "projIndex")
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-			return
-		}
-		if r.URL.Query()["votes"] == nil || r.URL.Query()["projIndex"] == nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -256,13 +257,9 @@ func voteTowardsProject() {
 func addLocalAssetInv() {
 	http.HandleFunc("/investor/localasset", func(w http.ResponseWriter, r *http.Request) {
 
-		prepInvestor, err := InvValidateHelper(w, r)
+		prepInvestor, err := InvValidateHelper(w, r, "assetName")
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-			return
-		}
-		if r.URL.Query()["assetName"] == nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -282,14 +279,9 @@ func addLocalAssetInv() {
 // invAssetInv sends a local asset to a remote peer
 func invAssetInv() {
 	http.HandleFunc("/investor/sendlocalasset", func(w http.ResponseWriter, r *http.Request) {
-		prepInvestor, err := InvValidateHelper(w, r)
+		prepInvestor, err := InvValidateHelper(w, r, "assetName", "seedpwd", "destination", "amount")
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-			return
-		}
-		if r.URL.Query()["assetName"] == nil || r.URL.Query()["seedpwd"] == nil ||
-			r.URL.Query()["destination"] == nil || r.URL.Query()["amount"] == nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -335,13 +327,9 @@ func invAssetInv() {
 // sendEmail sends an email to a specific entity
 func sendEmail() {
 	http.HandleFunc("/investor/sendemail", func(w http.ResponseWriter, r *http.Request) {
-		prepInvestor, err := InvValidateHelper(w, r)
+		prepInvestor, err := InvValidateHelper(w, r, "message", "to")
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-			return
-		}
-		if r.URL.Query()["message"] == nil || r.URL.Query()["to"] == nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -365,13 +353,9 @@ func investInConstructionBond() {
 		erpc.CheckGet(w, r)
 		var err error
 
-		prepInvestor, err := InvValidateHelper(w, r)
+		prepInvestor, err := InvValidateHelper(w, r, "amount", "projIndex", "seedpwd")
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-			return
-		}
-		if r.URL.Query()["amount"] == nil || r.URL.Query()["projIndex"] == nil || r.URL.Query()["seedpwd"] == nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -412,14 +396,9 @@ func investInLivingUnitCoop() {
 		erpc.CheckGet(w, r)
 		var err error
 
-		prepInvestor, err := InvValidateHelper(w, r)
+		prepInvestor, err := InvValidateHelper(w, r, "amount", "projIndex", "seedpwd")
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-			return
-		}
-		if r.URL.Query()["amount"] == nil || r.URL.Query()["projIndex"] == nil || r.URL.Query()["seedpwd"] == nil {
-			log.Println("couldn't validate investor", err)
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
