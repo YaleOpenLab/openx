@@ -163,6 +163,12 @@ func NewUser(uname string, pwd string, seedpwd string, Name string) (User, error
 
 	a.Name = Name
 	a.Username = uname
+
+	_, err = CheckUsernameCollision(uname)
+	if err != nil {
+		return a, errors.Wrap(err, "username collision")
+	}
+
 	a.Pwhash = utils.SHA3hash(pwd) // store tha sha3 hash
 	// now we have a new User, take this and then send this struct off to be stored in the database
 	a.FirstSignedUp = utils.Timestamp()
@@ -514,7 +520,7 @@ func (a *User) GiveFeedback(userIndex int, feedback int) error {
 
 // Generate2FA generates a new 2FA secret for the given user
 func (a *User) Generate2FA() (string, error) {
-	secret := utils.GetRandomString(35) // multiples of 5 to  prevent the = padding at the end
+	secret := utils.GetRandomString(35) // multiples of 5 to prevent the = padding at the end
 	secretBase32 := base32.StdEncoding.EncodeToString([]byte(secret))
 	otpc := &googauth.OTPConfig{
 		Secret:     secretBase32,

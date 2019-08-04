@@ -3,7 +3,7 @@ package rpc
 import (
 	"crypto/tls"
 	"encoding/json"
-	"errors"
+	"github.com/pkg/errors"
 	"io/ioutil"
 	"log"
 	"math"
