@@ -100,17 +100,15 @@ func RetrieveAllUsers() ([]User, error) {
 	return arr, nil
 }
 
+func RetrieveAllUsersLim() (int, error) {
+	return edb.RetrieveAllKeysLim(consts.DbDir+consts.DbName, UserBucket)
+}
+
 // RetrieveAllUsers gets a list of all User in the database
 func RetrieveAllInvestors() ([]Investor, error) {
 	var arr []Investor
 
-	allUsers, err := RetrieveAllUsers()
-	if err != nil {
-		return arr, errors.Wrap(err, "could not retrieve all investors from db")
-	}
-
-	lim := len(allUsers)
-	x, err := edb.RetrieveAllKeysLim(consts.DbDir+consts.DbName, InvestorBucket, lim)
+	x, err := edb.RetrieveAllKeys(consts.DbDir+consts.DbName, InvestorBucket)
 	if err != nil {
 		return arr, errors.Wrap(err, "error while retrieving all keys lim")
 	}
@@ -133,13 +131,7 @@ func RetrieveAllInvestors() ([]Investor, error) {
 func RetrieveAllRecipients() ([]Recipient, error) {
 	var arr []Recipient
 
-	allUsers, err := RetrieveAllUsers()
-	if err != nil {
-		return arr, errors.Wrap(err, "could not retrieve all recipients from db")
-	}
-
-	lim := len(allUsers)
-	x, err := edb.RetrieveAllKeysLim(consts.DbDir+consts.DbName, RecipientBucket, lim)
+	x, err := edb.RetrieveAllKeys(consts.DbDir+consts.DbName, RecipientBucket)
 	if err != nil {
 		return arr, errors.Wrap(err, "error while retrieving all keys")
 	}
