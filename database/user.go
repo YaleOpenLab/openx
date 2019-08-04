@@ -154,7 +154,6 @@ func NewUser(uname string, pwd string, seedpwd string, Name string) (User, error
 	if err != nil {
 		return a, errors.Wrap(err, "Error while retrieving all users from database")
 	}
-
 	// the ugly indexing thing again, need to think of something better here
 	if len(allUsers) == 0 {
 		a.Index = 1

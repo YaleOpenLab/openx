@@ -39,7 +39,26 @@ func InitializePlatform() error {
 			return errors.Wrap(err, "couldn't scan raw password")
 		}
 		consts.PlatformPublicKey, consts.PlatformSeed, err = wallet.RetrieveSeed(consts.PlatformSeedFile, password)
-		return err
+		if err != nil {
+			return err
+		}
+
+		log.Printf("PLATFORM SEED IS: %s\n PLATFORM PUBLIC KEY IS: %s\n", consts.PlatformSeed, consts.PlatformPublicKey)
+
+		if consts.Mainnet {
+			log.Println("mainnet init, stablecoin disabled")
+			if !xlm.AccountExists(publicKey) {
+				// ie we're on mainnet and the account doesn't have enough funds to start
+				return errors.New("please refill the platform with xlm to be able to start openx. Min balance: 0.5XLM")
+			}
+			balance, err := xlm.GetNativeBalance(publicKey)
+			if err != nil {
+				return errors.Wrap(err, "could not get native balance")
+			}
+			if balance < 1.5 { // 0.5 min + 0.5x2 trustlines
+				return errors.New("balance insufficient to run platform")
+			}
+		}
 	}
 	// platform doesn't exist or user doesn't have encrypted file. Ask
 	log.Println("DO YOU HAVE YOUR RAW PLATFORM SEED? IF SO, ENTER SEED. ELSE ENTER N")
@@ -85,11 +104,6 @@ func InitializePlatform() error {
 		}
 	}
 
-	if !xlm.AccountExists(publicKey) {
-		// ie we're on mainnet and the account doesn't have enough funds to start
-		return errors.New("please refill the platform with xlm to be able to start openx. Min balance: 0.5XLM")
-	}
-
 	_, txhash, err := xlm.SetAuthImmutable(seed)
 	log.Println("TX HASH FOR SETOPTIONS: ", txhash)
 	if err != nil {
@@ -110,6 +124,7 @@ func InitializePlatform() error {
 	}
 
 	log.Println("Platform trusts stablecoin: ", txhash)
+
 	consts.PlatformPublicKey = publicKey
 	consts.PlatformSeed = seed
 	return err
@@ -120,7 +135,7 @@ func InitializePlatform() error {
 func RefillPlatform(publicKey string) error {
 	// check whether the investor has XLM already
 	if consts.Mainnet {
-		return nil // refilling platform has to be done manually in the case of mainnet
+		return errors.New("no provision to refill on mainnet") // refilling platform has to be done manually in the case of mainnet
 	}
 	balance, err := xlm.GetNativeBalance(publicKey)
 	if err != nil {
