@@ -33,6 +33,7 @@ var StablecoinTrustLimit float64
 var AnchorUSDCode string
 var AnchorUSDAddress string
 var AnchorUSDTrustLimit float64
+var AnchorAPI string
 
 // algorand consts
 var AlgodAddress string
@@ -51,6 +52,7 @@ func SetConsts() {
 		AnchorUSDCode = "USD"
 		AnchorUSDAddress = "GCKFBEIYV2U22IO2BJ4KVJOIP7XPWQGQFKKWXR6DOSJBV7STMAQSMTGG"
 		AnchorUSDTrustLimit = 1000000
+		AnchorAPI = "https://sandbox-api.anchorusd.com/"
 
 		stablecoin.SetConsts(StablecoinCode, StablecoinPublicKey, StablecoinSeed, StableCoinSeedFile, StablecoinTrustLimit,
 			AnchorUSDCode, AnchorUSDAddress, AnchorUSDTrustLimit, Mainnet)
@@ -79,9 +81,10 @@ func SetConsts() {
 		StablecoinTrustLimit = 0
 
 		// set anchor mainnet params to exchange
-		AnchorUSDCode = ""    //  TODO: set this as per anchorUSD's input
-		AnchorUSDAddress = "" //  TODO: set this as per anchorUSD's input
-		AnchorUSDTrustLimit = 1000000
+		AnchorUSDCode = "USD"
+		AnchorUSDAddress = "GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX"
+		AnchorUSDTrustLimit = 10000 // conservative limit of USD 10000 set for investments on mainnet. Can be increased or decreased as necessary
+		AnchorAPI = "https://api.anchorusd.com/"
 
 		stablecoin.SetConsts(StablecoinCode, StablecoinPublicKey, StablecoinSeed, StableCoinSeedFile, StablecoinTrustLimit,
 			AnchorUSDCode, AnchorUSDAddress, AnchorUSDTrustLimit, Mainnet)
