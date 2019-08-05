@@ -27,6 +27,7 @@ import (
 	"strings"
 
 	erpc "github.com/Varunram/essentials/rpc"
+	consts "github.com/YaleOpenLab/openx/consts"
 )
 
 func setupAnchorHandlers() {
@@ -95,7 +96,7 @@ func intentDeposit() {
 			return
 		}
 
-		body := "https://sandbox-api.anchorusd.com/transfer/deposit?account=" + prepUser.StellarWallet.PublicKey +
+		body := consts.AnchorAPI + "transfer/deposit?account=" + prepUser.StellarWallet.PublicKey +
 			"&asset_code=USD&email_address=" + prepUser.Email
 		x, err := GetAndReturnIdentifier(w, r, body) // we could return the identifier and save it if we have to. But the user has to click through anyawy and we could call the other endpoint from the frontend, so would need to discuss before we do that here
 		if err != nil {
@@ -125,7 +126,7 @@ func kycDeposit() {
 			return
 		}
 
-		body := "https://sandbox-api.anchorusd.com/api/register"
+		body := consts.AnchorAPI + "api/register"
 		data := url.Values{}
 		data.Set("identifier", prepUser.AnchorKYC.DepositIdentifier)
 		data.Set("name", prepUser.AnchorKYC.Name)
@@ -161,7 +162,7 @@ func intentWithdraw() {
 		}
 
 		// amount can be chosen by the user in the flow on anchor, so no need to handle that here
-		body := "https://sandbox-api.anchorusd.com/transfer/withdraw?type=bank_account&asset_code=USD&account=" + prepUser.StellarWallet.PublicKey +
+		body := consts.AnchorAPI + "transfer/withdraw?type=bank_account&asset_code=USD&account=" + prepUser.StellarWallet.PublicKey +
 			"&email_address=" + prepUser.Email
 
 		x, err := GetAndReturnIdentifier(w, r, body) // we could return the identifier and save it if we have to. But the user has to click through anyawy and we could call the other endpoint from the frontend, so would need to discuss before we do that here
@@ -192,7 +193,7 @@ func kycWithdraw() {
 			return
 		}
 
-		body := "https://sandbox-api.anchorusd.com/api/register"
+		body := consts.AnchorAPI + "api/register"
 		data := url.Values{}
 		if !prepUser.Kyc {
 			// we need to call the register KYC first before heading directly to withdrawals
