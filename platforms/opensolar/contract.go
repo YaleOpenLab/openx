@@ -717,10 +717,18 @@ func CoverFirstLoss(projIndex int, entityIndex int, amount float64) error {
 		return errors.Wrap(err, "could not decrypt seed, quitting!")
 	}
 
+	var txhash string
 	// we have the escrow's pubkey, transfer funds to the escrow
-	_, txhash, err := assets.SendAsset(consts.StablecoinCode, consts.StablecoinPublicKey, project.EscrowPubkey, amount, seed, "first loss guarantee")
-	if err != nil {
-		return errors.Wrap(err, "could not transfer asset to escrow, quitting")
+	if !consts.Mainnet {
+		_, txhash, err = assets.SendAsset(consts.StablecoinCode, consts.StablecoinPublicKey, project.EscrowPubkey, amount, seed, "first loss guarantee")
+		if err != nil {
+			return errors.Wrap(err, "could not transfer asset to escrow, quitting")
+		}
+	} else {
+		_, txhash, err = assets.SendAsset(consts.AnchorUSDCode, consts.AnchorUSDAddress, project.EscrowPubkey, amount, seed, "first loss guarantee")
+		if err != nil {
+			return errors.Wrap(err, "could not transfer asset to escrow, quitting")
+		}
 	}
 
 	log.Println("txhash of guarantor kick in:", txhash)

@@ -20,7 +20,7 @@ func TestDb(t *testing.T) {
 	consts.SetConsts()
 	consts.DbDir = "blah"
 	os.Remove("blahopenx.db")
-	database.CreateHomeDir()         // create home directory if it doesn't exist yet
+	database.CreateHomeDir() // create home directory if it doesn't exist yet
 	testDb, err := database.OpenDB()
 	if err != nil {
 		log.Fatal(err)
