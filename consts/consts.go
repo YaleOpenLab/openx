@@ -43,9 +43,9 @@ var KmdToken string
 
 func SetConsts() {
 	if !Mainnet {
-		StablecoinCode = "STABLEUSD" // this is constant across different pubkeys
-		StablecoinPublicKey = ""     // set this after running this the first time
-		StablecoinSeed = ""
+		StablecoinCode = "STABLEUSD"                                                     // this is constant across different pubkeys
+		StablecoinPublicKey = "GDPCLB35E4JBVCL2OI6GCM7XK6PLTSKD5EDLRRKFHEI5L4FDKGL4CLIS" // set this after running this the first time. replace for tests to run properly
+		StablecoinSeed = "SD3FRV7UUKBBXIT6HQ74YTR3GBHYKY6QK75QTX6E7MJBN5UOBZYVGRJO"      // set this after running this the first time. replace for tests to run properly
 		StableCoinSeedFile = os.Getenv("HOME") + "/.openx/stablecoinseed.hex"
 		StablecoinTrustLimit = 1000000000
 		// testnet anchor params
