@@ -219,11 +219,22 @@ func RetrieveAllUsersWithKyc() ([]User, error) {
 // each time a malicious entity tries to guess the password.
 func ValidateSeedpwd(name string, pwhash string, seedpwd string) (User, error) {
 	user, err := ValidateUser(name, pwhash)
-	if err == nil && utils.SHA3hash(seedpwd) == user.StellarWallet.SeedPwhash {
-		return user, nil
-	} else {
-		return user, errors.New("errored out in seedpwd validation, quitting")
+	if err != nil {
+		return user, errors.Wrap(err, "could not validate user")
 	}
+	seed, err := wallet.DecryptSeed(user.StellarWallet.EncryptedSeed, seedpwd)
+	if err != nil {
+		return user, errors.Wrap(err, "failed to decrypt user's seed")
+	}
+	pubkey, err := wallet.ReturnPubkey(seed)
+	if err != nil {
+		return user, errors.Wrap(err, "could not decrypt seed")
+	}
+	if pubkey != user.StellarWallet.PublicKey {
+		log.Println(pubkey, user.StellarWallet.PublicKey)
+		return user, errors.New("pubkeys don't match, quitting")
+	}
+	return user, nil
 }
 
 // GenKeys generates a keypair for the user

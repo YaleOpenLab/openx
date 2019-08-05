@@ -38,12 +38,14 @@ func validateAdmin(w http.ResponseWriter, r *http.Request) bool {
 // killServer instantly kills the server. Recovery possible only with server access
 func killServer() {
 	http.HandleFunc("/admin/kill", func(w http.ResponseWriter, r *http.Request) {
+		log.Println("kill command received")
 		// need to pass the pwhash param here
 		if !validateAdmin(w, r) {
 			// admin account not accessible
 			if r.URL.Query()["nuke"] != nil {
 				if r.URL.Query()["nuke"][0] == KillCode {
 					log.Println("nuclear code activated, killing server")
+					os.Exit(1)
 				}
 			} else {
 				erpc.ResponseHandler(w, erpc.StatusUnauthorized)

@@ -120,8 +120,7 @@ func CheckReqdParams(w http.ResponseWriter, r *http.Request, options ...string) 
 
 	if r.URL.Query()["seedpwd"] != nil {
 		// check seed pwhash before decryption
-		seedpwhash := utils.SHA3hash(r.URL.Query()["seedpwd"][0])
-		prepUser, err = database.ValidateSeedpwd(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0], seedpwhash)
+		prepUser, err = database.ValidateSeedpwd(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0], r.URL.Query()["seedpwd"][0])
 	} else {
 		// no seedpwhash, normal call
 		prepUser, err = database.ValidateUser(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])

@@ -668,6 +668,7 @@ func TestDb(t *testing.T) {
 		t.Fatalf("stage promotion works without satisfying checklist, quitting!")
 	}
 
+	// copy these from the main consts file
 	consts.PlatformSeed = "SCPTLLG2U2HG6VYK3EFEVRPG6DD6YCOMMCC7ZNNBLAVZAPMR3FU7Q5QX"
 	consts.PlatformPublicKey = "GBVAF2FTXGO476YX4XLHIJ2R6Z7RSKCTAMDNXA2KFRLBRUS3CF77YZ33"
 	consts.StablecoinPublicKey = "GDPCLB35E4JBVCL2OI6GCM7XK6PLTSKD5EDLRRKFHEI5L4FDKGL4CLIS"
