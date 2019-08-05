@@ -373,6 +373,7 @@ func (a *User) IncreaseTrustLimit(seedpwd string, trust float64) error {
 
 	_, err = assets.TrustAsset(consts.StablecoinCode, consts.StablecoinPublicKey, trust+consts.StablecoinTrustLimit, seed)
 	if err != nil {
+		log.Println("PARAMS: ", consts.StablecoinCode, consts.StablecoinPublicKey, trust+consts.StablecoinTrustLimit, seed)
 		return errors.Wrap(err, "couldn't trust asset, quitting!")
 	}
 

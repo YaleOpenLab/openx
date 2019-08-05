@@ -20,8 +20,9 @@ import (
 func TestDb(t *testing.T) {
 	var err error
 	consts.SetConsts()
-	CreateHomeDir()         // create home directory if it doesn't exist yet
+	os.Remove("blahopenx.db")
 	consts.DbDir = "blah"   // set to a false db so that we can test errors arising from OpenDB()
+	CreateHomeDir()         // create home directory if it doesn't exist yet
 	os.Remove(consts.DbDir) // remove the test database file, if it exists
 	db, err := OpenDB()
 	if err != nil {

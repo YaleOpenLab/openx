@@ -19,7 +19,8 @@ func TestDb(t *testing.T) {
 	var err error
 	consts.SetConsts()
 	consts.DbDir = "blah"
-	os.Remove(consts.DbDir)
+	os.Remove("blahopenx.db")
+	database.CreateHomeDir()         // create home directory if it doesn't exist yet
 	testDb, err := database.OpenDB()
 	if err != nil {
 		log.Fatal(err)
@@ -126,14 +127,6 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	recp, err = database.NewRecipient("user1", "b921f75437050f0f7d2caba6303d165309614d524e3d7e6bccf313f39d113468d30e1e2ac01f91f6c9b66c083d393f49b3177345311849edb026bb86ee624be0", "blah", "cool")
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = recp.Save()
-	if err != nil {
-		t.Fatal(err)
-	}
 	// tests for originators
 	// TODO: change this to originator
 	contractor, err = newEntity("OrigTest", "pwd", "blah", "NameOrigTest", "123 ABC Street", "OrigDescription", "originator")
@@ -214,7 +207,7 @@ func TestDb(t *testing.T) {
 		t.Fatalf("Retrieving a missing contract succeeds, quitting!")
 	}
 
-	trC1, err := RetrieveEntity(7)
+	trC1, err := RetrieveEntity(6)
 	if err != nil || trC1.U.Index == 0 {
 		t.Fatal("Project Entity lookup failed")
 	}
@@ -447,7 +440,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	contractor2, err := NewContractor("ConTest", "pwd", "blah", "NameConTest", "123 ABC Street", "ConDescription") // use and test this as well
+	contractor2, err := NewContractor("ConTest2", "pwd", "blah", "NameConTest2", "123 ABC Street", "ConDescription") // use and test this as well
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -534,7 +527,7 @@ func TestDb(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Can vote greater than the voting balance!")
 	}
-	inv3, err := database.NewInvestor("inv1", "blah", "blah", "cool")
+	inv3, err := database.NewInvestor("inv3", "blah", "blah", "cool")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -547,11 +540,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = newEntity("OrigTest", "pwd", "blah", "NameOrigTest", "123 ABC Street", "OrigDescription", "developer")
-	if err != nil {
-		t.Fatal(err)
-	}
-	guarantor, err := newEntity("OrigTest", "pwd", "blah", "NameOrigTest", "123 ABC Street", "OrigDescription", "guarantor")
+	guarantor, err := newEntity("OrigTest3", "pwd", "blah", "NameOrigTest3", "123 ABC Street", "OrigDescription", "guarantor")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -608,14 +597,6 @@ func TestDb(t *testing.T) {
 	var recpx database.Recipient
 	recpx.ReceivedSolarProjects = append(recpx.ReceivedSolarProjects, project.DebtAssetCode)
 
-	_, err = NewDeveloper("", "", "", "", "", "")
-	if err != nil {
-		t.Fatalf("Couldn't create new developer")
-	}
-	_, err = NewGuarantor("", "", "", "", "", "")
-	if err != nil {
-		t.Fatalf("Couldn't create new guarantor")
-	}
 	_, err = RetrieveLockedProjects()
 	if err != nil {
 		t.Fatal(err)
@@ -665,7 +646,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = preInvestmentCheck(project.Index, inv.U.Index, 1)
+	_, err = preInvestmentCheck(project.Index, inv.U.Index, 1, "")
 	if err == nil {
 		// it should error out at the canInvest call
 		t.Fatalf("PreInvestmentCheck succeeds, quitting!")
@@ -687,9 +668,10 @@ func TestDb(t *testing.T) {
 		t.Fatalf("stage promotion works without satisfying checklist, quitting!")
 	}
 
-	consts.PlatformSeed = "SA6Q7TOCQTJZGPR2BSQ4AK6QWRJA4LA2FBUW35CK6GIPW3Q3OOG3HL23"
-	consts.PlatformPublicKey = "GCBWNXTD65I7I3NFE5P2HQDYOQHFARABOQLVMRADX2OTMTIJWB4I3OLX"
-	consts.StablecoinPublicKey = "SC3FVSRP6ZMDILVI2OSGF2WYVFZPWITN4HMJBGP223XBJU62PU7YIK3S"
+	consts.PlatformSeed = "SCPTLLG2U2HG6VYK3EFEVRPG6DD6YCOMMCC7ZNNBLAVZAPMR3FU7Q5QX"
+	consts.PlatformPublicKey = "GBVAF2FTXGO476YX4XLHIJ2R6Z7RSKCTAMDNXA2KFRLBRUS3CF77YZ33"
+	consts.StablecoinPublicKey = "GDPCLB35E4JBVCL2OI6GCM7XK6PLTSKD5EDLRRKFHEI5L4FDKGL4CLIS"
+	consts.StablecoinSeed = "SD3FRV7UUKBBXIT6HQ74YTR3GBHYKY6QK75QTX6E7MJBN5UOBZYVGRJO"
 	seed1, pubkey1, err := xlm.GetKeyPair()
 	if err != nil {
 		t.Fatal(err)
