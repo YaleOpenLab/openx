@@ -10,9 +10,20 @@ This repo contains a WIP implementation of the OpenX idea in stellar. Broadly, t
 
 2. Opensolar - the opensolar platform aims to use schools as community centres during natural disasters like hurricanes and also aims to make schools electricity sufficient by installing solar panels on rooftop spaces. The schools themselves need not pay upfront for the solar panel cost, but instead just need to pay their electricity bill over time and through the course of payment, get ownership of the solar panels.
 
+
+## Openx Repositories
+
+Openx, like Go is built on the idea of modularity and reusability of packages.
+
+1. This repo contains the bare bone architeecture necessary for the platform  
+2. [essentials](https://github.com/Varunram/essentials) contains the code necessary for commonly used packages, crypto and database handlers  
+3. [openx-cli](https://github.com/Varunram/openx-cli) contains CLI clients that can interface with openx  
+
+While making an issue related to openx however, please open in this repo for easy tracking and referencing in multiple places.
+
 ## Documentation
 
-Comprehensive documentation on each platform is available inside each repo.
+Comprehensive documentation on each platform is available inside each subrepo.
 
 1. [Opensolar](platforms/opensolar/README.md)
 2. [Opzones](platforms/ozones/README.md)
