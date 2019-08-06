@@ -8,6 +8,8 @@ import (
 	algorand "github.com/Varunram/essentials/crypto/algorand"
 	stablecoin "github.com/Varunram/essentials/crypto/stablecoin"
 	// utils "github.com/Varunram/essentials/utils"
+	xlm "github.com/Varunram/essentials/crypto/xlm"
+	assets "github.com/Varunram/essentials/crypto/xlm/assets"
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
 	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
@@ -139,6 +141,22 @@ func MainnetLoader() error {
 	consts.KYCAPIKey = viper.GetString("kycapikey")
 
 	fmt.Printf("PLATFORM SEED IS: %s\n PLATFORM PUBLIC KEY IS: %s\n", consts.PlatformSeed, consts.PlatformPublicKey)
+	return nil
+}
+
+func StablecoinTrust() error {
+	_, txhash, err := xlm.SetAuthImmutable(consts.PlatformSeed)
+	log.Println("TX HASH FOR SETOPTIONS: ", txhash)
+	if err != nil {
+		log.Println("ERROR WHILE SETTING OPTIONS")
+		return err
+	}
+	// make the platform trust the stablecoin for receiving payments
+	txhash, err = assets.TrustAsset(consts.AnchorUSDCode, consts.AnchorUSDAddress, 10000000000, consts.PlatformSeed)
+	if err != nil {
+		log.Println("error while trusting stablecoin", consts.AnchorUSDCode, consts.AnchorUSDAddress, consts.PlatformSeed)
+		return err
+	}
 	return nil
 }
 

@@ -1,7 +1,7 @@
 package main
 
 import (
-	// "fmt"
+	"fmt"
 	// "github.com/pkg/errors"
 	"log"
 	"os"
@@ -29,10 +29,12 @@ import (
 // refer https://github.com/stellar/go/blob/master/build/main_test.go in case the stellar
 // go SDK docs are insufficient.
 var opts struct {
-	Insecure bool `short:"i" description:"Start the API using http. Not recommended"`
-	Port     int  `short:"p" description:"The port on which the server runs on. Default: HTTPS/8080"`
-	Simulate bool `short:"t" description:"Simulate the test database with demo values (last updated: April 2019)"`
-	Mainnet  bool `short:"m" description:"Switch mainnet mode on"`
+	Insecure  bool `short:"i" description:"Start the API using http. Not recommended"`
+	Port      int  `short:"p" description:"The port on which the server runs on. Default: HTTPS/8080"`
+	Simulate  bool `short:"t" description:"Simulate the test database with demo values (last updated: April 2019)"`
+	Mainnet   bool `short:"m" description:"Switch mainnet mode on"`
+	Trustline bool `short:"x" description:"create trustlines from platform seed to anchorUSD"`
+	Rescue    bool `short:"r" description:"start rescue mode"`
 }
 
 // ParseConfig parses CLI parameters passed
@@ -70,6 +72,14 @@ func main() {
 		}
 	}
 
+	if opts.Trustline {
+		StablecoinTrust()
+	}
+
+	if opts.Rescue {
+		RescueMode()
+		os.Exit(1)
+	}
 	/*
 		user, err := database.RetrieveUser(1)
 		if err != nil {
@@ -84,5 +94,13 @@ func main() {
 	// rpc.KillCode = "NUKE" // compile time nuclear code
 	// run this only when you need to monitor the tellers. Not required for local testing.
 	// go opensolar.MonitorTeller(1)
+	fmt.Println(`
+		███████╗████████╗ █████╗ ██████╗ ████████╗██╗███╗   ██╗ ██████╗      ██████╗ ██████╗ ███████╗███╗   ██╗██╗  ██╗
+		██╔════╝╚══██╔══╝██╔══██╗██╔══██╗╚══██╔══╝██║████╗  ██║██╔════╝     ██╔═══██╗██╔══██╗██╔════╝████╗  ██║╚██╗██╔╝
+		███████╗   ██║   ███████║██████╔╝   ██║   ██║██╔██╗ ██║██║  ███╗    ██║   ██║██████╔╝█████╗  ██╔██╗ ██║ ╚███╔╝
+		╚════██║   ██║   ██╔══██║██╔══██╗   ██║   ██║██║╚██╗██║██║   ██║    ██║   ██║██╔═══╝ ██╔══╝  ██║╚██╗██║ ██╔██╗
+		███████║   ██║   ██║  ██║██║  ██║   ██║   ██║██║ ╚████║╚██████╔╝    ╚██████╔╝██║     ███████╗██║ ╚████║██╔╝ ██╗
+		╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝╚═╝  ╚═══╝ ╚═════╝      ╚═════╝ ╚═╝     ╚══════╝╚═╝  ╚═══╝╚═╝  ╚═╝
+		`)
 	rpc.StartServer(port, insecure)
 }

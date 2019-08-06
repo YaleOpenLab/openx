@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"crypto/tls"
+	"encoding/hex"
 	"encoding/json"
 	"github.com/pkg/errors"
 	"io/ioutil"
@@ -56,6 +57,7 @@ func setupUserRpcs() {
 	auth2fa()
 	changeReputation()
 	addAnchorKYCInfo()
+	importSeed()
 }
 
 const (
@@ -1450,4 +1452,34 @@ func ValidateSeedPwd(w http.ResponseWriter, r *http.Request, encryptedSeed []byt
 	}
 
 	return seedpwd, nil
+}
+
+// importSeed adds a user provided encrypted hex string to the openx platform. one can create their own keys and then import them onto openx
+func importSeed() {
+	http.HandleFunc("/user/addseed", func(w http.ResponseWriter, r *http.Request) {
+		erpc.CheckGet(w, r)
+		erpc.CheckOrigin(w, r)
+		prepUser, err := CheckReqdParams(w, r, "encryptedseed", "seedpwd", "pubkey")
+		if err != nil {
+			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
+			return
+		}
+
+		encryptedSeedHex := r.URL.Query()["encryptedSeed"][0] // this will be a hex encoded string of the byte array
+		encryptedSeed, err := hex.DecodeString(encryptedSeedHex)
+		if err != nil {
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+
+		pubkey := r.URL.Query()["pubkey"][0]
+		seedpwd := r.URL.Query()["seedpwd"][0]
+		err = prepUser.ImportSeed(encryptedSeed, pubkey, seedpwd)
+		if err != nil {
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+
+		erpc.ResponseHandler(w, erpc.StatusOK)
+	})
 }

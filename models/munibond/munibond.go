@@ -227,11 +227,20 @@ func MunibondPayback(issuerPath string, recpIndex int, amount float64, recipient
 		return -1, err
 	}
 
-	_, stableUSDHash, err := assets.SendAsset(consts.StablecoinCode, consts.StablecoinPublicKey, escrowPubkey, amount, recipientSeed, "Opensolar payback: "+projIndexString)
-	if err != nil {
-		return -1, errors.Wrap(err, "Error while sending STABLEUSD back")
+	var stablecoinHash string
+	if !consts.Mainnet {
+		_, stablecoinHash, err = assets.SendAsset(consts.StablecoinCode, consts.StablecoinPublicKey, escrowPubkey, amount, recipientSeed, "Opensolar payback: "+projIndexString)
+		if err != nil {
+			return -1, errors.Wrap(err, "Error while sending STABLEUSD back")
+		}
+	} else {
+		_, stablecoinHash, err = assets.SendAsset(consts.AnchorUSDCode, consts.AnchorUSDAddress, escrowPubkey, amount, recipientSeed, "Opensolar payback: "+projIndexString)
+		if err != nil {
+			return -1, errors.Wrap(err, "Error while sending STABLEUSD back")
+		}
 	}
-	log.Println("Paid", amount, " back to platform in stableUSD, txhash", stableUSDHash)
+
+	log.Println("Paid", amount, " back to platform in stableUSD, txhash", stablecoinHash)
 
 	_, debtPaybackHash, err := assets.SendAssetToIssuer(assetName, issuerPubkey, amount, recipientSeed)
 	if err != nil {
@@ -242,7 +251,7 @@ func MunibondPayback(issuerPath string, recpIndex int, amount float64, recipient
 	ownershipAmt := amount - monthlyBill
 	ownershipPct := ownershipAmt / totalValue
 	if recipient.U.Notification {
-		notif.SendPaybackNotifToRecipient(projIndex, recipient.U.Email, stableUSDHash, debtPaybackHash)
+		notif.SendPaybackNotifToRecipient(projIndex, recipient.U.Email, stablecoinHash, debtPaybackHash)
 	}
 
 	for _, i := range projectInvestors {
@@ -252,7 +261,7 @@ func MunibondPayback(issuerPath string, recpIndex int, amount float64, recipient
 			continue
 		}
 		if investor.U.Notification {
-			notif.SendPaybackNotifToInvestor(projIndex, investor.U.Email, stableUSDHash, debtPaybackHash)
+			notif.SendPaybackNotifToInvestor(projIndex, investor.U.Email, stablecoinHash, debtPaybackHash)
 		}
 	}
 

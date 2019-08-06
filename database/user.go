@@ -75,7 +75,7 @@ type User struct {
 	// seed from 2 out of 3 parts. Based on Shamir's Secret Sharing Scheme.
 	PwdResetCode string
 
-	SecondaryWallet Wallet
+	SecondaryWallet StellWallet
 	// SecondaryWallet defines a higher level wallet which can be imagined to be similar to a savings account
 
 	EthereumWallet ethereum.EthereumWallet
@@ -135,13 +135,6 @@ type StellWallet struct {
 	PublicKey     string
 	EncryptedSeed []byte
 	SeedPwhash    string
-}
-
-// Wallet contains the stuff that we need for a wallet.
-type Wallet struct {
-	EncryptedSeed []byte // the seedpwd for this would be the same as the one for the primary wallet
-	// since we don't want the user to remember like 10 passwords
-	PublicKey string
 }
 
 // NewUser creates a new user
@@ -381,11 +374,18 @@ func (a *User) IncreaseTrustLimit(seedpwd string, trust float64) error {
 
 	// we now have the seed, so we should upgrade the trustlimit by the margin requested. The margin passed here
 	// must not include the old trustlimit
-
-	_, err = assets.TrustAsset(consts.StablecoinCode, consts.StablecoinPublicKey, trust+consts.StablecoinTrustLimit, seed)
-	if err != nil {
-		log.Println("PARAMS: ", consts.StablecoinCode, consts.StablecoinPublicKey, trust+consts.StablecoinTrustLimit, seed)
-		return errors.Wrap(err, "couldn't trust asset, quitting!")
+	if !consts.Mainnet {
+		_, err = assets.TrustAsset(consts.StablecoinCode, consts.StablecoinPublicKey, trust+consts.StablecoinTrustLimit, seed)
+		if err != nil {
+			log.Println("PARAMS: ", consts.StablecoinCode, consts.StablecoinPublicKey, trust+consts.StablecoinTrustLimit, seed)
+			return errors.Wrap(err, "couldn't trust asset, quitting!")
+		}
+	} else {
+		_, err = assets.TrustAsset(consts.AnchorUSDCode, consts.AnchorUSDAddress, trust+consts.AnchorUSDTrustLimit, seed)
+		if err != nil {
+			log.Println("PARAMS: ", consts.AnchorUSDCode, consts.AnchorUSDAddress, trust+consts.AnchorUSDTrustLimit, seed)
+			return errors.Wrap(err, "couldn't trust asset, quitting!")
+		}
 	}
 
 	return nil
@@ -564,4 +564,22 @@ func (a *User) Authenticate2FA(password string) (bool, error) {
 	}
 
 	return otpc.Authenticate(password)
+}
+
+// ImportSeed can be used to import an ecrypted seed onto the openx platform.
+func (a *User) ImportSeed(encryptedSeed []byte, pubkey string, seedpwd string) error {
+	seed, err := wallet.DecryptSeed(encryptedSeed, seedpwd)
+	if err != nil {
+		return errors.Wrap(err, "could not decrypt seed")
+	}
+	checkPubkey, err := wallet.ReturnPubkey(seed)
+	if err != nil {
+		return errors.Wrap(err, "could not get pubkey from encrypted seed")
+	}
+	if pubkey != checkPubkey {
+		return errors.New("decrypted pubkey does not match with provided pubkey")
+	}
+	a.StellarWallet.EncryptedSeed = encryptedSeed
+	a.StellarWallet.PublicKey = pubkey
+	return a.Save()
 }
