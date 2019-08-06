@@ -565,3 +565,21 @@ func (a *User) Authenticate2FA(password string) (bool, error) {
 
 	return otpc.Authenticate(password)
 }
+
+// ImportSeed can be used to import an ecrypted seed onto the openx platform.
+func (a *User) ImportSeed(encryptedSeed []byte, pubkey string, seedpwd string) error {
+	seed, err := wallet.DecryptSeed(encryptedSeed, seedpwd)
+	if err != nil {
+		return errors.Wrap(err, "could not decrypt seed")
+	}
+	checkPubkey, err := wallet.ReturnPubkey(seed)
+	if err != nil {
+		return errors.Wrap(err, "could not get pubkey from encrypted seed")
+	}
+	if pubkey != checkPubkey {
+		return errors.New("decrypted pubkey does not match with provided pubkey")
+	}
+	a.StellarWallet.EncryptedSeed = encryptedSeed
+	a.StellarWallet.PublicKey = pubkey
+	return a.Save()
+}
