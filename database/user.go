@@ -75,7 +75,7 @@ type User struct {
 	// seed from 2 out of 3 parts. Based on Shamir's Secret Sharing Scheme.
 	PwdResetCode string
 
-	SecondaryWallet Wallet
+	SecondaryWallet StellWallet
 	// SecondaryWallet defines a higher level wallet which can be imagined to be similar to a savings account
 
 	EthereumWallet ethereum.EthereumWallet
@@ -135,13 +135,6 @@ type StellWallet struct {
 	PublicKey     string
 	EncryptedSeed []byte
 	SeedPwhash    string
-}
-
-// Wallet contains the stuff that we need for a wallet.
-type Wallet struct {
-	EncryptedSeed []byte // the seedpwd for this would be the same as the one for the primary wallet
-	// since we don't want the user to remember like 10 passwords
-	PublicKey string
 }
 
 // NewUser creates a new user

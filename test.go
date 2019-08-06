@@ -34,6 +34,7 @@ var opts struct {
 	Simulate  bool `short:"t" description:"Simulate the test database with demo values (last updated: April 2019)"`
 	Mainnet   bool `short:"m" description:"Switch mainnet mode on"`
 	Trustline bool `short:"x" description:"create trustlines from platform seed to anchorUSD"`
+	Rescue    bool `short:"r" description:"start rescue mode"`
 }
 
 // ParseConfig parses CLI parameters passed
@@ -73,6 +74,11 @@ func main() {
 
 	if opts.Trustline {
 		StablecoinTrust()
+	}
+
+	if opts.Rescue {
+		RescueMode()
+		os.Exit(1)
 	}
 	/*
 		user, err := database.RetrieveUser(1)
