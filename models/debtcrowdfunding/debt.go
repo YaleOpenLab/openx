@@ -15,6 +15,7 @@ import (
 )
 
 // Debt Crowdfunding is a model where the investor loans out some initial capital and receives interest on that investment
+// This mode is currently not enabled on mainnet or testnet
 
 // Invest invests in a particular project
 func Invest(projIndex int, invIndex int, invAssetCode string, invSeed string,
