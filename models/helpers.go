@@ -18,7 +18,6 @@ func SendUSDToPlatform(invSeed string, invAmount float64, memo string) (string, 
 	// send stableusd to the platform (not the issuer) since the issuer will be locked
 	// and we can't use the funds. We also need ot be able to redeem the stablecoin for fiat
 	// so we can't burn them
-
 	var oldPlatformBalance float64
 	var err error
 	oldPlatformBalance, err = xlm.GetAssetBalance(consts.PlatformPublicKey, consts.StablecoinCode)
@@ -43,9 +42,17 @@ func SendUSDToPlatform(invSeed string, invAmount float64, memo string) (string, 
 	log.Println("Sent STABLEUSD to platform, confirmation: ", txhash)
 	time.Sleep(5 * time.Second) // wait for a block
 
-	newPlatformBalance, err := xlm.GetAssetBalance(consts.PlatformPublicKey, consts.StablecoinCode)
-	if err != nil {
-		return txhash, errors.Wrap(err, "error while getting asset balance")
+	var newPlatformBalance float64
+	if !consts.Mainnet {
+		newPlatformBalance, err = xlm.GetAssetBalance(consts.PlatformPublicKey, consts.StablecoinCode)
+		if err != nil {
+			return txhash, errors.Wrap(err, "error while getting asset balance")
+		}
+	} else {
+		newPlatformBalance, err = xlm.GetAssetBalance(consts.PlatformPublicKey, consts.AnchorUSDCode)
+		if err != nil {
+			return txhash, errors.Wrap(err, "error while getting asset balance")
+		}
 	}
 
 	if newPlatformBalance-oldPlatformBalance < invAmount-1 {
