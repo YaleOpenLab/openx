@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	xlm "github.com/Varunram/essentials/crypto/xlm"
+	xlm "github.com/YaleOpenLab/openx/chains/xlm"
 	utils "github.com/Varunram/essentials/utils"
 )
 

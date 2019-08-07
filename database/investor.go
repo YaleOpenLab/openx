@@ -4,8 +4,8 @@ import (
 	// "log"
 	"github.com/pkg/errors"
 
-	tickers "github.com/Varunram/essentials/crypto/exchangetickers"
-	xlm "github.com/Varunram/essentials/crypto/xlm"
+	tickers "github.com/YaleOpenLab/openx/chains/exchangetickers"
+	xlm "github.com/YaleOpenLab/openx/chains/xlm"
 )
 
 // Investor defines the investor structure

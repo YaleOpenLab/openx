@@ -6,9 +6,9 @@ import (
 	"math"
 	"time"
 
-	assets "github.com/Varunram/essentials/crypto/xlm/assets"
-	issuer "github.com/Varunram/essentials/crypto/xlm/issuer"
-	wallet "github.com/Varunram/essentials/crypto/xlm/wallet"
+	assets "github.com/YaleOpenLab/openx/chains/xlm/assets"
+	issuer "github.com/YaleOpenLab/openx/chains/xlm/issuer"
+	wallet "github.com/YaleOpenLab/openx/chains/xlm/wallet"
 	utils "github.com/Varunram/essentials/utils"
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"

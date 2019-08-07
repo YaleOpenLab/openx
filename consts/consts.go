@@ -4,9 +4,9 @@ import (
 	"os"
 	"time"
 
-	algorand "github.com/Varunram/essentials/crypto/algorand"
-	stablecoin "github.com/Varunram/essentials/crypto/stablecoin"
-	xlm "github.com/Varunram/essentials/crypto/xlm"
+	algorand "github.com/YaleOpenLab/openx/chains/algorand"
+	stablecoin "github.com/YaleOpenLab/openx/chains/stablecoin"
+	xlm "github.com/YaleOpenLab/openx/chains/xlm"
 	email "github.com/Varunram/essentials/email"
 	ipfs "github.com/Varunram/essentials/ipfs"
 )

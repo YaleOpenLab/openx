@@ -5,8 +5,8 @@ import (
 	"github.com/pkg/errors"
 	"strings"
 
-	xlm "github.com/Varunram/essentials/crypto/xlm"
-	wallet "github.com/Varunram/essentials/crypto/xlm/wallet"
+	xlm "github.com/YaleOpenLab/openx/chains/xlm"
+	wallet "github.com/YaleOpenLab/openx/chains/xlm/wallet"
 	edb "github.com/Varunram/essentials/database"
 	utils "github.com/Varunram/essentials/utils"
 	consts "github.com/YaleOpenLab/openx/consts"

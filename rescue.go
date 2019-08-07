@@ -5,7 +5,7 @@ import (
 	"log"
 	"strings"
 
-	xlm "github.com/Varunram/essentials/crypto/xlm"
+	xlm "github.com/YaleOpenLab/openx/chains/xlm"
 	scan "github.com/Varunram/essentials/scan"
 	consts "github.com/YaleOpenLab/openx/consts"
 )

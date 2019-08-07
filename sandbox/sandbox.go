@@ -7,9 +7,9 @@ import (
 	"io/ioutil"
 	"log"
 
-	xlm "github.com/Varunram/essentials/crypto/xlm"
-	assets "github.com/Varunram/essentials/crypto/xlm/assets"
-	wallet "github.com/Varunram/essentials/crypto/xlm/wallet"
+	xlm "github.com/YaleOpenLab/openx/chains/xlm"
+	assets "github.com/YaleOpenLab/openx/chains/xlm/assets"
+	wallet "github.com/YaleOpenLab/openx/chains/xlm/wallet"
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
 	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"

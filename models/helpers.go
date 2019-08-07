@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
-	xlm "github.com/Varunram/essentials/crypto/xlm"
-	assets "github.com/Varunram/essentials/crypto/xlm/assets"
+	xlm "github.com/YaleOpenLab/openx/chains/xlm"
+	assets "github.com/YaleOpenLab/openx/chains/xlm/assets"
 	consts "github.com/YaleOpenLab/openx/consts"
 )
 
