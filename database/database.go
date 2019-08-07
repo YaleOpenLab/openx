@@ -18,6 +18,7 @@ import (
 // define the name of the buckets that we interact with.
 
 var UserBucket = []byte("Users")
+
 // var BondBucket = []byte("Bonds")
 // var CoopBucket = []byte("Coop")
 

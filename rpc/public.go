@@ -6,8 +6,8 @@ import (
 
 	erpc "github.com/Varunram/essentials/rpc"
 	utils "github.com/Varunram/essentials/utils"
-	database "github.com/YaleOpenLab/openx/database"
 	consts "github.com/YaleOpenLab/openx/consts"
+	database "github.com/YaleOpenLab/openx/database"
 )
 
 // SnUser defines a sanitized user

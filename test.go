@@ -102,5 +102,19 @@ func main() {
 		███████║   ██║   ██║  ██║██║  ██║   ██║   ██║██║ ╚████║╚██████╔╝    ╚██████╔╝██║     ███████╗██║ ╚████║██╔╝ ██╗
 		╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝╚═╝  ╚═══╝ ╚═════╝      ╚═════╝ ╚═╝     ╚══════╝╚═╝  ╚═══╝╚═╝  ╚═╝
 		`)
+
+	log.Println("PARAMS FOR OPENSOLAR:")
+	fmt.Println("PlatformPublicKey: ", consts.PlatformPublicKey)
+	fmt.Println("PlatformSeed: ", consts.PlatformSeed)
+	fmt.Println("PlatformEmail: ", consts.PlatformEmail)
+	fmt.Println("PlatformEmailPass: ", consts.PlatformEmailPass)
+	fmt.Println("StablecoinCode: ", consts.StablecoinCode)
+	fmt.Println("StablecoinPublicKey: ", consts.StablecoinPublicKey)
+	fmt.Println("AnchorUSDCode: ", consts.AnchorUSDCode)
+	fmt.Println("AnchorUSDAddress: ", consts.AnchorUSDAddress)
+	fmt.Println("AnchorUSDTrustLimit: ", consts.AnchorUSDTrustLimit)
+	fmt.Println("AnchorAPI: ", consts.AnchorAPI)
+	fmt.Println("Mainnet: ", consts.Mainnet)
+
 	rpc.StartServer(port, insecure)
 }

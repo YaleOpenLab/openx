@@ -20,6 +20,7 @@ import (
 // imagine the loader like in a retro game, loading mainnet
 func MainnetLoader() error {
 	log.Println("initializing openx mainnet..")
+	consts.SetConsts()
 
 	var err error
 	consts.DbDir = consts.HomeDir + "/mainnet/"                           // set mainnet db to open in spearate folder
