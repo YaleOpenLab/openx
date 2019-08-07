@@ -4,10 +4,10 @@ import (
 	"github.com/pkg/errors"
 	//"log"
 
+	utils "github.com/Varunram/essentials/utils"
 	ticker "github.com/YaleOpenLab/openx/chains/exchangetickers"
 	stablecoin "github.com/YaleOpenLab/openx/chains/stablecoin"
 	xlm "github.com/YaleOpenLab/openx/chains/xlm"
-	utils "github.com/Varunram/essentials/utils"
 	"github.com/stellar/go/network"
 	build "github.com/stellar/go/txnbuild"
 )

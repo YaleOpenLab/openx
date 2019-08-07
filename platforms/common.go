@@ -4,10 +4,10 @@ import (
 	"log"
 	"os"
 
+	scan "github.com/Varunram/essentials/scan"
 	xlm "github.com/YaleOpenLab/openx/chains/xlm"
 	assets "github.com/YaleOpenLab/openx/chains/xlm/assets"
 	wallet "github.com/YaleOpenLab/openx/chains/xlm/wallet"
-	scan "github.com/Varunram/essentials/scan"
 	consts "github.com/YaleOpenLab/openx/consts"
 	"github.com/pkg/errors"
 )

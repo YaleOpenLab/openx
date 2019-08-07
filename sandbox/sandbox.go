@@ -11,8 +11,8 @@ import (
 	assets "github.com/YaleOpenLab/openx/chains/xlm/assets"
 	wallet "github.com/YaleOpenLab/openx/chains/xlm/wallet"
 	consts "github.com/YaleOpenLab/openx/consts"
-	database "github.com/YaleOpenLab/openx/database"
-	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
+	// database "github.com/YaleOpenLab/openx/database"
+	opensolar "github.com/YaleOpenLab/opensolar/core"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
@@ -389,7 +389,7 @@ func parseJsonText(fileName string) (map[string]interface{}, error) {
 
 // seed additional data for a few specific investors that are useful for showing in demos
 func populateAdditionalData() error {
-	openlab, err := database.RetrieveInvestor(46)
+	openlab, err := opensolar.RetrieveInvestor(46)
 	if err != nil {
 		return err
 	}
@@ -410,7 +410,7 @@ func populateAdditionalData() error {
 	}
 
 	// insert data for one specific recipient
-	pasto, err := database.RetrieveRecipient(47)
+	pasto, err := opensolar.RetrieveRecipient(47)
 	if err != nil {
 		return err
 	}
@@ -448,13 +448,13 @@ func populateAdditionalData() error {
 	}
 
 	// we now need to register the dci as an investor as well
-	var inv database.Investor
+	var inv opensolar.Investor
 	inv.U = dci.U
 	err = inv.Save()
 	if err != nil {
 		return err
 	}
-	var recp database.Recipient
+	var recp opensolar.Recipient
 	recp.U = dci.U
 	err = recp.Save()
 	if err != nil {
@@ -485,7 +485,7 @@ func populateAdditionalData() error {
 	}
 	log.Println("TX HASH for dci getting stableUSD: ", txhash)
 
-	recp, err = database.RetrieveRecipient(47)
+	recp, err = opensolar.RetrieveRecipient(47)
 	if err != nil {
 		return err
 	}

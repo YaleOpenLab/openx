@@ -12,7 +12,7 @@ import (
 	assets "github.com/YaleOpenLab/openx/chains/xlm/assets"
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
-	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
+	opensolar "github.com/YaleOpenLab/opensolar/core"
 	"github.com/spf13/viper"
 )
 
@@ -38,7 +38,7 @@ func MainnetLoader() error {
 		// Create an admin investor
 
 		log.Println("seeding dci as admin investor")
-		inv, err := database.NewInvestor("dci@mit.edu", "p", "x", "dci")
+		inv, err := opensolar.NewInvestor("dci@mit.edu", "p", "x", "dci")
 		if err != nil {
 			return err
 		}
@@ -63,7 +63,7 @@ func MainnetLoader() error {
 
 		// Create an admin recipient
 		log.Println("seeding vx as admin investor")
-		recp, err := database.NewRecipient("varunramganesh@gmail.com", "p", "x", "vg")
+		recp, err := opensolar.NewRecipient("varunramganesh@gmail.com", "p", "x", "vg")
 		if err != nil {
 			return err
 		}

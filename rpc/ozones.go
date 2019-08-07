@@ -1,5 +1,6 @@
 package rpc
 
+/*
 import (
 	"log"
 	"net/http"
@@ -136,3 +137,4 @@ func Search() {
 		}
 	})
 }
+*/

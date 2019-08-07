@@ -1,5 +1,6 @@
 package ozones
 
+/*
 import (
 	"github.com/pkg/errors"
 	"log"
@@ -12,7 +13,6 @@ import (
 	utils "github.com/Varunram/essentials/utils"
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
-	model "github.com/YaleOpenLab/openx/models/debtcrowdfunding"
 	notif "github.com/YaleOpenLab/openx/notif"
 )
 
@@ -109,7 +109,7 @@ func InvestInLivingUnitCoop(projIndex int, invIndex int, invAmount float64, invS
 		return errors.Wrap(err, "could not check pre investment conditions in living unit coop")
 	}
 
-	err = model.Invest(projIndex, invIndex, project.InvestorAssetCode, invSeed,
+	err = Invest(projIndex, invIndex, project.InvestorAssetCode, invSeed,
 		invAmount, project.Amount, project.ResidentIndices, "livingunitcoop")
 	if err != nil {
 		return errors.Wrap(err, "could not invest in living unit coop")
@@ -135,7 +135,7 @@ func InvestInConstructionBond(projIndex int, invIndex int, invAmount float64, in
 
 	trustLimit := project.CostOfUnit * float64(project.NoOfUnits)
 
-	err = model.Invest(projIndex, invIndex, project.InvestorAssetCode, invSeed,
+	err = Invest(projIndex, invIndex, project.InvestorAssetCode, invSeed,
 		invAmount, trustLimit, project.InvestorIndices, "constructionbond")
 	if err != nil {
 		return errors.Wrap(err, "could not invest in construction bond")
@@ -197,7 +197,7 @@ func sendRecipientAssets(projIndex int, totalValue float64) error {
 		return errors.Wrap(err, "couldn't decrypt seed")
 	}
 
-	err = model.ReceiveBond(consts.OpzonesIssuerDir, project.RecipientIndex, projIndex, project.DebtAssetCode, recpSeed, totalValue)
+	err = ReceiveBond(consts.OpzonesIssuerDir, project.RecipientIndex, projIndex, project.DebtAssetCode, recpSeed, totalValue)
 	if err != nil {
 		return errors.Wrap(err, "failed to send assets to recipient project after investment")
 	}
@@ -288,3 +288,4 @@ func (project *LivingUnitCoop) updateLivingUnitCoopAfterInvestment(invAmount flo
 	project.UnitsSold += 1
 	return project.Save()
 }
+*/

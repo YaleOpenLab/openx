@@ -1,5 +1,6 @@
 package ozones
 
+/*
 import (
 	"encoding/json"
 	"github.com/pkg/errors"
@@ -82,3 +83,4 @@ func RetrieveConstructionBond(key int) (ConstructionBond, error) {
 	err = json.Unmarshal(x, &elem)
 	return elem, err
 }
+*/

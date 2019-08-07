@@ -1,22 +1,20 @@
-package investmentcrowdfunding
+package ozones
 
+/*
 import (
-	"log"
+  "log"
+	"time"
 
-	assets "github.com/YaleOpenLab/openx/chains/xlm/assets"
-	issuer "github.com/YaleOpenLab/openx/chains/xlm/issuer"
-	wallet "github.com/YaleOpenLab/openx/chains/xlm/wallet"
-	utils "github.com/Varunram/essentials/utils"
-	consts "github.com/YaleOpenLab/openx/consts"
-	database "github.com/YaleOpenLab/openx/database"
-	models "github.com/YaleOpenLab/openx/models"
-	notif "github.com/YaleOpenLab/openx/notif"
-	"github.com/pkg/errors"
+	xlm "github.com/YaleOpenLab/openx/chains/xlm"
+  assets "github.com/YaleOpenLab/openx/chains/xlm/assets"
+  issuer "github.com/YaleOpenLab/openx/chains/xlm/issuer"
+  wallet "github.com/YaleOpenLab/openx/chains/xlm/wallet"
+  utils "github.com/Varunram/essentials/utils"
+  consts "github.com/YaleOpenLab/openx/consts"
+  database "github.com/YaleOpenLab/openx/database"
+  notif "github.com/YaleOpenLab/openx/notif"
+  "github.com/pkg/errors"
 )
-
-// Debt Crowdfunding is a model where the investor loans out some initial capital and receives interest on that investment
-// This mode is currently not enabled on mainnet or testnet
-
 // Invest invests in a particular project
 func Invest(projIndex int, invIndex int, invAssetCode string, invSeed string,
 	invAmount float64, trustLimit float64, investorIndices []int, application string) error {
@@ -136,7 +134,52 @@ func ReceiveBond(issuerPath string, recpIndex int, projIndex int, debtAssetCode 
 	return nil
 }
 
-// SendUSDToPlatform can be used to send USD back to the platform
+
+// SendUSDToPlatform sends STABLEUSD back to the platform for investment
 func SendUSDToPlatform(invSeed string, invAmount float64, memo string) (string, error) {
-	return models.SendUSDToPlatform(invSeed, invAmount, memo)
+	// send stableusd to the platform (not the issuer) since the issuer will be locked
+	// and we can't use the funds. We also need ot be able to redeem the stablecoin for fiat
+	// so we can't burn them
+	var oldPlatformBalance float64
+	var err error
+	oldPlatformBalance, err = xlm.GetAssetBalance(consts.PlatformPublicKey, consts.StablecoinCode)
+	if err != nil {
+		// platform does not have stablecoin, shouldn't arrive here ideally
+		oldPlatformBalance = 0
+	}
+
+	var txhash string
+	if !consts.Mainnet {
+		_, txhash, err = assets.SendAsset(consts.StablecoinCode, consts.StablecoinPublicKey, consts.PlatformPublicKey, invAmount, invSeed, memo)
+		if err != nil {
+			return txhash, errors.Wrap(err, "sending stableusd to platform failed")
+		}
+	} else {
+		_, txhash, err = assets.SendAsset(consts.AnchorUSDCode, consts.AnchorUSDAddress, consts.PlatformPublicKey, invAmount, invSeed, memo)
+		if err != nil {
+			return txhash, errors.Wrap(err, "sending stableusd to platform failed")
+		}
+	}
+
+	log.Println("Sent STABLEUSD to platform, confirmation: ", txhash)
+	time.Sleep(5 * time.Second) // wait for a block
+
+	var newPlatformBalance float64
+	if !consts.Mainnet {
+		newPlatformBalance, err = xlm.GetAssetBalance(consts.PlatformPublicKey, consts.StablecoinCode)
+		if err != nil {
+			return txhash, errors.Wrap(err, "error while getting asset balance")
+		}
+	} else {
+		newPlatformBalance, err = xlm.GetAssetBalance(consts.PlatformPublicKey, consts.AnchorUSDCode)
+		if err != nil {
+			return txhash, errors.Wrap(err, "error while getting asset balance")
+		}
+	}
+
+	if newPlatformBalance-oldPlatformBalance < invAmount-1 {
+		return txhash, errors.New("Sent amount doesn't match with investment amount")
+	}
+	return txhash, nil
 }
+*/

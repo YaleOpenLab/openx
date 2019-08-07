@@ -4,9 +4,9 @@ import (
 	"log"
 	"os"
 
+	utils "github.com/Varunram/essentials/utils"
 	xlm "github.com/YaleOpenLab/openx/chains/xlm"
 	wallet "github.com/YaleOpenLab/openx/chains/xlm/wallet"
-	utils "github.com/Varunram/essentials/utils"
 	"github.com/pkg/errors"
 )
 

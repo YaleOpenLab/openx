@@ -1,5 +1,6 @@
 package ozones
 
+/*
 import (
 	platform "github.com/YaleOpenLab/openx/platforms"
 )
@@ -77,3 +78,4 @@ func InitializePlatform() error {
 func RefillPlatform(publicKey string) error {
 	return platform.RefillPlatform(publicKey)
 }
+*/

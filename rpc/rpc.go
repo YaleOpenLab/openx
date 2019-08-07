@@ -32,18 +32,9 @@ func StartServer(portx int, insecure bool) {
 	// so that we can serve over an authenticated channel
 	// setup all related handlers
 	erpc.SetupBasicHandlers()
-	setupProjectRPCs()
-	setupInvestorRPCs()
-	setupRecipientRPCs()
-	setupBondRPCs()
-	setupCoopRPCs()
 	setupUserRpcs()
 	setupStableCoinRPCs()
 	setupPublicRoutes()
-	setupEntityRPCs()
-	setupParticleHandlers()
-	setupSwytchApis()
-	setupStagesHandlers()
 	setupAnchorHandlers()
 	setupCAHandlers()
 	adminHandlers()

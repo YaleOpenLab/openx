@@ -8,8 +8,8 @@ import (
 	utils "github.com/Varunram/essentials/utils"
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
-	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
-	opzones "github.com/YaleOpenLab/openx/platforms/ozones"
+	opensolar "github.com/YaleOpenLab/opensolar/core"
+		// opzones "github.com/YaleOpenLab/openx/platforms/ozones"
 	sandbox "github.com/YaleOpenLab/openx/sandbox"
 )
 
@@ -44,6 +44,7 @@ func testSolarProject(index int, panelsize string, totalValue float64, location 
 	return project, nil
 }
 
+/*
 // newLivingUnitCoop creates a new living unit coop
 func newLivingUnitCoop(mdate string, mrights string, stype string, intrate float64, rating string,
 	bIssuer string, uWriter string, totalAmount float64, typeOfUnit string, monthlyPayment float64,
@@ -104,12 +105,13 @@ func newConstructionBond(mdate string, stype string, intrate float64, rating str
 	err = cBond.Save()
 	return cBond, err
 }
+*/
 
 // InsertDummyData inserts sample data
 func InsertDummyData(simulate bool) error {
 	var err error
 	// populate database with dummy data
-	var recp database.Recipient
+	var recp opensolar.Recipient
 	// simulate only if the bool is set to true. Simulates investment for three projects based on the presentation
 	// at the Spring Members' Week Demo 2019
 	if simulate {
@@ -120,14 +122,14 @@ func InsertDummyData(simulate bool) error {
 			return errors.New("you're on mainnet, not on a sandbox")
 		}
 	}
-	allRecs, err := database.RetrieveAllRecipients()
+	allRecs, err := opensolar.RetrieveAllRecipients()
 	if err != nil {
 		return err
 	}
 	if len(allRecs) == 0 {
 		// there is no recipient right now, so create a dummy recipient
 		var err error
-		recp, err = database.NewRecipient("martin", "p", "x", "Martin")
+		recp, err = opensolar.NewRecipient("martin", "p", "x", "Martin")
 		if err != nil {
 			return err
 		}
@@ -138,14 +140,14 @@ func InsertDummyData(simulate bool) error {
 		}
 	}
 
-	var inv database.Investor
-	allInvs, err := database.RetrieveAllInvestors()
+	var inv opensolar.Investor
+	allInvs, err := opensolar.RetrieveAllInvestors()
 	if err != nil {
 		return err
 	}
 	if len(allInvs) == 0 {
 		var err error
-		inv, err = database.NewInvestor("john", "p", "x", "John")
+		inv, err = opensolar.NewInvestor("john", "p", "x", "John")
 		if err != nil {
 			return err
 		}
@@ -188,41 +190,43 @@ func InsertDummyData(simulate bool) error {
 		return err
 	}
 
-	_, err = newConstructionBond("Dec 21 2021", "Security Type 1", 5.4, "AAA", "Moody's Investments", "Wells Fargo",
-		200000, "Opportunity Zone Construction", 200, "5% tax for 10 years", 1, "India Basin Project", "San Francisco", "India Basin is an upcoming creative project based in San Francisco that seeks to host innovators from all around the world")
-	if err != nil {
-		return err
-	}
+	/*
+		_, err = newConstructionBond("Dec 21 2021", "Security Type 1", 5.4, "AAA", "Moody's Investments", "Wells Fargo",
+			200000, "Opportunity Zone Construction", 200, "5% tax for 10 years", 1, "India Basin Project", "San Francisco", "India Basin is an upcoming creative project based in San Francisco that seeks to host innovators from all around the world")
+		if err != nil {
+			return err
+		}
 
-	_, err = newConstructionBond("Apr 2 2025", "Security Type 2", 3.6, "AA", "Ant Financial", "People's Bank of China",
-		50000, "Opportunity Zone Construction", 400, "No tax for 20 years", 1, "Shenzhen SEZ Development", "Shenzhen", "Shenzhen SEZ Development seeks to develop a SEZ in Shenzhen to foster creation of manufacturing jobs.")
-	if err != nil {
-		return err
-	}
+		_, err = newConstructionBond("Apr 2 2025", "Security Type 2", 3.6, "AA", "Ant Financial", "People's Bank of China",
+			50000, "Opportunity Zone Construction", 400, "No tax for 20 years", 1, "Shenzhen SEZ Development", "Shenzhen", "Shenzhen SEZ Development seeks to develop a SEZ in Shenzhen to foster creation of manufacturing jobs.")
+		if err != nil {
+			return err
+		}
 
-	_, err = newConstructionBond("Jul 9 2029", "Security Type 3", 4.2, "BAA", "Softbank Corp.", "Bank of Japan",
-		150000, "Opportunity Zone Construction", 100, "3% Tax for 5 Years", 1, "Osaka Development Project", "Osaka", "This Project seeks to develop cutting edge technologies in Osaka")
-	if err != nil {
-		return err
-	}
+		_, err = newConstructionBond("Jul 9 2029", "Security Type 3", 4.2, "BAA", "Softbank Corp.", "Bank of Japan",
+			150000, "Opportunity Zone Construction", 100, "3% Tax for 5 Years", 1, "Osaka Development Project", "Osaka", "This Project seeks to develop cutting edge technologies in Osaka")
+		if err != nil {
+			return err
+		}
 
-	_, err = newLivingUnitCoop("Dec 21 2021", "Member Rights Link", "Security Type 1", 5.4, "AAA", "Moody's Investments", "Wells Fargo",
-		200000, "Coop Model", 4000, "India Basin Project", "San Francisco", "India Basin is an upcoming creative project based in San Francisco that seeks to host innovators from all around the world")
-	if err != nil {
-		return err
-	}
+		_, err = newLivingUnitCoop("Dec 21 2021", "Member Rights Link", "Security Type 1", 5.4, "AAA", "Moody's Investments", "Wells Fargo",
+			200000, "Coop Model", 4000, "India Basin Project", "San Francisco", "India Basin is an upcoming creative project based in San Francisco that seeks to host innovators from all around the world")
+		if err != nil {
+			return err
+		}
 
-	_, err = newLivingUnitCoop("Apr 2 2025", "Member Rights Link", "Security Type 2", 3.6, "AA", "Ant Financial", "People's Bank of China",
-		50000, "Coop Model", 1000, "Shenzhen SEZ Development", "Shenzhen", "Shenzhen SEZ Development seeks to develop a SEZ in Shenzhen to foster creation of manufacturing jobs.")
-	if err != nil {
-		return err
-	}
+		_, err = newLivingUnitCoop("Apr 2 2025", "Member Rights Link", "Security Type 2", 3.6, "AA", "Ant Financial", "People's Bank of China",
+			50000, "Coop Model", 1000, "Shenzhen SEZ Development", "Shenzhen", "Shenzhen SEZ Development seeks to develop a SEZ in Shenzhen to foster creation of manufacturing jobs.")
+		if err != nil {
+			return err
+		}
 
-	_, err = newLivingUnitCoop("Jul 9 2029", "Member Rights Link", "Security Type 3", 4.2, "BAA", "Softbank Corp.", "Bank of Japan",
-		150000, "Coop Model", 2000, "Osaka Development Project", "Osaka", "ODP seeks to develop cutting edge technologies in Osaka and invites investors all around the world to be a part of this new age")
-	if err != nil {
-		return err
-	}
+		_, err = newLivingUnitCoop("Jul 9 2029", "Member Rights Link", "Security Type 3", 4.2, "BAA", "Softbank Corp.", "Bank of Japan",
+			150000, "Coop Model", 2000, "Osaka Development Project", "Osaka", "ODP seeks to develop cutting edge technologies in Osaka and invites investors all around the world to be a part of this new age")
+		if err != nil {
+			return err
+		}
+	*/
 
 	_, err = testSolarProject(1, "100 1000 sq.ft homes each with their own private spaces for luxury", 14000, "India Basin, San Francisco",
 		0, "India Basin is an upcoming creative project based in San Francisco that seeks to invite innovators from all around to participate", "", "", "",

@@ -4,11 +4,11 @@ import (
 	"os"
 	"time"
 
+	email "github.com/Varunram/essentials/email"
+	ipfs "github.com/Varunram/essentials/ipfs"
 	algorand "github.com/YaleOpenLab/openx/chains/algorand"
 	stablecoin "github.com/YaleOpenLab/openx/chains/stablecoin"
 	xlm "github.com/YaleOpenLab/openx/chains/xlm"
-	email "github.com/Varunram/essentials/email"
-	ipfs "github.com/Varunram/essentials/ipfs"
 )
 
 // contains constants - some arbitrary, some forced due to stellar. Each account should have a minimum of 0.5 XLM and each trust line costs 0.5 XLM.
