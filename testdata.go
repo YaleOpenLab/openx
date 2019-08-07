@@ -111,7 +111,7 @@ func newConstructionBond(mdate string, stype string, intrate float64, rating str
 func InsertDummyData(simulate bool) error {
 	var err error
 	// populate database with dummy data
-	var recp database.Recipient
+	var recp opensolar.Recipient
 	// simulate only if the bool is set to true. Simulates investment for three projects based on the presentation
 	// at the Spring Members' Week Demo 2019
 	if simulate {
@@ -122,14 +122,14 @@ func InsertDummyData(simulate bool) error {
 			return errors.New("you're on mainnet, not on a sandbox")
 		}
 	}
-	allRecs, err := database.RetrieveAllRecipients()
+	allRecs, err := opensolar.RetrieveAllRecipients()
 	if err != nil {
 		return err
 	}
 	if len(allRecs) == 0 {
 		// there is no recipient right now, so create a dummy recipient
 		var err error
-		recp, err = database.NewRecipient("martin", "p", "x", "Martin")
+		recp, err = opensolar.NewRecipient("martin", "p", "x", "Martin")
 		if err != nil {
 			return err
 		}
@@ -140,14 +140,14 @@ func InsertDummyData(simulate bool) error {
 		}
 	}
 
-	var inv database.Investor
-	allInvs, err := database.RetrieveAllInvestors()
+	var inv opensolar.Investor
+	allInvs, err := opensolar.RetrieveAllInvestors()
 	if err != nil {
 		return err
 	}
 	if len(allInvs) == 0 {
 		var err error
-		inv, err = database.NewInvestor("john", "p", "x", "John")
+		inv, err = opensolar.NewInvestor("john", "p", "x", "John")
 		if err != nil {
 			return err
 		}

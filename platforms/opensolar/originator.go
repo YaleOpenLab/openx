@@ -4,7 +4,6 @@ import (
 	"github.com/pkg/errors"
 
 	utils "github.com/Varunram/essentials/utils"
-	database "github.com/YaleOpenLab/openx/database"
 )
 
 // An originator is someone who approaches the recipient in real life and proposes
@@ -33,7 +32,7 @@ func (contractor *Entity) Originate(panelSize string, totalValue float64, locati
 	pc.EstimatedAcquisition = years
 	pc.Metadata = metadata
 	pc.DateInitiated = utils.Timestamp()
-	iRecipient, err := database.RetrieveRecipient(recIndex)
+	iRecipient, err := RetrieveRecipient(recIndex)
 	if err != nil { // recipient does not exist
 		return pc, errors.Wrap(err, "couldn't retrieve recipient from db")
 	}

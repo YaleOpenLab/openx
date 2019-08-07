@@ -12,7 +12,6 @@ import (
 	issuer "github.com/YaleOpenLab/openx/chains/xlm/issuer"
 	wallet "github.com/YaleOpenLab/openx/chains/xlm/wallet"
 	consts "github.com/YaleOpenLab/openx/consts"
-	database "github.com/YaleOpenLab/openx/database"
 	notif "github.com/YaleOpenLab/openx/notif"
 	oracle "github.com/YaleOpenLab/openx/oracle"
 )
@@ -59,7 +58,7 @@ func (a *Project) SetStage(number int) error {
 		}
 
 		for _, i := range a.InvestorIndices {
-			elem, err := database.RetrieveInvestor(i)
+			elem, err := RetrieveInvestor(i)
 			if err != nil {
 				log.Println("Error while retrieving investor", err)
 				return err
@@ -71,7 +70,7 @@ func (a *Project) SetStage(number int) error {
 			}
 		}
 	case 6:
-		recp, err := database.RetrieveRecipient(a.RecipientIndex)
+		recp, err := RetrieveRecipient(a.RecipientIndex)
 		if err != nil {
 			return err
 		}
@@ -383,7 +382,7 @@ func RecipientAuthorize(projIndex int, recpIndex int) error {
 	if !VerifyBeforeAuthorizing(projIndex) {
 		return errors.New("Originator not verified")
 	}
-	recipient, err := database.RetrieveRecipient(recpIndex)
+	recipient, err := RetrieveRecipient(recpIndex)
 	if err != nil {
 		return errors.Wrap(err, "couldn't retrieve recipient")
 	}
@@ -411,7 +410,7 @@ func RecipientAuthorize(projIndex int, recpIndex int) error {
 // VoteTowardsProposedProject is a handler that an investor would use to vote towards a
 // specific proposed project on the platform.
 func VoteTowardsProposedProject(invIndex int, votes float64, projectIndex int) error {
-	inv, err := database.RetrieveInvestor(invIndex)
+	inv, err := RetrieveInvestor(invIndex)
 	if err != nil {
 		return errors.Wrap(err, "couldn't retrieve investor")
 	}
@@ -445,7 +444,7 @@ func VoteTowardsProposedProject(invIndex int, votes float64, projectIndex int) e
 // preInvestmentChecks associated with the opensolar platform when an Investor bids an investment amount of a specific project
 func preInvestmentCheck(projIndex int, invIndex int, invAmount float64, seed string) (Project, error) {
 	var project Project
-	var investor database.Investor
+	var investor Investor
 	var err error
 
 	project, err = RetrieveProject(projIndex)
@@ -453,7 +452,7 @@ func preInvestmentCheck(projIndex int, invIndex int, invAmount float64, seed str
 		return project, errors.Wrap(err, "couldn't retrieve project")
 	}
 
-	investor, err = database.RetrieveInvestor(invIndex)
+	investor, err = RetrieveInvestor(invIndex)
 	if err != nil {
 		return project, errors.Wrap(err, "couldn't retrieve investor")
 	}
@@ -619,7 +618,7 @@ func (project *Project) updateAfterInvestment(invAmount float64, invIndex int) e
 	project.InvestorMap = make(map[string]float64) // make the map
 	log.Println("INVESTOR INDICES: ", project.InvestorIndices)
 	for i := range project.InvestorIndices {
-		investor, err := database.RetrieveInvestor(project.InvestorIndices[i])
+		investor, err := RetrieveInvestor(project.InvestorIndices[i])
 		if err != nil {
 			return errors.Wrap(err, "error while retrieving investors, quitting")
 		}
@@ -658,7 +657,7 @@ func (project *Project) updateAfterInvestment(invAmount float64, invIndex int) e
 // sendRecipientNotification sends the notification to the recipient requesting them
 // to logon to the platform and unlock the project that has just been invested in
 func (project *Project) sendRecipientNotification() error {
-	recipient, err := database.RetrieveRecipient(project.RecipientIndex)
+	recipient, err := RetrieveRecipient(project.RecipientIndex)
 	if err != nil {
 		return errors.Wrap(err, "couldn't retrieve recipient")
 	}
@@ -674,7 +673,7 @@ func UnlockProject(username string, pwhash string, projIndex int, seedpwd string
 		return errors.Wrap(err, "couldn't retrieve project")
 	}
 
-	recipient, err := database.ValidateRecipient(username, pwhash)
+	recipient, err := ValidateRecipient(username, pwhash)
 	if err != nil {
 		return errors.Wrap(err, "couldn't validate recipient")
 	}
@@ -739,7 +738,7 @@ func sendRecipientAssets(projIndex int) error {
 		return errors.Wrap(err, "Couldn't retrieve project")
 	}
 
-	recipient, err := database.RetrieveRecipient(project.RecipientIndex)
+	recipient, err := RetrieveRecipient(project.RecipientIndex)
 	if err != nil {
 		return errors.Wrap(err, "couldn't retrieve recipienrt")
 	}
@@ -909,7 +908,7 @@ func monitorPaybacks(recpIndex int, projIndex int) {
 			time.Sleep(consts.OneWeekInSecond)
 		}
 
-		recipient, err := database.RetrieveRecipient(recpIndex)
+		recipient, err := RetrieveRecipient(recpIndex)
 		if err != nil {
 			log.Println("Couldn't retrieve recipient")
 			time.Sleep(consts.OneWeekInSecond)
@@ -944,7 +943,7 @@ func monitorPaybacks(recpIndex int, projIndex int) {
 			for _, i := range project.InvestorIndices {
 				// send an email to recipients to assure them that we're on the issue and will be acting
 				// soon if the recipient fails to pay again.
-				investor, err := database.RetrieveInvestor(i)
+				investor, err := RetrieveInvestor(i)
 				if err != nil {
 					log.Println(err)
 					continue
@@ -963,7 +962,7 @@ func monitorPaybacks(recpIndex int, projIndex int) {
 			for _, i := range project.InvestorIndices {
 				// send an email to recipients to assure them that we're on the issue and will be acting
 				// soon if the recipient fails to pay again.
-				investor, err := database.RetrieveInvestor(i)
+				investor, err := RetrieveInvestor(i)
 				if err != nil {
 					log.Println(err)
 					time.Sleep(consts.OneWeekInSecond)

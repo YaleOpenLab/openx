@@ -76,7 +76,7 @@ type ValidateParams struct {
 }
 
 // removeSeedRecp removes the encrypted seed from the recipient structure
-func removeSeedRecp(recipient database.Recipient) database.Recipient {
+func removeSeedRecp(recipient opensolar.Recipient) opensolar.Recipient {
 	// any field that is private needs to be set to null here. A person using the API
 	// knows the username and password anyway, so the route must return all routes
 	// that are accessible by a single login (uname + pwhash)
@@ -86,7 +86,7 @@ func removeSeedRecp(recipient database.Recipient) database.Recipient {
 }
 
 // removeSeedInv removes the encrypted seed from the investor structure
-func removeSeedInv(investor database.Investor) database.Investor {
+func removeSeedInv(investor opensolar.Investor) opensolar.Investor {
 	var dummy []byte
 	investor.U.StellarWallet.EncryptedSeed = dummy
 	return investor
@@ -232,13 +232,13 @@ func validateUser() {
 			return
 		}
 		// no we need to see whether this guy is an investor or a recipient.
-		var prepInvestor database.Investor
-		var prepRecipient database.Recipient
+		var prepInvestor opensolar.Investor
+		var prepRecipient opensolar.Recipient
 		var prepEntity opensolar.Entity
 
 		var x ValidateParams
 
-		prepInvestor, err = database.RetrieveInvestor(prepUser.Index)
+		prepInvestor, err = opensolar.RetrieveInvestor(prepUser.Index)
 		if err == nil {
 			x.Role = "Investor"
 			x.Entity = removeSeedInv(prepInvestor)
@@ -246,7 +246,7 @@ func validateUser() {
 			return
 		}
 
-		prepRecipient, err = database.RetrieveRecipient(prepUser.Index)
+		prepRecipient, err = opensolar.RetrieveRecipient(prepUser.Index)
 		if err == nil {
 			x.Role = "Recipient"
 			x.Entity = removeSeedRecp(prepRecipient)

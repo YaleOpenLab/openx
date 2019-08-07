@@ -1,4 +1,4 @@
-package database
+package opensolar
 
 import (
 	// "log"
@@ -6,6 +6,7 @@ import (
 
 	tickers "github.com/YaleOpenLab/openx/chains/exchangetickers"
 	xlm "github.com/YaleOpenLab/openx/chains/xlm"
+	database "github.com/YaleOpenLab/openx/database"
 )
 
 // Investor defines the investor structure
@@ -18,10 +19,8 @@ type Investor struct {
 	// give them some kind of medals or something
 	InvestedSolarProjects        []string
 	InvestedSolarProjectsIndices []int
-	InvestedBonds                []string
-	InvestedCoops                []string
 	// array of asset codes this user has invested in
-	U           *User
+	U           *database.User
 	WeightedROI string
 	// the weightedROI for all the projects under the investor's umbrella
 	AllTimeReturns []float64
@@ -37,7 +36,7 @@ type Investor struct {
 func NewInvestor(uname string, pwd string, seedpwd string, Name string) (Investor, error) {
 	var a Investor
 	var err error
-	user, err := NewUser(uname, pwd, seedpwd, Name)
+	user, err := database.NewUser(uname, pwd, seedpwd, Name)
 	if err != nil {
 		return a, errors.Wrap(err, "error while creating a new user")
 	}

@@ -11,7 +11,6 @@ import (
 	issuer "github.com/YaleOpenLab/openx/chains/xlm/issuer"
 	wallet "github.com/YaleOpenLab/openx/chains/xlm/wallet"
 	consts "github.com/YaleOpenLab/openx/consts"
-	database "github.com/YaleOpenLab/openx/database"
 	notif "github.com/YaleOpenLab/openx/notif"
 	oracle "github.com/YaleOpenLab/openx/oracle"
 	"github.com/pkg/errors"
@@ -24,7 +23,7 @@ func MunibondInvest(issuerPath string, invIndex int, invSeed string, invAmount f
 	// this should be a menu on the Frontend but here we do this automatically
 	var err error
 
-	investor, err := database.RetrieveInvestor(invIndex)
+	investor, err := RetrieveInvestor(invIndex)
 	if err != nil {
 		return errors.Wrap(err, "Unable to retrieve investor from database")
 	}
@@ -85,7 +84,7 @@ func MunibondReceive(issuerPath string, recpIndex int, projIndex int, debtAssetI
 	paybackAssetId string, years int, recpSeed string, totalValue float64, paybackPeriod int) error {
 
 	log.Println("Retrieving recipient")
-	recipient, err := database.RetrieveRecipient(recpIndex)
+	recipient, err := RetrieveRecipient(recpIndex)
 	if err != nil {
 		return errors.Wrap(err, "Unable to retrieve recipient from database")
 	}
@@ -161,7 +160,7 @@ func sendPaymentNotif(recpIndex int, projIndex int, paybackPeriod int, email str
 	paybackTimes := 0
 	for {
 
-		_, err := database.RetrieveRecipient(recpIndex) // need to retrieve to make sure nothing goes awry
+		_, err := RetrieveRecipient(recpIndex) // need to retrieve to make sure nothing goes awry
 		if err != nil {
 			log.Println("Error while retrieving recipient from database", err)
 			message := "Error while retrieving your account details, please contact help as soon as you receive this message " + err.Error()
@@ -189,7 +188,7 @@ func sendPaymentNotif(recpIndex int, projIndex int, paybackPeriod int, email str
 func MunibondPayback(issuerPath string, recpIndex int, amount float64, recipientSeed string, projIndex int,
 	assetName string, projectInvestors []int, totalValue float64, escrowPubkey string) (float64, error) {
 
-	recipient, err := database.RetrieveRecipient(recpIndex)
+	recipient, err := RetrieveRecipient(recpIndex)
 	if err != nil {
 		return -1, errors.Wrap(err, "Error while retrieving recipient from database")
 	}
@@ -254,7 +253,7 @@ func MunibondPayback(issuerPath string, recpIndex int, amount float64, recipient
 	}
 
 	for _, i := range projectInvestors {
-		investor, err := database.RetrieveInvestor(i)
+		investor, err := RetrieveInvestor(i)
 		if err != nil {
 			log.Println("Error while retrieving investor from list of investors", err)
 			continue

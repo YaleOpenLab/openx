@@ -10,7 +10,7 @@ import (
 	assets "github.com/YaleOpenLab/openx/chains/xlm/assets"
 	wallet "github.com/YaleOpenLab/openx/chains/xlm/wallet"
 	consts "github.com/YaleOpenLab/openx/consts"
-	database "github.com/YaleOpenLab/openx/database"
+	// database "github.com/YaleOpenLab/openx/database"
 	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
 )
 
@@ -140,27 +140,27 @@ func createAllStaticEntities() error {
 	}
 
 	// 10MW project (24)
-	_, err = database.NewInvestor("emcoll@test.com", "password", "x", "Emerson Collective")
+	_, err = opensolar.NewInvestor("emcoll@test.com", "password", "x", "Emerson Collective")
 	if err != nil {
 		return err
 	}
 
-	_, err = database.NewInvestor("prqozfund@test.com", "password", "x", "Puerto Rico QOZ Fund")
+	_, err = opensolar.NewInvestor("prqozfund@test.com", "password", "x", "Puerto Rico QOZ Fund")
 	if err != nil {
 		return err
 	}
 
-	_, err = database.NewRecipient("prgov@test.com", "password", "x", "PR Government")
+	_, err = opensolar.NewRecipient("prgov@test.com", "password", "x", "PR Government")
 	if err != nil {
 		return err
 	}
 
-	_, err = database.NewRecipient("prschools@test.com", "password", "x", "Puerto Rico Solar Schools Limited")
+	_, err = opensolar.NewRecipient("prschools@test.com", "password", "x", "Puerto Rico Solar Schools Limited")
 	if err != nil {
 		return err
 	}
 
-	_, err = database.NewRecipient("prdoe@test.com", "password", "x", "Puerto Rico Department of Education")
+	_, err = opensolar.NewRecipient("prdoe@test.com", "password", "x", "Puerto Rico Department of Education")
 	if err != nil {
 		return err
 	}
@@ -191,42 +191,42 @@ func createAllStaticEntities() error {
 	}
 
 	// 100 kw project (34)
-	_, err = database.NewInvestor("jjackson@test.com", "password", "x", "Jerome Jackson")
+	_, err = opensolar.NewInvestor("jjackson@test.com", "password", "x", "Jerome Jackson")
 	if err != nil {
 		return err
 	}
 
-	_, err = database.NewInvestor("esare@test.com", "password", "x", "Eliah Sare")
+	_, err = opensolar.NewInvestor("esare@test.com", "password", "x", "Eliah Sare")
 	if err != nil {
 		return err
 	}
 
-	_, err = database.NewInvestor("yaleuf@test.com", "password", "x", "Yale University Fund")
+	_, err = opensolar.NewInvestor("yaleuf@test.com", "password", "x", "Yale University Fund")
 	if err != nil {
 		return err
 	}
 
-	_, err = database.NewRecipient("villageec@test.com", "password", "x", "Village Energy Collective")
+	_, err = opensolar.NewRecipient("villageec@test.com", "password", "x", "Village Energy Collective")
 	if err != nil {
 		return err
 	}
 
-	_, err = database.NewRecipient("sunshinegschool@test.com", "password", "x", "Sunshine Garden School")
+	_, err = opensolar.NewRecipient("sunshinegschool@test.com", "password", "x", "Sunshine Garden School")
 	if err != nil {
 		return err
 	}
 
-	_, err = database.NewRecipient("ubaduth@test.com", "password", "x", "Ubadu Town Hall")
+	_, err = opensolar.NewRecipient("ubaduth@test.com", "password", "x", "Ubadu Town Hall")
 	if err != nil {
 		return err
 	}
 
-	_, err = database.NewRecipient("dwbrf@test.com", "password", "x", " Doctors without borders, Rwanda chapter")
+	_, err = opensolar.NewRecipient("dwbrf@test.com", "password", "x", " Doctors without borders, Rwanda chapter")
 	if err != nil {
 		return err
 	}
 
-	_, err = database.NewRecipient("largerof@test.com", "password", "x", "Large Residential offtakers")
+	_, err = opensolar.NewRecipient("largerof@test.com", "password", "x", "Large Residential offtakers")
 	if err != nil {
 		return err
 	}
@@ -427,12 +427,12 @@ func populateStaticData100KW() error {
 	return nil
 }
 
-func bootstrapInvestor(invName, invDescription string) (database.Investor, string, error) {
+func bootstrapInvestor(invName, invDescription string) (opensolar.Investor, string, error) {
 	// setup investor account
 	log.Println(consts.StablecoinSeed, consts.StablecoinPublicKey, consts.StablecoinCode)
 	passwd := "password"
 	seedpwd := "x"
-	investor1, err := database.NewInvestor(invName, passwd, seedpwd, invDescription)
+	investor1, err := opensolar.NewInvestor(invName, passwd, seedpwd, invDescription)
 	if err != nil {
 		return investor1, "", err
 	}
@@ -457,11 +457,11 @@ func bootstrapInvestor(invName, invDescription string) (database.Investor, strin
 	return investor1, invSeed, nil
 }
 
-func bootstrapRecipient(recpName, recpDescription string) (database.Recipient, string, error) {
+func bootstrapRecipient(recpName, recpDescription string) (opensolar.Recipient, string, error) {
 	// setup recipient account
 	passwd := "password"
 	seedpwd := "x"
-	recipient, err := database.NewRecipient(recpName, passwd, seedpwd, recpDescription)
+	recipient, err := opensolar.NewRecipient(recpName, passwd, seedpwd, recpDescription)
 	if err != nil {
 		return recipient, "", err
 	}
@@ -737,7 +737,7 @@ func populateDynamicData1mw() error {
 		return err
 	}
 
-	recipient2, err := database.NewRecipient("Lancastert@test.com", "password", "x", "Town of Lancaster NH")
+	recipient2, err := opensolar.NewRecipient("Lancastert@test.com", "password", "x", "Town of Lancaster NH")
 	if err != nil {
 		return err
 	}
@@ -766,7 +766,7 @@ func populateDynamicData10kw() error {
 		return err
 	}
 
-	recipient2, err := database.NewRecipient("ColumbusHouse@test.com", "password", "x", "Columbus House Foundation")
+	recipient2, err := opensolar.NewRecipient("ColumbusHouse@test.com", "password", "x", "Columbus House Foundation")
 	if err != nil {
 		return err
 	}

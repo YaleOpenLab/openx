@@ -7,6 +7,7 @@ import (
 	erpc "github.com/Varunram/essentials/rpc"
 	utils "github.com/Varunram/essentials/utils"
 	database "github.com/YaleOpenLab/openx/database"
+	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
 )
 
 // SnInvestor defines a sanitized investor
@@ -50,15 +51,13 @@ func setupPublicRoutes() {
 
 // sanitizeInvestor removes sensitive fields frm the investor struct in order to be able
 // to return the investor field in a public route
-func sanitizeInvestor(investor database.Investor) SnInvestor {
+func sanitizeInvestor(investor opensolar.Investor) SnInvestor {
 	// this is a public route, so we shouldn't ideally return all parameters that are present
 	// in the investor struct
 	var sanitize SnInvestor
 	sanitize.Name = investor.U.Name
 	sanitize.InvestedSolarProjects = investor.InvestedSolarProjects
 	sanitize.AmountInvested = investor.AmountInvested
-	sanitize.InvestedBonds = investor.InvestedBonds
-	sanitize.InvestedCoops = investor.InvestedCoops
 	sanitize.PublicKey = investor.U.StellarWallet.PublicKey
 	sanitize.Reputation = investor.U.Reputation
 	return sanitize
@@ -66,7 +65,7 @@ func sanitizeInvestor(investor database.Investor) SnInvestor {
 
 // sanitizeRecipient removes sensitive fields from the recipient struct in order to be
 // able to return the recipient fields in a public route
-func sanitizeRecipient(recipient database.Recipient) SnRecipient {
+func sanitizeRecipient(recipient opensolar.Recipient) SnRecipient {
 	// this is a public route, so we shouldn't ideally return all parameters that are present
 	// in the investor struct
 	var sanitize SnRecipient
@@ -78,7 +77,7 @@ func sanitizeRecipient(recipient database.Recipient) SnRecipient {
 }
 
 // sanitizeAllInvestors sanitizes an array of investors
-func sanitizeAllInvestors(investors []database.Investor) []SnInvestor {
+func sanitizeAllInvestors(investors []opensolar.Investor) []SnInvestor {
 	var arr []SnInvestor
 	for _, elem := range investors {
 		arr = append(arr, sanitizeInvestor(elem))
@@ -96,7 +95,7 @@ func sanitizeUser(user database.User) SnUser {
 }
 
 // sanitizeAllRecipients sanitizes an array of recipients
-func sanitizeAllRecipients(recipients []database.Recipient) []SnRecipient {
+func sanitizeAllRecipients(recipients []opensolar.Recipient) []SnRecipient {
 	var arr []SnRecipient
 	for _, elem := range recipients {
 		arr = append(arr, sanitizeRecipient(elem))
@@ -119,7 +118,7 @@ func getAllInvestorsPublic() {
 	http.HandleFunc("/public/investor/all", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
-		investors, err := database.RetrieveAllInvestors()
+		investors, err := opensolar.RetrieveAllInvestors()
 		if err != nil {
 			log.Println("did not retrieve all investors", err)
 			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
@@ -136,7 +135,7 @@ func getAllRecipientsPublic() {
 	http.HandleFunc("/public/recipient/all", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
-		recipients, err := database.RetrieveAllRecipients()
+		recipients, err := opensolar.RetrieveAllRecipients()
 		if err != nil {
 			log.Println("did not retrieve all recipients", err)
 			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
@@ -169,7 +168,7 @@ func getRecpTopReputationPublic() {
 	http.HandleFunc("/public/recipient/reputation/top", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
-		allRecps, err := database.TopReputationRecipients()
+		allRecps, err := opensolar.TopReputationRecipients()
 		if err != nil {
 			log.Println("did not retrieve all top reputaiton recipients", err)
 			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
@@ -185,7 +184,7 @@ func getInvTopReputationPublic() {
 	http.HandleFunc("/public/investor/reputation/top", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
-		allInvs, err := database.TopReputationInvestors()
+		allInvs, err := opensolar.TopReputationInvestors()
 		if err != nil {
 			log.Println("did not retrieve all top reputation investors", err)
 			erpc.ResponseHandler(w, erpc.StatusInternalServerError)

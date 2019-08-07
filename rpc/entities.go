@@ -7,7 +7,7 @@ import (
 
 	erpc "github.com/Varunram/essentials/rpc"
 	utils "github.com/Varunram/essentials/utils"
-	database "github.com/YaleOpenLab/openx/database"
+	// database "github.com/YaleOpenLab/openx/database"
 	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
 	// opzones "github.com/YaleOpenLab/openx/platforms/ozones"
 )
@@ -228,7 +228,7 @@ func createOpensolarProject() {
 			return
 		}
 
-		_, err = database.RetrieveRecipient(x.RecipientIndex)
+		_, err = opensolar.RetrieveRecipient(x.RecipientIndex)
 		if err != nil {
 			log.Println("could not retrieve recipient, quitting!")
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)

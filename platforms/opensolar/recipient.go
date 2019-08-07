@@ -1,12 +1,14 @@
-package database
+package opensolar
 
 import (
 	"github.com/pkg/errors"
+
+	database "github.com/YaleOpenLab/openx/database"
 )
 
 // Recipient defines the recipient structure
 type Recipient struct {
-	U *User
+	U *database.User
 	// user related functions are called as an instance directly
 	ReceivedSolarProjects       []string
 	ReceivedSolarProjectIndices []int
@@ -38,7 +40,7 @@ type Recipient struct {
 func NewRecipient(uname string, pwd string, seedpwd string, Name string) (Recipient, error) {
 	var a Recipient
 	var err error
-	user, err := NewUser(uname, pwd, seedpwd, Name)
+	user, err := database.NewUser(uname, pwd, seedpwd, Name)
 	if err != nil {
 		return a, errors.Wrap(err, "failed to retrieve new user")
 	}

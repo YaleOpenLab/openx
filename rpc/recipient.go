@@ -39,9 +39,9 @@ func setupRecipientRPCs() {
 }
 
 // RecpValidateHelper is a helper that helps validates recipients in routes
-func RecpValidateHelper(w http.ResponseWriter, r *http.Request, options ...string) (database.Recipient, error) {
+func RecpValidateHelper(w http.ResponseWriter, r *http.Request, options ...string) (opensolar.Recipient, error) {
 	// first validate the recipient or anyone would be able to set device ids
-	var prepRecipient database.Recipient
+	var prepRecipient opensolar.Recipient
 	var err error
 	// need to pass the pwhash param here
 	if r.URL.Query() == nil {
@@ -60,7 +60,7 @@ func RecpValidateHelper(w http.ResponseWriter, r *http.Request, options ...strin
 		return prepRecipient, errors.New("pwhash length not 128, quitting")
 	}
 
-	prepRecipient, err = database.ValidateRecipient(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
+	prepRecipient, err = opensolar.ValidateRecipient(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
 	if err != nil {
 		log.Println("did not validate recipient", err)
 		return prepRecipient, err
@@ -74,7 +74,7 @@ func getAllRecipients() {
 	http.HandleFunc("/recipient/all", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
-		recipients, err := database.RetrieveAllRecipients()
+		recipients, err := opensolar.RetrieveAllRecipients()
 		if err != nil {
 			log.Println("did not retrieve all recipients", err)
 			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
@@ -126,7 +126,7 @@ func registerRecipient() {
 				erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 				return
 			}
-			var a database.Recipient
+			var a opensolar.Recipient
 			a.U = &user
 			err = a.Save()
 			if err != nil {
@@ -137,7 +137,7 @@ func registerRecipient() {
 			return
 		}
 
-		user, err := database.NewRecipient(username, pwhash, seedpwd, name)
+		user, err := opensolar.NewRecipient(username, pwhash, seedpwd, name)
 		if err != nil {
 			log.Println(err)
 			erpc.ResponseHandler(w, erpc.StatusInternalServerError)

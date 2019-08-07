@@ -4,7 +4,6 @@ import (
 	"github.com/pkg/errors"
 
 	utils "github.com/Varunram/essentials/utils"
-	database "github.com/YaleOpenLab/openx/database"
 )
 
 // When contractors are proposing a contract towards something,
@@ -28,7 +27,7 @@ func (contractor *Entity) Propose(panelSize string, totalValue float64, location
 	pc.EstimatedAcquisition = years
 	pc.Metadata = metadata
 	pc.DateInitiated = utils.Timestamp()
-	iRecipient, err := database.RetrieveRecipient(recIndex)
+	iRecipient, err := RetrieveRecipient(recIndex)
 	if err != nil {
 		return pc, errors.Wrap(err, "couldn't retrieve recipient from db")
 	}

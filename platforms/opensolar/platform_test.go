@@ -27,7 +27,7 @@ func TestDb(t *testing.T) {
 	}
 	testDb.Close()
 
-	inv, err := database.NewInvestor("inv1", "blah", "blah", "cool")
+	inv, err := NewInvestor("inv1", "blah", "blah", "cool")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -35,7 +35,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	recp, err := database.NewRecipient("user1", "blah", "blah", "cool")
+	recp, err := NewRecipient("user1", "blah", "blah", "cool")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -119,7 +119,7 @@ func TestDb(t *testing.T) {
 		t.Errorf("Found deleted entry, quitting!")
 	}
 
-	inv, err = database.NewInvestor("inv2", "b921f75437050f0f7d2caba6303d165309614d524e3d7e6bccf313f39d113468d30e1e2ac01f91f6c9b66c083d393f49b3177345311849edb026bb86ee624be0", "blah", "cool")
+	inv, err = NewInvestor("inv2", "b921f75437050f0f7d2caba6303d165309614d524e3d7e6bccf313f39d113468d30e1e2ac01f91f6c9b66c083d393f49b3177345311849edb026bb86ee624be0", "blah", "cool")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -527,7 +527,7 @@ func TestDb(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Can vote greater than the voting balance!")
 	}
-	inv3, err := database.NewInvestor("inv3", "blah", "blah", "cool")
+	inv3, err := NewInvestor("inv3", "blah", "blah", "cool")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -594,14 +594,14 @@ func TestDb(t *testing.T) {
 	if err == nil {
 		t.Fatalf("not able to catch invalid entity error")
 	}
-	var recpx database.Recipient
+	var recpx Recipient
 	recpx.ReceivedSolarProjects = append(recpx.ReceivedSolarProjects, project.DebtAssetCode)
 
 	_, err = RetrieveLockedProjects()
 	if err != nil {
 		t.Fatal(err)
 	}
-	testrecp, err := database.NewRecipient("testrecipient", "blah", "blah", "cool")
+	testrecp, err := NewRecipient("testrecipient", "blah", "blah", "cool")
 	if err != nil {
 		t.Fatal(err)
 	}
