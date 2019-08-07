@@ -1,5 +1,6 @@
 package ozones
 
+/*
 import (
 	"github.com/pkg/errors"
 	"log"
@@ -287,3 +288,4 @@ func (project *LivingUnitCoop) updateLivingUnitCoopAfterInvestment(invAmount flo
 	project.UnitsSold += 1
 	return project.Save()
 }
+*/

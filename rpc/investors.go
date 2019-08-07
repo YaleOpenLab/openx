@@ -13,7 +13,7 @@ import (
 	database "github.com/YaleOpenLab/openx/database"
 	notif "github.com/YaleOpenLab/openx/notif"
 	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
-	opzones "github.com/YaleOpenLab/openx/platforms/ozones"
+	// opzones "github.com/YaleOpenLab/openx/platforms/ozones"
 )
 
 // setupInvestorRPCs sets up all RPCs related to the investor
@@ -26,8 +26,8 @@ func setupInvestorRPCs() {
 	addLocalAssetInv()
 	invAssetInv()
 	sendEmail()
-	investInConstructionBond()
-	investInLivingUnitCoop()
+	// investInConstructionBond()
+	// investInLivingUnitCoop()
 }
 
 // InvValidateHelper is a helper that is used to validate an ivnestor on the platform
@@ -339,6 +339,7 @@ func sendEmail() {
 	})
 }
 
+/*
 // investInConstructionBond invests a specific amount in a bond of the user's choice
 func investInConstructionBond() {
 	http.HandleFunc("/constructionbond/invest", func(w http.ResponseWriter, r *http.Request) {
@@ -426,3 +427,4 @@ func investInLivingUnitCoop() {
 		erpc.ResponseHandler(w, erpc.StatusOK)
 	})
 }
+*/

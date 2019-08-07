@@ -9,7 +9,7 @@ import (
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
 	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
-	opzones "github.com/YaleOpenLab/openx/platforms/ozones"
+	// opzones "github.com/YaleOpenLab/openx/platforms/ozones"
 	sandbox "github.com/YaleOpenLab/openx/sandbox"
 )
 
@@ -44,6 +44,7 @@ func testSolarProject(index int, panelsize string, totalValue float64, location 
 	return project, nil
 }
 
+/*
 // newLivingUnitCoop creates a new living unit coop
 func newLivingUnitCoop(mdate string, mrights string, stype string, intrate float64, rating string,
 	bIssuer string, uWriter string, totalAmount float64, typeOfUnit string, monthlyPayment float64,
@@ -104,6 +105,7 @@ func newConstructionBond(mdate string, stype string, intrate float64, rating str
 	err = cBond.Save()
 	return cBond, err
 }
+*/
 
 // InsertDummyData inserts sample data
 func InsertDummyData(simulate bool) error {
@@ -188,6 +190,7 @@ func InsertDummyData(simulate bool) error {
 		return err
 	}
 
+	/*
 	_, err = newConstructionBond("Dec 21 2021", "Security Type 1", 5.4, "AAA", "Moody's Investments", "Wells Fargo",
 		200000, "Opportunity Zone Construction", 200, "5% tax for 10 years", 1, "India Basin Project", "San Francisco", "India Basin is an upcoming creative project based in San Francisco that seeks to host innovators from all around the world")
 	if err != nil {
@@ -223,6 +226,7 @@ func InsertDummyData(simulate bool) error {
 	if err != nil {
 		return err
 	}
+	*/
 
 	_, err = testSolarProject(1, "100 1000 sq.ft homes each with their own private spaces for luxury", 14000, "India Basin, San Francisco",
 		0, "India Basin is an upcoming creative project based in San Francisco that seeks to invite innovators from all around to participate", "", "", "",

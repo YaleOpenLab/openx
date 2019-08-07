@@ -11,7 +11,7 @@ import (
 	utils "github.com/Varunram/essentials/utils"
 	database "github.com/YaleOpenLab/openx/database"
 	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
-	opzones "github.com/YaleOpenLab/openx/platforms/ozones"
+	// opzones "github.com/YaleOpenLab/openx/platforms/ozones"
 )
 
 // setupRecipientRPCs sets up all RPCs related to the recipient. Most are similar
@@ -34,7 +34,7 @@ func setupRecipientRPCs() {
 	finalizeProject()
 	originateProject()
 	calculateTrustLimit()
-	unlockCBond()
+	// unlockCBond()
 	storeStateHash()
 }
 
@@ -538,6 +538,7 @@ func calculateTrustLimit() {
 	})
 }
 
+/*
 // unlock unlocks a speciifc projectwhich has been invested in, signalling that the recipient
 // has accepted the investment.
 func unlockCBond() {
@@ -568,7 +569,7 @@ func unlockCBond() {
 		erpc.ResponseHandler(w, erpc.StatusOK)
 	})
 }
-
+*/
 // storeStateHash stores the start time of the remote device installed as part of an invested project.
 // Called by the teller
 func storeStateHash() {

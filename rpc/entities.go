@@ -9,7 +9,7 @@ import (
 	utils "github.com/Varunram/essentials/utils"
 	database "github.com/YaleOpenLab/openx/database"
 	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
-	opzones "github.com/YaleOpenLab/openx/platforms/ozones"
+	// opzones "github.com/YaleOpenLab/openx/platforms/ozones"
 )
 
 func setupEntityRPCs() {
@@ -20,8 +20,8 @@ func setupEntityRPCs() {
 	addCollateral()
 	createOpensolarProject()
 	proposeOpensolarProject()
-	createOpzonesCBond()
-	createOpzonesLuCoop()
+	// createOpzonesCBond()
+	// createOpzonesLuCoop()
 }
 
 // EntityValidateHelper is a helper that helps validate an entity
@@ -333,6 +333,7 @@ func proposeOpensolarProject() {
 	})
 }
 
+/*
 // http://localhost:8080/entity/newproject/opzone/constructionbond?username=samuel&pwhash=9a768ace36ff3d1771d5c145a544de3d68343b2e76093cb7b2a8ea89ac7f1a20c852e6fc1d71275b43abffefac381c5b906f55c3bcff4225353d02f1d3498758&Title=opzonetest&Location=SFBay&Description=Mocksecription&InstrumentType=OpZoneConstruction&Amount=10million&CostOfUnit=200000&NoOfUnits=50&SecurityType=SEC1&Tax=10pcofffed&MaturationDate=2040&InterestRate=5.5&Rating=AAA&BondIssuer=FEDGOV&BondHolders=BHolder&Underwriter=WellsFargo
 func createOpzonesCBond() {
 	http.HandleFunc("/entity/newproject/opzone/constructionbond", func(w http.ResponseWriter, r *http.Request) {
@@ -490,3 +491,4 @@ func createOpzonesLuCoop() {
 		erpc.MarshalSend(w, x)
 	})
 }
+*/

@@ -1,5 +1,6 @@
 package ozones
 
+/*
 import (
   "log"
 	"time"
@@ -181,3 +182,4 @@ func SendUSDToPlatform(invSeed string, invAmount float64, memo string) (string, 
 	}
 	return txhash, nil
 }
+*/
