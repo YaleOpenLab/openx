@@ -79,6 +79,7 @@ func InitializePlatform() error {
 		if err != nil {
 			return errors.Wrap(err, "couldn't retrieve seed")
 		}
+		log.Println("Stored seed in seed file: ", consts.PlatformSeedFile)
 		consts.PlatformPublicKey = publicKey
 		consts.PlatformSeed = seed
 

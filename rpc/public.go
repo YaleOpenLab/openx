@@ -7,6 +7,7 @@ import (
 	erpc "github.com/Varunram/essentials/rpc"
 	utils "github.com/Varunram/essentials/utils"
 	database "github.com/YaleOpenLab/openx/database"
+	consts "github.com/YaleOpenLab/openx/consts"
 )
 
 // SnUser defines a sanitized user
@@ -87,5 +88,18 @@ func getUserInfo() {
 
 		sUser := sanitizeUser(user)
 		erpc.MarshalSend(w, sUser)
+	})
+}
+
+func mainnetRPC() {
+	http.HandleFunc("/mainnet", func(w http.ResponseWriter, r *http.Request) {
+		mainnet := []byte{0}
+		testnet := []byte{1}
+		if consts.Mainnet {
+			w.Write(mainnet)
+		} else {
+			w.Write(testnet)
+		}
+		return
 	})
 }

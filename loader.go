@@ -8,11 +8,12 @@ import (
 	algorand "github.com/YaleOpenLab/openx/chains/algorand"
 	stablecoin "github.com/YaleOpenLab/openx/chains/stablecoin"
 	// utils "github.com/Varunram/essentials/utils"
+	opensolar "github.com/YaleOpenLab/opensolar/core"
 	xlm "github.com/YaleOpenLab/openx/chains/xlm"
 	assets "github.com/YaleOpenLab/openx/chains/xlm/assets"
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
-	opensolar "github.com/YaleOpenLab/opensolar/core"
+	openx "github.com/YaleOpenLab/openx/platforms"
 	"github.com/spf13/viper"
 )
 
@@ -21,97 +22,17 @@ func MainnetLoader() error {
 	log.Println("initializing openx mainnet..")
 
 	var err error
-	consts.DbDir = consts.HomeDir + "/database/mainnet/"                  // set mainnet db to open in spearate folder
+	consts.DbDir = consts.HomeDir + "/mainnet/"                           // set mainnet db to open in spearate folder
 	consts.PlatformSeedFile = consts.HomeDir + "/mainnetplatformseed.hex" // where the platform's seed is stored
-
-	err = opensolar.InitializePlatform()
-	if err != nil {
-		return err
-	}
+	log.Println("DB DIRL: ", consts.DbDir)
+	log.Println("DB DIRL: ", consts.PlatformSeedFile)
 
 	lim, _ := database.RetrieveAllUsersLim()
 	if lim == 0 {
 		// nothing exists, create dbs and buckets
 		log.Println("creating mainnet home dir")
 		database.CreateHomeDir()
-		log.Println("created mainnet home dir")
-		// Create an admin investor
-
-		log.Println("seeding dci as admin investor")
-		inv, err := opensolar.NewInvestor("dci@mit.edu", "p", "x", "dci")
-		if err != nil {
-			return err
-		}
-		inv.U.Inspector = true
-		inv.U.Kyc = true
-		inv.U.Admin = true // no handlers for the admin bool, just set it wherever needed.
-		inv.U.Reputation = 100000
-		inv.U.Notification = true
-		err = inv.U.Save()
-		if err != nil {
-			return err
-		}
-		err = inv.U.AddEmail("varunramganesh@gmail.com") // change this to something more official later
-		if err != nil {
-			return err
-		}
-		err = inv.Save()
-		if err != nil {
-			return err
-		}
-		log.Println("Please seed DCI pubkey: ", inv.U.StellarWallet.PublicKey, " with funds")
-
-		// Create an admin recipient
-		log.Println("seeding vx as admin investor")
-		recp, err := opensolar.NewRecipient("varunramganesh@gmail.com", "p", "x", "vg")
-		if err != nil {
-			return err
-		}
-		recp.U.Inspector = true
-		recp.U.Kyc = true
-		recp.U.Admin = true // no handlers for the admin bool, just set it wherever needed.
-		recp.U.Reputation = 100000
-		recp.U.Notification = true
-		err = recp.U.Save()
-		if err != nil {
-			return err
-		}
-		err = recp.U.AddEmail("varunramganesh@gmail.com")
-		if err != nil {
-			return err
-		}
-		err = recp.Save()
-		if err != nil {
-			return err
-		}
-		log.Println("Please seed Varunram's pubkey: ", recp.U.StellarWallet.PublicKey, " with funds")
-
-		orig, err := opensolar.NewOriginator("martin", "p", "x", "Martin Wainstein", "California", "Project Originator")
-		if err != nil {
-			return err
-		}
-
-		log.Println("Please seed Martin's pubkey: ", orig.U.StellarWallet.PublicKey, " with funds")
-
-		contractor, err := opensolar.NewContractor("samuel", "p", "x", "Samuel Visscher", "Georgia", "Project Contractor")
-		if err != nil {
-			return err
-		}
-
-		log.Println("Please seed Samuel's pubkey: ", contractor.U.StellarWallet.PublicKey, " with funds")
-
-		var project opensolar.Project
-		project.Index = 1
-		project.TotalValue = 8000
-		project.Name = "SU Pasto School, Aibonito"
-		project.Metadata = "MIT/Yale Pilot 2"
-		project.OriginatorIndex = orig.U.Index
-		project.ContractorIndex = contractor.U.Index
-		project.EstimatedAcquisition = 5
-		project.Stage = 4
-		project.MoneyRaised = 0
-		// add stuff in here as necessary
-		err = project.Save()
+		err = openx.InitializePlatform()
 		if err != nil {
 			return err
 		}

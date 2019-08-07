@@ -17,19 +17,15 @@ import (
 // to be common across platforms
 // define the name of the buckets that we interact with.
 
-var ProjectsBucket = []byte("Projects")
-var InvestorBucket = []byte("Investors")
-var RecipientBucket = []byte("Recipients")
-var ContractorBucket = []byte("Contractors")
 var UserBucket = []byte("Users")
-var BondBucket = []byte("Bonds")
-var CoopBucket = []byte("Coop")
-var InspectorBucket = []byte("Inspector")
+// var BondBucket = []byte("Bonds")
+// var CoopBucket = []byte("Coop")
 
 // CreateHomeDir creates a home directory
 func CreateHomeDir() {
-	edb.CreateDirs(consts.HomeDir, consts.DbDir, consts.OpenSolarIssuerDir, consts.OpzonesIssuerDir)
-	db, _ := edb.CreateDB(consts.DbDir+consts.DbName, ProjectsBucket, InvestorBucket, RecipientBucket, ContractorBucket, UserBucket, BondBucket, CoopBucket, InspectorBucket)
+	// edb.CreateDirs(consts.HomeDir, consts.DbDir, consts.OpenSolarIssuerDir, consts.OpzonesIssuerDir)
+	edb.CreateDirs(consts.HomeDir, consts.DbDir, consts.OpenSolarIssuerDir)
+	db, _ := edb.CreateDB(consts.DbDir+consts.DbName, UserBucket)
 	db.Close()
 }
 

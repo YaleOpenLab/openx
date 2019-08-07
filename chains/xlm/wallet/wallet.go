@@ -3,6 +3,7 @@ package wallet
 import (
 	"github.com/pkg/errors"
 	"log"
+	"os"
 
 	aes "github.com/Varunram/essentials/aes"
 	"github.com/stellar/go/keypair"
@@ -21,13 +22,24 @@ func NewSeedStore(path string, password string) (string, string, error) {
 	seed = pair.Seed()
 	publicKey = pair.Address()
 	log.Printf("\nTHE GENERATED SEED IS: %s\nAND YOUR PUBLIC KEY IS: %s\nKEEP IT SUPER SAFE OR YOU MIGHT NOT HAVE ACCESS TO THESE FUNDS AGAIN \n", seed, publicKey)
-	StoreSeed(seed, password, path) // store the seed in a secure location
+	err = StoreSeed(seed, password, path) // store the seed in a secure location
 	return publicKey, seed, err
 }
 
 // StoreSeed encrypts and stores the seed
 func StoreSeed(seed string, password string, path string) error {
 	// these can store the file ion any path passed to them
+	// now we can be sure we have the directory, check for seed
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		// file not created before, create
+		log.Println("file doesn't exist, creating a new one")
+		file, err := os.Create(path)
+		if err != nil {
+			log.Println("ERROR WHILE CREATING FILE: ", err)
+			return err
+		}
+		file.Close()
+	}
 	err := aes.EncryptFile(path, []byte(seed), password)
 	if err != nil {
 		return errors.Wrap(err, "could not encrypt file")
