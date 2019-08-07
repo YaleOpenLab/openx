@@ -10,6 +10,31 @@ import (
 	database "github.com/YaleOpenLab/openx/database"
 )
 
+// NewOriginator creates a new originator
+func NewOriginator(uname string, pwd string, seedpwd string, Name string,
+	Address string, Description string) (Entity, error) {
+	return newEntity(uname, pwd, seedpwd, Name, Address, Description, "originator")
+}
+
+// NewDeveloper creates a new developer
+func NewDeveloper(uname string, pwd string, seedpwd string, Name string,
+	Address string, Description string) (Entity, error) {
+	return newEntity(uname, pwd, seedpwd, Name, Address, Description, "developer")
+}
+
+// NewGuarantor returns a new guarantor
+func NewGuarantor(uname string, pwd string, seedpwd string, Name string,
+	Address string, Description string) (Entity, error) {
+	return newEntity(uname, pwd, seedpwd, Name, Address, Description, "guarantor")
+}
+
+// NewContractor creates a new contractor and inherits properties from Users
+func NewContractor(uname string, pwd string, seedpwd string, Name string, Address string, Description string) (Entity, error) {
+	// Create a new entity with the boolean of 'contractor' set to 'true.' This is
+	// done just by passing the string "contractor"
+	return newEntity(uname, pwd, seedpwd, Name, Address, Description, "contractor")
+}
+
 // Save or Insert inserts a specific Project into the database
 func (a *Project) Save() error {
 	return edb.Save(consts.DbDir+consts.DbName, database.ProjectsBucket, a, a.Index)
@@ -110,7 +135,7 @@ func RetrieveOriginatorProjects(stage int, index int) ([]Project, error) {
 	return arr, nil
 }
 
-// RetrieveRecipientProjects retrieves projects that are associated with a specific originator
+// RetrieveRecipientProjects retrieves projects that are associated with a specific recipient
 func RetrieveRecipientProjects(stage int, index int) ([]Project, error) {
 	var arr []Project
 	if stage > 9 { // check for this and fail early instead of wasting compute time on this

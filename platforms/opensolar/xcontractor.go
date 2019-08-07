@@ -11,13 +11,6 @@ import (
 // we need to ensure they are not following the price (eg bidding down) and are giving
 // their best quote. In this scenario, a blind auction method is the best option.
 
-// NewContractor creates a new contractor and inherits properties from Users
-func NewContractor(uname string, pwd string, seedpwd string, Name string, Address string, Description string) (Entity, error) {
-	// Create a new entity with the boolean of 'contractor' set to 'true.' This is
-	// done just by passing the string "contractor"
-	return newEntity(uname, pwd, seedpwd, Name, Address, Description, "contractor")
-}
-
 // Propose proposes a new stage 2 contract
 func (contractor *Entity) Propose(panelSize string, totalValue float64, location string,
 	years int, metadata string, recIndex int, projectIndex int, auctionType string) (Project, error) {

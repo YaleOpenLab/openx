@@ -13,22 +13,12 @@ import (
 	utils "github.com/Varunram/essentials/utils"
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
-	model "github.com/YaleOpenLab/openx/models/munibond"
 	notif "github.com/YaleOpenLab/openx/notif"
 	oracle "github.com/YaleOpenLab/openx/oracle"
 )
 
-// This script represents the smart contract that powers a project in this particular platform. Designed to be monolithic by design
-// so that we can have everything we automate in one place for easy audits.
+// platform is designed to be monolithic so we can have everything in one place
 
-// —ACTOR REPUTATION SCHEMES—
-
-// 1. Automatic Contants Based on Stage Completion and Project Success:
-// These constants are the reputation weights associated with a project on the opensolar platform. For eg if
-// a project's total worth is 10000 and everything in the project goes well and
-// all entities are satisfied by the outcome, the originator gains 1000 points,
-// the contractor gains 3000 points and so on. MW: These are allocated at what point in terms of the project stages? They will have to vary
-// Thresholds relate to the payment cycles owed by the Recipient. MW: How are these executed, and how are points added or removes? Its unclear
 const (
 	InvestorWeight         = 0.1 // the percentage weight of the project's total reputation assigned to the investor
 	OriginatorWeight       = 0.1 // the percentage weight of the project's total reputation assigned to the originator
@@ -41,8 +31,328 @@ const (
 	DisconnectionThreshold = 6   // DisconnectionThreshold is the threshold above which the user gets a notification telling that services have been disconnected.
 )
 
-// TODO: Consider that in the family of Recipients or Investors, there is more than one actor
-// and sometimes signatory authorization is from only some of the actors.
+// SetStage sets the stage of a project
+func (a *Project) SetStage(number int) error {
+	switch number {
+	case 3:
+		a.Reputation = a.TotalValue // upgrade reputation since totalValue might have changed from the originated contract
+		err := a.Save()
+		if err != nil {
+			log.Println("Error while saving project", err)
+			return err
+		}
+		err = RepOriginatedProject(a.OriginatorIndex, a.Index) // modify originator reputation now that the final price is fixed
+		if err != nil {
+			log.Println("Error while increasing reputation", err)
+			return err
+		}
+	case 5:
+		contractor, err := RetrieveEntity(a.ContractorIndex)
+		if err != nil {
+			log.Println("error while retrieving entity from db, quitting")
+			return err
+		}
+		err = contractor.U.ChangeReputation(a.TotalValue * ContractorWeight) // modify contractor Reputation now that a project has been installed
+		if err != nil {
+			log.Println("Couldn't increase contractor reputation", err)
+			return err
+		}
+
+		for _, i := range a.InvestorIndices {
+			elem, err := database.RetrieveInvestor(i)
+			if err != nil {
+				log.Println("Error while retrieving investor", err)
+				return err
+			}
+			err = elem.U.ChangeReputation(a.TotalValue * InvestorWeight)
+			if err != nil {
+				log.Println("Couldn't change investor reputation", err)
+				return err
+			}
+		}
+	case 6:
+		recp, err := database.RetrieveRecipient(a.RecipientIndex)
+		if err != nil {
+			return err
+		}
+		err = recp.U.ChangeReputation(a.TotalValue * RecipientWeight) // modify recipient reputation now that the system had begun power generation
+		if err != nil {
+			log.Println("Error while changing recipient reputation", err)
+			return err
+		}
+	default:
+		log.Println("default")
+	}
+	a.Stage = number
+	return a.Save()
+}
+
+var Stage0 = Stage{
+	Number:       0,
+	FriendlyName: "Handshake",
+	Name:         "Idea Consolidation",
+	Activities: []string{
+		"[Originator] proposes project and either secures or agrees to serve as [Solar Developer]. NOTE: Originator is the community leader or catalyst for the project, they may opt to serve as the solar developer themselves, or pass that responsibility off, going forward we will use solar developer to represent the interest of both.",
+		"[Solar Developer] creates general estimation of project (eg. with an automatic calculation through Google Project Sunroof, PV) ",
+		"If [Originator]/[Solar Developer] is not landowner [Host] states legal ownership of site (hard proof is optional at this stage)",
+	},
+	StateTrigger: []string{
+		"Matching of originator with receiver, and mutual approval/intention of interest.",
+	},
+}
+
+// StageXtoY promtoes a contract from  stage X.Number to stage Y.Number
+func StageXtoY(index int) error {
+	// check for out of bound errors
+	// retrieve the project
+	project, err := RetrieveProject(index)
+	if err != nil {
+		return errors.Wrap(err, "couldn't retrieve project")
+	}
+
+	if project.Stage < 0 || project.Stage > 8 {
+		log.Println("project stage number out of bounds, quitting")
+		return errors.New("stage number out of bounds or not eligible for stage updation")
+	}
+
+	if project.StageChecklist == nil || project.StageData == nil {
+		log.Println("stage checklist or stage data is nil, quitting")
+		return errors.New("stage checklist or stage data is nil, quitting")
+	}
+
+	var baseStage Stage
+	var finalStage Stage
+
+	switch project.Stage {
+	case 0:
+		baseStage = Stage0
+		finalStage = Stage1
+	case 1:
+		baseStage = Stage1
+		finalStage = Stage2
+	case 2:
+		baseStage = Stage2
+		finalStage = Stage3
+	case 3:
+		baseStage = Stage3
+		finalStage = Stage4
+	case 4:
+		baseStage = Stage4
+		finalStage = Stage5
+	case 5:
+		baseStage = Stage5
+		finalStage = Stage6
+	case 6:
+		baseStage = Stage6
+		finalStage = Stage7
+	case 7:
+		baseStage = Stage7
+		finalStage = Stage8
+	case 8:
+		baseStage = Stage8
+		finalStage = Stage9
+	default:
+		// shouldn't come here? in case it does, error out.
+		return errors.New("base stage doesn't match with predefined stages, quitting")
+	}
+
+	if len(project.StageChecklist[baseStage.Number]) != len(baseStage.Activities) {
+		log.Println("length of checklists don't match, quitting")
+		return errors.New("length of checklists don't match, quitting")
+	}
+
+	if len(project.StageData[baseStage.Number]) == 0 {
+		log.Println("baseStage data is empty, can't upgrade stages!")
+		return errors.New("baseStage data is empty, can't upgrade stages")
+	}
+
+	// go through the checklist and see if something's wrong
+	for _, check := range project.StageChecklist[baseStage.Number] {
+		if !check {
+			log.Println("checklist not satisfied, quitting")
+			return errors.New("checklist not satisfied, quitting")
+		}
+	}
+
+	// everything in the checklist is set to true, so we can upgrade from stage 0 to 1 safely
+	log.Println("Upgrading: ", project.Index, " from stage: ", baseStage.Number, " to stage: ", finalStage.Number)
+	return project.SetStage(finalStage.Number)
+}
+
+var Stage1 = Stage{
+	Number:       1,
+	FriendlyName: "Engagement",
+	Name:         "RFP Development",
+	Activities: []string{
+		"[Solar Developer] Analyse parameters, create financial model (proforma)",
+		"[Host] & [Solar Developer] engage [Legal] & begin scoping site for planning constraints and opportunities (viability analysis)",
+		"[Solar Developer] Create RFP (‘Request For Proposal’)",
+		"Simple: Automatic calculation (eg. Sunroof style)",
+		"Complex: Public project with 3rd party RFP consultant (independent engineer)",
+		"[Originator][Solar Developer][Offtaker] Post project for RFP",
+		"[Beneficiary/Host] Define and select RFP developer.",
+		"[Investor] First angel investment option (high risk)",
+		"Allow ‘time banking’ as sweat equity, monetized as tokenized capital or shadow stock",
+	},
+	StateTrigger: []string{
+		"Issue an RFP",
+		"Letter of Intent or MOU between originator and developer",
+	},
+}
+
+var Stage2 = Stage{
+	Number:       2,
+	FriendlyName: "Quotes",
+	Name:         "Actions",
+	Activities: []string{
+		"[Solar Developer][Beneficiary/Offtaker][Legal] PPA model negotiation.",
+		"[Originator][Beneficiary]  Compare quotes from bidders: ",
+		"[Engineering Procurement and Construction] (labor)",
+		"[Vendors] (Hardware)",
+		"[Insurers]",
+		"[Issuer]",
+		"[Intermediary Portal]",
+		"[Originator/Receiver] Begin negotiation with [Utility]",
+		"[Solar Developer] checks whether site upgrades are necessary.",
+		"[Solar Developer][Host] Prepare submission for permitting and planning",
+		"[Investor] Angel incorporation (less risk)",
+	},
+	StateTrigger: []string{
+		"Selection of quotes and vendors",
+		"Necessary identification of entities: Installers and offtaker",
+	},
+}
+
+var Stage3 = Stage{
+	Number:       3,
+	FriendlyName: "Signing",
+	Name:         "Contract Execution",
+	Activities: []string{
+		"[Solar Developer] pays [Legal] for PPA finalization.",
+		"[Solar Developer][Host] Signs site Lease with landowner.",
+		"[Solar Developer] OR [Issuer] signs Offering Agreement with [Intermediary Portal].",
+		"[Solar Developer][Beneficiary] selects and signs contracts with: ",
+		"[Engineering Procurement and Construction] (labor)",
+		"[Vendors] (Hardware)",
+		"[Insurers]",
+		"[Issuer] OR [Intermediary Portal]",
+		"[Offtaker] OR [Solar Developer][Engineering, Procurement and Construction] sign vendor/developer EPC Contracts",
+		"[Solar Developer][Offtaker] signs PPA/Offtake Agreement",
+		"[Investor] 2nd stage of eligible funding",
+		"[Solar Developer][Beneficiary] makes downpayment to [Engineering Procurement and Construction] (labor)",
+		"[Investor] Profile with risk ",
+	},
+	StateTrigger: []string{
+		"Execution of contracts - Sign!",
+	},
+}
+
+var Stage4 = Stage{
+	Number:       4,
+	FriendlyName: "The Raise",
+	Name:         "Finance and Capitalization",
+	Activities: []string{
+		"[Issuer] engages [Intermediary Portal] to develop Form C or prospectus",
+		"[Intermediary Portal] lists [Issuer] project",
+		"[Originator][Solar Developer][Offtaker] market the crowdfunded offering",
+		"[Investors] Commit capital to the project",
+		"[Intermediary Portal] closes offering and disburses capital from Escrow account to [Issuers]",
+		"If [Issuer] is not also [Solar Developer] then [Issuer] passes funds to [Solar Developer] ",
+	},
+	StateTrigger: []string{
+		"Project account receives funds that cover the raise amount. Raise amount: normally includes both project capital expenditure (i.e. hardware and labor) and ongoing Operation & Management costs",
+	},
+}
+
+var Stage5 = Stage{
+	Number:       5,
+	FriendlyName: "Construction",
+	Name:         "Payments and Construction",
+	Activities: []string{
+		"[Solar Developer] coordinates installation dates and arrangements with [Host][Off-takers]",
+		"[Solar Developer] OR [Engineering, Procurement and Construction] take delivery of equipment from [Vendor]",
+		"[Utility] issues conditional interconnection",
+		"[Solar Developer] schedules installation with [Engineering, Procurement and Construction]",
+		"[Engineering, Procurement and Construction] completes installation.",
+		"[Solar Developer] pays [Engineering, Procurement and Construction] for substantial completion of the project.",
+		"[Insurers] verifies policy, [Solar Developer] pays [Insurers]",
+		"[Investor] role?",
+	},
+	StateTrigger: []string{
+		"Installation reaches substantial completion",
+		"IoT devices detect energy generation",
+	},
+}
+
+var Stage6 = Stage{
+	Number:       6,
+	FriendlyName: "Interconnection",
+	Name:         "Contract Execution",
+	Activities: []string{
+		"[Solar Developer] coordinates with [Engineering Procurement and Construction] to schedule interconnection dates with [Utility] ",
+		"[Engineering, Procurement and Construction] submits ‘as-built’ drawings to City/County Inspectors and schedules interconnection with [Utility]",
+		"[Solar Developer] schedules City/County Building Inspector visit",
+		"[Utility] visits site for witness test",
+		"[Utility] places project in service ",
+	},
+	StateTrigger: []string{
+		"[Utility] places project in service",
+	},
+}
+
+var Stage7 = Stage{
+	Number:       7,
+	FriendlyName: "Legacy",
+	Name:         "Operation and Management",
+	Activities: []string{
+		"[Solar Developer] hires OR becomes [Manager]",
+		"[Manager] hires [Operations & Maintenance] provider",
+		"[Manager] sets up billing system and issues monthly bills to [Offtaker] and collects payment on bills",
+		"[Manager] monitors for breaches of payment or contract, other indentures, force majeure or adverse conditions [see below for Breach Conditions]",
+		"[Manager] files annual taxes",
+		"[Manager] handles annual true-up on net-metering payments",
+		"[Manager] makes annual cash distributions and issues 1099-DIV to [Investors] or coordinates share repurchase from [Investors]",
+		"If applicable, [Manager] executes flip between [Solar Developer] ownership interest and [Tax equity investor]",
+		"[Manager] OR [Operations & Maintenance] monitors system performance and coordinates with [Off-takers] to schedule routine maintenance",
+		"[Manager] OR [Operations & Maintenance] coordinates with [Engineering, Procurement and Construction] to change inverters or purchase replacements from [Vendors] as needed.",
+		"[Investors] can engage in secondary market (i.e. re-selling its securities). ",
+	},
+	StateTrigger: []string{
+		"[Investors] reach preferred return rate, or Power Purchase Agreement stipulates ownership flip date or conditions ",
+	},
+	BreachCondition: []string{
+		"[Offtaker] fails to make $/kWh payments after X period of time due. ",
+	},
+}
+
+var Stage8 = Stage{
+	Number:       8,
+	FriendlyName: "Handoff",
+	Name:         "Ownership Flip",
+	Activities: []string{
+		"[Beneficiary/Offtakers] Payments accrue to cover the [Investor] principle (i.e. total raised amount)",
+		"Escrow account (eg. capital account) pays off principle to [Investor]",
+	},
+	StateTrigger: []string{
+		"[Beneficiary] (eg. Host, Holding)  becomes full legal owner of physical assets",
+		"[Investors] exit the project",
+	},
+}
+
+var Stage9 = Stage{
+	Number:       9,
+	FriendlyName: "End of Life",
+	Name:         "Disposal",
+	Activities: []string{
+		"[IoT] Solar equipment is generating below a productivity threshold, or shows general malfunction",
+		"[Beneficiaries][Developers] dispose of the equipment to a recycling program",
+		"[Developer/Recycler] Certifies equipment is received",
+	},
+	StateTrigger: []string{
+		"Project termination",
+		"Wallet terminations",
+	},
+}
 
 // VerifyBeforeAuthorizing verifies some information on the originator before upgrading the project stage
 func VerifyBeforeAuthorizing(projIndex int) bool {
@@ -218,7 +528,7 @@ func SeedInvest(projIndex int, invIndex int, invAmount float64, invSeed string) 
 			log.Println("assigning a seed asset code")
 			project.SeedAssetCode = "SEEDASSET"
 		}
-		err = model.MunibondInvest(consts.OpenSolarIssuerDir, invIndex, invSeed, invAmount, projIndex,
+		err = MunibondInvest(consts.OpenSolarIssuerDir, invIndex, invSeed, invAmount, projIndex,
 			project.SeedAssetCode, project.TotalValue, project.SeedInvestmentFactor)
 		if err != nil {
 			return errors.Wrap(err, "error while investing")
@@ -259,7 +569,7 @@ func Invest(projIndex int, invIndex int, invAmount float64, invSeed string) erro
 			return errors.New("project not at stage where it can solicit investment, quitting")
 		}
 		// call the model and invest in the particular project
-		err = model.MunibondInvest(consts.OpenSolarIssuerDir, invIndex, invSeed, invAmount, projIndex,
+		err = MunibondInvest(consts.OpenSolarIssuerDir, invIndex, invSeed, invAmount, projIndex,
 			project.InvestorAssetCode, project.TotalValue, 1)
 		if err != nil {
 			log.Println("Error while seed investing", err)
@@ -459,7 +769,7 @@ func sendRecipientAssets(projIndex int) error {
 	project.DebtAssetCode = assets.AssetID(consts.DebtAssetPrefix + metadata)
 	project.PaybackAssetCode = assets.AssetID(consts.PaybackAssetPrefix + metadata)
 
-	err = model.MunibondReceive(consts.OpenSolarIssuerDir, project.RecipientIndex, projIndex, project.DebtAssetCode,
+	err = MunibondReceive(consts.OpenSolarIssuerDir, project.RecipientIndex, projIndex, project.DebtAssetCode,
 		project.PaybackAssetCode, project.EstimatedAcquisition, recpSeed, project.TotalValue, project.PaybackPeriod)
 	if err != nil {
 		return errors.Wrap(err, "error while receiving assets from issuer on recipient's end")
@@ -507,7 +817,7 @@ func Payback(recpIndex int, projIndex int, assetName string, amount float64, rec
 		return errors.New("other investment models are not supported right now, quitting")
 	}
 
-	pct, err := model.MunibondPayback(consts.OpenSolarIssuerDir, recpIndex, amount,
+	pct, err := MunibondPayback(consts.OpenSolarIssuerDir, recpIndex, amount,
 		recipientSeed, projIndex, assetName, project.InvestorIndices, project.TotalValue, project.EscrowPubkey)
 	if err != nil {
 		return errors.Wrap(err, "Error while paying back the issuer")

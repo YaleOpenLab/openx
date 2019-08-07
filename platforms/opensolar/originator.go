@@ -15,12 +15,6 @@ import (
 // must also be sigend between the originator and the recipient defining terms of agreement
 // as per legal standards
 
-// NewOriginator creates a new originator
-func NewOriginator(uname string, pwd string, seedpwd string, Name string,
-	Address string, Description string) (Entity, error) {
-	return newEntity(uname, pwd, seedpwd, Name, Address, Description, "originator")
-}
-
 // Originate creates and saves a new origin contract
 func (contractor *Entity) Originate(panelSize string, totalValue float64, location string,
 	years int, metadata string, recIndex int, auctionType string) (Project, error) {
