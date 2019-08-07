@@ -4,9 +4,9 @@ import (
 	"github.com/pkg/errors"
 	//"log"
 
-	ticker "github.com/Varunram/essentials/crypto/exchangetickers"
-	stablecoin "github.com/Varunram/essentials/crypto/stablecoin"
-	xlm "github.com/Varunram/essentials/crypto/xlm"
+	ticker "github.com/YaleOpenLab/openx/chains/exchangetickers"
+	stablecoin "github.com/YaleOpenLab/openx/chains/stablecoin"
+	xlm "github.com/YaleOpenLab/openx/chains/xlm"
 	utils "github.com/Varunram/essentials/utils"
 	"github.com/stellar/go/network"
 	build "github.com/stellar/go/txnbuild"

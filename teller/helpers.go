@@ -15,7 +15,7 @@ import (
 	consts "github.com/YaleOpenLab/openx/consts"
 	oracle "github.com/YaleOpenLab/openx/oracle"
 	//	rpc "github.com/YaleOpenLab/openx/rpc"
-	xlm "github.com/Varunram/essentials/crypto/xlm"
+	xlm "github.com/YaleOpenLab/openx/chains/xlm"
 )
 
 // BlockStamp gets the latest block hash

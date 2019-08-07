@@ -4,8 +4,8 @@ import (
 	"log"
 	"net/http"
 
-	stablecoin "github.com/Varunram/essentials/crypto/stablecoin"
-	wallet "github.com/Varunram/essentials/crypto/xlm/wallet"
+	stablecoin "github.com/YaleOpenLab/openx/chains/stablecoin"
+	wallet "github.com/YaleOpenLab/openx/chains/xlm/wallet"
 	erpc "github.com/Varunram/essentials/rpc"
 	utils "github.com/Varunram/essentials/utils"
 	consts "github.com/YaleOpenLab/openx/consts"

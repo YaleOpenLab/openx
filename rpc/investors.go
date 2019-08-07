@@ -5,9 +5,9 @@ import (
 	"log"
 	"net/http"
 
-	xlm "github.com/Varunram/essentials/crypto/xlm"
-	assets "github.com/Varunram/essentials/crypto/xlm/assets"
-	wallet "github.com/Varunram/essentials/crypto/xlm/wallet"
+	xlm "github.com/YaleOpenLab/openx/chains/xlm"
+	assets "github.com/YaleOpenLab/openx/chains/xlm/assets"
+	wallet "github.com/YaleOpenLab/openx/chains/xlm/wallet"
 	erpc "github.com/Varunram/essentials/rpc"
 	utils "github.com/Varunram/essentials/utils"
 	database "github.com/YaleOpenLab/openx/database"

@@ -6,7 +6,7 @@ import (
 	"log"
 	"testing"
 
-	xlm "github.com/Varunram/essentials/crypto/xlm"
+	xlm "github.com/YaleOpenLab/openx/chains/xlm"
 )
 
 var stablecoinPublicKey = "GDPCLB35E4JBVCL2OI6GCM7XK6PLTSKD5EDLRRKFHEI5L4FDKGL4CLIS"

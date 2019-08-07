@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	xlm "github.com/Varunram/essentials/crypto/xlm"
+	xlm "github.com/YaleOpenLab/openx/chains/xlm"
 )
 
 func TestIssuer(t *testing.T) {

@@ -5,9 +5,9 @@ import (
 	"log"
 	"time"
 
-	tickers "github.com/Varunram/essentials/crypto/exchangetickers"
-	xlm "github.com/Varunram/essentials/crypto/xlm"
-	assets "github.com/Varunram/essentials/crypto/xlm/assets"
+	tickers "github.com/YaleOpenLab/openx/chains/exchangetickers"
+	xlm "github.com/YaleOpenLab/openx/chains/xlm"
+	assets "github.com/YaleOpenLab/openx/chains/xlm/assets"
 	// utils "github.com/Varunram/essentials/utils"
 )
 

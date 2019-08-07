@@ -4,7 +4,7 @@ import (
 	//"log"
 	"github.com/pkg/errors"
 
-	xlm "github.com/Varunram/essentials/crypto/xlm"
+	xlm "github.com/YaleOpenLab/openx/chains/xlm"
 	utils "github.com/Varunram/essentials/utils"
 	"github.com/stellar/go/network"
 	build "github.com/stellar/go/txnbuild"

@@ -4,7 +4,7 @@ import (
 	"github.com/pkg/errors"
 	"log"
 
-	xlm "github.com/Varunram/essentials/crypto/xlm"
+	xlm "github.com/YaleOpenLab/openx/chains/xlm"
 	utils "github.com/Varunram/essentials/utils"
 	"github.com/stellar/go/keypair"
 	build "github.com/stellar/go/txnbuild"
