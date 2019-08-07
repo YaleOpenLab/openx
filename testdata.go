@@ -8,8 +8,8 @@ import (
 	utils "github.com/Varunram/essentials/utils"
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
-	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
-	// opzones "github.com/YaleOpenLab/openx/platforms/ozones"
+	opensolar "github.com/YaleOpenLab/opensolar/core"
+		// opzones "github.com/YaleOpenLab/openx/platforms/ozones"
 	sandbox "github.com/YaleOpenLab/openx/sandbox"
 )
 

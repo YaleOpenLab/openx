@@ -11,7 +11,7 @@ import (
 	wallet "github.com/YaleOpenLab/openx/chains/xlm/wallet"
 	consts "github.com/YaleOpenLab/openx/consts"
 	// database "github.com/YaleOpenLab/openx/database"
-	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
+	opensolar "github.com/YaleOpenLab/opensolar/core"
 )
 
 func createAllStaticEntities() error {

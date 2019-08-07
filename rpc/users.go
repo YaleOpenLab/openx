@@ -19,13 +19,12 @@ import (
 	wallet "github.com/YaleOpenLab/openx/chains/xlm/wallet"
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
-	notif "github.com/YaleOpenLab/openx/notif"
-	opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
+	notif "github.com/YaleOpenLab/opensolar/notif"
+	opensolar "github.com/YaleOpenLab/opensolar/core"
 	recovery "github.com/bithyve/research/sss"
 )
 
 func setupUserRpcs() {
-	updateUser()
 	validateUser()
 	getBalances()
 	getXLMBalance()
@@ -135,88 +134,6 @@ func CheckReqdParams(w http.ResponseWriter, r *http.Request, options ...string) 
 	}
 
 	return prepUser, nil
-}
-
-func updateUser() {
-	/* List of changeable parameters for the user struct
-	Name string
-	City string
-	ZipCode string
-	Country string
-	RecoveryPhone string
-	Address string
-	Description string
-	Email string
-	Notification bool
-	*/
-	http.HandleFunc("/user/update", func(w http.ResponseWriter, r *http.Request) {
-		erpc.CheckGet(w, r)
-		erpc.CheckOrigin(w, r)
-		user, err := CheckReqdParams(w, r)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-			return
-		}
-		if r.URL.Query()["name"] != nil {
-			user.Name = r.URL.Query()["name"][0]
-		}
-		if r.URL.Query()["city"] != nil {
-			user.City = r.URL.Query()["city"][0]
-		}
-		if r.URL.Query()["zipcode"] != nil {
-			user.ZipCode = r.URL.Query()["zipcode"][0]
-		}
-		if r.URL.Query()["country"] != nil {
-			user.Country = r.URL.Query()["country"][0]
-		}
-		if r.URL.Query()["recoveryphone"] != nil {
-			user.RecoveryPhone = r.URL.Query()["recoveryphone"][0]
-		}
-		if r.URL.Query()["address"] != nil {
-			user.Address = r.URL.Query()["address"][0]
-		}
-		if r.URL.Query()["description"] != nil {
-			user.Description = r.URL.Query()["description"][0]
-		}
-		if r.URL.Query()["email"] != nil {
-			user.Email = r.URL.Query()["email"][0]
-		}
-		if r.URL.Query()["notification"] != nil {
-			if r.URL.Query()["notification"][0] != "true" {
-				user.Notification = false
-			} else {
-				user.Notification = true
-			}
-		}
-
-		err = user.Save()
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
-			return
-		}
-
-		// check whether given user is an investor or recipient
-		investor, err := InvValidateHelper(w, r)
-		if err == nil {
-			investor.U = &user
-			err = investor.Save()
-			if err != nil {
-				erpc.ResponseHandler(w, erpc.StatusInternalServerError)
-				return
-			}
-		}
-		recipient, err := RecpValidateHelper(w, r)
-		if err == nil {
-			recipient.U = &user
-			err = recipient.Save()
-			if err != nil {
-				erpc.ResponseHandler(w, erpc.StatusInternalServerError)
-				return
-			}
-		}
-		erpc.ResponseHandler(w, erpc.StatusOK)
-		// now we have the user, need to check which parts the user has specified
-	})
 }
 
 // validateUser is a route that helps validate users on the platform
