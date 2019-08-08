@@ -138,7 +138,7 @@ type StellWallet struct {
 }
 
 // NewUser creates a new user
-func NewUser(uname string, pwd string, seedpwd string, Name string) (User, error) {
+func NewUser(uname string, pwhash string, seedpwd string, Name string) (User, error) {
 	// call this after the user has failled in username and password.
 	// Store hashed password in the database
 	var a User
@@ -162,7 +162,7 @@ func NewUser(uname string, pwd string, seedpwd string, Name string) (User, error
 		return a, errors.Wrap(err, "username collision")
 	}
 
-	a.Pwhash = utils.SHA3hash(pwd) // store tha sha3 hash
+	a.Pwhash = pwhash // store tha sha3 hash
 	// now we have a new User, take this and then send this struct off to be stored in the database
 	a.FirstSignedUp = utils.Timestamp()
 	a.Kyc = false

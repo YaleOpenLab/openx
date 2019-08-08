@@ -23,7 +23,6 @@ func Testnet() error {
 
 	opensolarconsts.HomeDir += "/testnet"
 	opensolarconsts.DbDir = opensolarconsts.HomeDir + "/database/"                   // the directory where the database is stored (project info, user info, etc)
-	opensolarconsts.OpenSolarIssuerDir = opensolarconsts.HomeDir + "/projects/"      // the directory where we store opensolar projects' issuer seeds
 	opensolarconsts.PlatformSeedFile = opensolarconsts.HomeDir + "/platformseed.hex" // where the platform's seed is stored
 
 	log.Println("initializing openx testnet..")
