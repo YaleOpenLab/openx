@@ -6,7 +6,6 @@ import (
 
 	erpc "github.com/Varunram/essentials/rpc"
 	utils "github.com/Varunram/essentials/utils"
-	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
 )
 
@@ -88,20 +87,5 @@ func getUserInfo() {
 
 		sUser := sanitizeUser(user)
 		erpc.MarshalSend(w, sUser)
-	})
-}
-
-func mainnetRPC() {
-	http.HandleFunc("/mainnet", func(w http.ResponseWriter, r *http.Request) {
-		// set a single byte response for mainnet / testnet
-		// mainnet is 0, testnet is 1
-		mainnet := []byte{0}
-		testnet := []byte{1}
-		if consts.Mainnet {
-			w.Write(mainnet)
-		} else {
-			w.Write(testnet)
-		}
-		return
 	})
 }

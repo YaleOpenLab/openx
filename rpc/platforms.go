@@ -11,10 +11,27 @@ import (
 )
 
 func setupPlatformRoutes() {
+	mainnetRPC()
 	pfGetConsts()
 	pfGetUser()
 	pfValidateUser()
 	pfNewUser()
+	pfCollisionCheck()
+}
+
+func mainnetRPC() {
+	http.HandleFunc("/mainnet", func(w http.ResponseWriter, r *http.Request) {
+		// set a single byte response for mainnet / testnet
+		// mainnet is 0, testnet is 1
+		mainnet := []byte{0}
+		testnet := []byte{1}
+		if consts.Mainnet {
+			w.Write(mainnet)
+		} else {
+			w.Write(testnet)
+		}
+		return
+	})
 }
 
 type OpensolarConstReturn struct {
@@ -98,20 +115,30 @@ func pfValidateUser() {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
 
-		if r.URL.Query()["name"] == nil || r.URL.Query()["pwhash"] == nil {
+		if r.URL.Query()["code"] == nil {
 			log.Println("code missing")
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 		}
 
-		name := r.URL.Query()["name"][0]
-		pwhash := r.URL.Query()["pwhash"][0]
+		code := r.URL.Query()["code"][0]
 
-		user, err := database.ValidateUser(name, pwhash)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
-			return
+		if code == "OPENSOLARTEST" {
+
+			if r.URL.Query()["name"] == nil || r.URL.Query()["pwhash"] == nil {
+				log.Println("code missing")
+				erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			}
+
+			name := r.URL.Query()["name"][0]
+			pwhash := r.URL.Query()["pwhash"][0]
+
+			user, err := database.ValidateUser(name, pwhash)
+			if err != nil {
+				erpc.ResponseHandler(w, erpc.StatusBadRequest)
+				return
+			}
+			erpc.MarshalSend(w, user)
 		}
-		erpc.MarshalSend(w, user)
 	})
 }
 
@@ -120,24 +147,61 @@ func pfNewUser() {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
 
-		if r.URL.Query()["name"] == nil || r.URL.Query()["pwhash"] == nil || r.URL.Query()["seedpwd"] == nil ||
-			r.URL.Query()["realname"] == nil {
+		if r.URL.Query()["code"] == nil {
 			log.Println("code missing")
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 		}
 
-		name := r.URL.Query()["name"][0]
-		pwhash := r.URL.Query()["pwhash"][0]
-		seedpwd := r.URL.Query()["seedpwd"][0]
-		realname := r.URL.Query()["realname"][0]
+		code := r.URL.Query()["code"][0]
+		if code == "OPENSOLARTEST" {
 
-		user, err := database.NewUser(name, pwhash, seedpwd, realname)
-		if err != nil {
+			if r.URL.Query()["name"] == nil || r.URL.Query()["pwhash"] == nil || r.URL.Query()["seedpwd"] == nil ||
+				r.URL.Query()["realname"] == nil {
+				log.Println("code missing")
+				erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			}
+
+			name := r.URL.Query()["name"][0]
+			pwhash := r.URL.Query()["pwhash"][0]
+			seedpwd := r.URL.Query()["seedpwd"][0]
+			realname := r.URL.Query()["realname"][0]
+
+			user, err := database.NewUser(name, pwhash, seedpwd, realname)
+			if err != nil {
+				erpc.ResponseHandler(w, erpc.StatusBadRequest)
+				return
+			}
+			erpc.MarshalSend(w, user)
+		}
+	})
+}
+
+func pfCollisionCheck() {
+	http.HandleFunc("/platform/user/collision", func(w http.ResponseWriter, r *http.Request) {
+		erpc.CheckGet(w, r)
+		erpc.CheckOrigin(w, r)
+
+		if r.URL.Query()["code"] == nil {
+			log.Println("code missing")
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
-			return
 		}
 
-		log.Println("USER+", user)
-		erpc.MarshalSend(w, user)
+		code := r.URL.Query()["code"][0]
+
+		if code == "OPENSOLARTEST" {
+			if r.URL.Query()["name"] == nil {
+				erpc.ResponseHandler(w, erpc.StatusBadRequest)
+				return
+			}
+			name := r.URL.Query()["name"][0]
+			noCollision := []byte{0}
+			collision := []byte{1}
+			_, err := database.CheckUsernameCollision(name)
+			if err != nil {
+				w.Write(collision)
+			} else {
+				w.Write(noCollision)
+			}
+		}
 	})
 }

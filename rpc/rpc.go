@@ -38,7 +38,6 @@ func StartServer(portx int, insecure bool) {
 	setupAnchorHandlers()
 	setupCAHandlers()
 	adminHandlers()
-	mainnetRPC()
 	setupPlatformRoutes()
 
 	port, err := utils.ToString(portx)
