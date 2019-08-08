@@ -8,11 +8,17 @@ import (
 	"strings"
 	"time"
 
+	"github.com/spf13/viper"
+
 	erpc "github.com/Varunram/essentials/rpc"
 	utils "github.com/Varunram/essentials/utils"
-	rpc "github.com/YaleOpenLab/openx/rpc"
-	"github.com/spf13/viper"
 )
+
+// ParticlePingResponse is a structure to parse returned particle.io data
+type ParticlePingResponse struct {
+	Online bool `json:"online"`
+	Ok     bool `json:"ok"`
+}
 
 func main() {
 	var err error
@@ -40,7 +46,7 @@ func main() {
 			log.Println("did not receive success response", err)
 			return
 		}
-		var x rpc.ParticlePingResponse
+		var x ParticlePingResponse
 		err = json.Unmarshal(data, &x)
 		if err != nil {
 			log.Println("did not unmarshal json", err)

@@ -93,6 +93,8 @@ func getUserInfo() {
 
 func mainnetRPC() {
 	http.HandleFunc("/mainnet", func(w http.ResponseWriter, r *http.Request) {
+		// set a single byte response for mainnet / testnet
+		// mainnet is 0, testnet is 1
 		mainnet := []byte{0}
 		testnet := []byte{1}
 		if consts.Mainnet {
