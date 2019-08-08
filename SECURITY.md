@@ -14,7 +14,7 @@ Since openx is in its research stage right now, we are unable to provide any rew
 
 ## Official Communication Channels
 
-1. freenode IRC on #openx / Personal Message to "Varunram" on freenode  
+1. Personal Message to "Varunram" on freenode IRC
 2. Preferably Encrypted Email to contact@varunram.com. [Our PGP Key](https://pgp.mit.edu/pks/lookup?op=vindex&fingerprint=on&search=0x708C606504A49970) fingerprint is `C98F 0014 9A99 36E4 E56D  2471 708C 6065 04A4 9970`  
 
 If you do not receive a reply within one day, please do send a reminder so we can act at the earliest.  

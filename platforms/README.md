@@ -1,6 +1,3 @@
 # Platforms
 
-This sub repo contains the various platforms part of the openx platform.
-
-1. Opensolar
-1. Opzones (Retired)
+This subrepo contains platform specific code that platforms can reuse

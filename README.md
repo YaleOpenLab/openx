@@ -4,20 +4,16 @@
 [![Codecov](https://codecov.io/gh/YaleOpenLab/openx/branch/master/graph/badge.svg)](https://codecov.io/gh/YaleOpenLab/openx)
 [![Go Report Card](https://goreportcard.com/badge/github.com/YaleOpenLab/openx)](https://goreportcard.com/report/github.com/YaleOpenLab/openx)
 
-This repo contains a WIP implementation of the OpenX idea in stellar. Broadly, the openx model seeks to implement the paradigm of investing and developing projects without hassles and enabling smart ownership with the help of semi trust-less entities on the blockchain. The openx model can be thought more generally as a platform of platforms and houses multiple platforms within it (in `platforms/`).  The goal is to have a common interface between all parties that relate to a project: investors, investees (i.e. beneficiaries or receivers of the investment) and the family of developers (that include all service providers). Depending upon the country of project origin, investors may be required to complete KYC to be able to invest in assets. The openx model can be adapted to any blockchain but we currently use the Stellar blockchain to create and move project assets. There are two platforms housed within openx:
-
-1. Opzones - the ozones platform focuses on opportunity zones.
-
-2. Opensolar - the opensolar platform aims to use schools as community centres during natural disasters like hurricanes and also aims to make schools electricity sufficient by installing solar panels on rooftop spaces. The schools themselves need not pay upfront for the solar panel cost, but instead just need to pay their electricity bill over time and through the course of payment, get ownership of the solar panels.
-
+This repo contains a WIP implementation of the OpenX idea in stellar. Broadly, the openx model seeks to implement the paradigm of investing and developing projects without hassles and enabling smart ownership with the help of semi trust-less entities on the blockchain. The openx model can be thought more generally as a platform of platforms and houses multiple platforms within it (in `platforms/`).  The goal is to have a common interface between all parties that relate to a project: investors, investees (i.e. beneficiaries or receivers of the investment) and the family of developers (that include all service providers). Depending upon the country of project origin, investors may be required to complete KYC to be able to invest in assets. The openx model can be adapted to any blockchain but we currently use the Stellar blockchain to create and move project assets.  
 
 ## Openx Repositories
 
 Openx, like Go is built on the idea of modularity and reusability of packages.
 
-1. This repo contains the bare bone architeecture necessary for the platform  
+1. This repo contains the bare bone architecture necessary for the platform  
 2. [essentials](https://github.com/Varunram/essentials) contains the code necessary for commonly used packages, crypto and database handlers  
 3. [openx-cli](https://github.com/Varunram/openx-cli) contains CLI clients that can interface with openx  
+4. [opensolar](https://github.com/YaleOpenLab/opensolar) contains an implementation of the openx idea targeted at solar infrastructure  
 
 While making an issue related to openx however, please open in this repo for easy tracking and referencing in multiple places.
 
@@ -44,17 +40,13 @@ ipfs is used by some parts of the program to store legal contracts, files that t
 
 You need to keep your peer key (`ipfs.key` usually) in a safe place for future reference. Start ipfs using `ipfs daemon` and you can test if it worked by creating a test file `test.txt` and run `ipfs add test.txt` to see if it succeeds. The resultant hash can be decrypted using `curl "http://127.0.0.1:8080/ipfs/hash"` where 8080 is the endpoint of the ipfs server or by doing `cat /ipfs/hash` directly. You can also refer to [this helpful tutorial](https://michalzalecki.com/set-up-ipfs-node-on-the-server/) in order to get started with ipfs.
 
-## Installing EasyJson
-
-[EasyJson](https://github.com/mailru/easyjson) is a project that generates fast json encoding and decoding code that we use. Benchmarks show that it is ~3x faster than the native `encoding/json` package. To generate the required files, run `./easyjson -all */*.go` and `./easyjson -all */**/*.go` to generate json encoding for all required files.
-
 ## Running tests
 
 Running tests is simple with `go test` but the tests have flags since some require running other daemons in the background (`ipfs`). There are two kinds of flags right now - `travis` and `all`. If you need the coverage stats as well, you need to
 ```
 go get golang.org/x/tools/cmd/cover
 ```
-if you already don't have the package. Running `go test --tags="all" -coverprofile=test.txt ./...` should run all the tests and provide coverage data on each specific package. Running with the tag `travis` will omit the tests in `ipfs/` which requires [a local `go-ipfs` node running](https://michalzalecki.com/set-up-ipfs-node-on-the-server/) as described above.
+if you already don't have the package. Running `go test --tags="travis" -coverprofile=test.txt ./...` should run all the tests and provide coverage data on each specific package. Running with the tag `travis` will omit the tests in `ipfs/` which requires [a local `go-ipfs` node running](https://michalzalecki.com/set-up-ipfs-node-on-the-server/) as described above.
 
 ## Contributing
 
@@ -69,4 +61,4 @@ For security related issues, *DO NOT OPEN A GITHUB ISSUE!*. Please disclose the 
 In addition to this, openx is fully fully compliant with the [disclose.io](https://disclose.io) core terms followed by [bugcrowd](https://www.bugcrowd.com/resource/what-is-responsible-disclosure/). For more info, see [SECURITY.md](SECURITY.md)
 
 ## License
-openx is licensed under the [GPL3 License](https://github.com/YaleOpenLab/openx/blob/master/LICENSE) and [openx-frontend](https://github.com/YaleOpenLab/openx-frontend) is licensed under the [MIT License](https://github.com/YaleOpenLab/openx-frontend/blob/master/LICENSE.md). This is to ensure that the broader openx community benefits from any change made in openx while still having the freedom to build proprietary platforms.
+[GPL3](https://github.com/YaleOpenLab/openx/blob/master/LICENSE)

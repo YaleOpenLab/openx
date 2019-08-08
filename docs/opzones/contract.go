@@ -1,6 +1,6 @@
+/*
 package ozones
 
-/*
 import (
 	"github.com/pkg/errors"
 	"log"

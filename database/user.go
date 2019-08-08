@@ -30,7 +30,7 @@ type User struct {
 	City string
 	// the city of residence of the resident
 	ZipCode string
-	// the zipcode of hte particular city
+	// the zipcode of the particular city
 	Country string
 	// the coutnry of residence of the resident
 	RecoveryPhone string
@@ -87,7 +87,7 @@ type User struct {
 	// of what exactly needs to be submitted.
 	KYC KycStruct
 
-	StarRating map[int]int // peer bases tarr rating that users can give of each other. Can be gamed, but this is complemented by
+	StarRating map[int]int // peer based star rating that users can give of each other. Can be gamed, but this is complemented by
 	// the automated feedback system, so we should be good.
 
 	GivenStarRating map[int]int // to keep track of users for whom you've given feedback
