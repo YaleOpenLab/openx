@@ -7,6 +7,7 @@ import (
 	"os"
 
 	consts "github.com/YaleOpenLab/openx/consts"
+	loader "github.com/YaleOpenLab/openx/loader"
 	// database "github.com/YaleOpenLab/openx/database"
 	// ipfs "github.com/YaleOpenLab/openx/ipfs"
 	// opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
@@ -61,19 +62,18 @@ func main() {
 	}
 
 	if consts.Mainnet {
-		err = MainnetLoader()
+		err = loader.Mainnet()
 		if err != nil {
 			log.Fatal(err)
 		}
 	} else {
-		err = TestnetLoader()
+		err = loader.Testnet()
 		if err != nil {
 			log.Fatal(err)
 		}
-	}
-
-	if opts.Trustline {
-		StablecoinTrust()
+		if opts.Trustline {
+			loader.StablecoinTrust()
+		}
 	}
 
 	if opts.Rescue {

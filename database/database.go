@@ -25,7 +25,7 @@ var UserBucket = []byte("Users")
 // CreateHomeDir creates a home directory
 func CreateHomeDir() {
 	// edb.CreateDirs(consts.HomeDir, consts.DbDir, consts.OpenSolarIssuerDir, consts.OpzonesIssuerDir)
-	edb.CreateDirs(consts.HomeDir, consts.DbDir, consts.OpenSolarIssuerDir)
+	edb.CreateDirs(consts.HomeDir, consts.DbDir)
 	db, _ := edb.CreateDB(consts.DbDir+consts.DbName, UserBucket)
 	db.Close()
 }

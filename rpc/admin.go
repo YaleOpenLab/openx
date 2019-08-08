@@ -71,8 +71,7 @@ func freezeServer() {
 			return
 		}
 
-		consts.Mainnet = false
-		consts.SetConsts() // runtime const migration
+		consts.SetConsts(false) // runtime const migration
 		log.Println("Server frozen, state reverted to mainnet. Restart server to unfreeze")
 	})
 }

@@ -40,21 +40,23 @@ var AlgodToken string
 var KmdAddress string
 var KmdToken string
 
-func SetConsts() {
-	if !Mainnet {
+func SetConsts(mainnet bool) {
+	if !mainnet {
+
+		HomeDir += "/testnet"
+		DbDir = HomeDir + "/database/"
+		PlatformSeedFile = HomeDir + "/platformseed.hex"
+
 		StablecoinCode = "STABLEUSD"                                                     // this is constant across different pubkeys
-		StablecoinPublicKey = "GDPCLB35E4JBVCL2OI6GCM7XK6PLTSKD5EDLRRKFHEI5L4FDKGL4CLIS" // set this after running this the first time. replace for tests to run properly
-		StablecoinSeed = "SD3FRV7UUKBBXIT6HQ74YTR3GBHYKY6QK75QTX6E7MJBN5UOBZYVGRJO"      // set this after running this the first time. replace for tests to run properly
-		StableCoinSeedFile = os.Getenv("HOME") + "/.openx/stablecoinseed.hex"
+		StablecoinPublicKey = "GDUNL6KJKSCBEFTVRXDN7ZPLCYXUDZUTJRZ4IUHD7DQ5YHGO6EPPYBTZ" // set this after running this the first time. replace for tests to run properly
+		StablecoinSeed = "SDGD3L3KVINB5OICLAQRQLGTNDDWRBELTQZG6FHFYCEZRQPWKEOQOWR6"      // set this after running this the first time. replace for tests to run properly
+		StableCoinSeedFile = DbDir + "/stablecoinseed.hex"
 		StablecoinTrustLimit = 1000000000
 		// testnet anchor params
 		AnchorUSDCode = "USD"
 		AnchorUSDAddress = "GCKFBEIYV2U22IO2BJ4KVJOIP7XPWQGQFKKWXR6DOSJBV7STMAQSMTGG"
 		AnchorUSDTrustLimit = 1000000
 		AnchorAPI = "https://sandbox-api.anchorusd.com/"
-
-		stablecoin.SetConsts(StablecoinCode, StablecoinPublicKey, StablecoinSeed, StableCoinSeedFile, StablecoinTrustLimit,
-			AnchorUSDCode, AnchorUSDAddress, AnchorUSDTrustLimit, Mainnet)
 
 		// algorand stuff is only enabled with stellar testnet and not mainnet
 		AlgodAddress = "http://localhost:50435"
@@ -66,12 +68,18 @@ func SetConsts() {
 		RefillAmount = 10
 		xlm.SetConsts(RefillAmount, Mainnet)
 
+		stablecoin.SetConsts(StablecoinCode, StablecoinPublicKey, StablecoinSeed, StableCoinSeedFile, StablecoinTrustLimit,
+			AnchorUSDCode, AnchorUSDAddress, AnchorUSDTrustLimit, Mainnet)
+
 		email.SetConsts(PlatformEmail, PlatformEmailPass)
 
 		IpfsFileLength = 10
 		ipfs.SetConsts(IpfsFileLength)
 	} else {
 		// init mainnet params
+		HomeDir += "/mainnet"
+		DbDir = HomeDir + "/database/"
+		PlatformSeedFile = HomeDir + "/platformseed.hex"
 
 		// set in house stablecoin params to zero to not trade in it
 		StablecoinPublicKey = ""
@@ -102,10 +110,12 @@ func SetConsts() {
 var HomeDir = os.Getenv("HOME") + "/.openx"          // home directory where we store everything
 var DbDir = HomeDir + "/database/"                   // the directory where the database is stored (project info, user info, etc)
 var DbName = "openx.db"                              // the name of the db that we want to store stuff in
-var OpenSolarIssuerDir = HomeDir + "/projects/"      // the directory where we store opensolar projects' issuer seeds
-var OpzonesIssuerDir = HomeDir + "/opzones/"         // the directory where we store ozpones projects' issuer seeds
 var PlatformSeedFile = HomeDir + "/platformseed.hex" // where the platform's seed is stored
 
-// ports + number consts
 var Tlsport = 443         // default port for ssl
 var DefaultRpcPort = 8080 // the default port on which the rpc server of the platform starts. Defaults to HTTPS
+
+// var OpenSolarIssuerDir = HomeDir + "/projects/"      // the directory where we store opensolar projects' issuer seeds
+// var OpzonesIssuerDir = HomeDir + "/opzones/"         // the directory where we store ozpones projects' issuer seeds
+
+// ports + number consts
