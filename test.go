@@ -10,7 +10,7 @@ import (
 	loader "github.com/YaleOpenLab/openx/loader"
 	// database "github.com/YaleOpenLab/openx/database"
 	// ipfs "github.com/YaleOpenLab/openx/ipfs"
-	// opensolar "github.com/YaleOpenLab/openx/platforms/opensolar"
+	opensolar "github.com/YaleOpenLab/opensolar/consts"
 	rpc "github.com/YaleOpenLab/openx/rpc"
 	// scan "github.com/YaleOpenLab/openx/scan"
 	// oracle "github.com/YaleOpenLab/openx/oracle"
@@ -74,12 +74,14 @@ func main() {
 		if opts.Trustline {
 			loader.StablecoinTrust()
 		}
+		opensolar.SetTnConsts()
 	}
 
 	if opts.Rescue {
 		RescueMode()
 		os.Exit(1)
 	}
+
 	/*
 		user, err := database.RetrieveUser(1)
 		if err != nil {
@@ -95,26 +97,13 @@ func main() {
 	// run this only when you need to monitor the tellers. Not required for local testing.
 	// go opensolar.MonitorTeller(1)
 	fmt.Println(`
-		███████╗████████╗ █████╗ ██████╗ ████████╗██╗███╗   ██╗ ██████╗      ██████╗ ██████╗ ███████╗███╗   ██╗██╗  ██╗
-		██╔════╝╚══██╔══╝██╔══██╗██╔══██╗╚══██╔══╝██║████╗  ██║██╔════╝     ██╔═══██╗██╔══██╗██╔════╝████╗  ██║╚██╗██╔╝
-		███████╗   ██║   ███████║██████╔╝   ██║   ██║██╔██╗ ██║██║  ███╗    ██║   ██║██████╔╝█████╗  ██╔██╗ ██║ ╚███╔╝
-		╚════██║   ██║   ██╔══██║██╔══██╗   ██║   ██║██║╚██╗██║██║   ██║    ██║   ██║██╔═══╝ ██╔══╝  ██║╚██╗██║ ██╔██╗
-		███████║   ██║   ██║  ██║██║  ██║   ██║   ██║██║ ╚████║╚██████╔╝    ╚██████╔╝██║     ███████╗██║ ╚████║██╔╝ ██╗
-		╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝╚═╝  ╚═══╝ ╚═════╝      ╚═════╝ ╚═╝     ╚══════╝╚═╝  ╚═══╝╚═╝  ╚═╝
+		██████╗ ██████╗ ███████╗███╗   ██╗██╗  ██╗
+	 ██╔═══██╗██╔══██╗██╔════╝████╗  ██║╚██╗██╔╝
+	 ██║   ██║██████╔╝█████╗  ██╔██╗ ██║ ╚███╔╝
+	 ██║   ██║██╔═══╝ ██╔══╝  ██║╚██╗██║ ██╔██╗
+	 ╚██████╔╝██║     ███████╗██║ ╚████║██╔╝ ██╗
+	  ╚═════╝ ╚═╝     ╚══════╝╚═╝  ╚═══╝╚═╝  ╚═╝
 		`)
-
-	log.Println("PARAMS FOR OPENSOLAR:")
-	fmt.Println("PlatformPublicKey: ", consts.PlatformPublicKey)
-	fmt.Println("PlatformSeed: ", consts.PlatformSeed)
-	fmt.Println("PlatformEmail: ", consts.PlatformEmail)
-	fmt.Println("PlatformEmailPass: ", consts.PlatformEmailPass)
-	fmt.Println("StablecoinCode: ", consts.StablecoinCode)
-	fmt.Println("StablecoinPublicKey: ", consts.StablecoinPublicKey)
-	fmt.Println("AnchorUSDCode: ", consts.AnchorUSDCode)
-	fmt.Println("AnchorUSDAddress: ", consts.AnchorUSDAddress)
-	fmt.Println("AnchorUSDTrustLimit: ", consts.AnchorUSDTrustLimit)
-	fmt.Println("AnchorAPI: ", consts.AnchorAPI)
-	fmt.Println("Mainnet: ", consts.Mainnet)
 
 	rpc.StartServer(port, insecure)
 }

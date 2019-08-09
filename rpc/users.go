@@ -153,7 +153,6 @@ func validateUser() {
 		var prepRecipient opensolar.Recipient
 		var prepEntity opensolar.Entity
 
-		log.Println("PREPUSER: ", prepUser)
 		var x ValidateParams
 
 		prepInvestor, err = opensolar.RetrieveInvestor(prepUser.Index)
