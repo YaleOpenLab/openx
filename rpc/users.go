@@ -156,7 +156,7 @@ func validateUser() {
 		var x ValidateParams
 
 		prepInvestor, err = opensolar.RetrieveInvestor(prepUser.Index)
-		if err == nil {
+		if err == nil && prepInvestor.U.Index != 0 {
 			x.Role = "Investor"
 			x.Entity = prepInvestor
 			erpc.MarshalSend(w, x)
@@ -164,7 +164,7 @@ func validateUser() {
 		}
 
 		prepRecipient, err = opensolar.RetrieveRecipient(prepUser.Index)
-		if err == nil {
+		if err == nil && prepRecipient.U.Index != 0 {
 			x.Role = "Recipient"
 			x.Entity = prepRecipient
 			erpc.MarshalSend(w, x)
@@ -172,7 +172,7 @@ func validateUser() {
 		}
 
 		prepEntity, err = opensolar.RetrieveEntity(prepUser.Index)
-		if err == nil {
+		if err == nil && prepEntity.U.Index != 0 {
 			x.Role = "Entity"
 			x.Entity = prepEntity
 			erpc.MarshalSend(w, x)

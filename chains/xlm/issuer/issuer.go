@@ -51,13 +51,14 @@ func DeleteIssuer(issuerPath string, projIndex int) error {
 // FundIssuer creates an issuer account and funds it with a second account
 func FundIssuer(issuerPath string, projIndex int, seedpwd string, funderSeed string) error {
 	// need to read the seed from the file using the seedpwd
+	log.Println("Setting up issuer for project: ", projIndex)
 	path := GetPath(issuerPath, projIndex)
 	pubkey, seed, err := wallet.RetrieveSeed(path, seedpwd)
 	if err != nil {
 		return errors.Wrap(err, "Error while retrieving seed")
 	}
 	log.Printf("Project Index: %d, Seed: %s, Address: %s", projIndex, seed, pubkey)
-	_, txhash, err := xlm.SendXLMCreateAccount(pubkey, 100, funderSeed)
+	_, txhash, err := xlm.SendXLMCreateAccount(pubkey, 5, funderSeed)
 	if err != nil {
 		return errors.Wrap(err, "Error while sending xlm to create account")
 	}

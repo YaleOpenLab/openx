@@ -84,8 +84,12 @@ func ReturnSourceAccount(seed string) (horizonprotocol.Account, keypair.KP, erro
 	if err != nil {
 		return sourceAccount, mykp, errors.Wrap(err, "could not parse keypair, quitting")
 	}
-
-	client := horizon.DefaultTestNetClient
+	var client *horizon.Client
+	if Mainnet {
+		client = horizon.DefaultPublicNetClient
+	} else {
+		client = horizon.DefaultTestNetClient
+	}
 	ar := horizon.AccountRequest{AccountID: mykp.Address()}
 	sourceAccount, err = client.AccountDetail(ar)
 	if err != nil {
@@ -97,7 +101,12 @@ func ReturnSourceAccount(seed string) (horizonprotocol.Account, keypair.KP, erro
 
 // ReturnSourceAccountPubkey returns the source account of the pubkey
 func ReturnSourceAccountPubkey(pubkey string) (horizonprotocol.Account, error) {
-	client := horizon.DefaultTestNetClient
+	var client *horizon.Client
+	if Mainnet {
+		client = horizon.DefaultPublicNetClient
+	} else {
+		client = horizon.DefaultTestNetClient
+	}
 	ar := horizon.AccountRequest{AccountID: pubkey}
 	sourceAccount, err := client.AccountDetail(ar)
 	if err != nil {

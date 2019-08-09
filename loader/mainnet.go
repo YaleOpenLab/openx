@@ -30,6 +30,11 @@ func Mainnet() error {
 		if err != nil {
 			return err
 		}
+	} else {
+		err = openx.InitializePlatform()
+		if err != nil {
+			return err
+		}
 	}
 
 	viper.SetConfigType("yaml")
