@@ -10,36 +10,94 @@ import (
 	xlm "github.com/YaleOpenLab/openx/chains/xlm"
 )
 
-// contains constants - some arbitrary, some forced due to stellar. Each account should have a minimum of 0.5 XLM and each trust line costs 0.5 XLM.
-// For more info about Stellar costs see: https://www.stellar.org/developers/guides/concepts/accounts.html
+// the consts package contains constants that are specific to openx. These constants
+// can be accessed in other platforms by using the platform APIs. If a third party
+// platform wants to set consts, it can do so using the SetConsts function below
 
-// Platform consts
-var PlatformPublicKey string // set this to empty and store during runtime
-var PlatformEmail string     // email so we can send notifications to the platform when needed
-var PlatformEmailPass string // the password associated with the platform's email id
-var PlatformSeed string      // set this to empty and store during runtime
-var KYCAPIKey string         // API key to call the KYC provider's API
-var Mainnet bool             // bool to denote whether this is mainnet or testnet
-var IpfsFileLength int       // length of the ipfs file hash
-var RefillAmount float64     // refill amount (testnet only)
+// PlatformPublicKey is the Stellar public key of the openx platform
+var PlatformPublicKey string
 
-// stablecoin related consts
+// PlatformSeed is the Stellar seed corresponding to the above Stellar public key
+var PlatformSeed string
+
+// PlatformEmail is the email of the platform used to send notifications related to openx
+var PlatformEmail string
+
+// PlatformEmailPass is the password for the emial account linked above
+var PlatformEmailPass string
+
+// KYCAPIKey is the KYC key for ComplyAdvantage, a leading KYC provider which is used with openx
+var KYCAPIKey string
+
+// Mainnet denotes if openx is running on Stellar mainnet / testnet
+var Mainnet bool
+
+// IpfsFileLength is the length of the temporary ipfs file created during upload of third party documents
+var IpfsFileLength int
+
+// RefillAmount is the amount used for refilling an account on Stellar testnet
+var RefillAmount float64
+
+// StablecoinCode is the code of the in house stablecoin that openx possesses
 var StablecoinCode string
+
+// StablecoinPublicKey is the public Stellar address of our in house stablecoin
 var StablecoinPublicKey string
+
+// StablecoinSeed is the Seed corresponding to the above Stablecoin Publickey
 var StablecoinSeed string
+
+// StableCoinSeedFile is the location where the encrypted seed is stored and decrypted each time the platform is started
 var StableCoinSeedFile string
+
+// StablecoinTrustLimit is the trust limit till which an account trusts openx's stablecoin
 var StablecoinTrustLimit float64
+
+// AnchorUSDCode is the code for AnchorUSD's stablecoin
 var AnchorUSDCode string
+
+// AnchorUSDAddresss is the address associated with AnchorUSD
 var AnchorUSDAddress string
+
+// AnchorUSDTrustLimit is the trust limit till which an account trusts AnchorUSD's stablecoin
 var AnchorUSDTrustLimit float64
+
+// AnchorAPI is the URL of AnchorUSD's API
 var AnchorAPI string
 
-// algorand consts
+// AlgodAddress is the address of the Algod Daemon
 var AlgodAddress string
+
+// AlgodToken is the RPC token required to call Algod endpoints
 var AlgodToken string
+
+// KmdAddress is the Algorand Key Management Daemon's address
 var KmdAddress string
+
+// KmdToken is the token required to access the Algorand Key Management Daemon
 var KmdToken string
 
+// directories
+// HomeDir is the directory where openx users and other elements specific to openx are stored
+var HomeDir = os.Getenv("HOME") + "/.openx"
+
+// DbDir is the directory where the openx database (boltDB) is stored
+var DbDir = HomeDir + "/database/"
+
+// DbName is the name of the openx database
+var DbName = "openx.db"
+
+// PlatformSeedFile is the location where PlatformSeedFile is stored and decrypted each time the platform is started
+var PlatformSeedFile = HomeDir + "/platformseed.hex"
+
+// Tlsport is the default SSL port on which openx starts
+var Tlsport = 443
+
+// DefaultRpcPort is the default Insecure port on which openx starts
+var DefaultRpcPort = 8080
+
+// SetConsts sets the consts required for openx to operate. Third party platforms should
+// call this before starting their platform.
 func SetConsts(mainnet bool) {
 	if !mainnet {
 
@@ -105,17 +163,3 @@ func SetConsts(mainnet bool) {
 		ipfs.SetConsts(IpfsFileLength)
 	}
 }
-
-// directories
-var HomeDir = os.Getenv("HOME") + "/.openx"          // home directory where we store everything
-var DbDir = HomeDir + "/database/"                   // the directory where the database is stored (project info, user info, etc)
-var DbName = "openx.db"                              // the name of the db that we want to store stuff in
-var PlatformSeedFile = HomeDir + "/platformseed.hex" // where the platform's seed is stored
-
-var Tlsport = 443         // default port for ssl
-var DefaultRpcPort = 8080 // the default port on which the rpc server of the platform starts. Defaults to HTTPS
-
-// var OpenSolarIssuerDir = HomeDir + "/projects/"      // the directory where we store opensolar projects' issuer seeds
-// var OpzonesIssuerDir = HomeDir + "/opzones/"         // the directory where we store ozpones projects' issuer seeds
-
-// ports + number consts
