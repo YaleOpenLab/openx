@@ -77,7 +77,7 @@ type CAResponse struct {
 					Sources []string `json:"sources"`
 					Types   []string `json:"types"`
 				} `json:"doc"`
-				Match_ypes    []string `json:"match_types"`
+				Matchtypes    []string `json:"match_types"`
 				Score         float64  `json:"score"`
 				Matchstatus   string   `json:"match_status"`
 				Iswhitelisted bool     `json:"is_whitelisted"`
@@ -86,7 +86,7 @@ type CAResponse struct {
 	} `json:"content"`
 }
 
-// PostRequest is a handler that makes it easy to send out POST requests
+// PostRequestCA is a handler that makes it easy to send out POST requests
 func PostRequestCA(body string, payload io.Reader) ([]byte, error) {
 	// the body must be the param that you usually pass to curl's -d option
 	var dummy []byte
