@@ -25,10 +25,8 @@ import (
 	// "github.com/spf13/viper"
 )
 
-// the server powering the openx platform of platforms. There are two clients that can be used
-// with the backend - ofcli and emulator
-// refer https://github.com/stellar/go/blob/master/build/main_test.go in case the stellar
-// go SDK docs are insufficient.
+// the backend server powering the openx platform of platforms
+
 var opts struct {
 	Insecure  bool `short:"i" description:"Start the API using http. Not recommended"`
 	Port      int  `short:"p" description:"The port on which the server runs on. Default: HTTPS/8080"`
