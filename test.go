@@ -66,6 +66,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+		opensolar.SetMnConsts()
 	} else {
 		err = loader.Testnet()
 		if err != nil {
@@ -74,6 +75,7 @@ func main() {
 		if opts.Trustline {
 			loader.StablecoinTrust()
 		}
+		opensolar.SetTnConsts()
 	}
 
 	if opts.Rescue {
@@ -81,7 +83,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	opensolar.SetTnConsts()
 	/*
 		user, err := database.RetrieveUser(1)
 		if err != nil {

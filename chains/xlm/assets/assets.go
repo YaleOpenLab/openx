@@ -27,7 +27,13 @@ func CreateAsset(assetName string, PublicKey string) build.Asset {
 // preset limit on how much it is willing to trust the issuer
 func TrustAsset(assetCode string, assetIssuer string, limitx float64, seed string) (string, error) {
 	// TRUST is FROM Seed TO assetIssuer
-	passphrase := network.TestNetworkPassphrase
+	var passphrase string
+	if xlm.Mainnet {
+		passphrase = network.PublicNetworkPassphrase
+	} else {
+		passphrase = network.TestNetworkPassphrase
+	}
+
 	sourceAccount, mykp, err := xlm.ReturnSourceAccount(seed)
 	if err != nil {
 		return "", err
@@ -61,8 +67,13 @@ func TrustAsset(assetCode string, assetIssuer string, limitx float64, seed strin
 // SendAssetFromIssuer transfers an asset from the issuer to the desired publickey.
 func SendAssetFromIssuer(assetCode string, destination string, amountx float64,
 	seed string, issuerPubkey string) (int32, string, error) {
+	var passphrase string
+	if xlm.Mainnet {
+		passphrase = network.PublicNetworkPassphrase
+	} else {
+		passphrase = network.TestNetworkPassphrase
+	}
 
-	passphrase := network.TestNetworkPassphrase
 	sourceAccount, mykp, err := xlm.ReturnSourceAccount(seed)
 	if err != nil {
 		return -1, "", err
@@ -92,8 +103,13 @@ func SendAssetFromIssuer(assetCode string, destination string, amountx float64,
 // SendAssetToIssuer sends an asset back to the issuer
 func SendAssetToIssuer(assetCode string, destination string, amountx float64,
 	seed string) (int32, string, error) {
+	var passphrase string
+	if xlm.Mainnet {
+		passphrase = network.PublicNetworkPassphrase
+	} else {
+		passphrase = network.TestNetworkPassphrase
+	}
 
-	passphrase := network.TestNetworkPassphrase
 	sourceAccount, mykp, err := xlm.ReturnSourceAccount(seed)
 	if err != nil {
 		return -1, "", err
@@ -123,7 +139,13 @@ func SendAssetToIssuer(assetCode string, destination string, amountx float64,
 // SendAsset sends an asset to a destination which has an established trustline with the issuer
 func SendAsset(assetCode string, issuerPubkey string, destination string, amountx float64,
 	seed string, memo string) (int32, string, error) {
-	passphrase := network.TestNetworkPassphrase
+	var passphrase string
+	if xlm.Mainnet {
+		passphrase = network.PublicNetworkPassphrase
+	} else {
+		passphrase = network.TestNetworkPassphrase
+	}
+
 	sourceAccount, mykp, err := xlm.ReturnSourceAccount(seed)
 	if err != nil {
 		return -1, "", err

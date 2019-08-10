@@ -7,6 +7,8 @@ import (
 	assets "github.com/YaleOpenLab/openx/chains/xlm/assets"
 	multisig "github.com/YaleOpenLab/openx/chains/xlm/multisig"
 	wallet "github.com/YaleOpenLab/openx/chains/xlm/wallet"
+	xlm "github.com/YaleOpenLab/openx/chains/xlm"
+	consts "github.com/YaleOpenLab/openx/consts"
 	"github.com/pkg/errors"
 )
 
@@ -36,21 +38,37 @@ func InitEscrow(projIndex int, seedpwd string, recpPubkey string, mySeed string,
 	}
 
 	log.Println("set auth immutable on account successfully")
-	multisig.TrustAssetTx(stablecoin.StablecoinCode, stablecoin.StablecoinPublicKey, "10000000000", pubkey, seed1, seed2)
-	if err != nil {
-		return pubkey, errors.Wrap(err, "could not trust stablecoin, quitting!")
+	if !xlm.Mainnet {
+		multisig.TrustAssetTx(stablecoin.StablecoinCode, stablecoin.StablecoinPublicKey, "10000000000", pubkey, seed1, seed2)
+		if err != nil {
+			return pubkey, errors.Wrap(err, "could not trust stablecoin, quitting!")
+		}
+	} else {
+		multisig.TrustAssetTx(consts.AnchorUSDCode, stablecoin.AnchorUSDAddress, "10000000000", pubkey, seed1, seed2)
+		if err != nil {
+			return pubkey, errors.Wrap(err, "could not trust stablecoin, quitting!")
+		}
 	}
-
 	return pubkey, nil
 }
 
 // TransferFundsToEscrow transfers stablecoin to the escrow address from otherSeed
 func TransferFundsToEscrow(amount float64, projIndex int, escrowPubkey string, otherSeed string) error {
 	// we have the wallet pubkey, transfer funds to the escrow now
-	_, txhash, err := assets.SendAsset(stablecoin.StablecoinCode, stablecoin.StablecoinPublicKey, escrowPubkey,
-		amount, otherSeed, "escrow init")
-	if err != nil {
-		return errors.Wrap(err, "could not fund escrow, quitting!")
+	var txhash string
+	var err error
+	if !xlm.Mainnet {
+		_, txhash, err = assets.SendAsset(stablecoin.StablecoinCode, stablecoin.StablecoinPublicKey, escrowPubkey,
+			amount, otherSeed, "escrow init")
+		if err != nil {
+			return errors.Wrap(err, "could not fund escrow, quitting!")
+		}
+	} else {
+		_, txhash, err = assets.SendAsset(consts.AnchorUSDCode, stablecoin.AnchorUSDAddress, escrowPubkey,
+			amount, otherSeed, "escrow init")
+		if err != nil {
+			return errors.Wrap(err, "could not fund escrow, quitting!")
+		}
 	}
 
 	log.Println("tx hash for funding project escrow is: ", txhash)

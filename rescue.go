@@ -7,6 +7,7 @@ import (
 
 	scan "github.com/Varunram/essentials/scan"
 	xlm "github.com/YaleOpenLab/openx/chains/xlm"
+	multisig "github.com/YaleOpenLab/openx/chains/xlm/multisig"
 	consts "github.com/YaleOpenLab/openx/consts"
 )
 
@@ -20,8 +21,8 @@ func RescueMode() {
 	fmt.Println(`
 		██████╗ ███████╗███████╗ ██████╗██╗   ██╗███████╗    ███╗   ███╗ ██████╗ ██████╗ ███████╗
 		██╔══██╗██╔════╝██╔════╝██╔════╝██║   ██║██╔════╝    ████╗ ████║██╔═══██╗██╔══██╗██╔════╝
-		██████╔╝█████╗  ███████╗██║     ██║   ██║█████╗      ██╔████╔██║██║   ██║██║  ██║█████╗
-		██╔══██╗██╔══╝  ╚════██║██║     ██║   ██║██╔══╝      ██║╚██╔╝██║██║   ██║██║  ██║██╔══╝
+		██████╔╝█████╗  ███████╗██║     ██║   ██║█████╗       ██╔████╔██║██║   ██║██║  ██║█████╗
+		██╔══██╗██╔══╝  ╚════██║██║     ██║   ██║██╔══╝       ██║╚██╔╝██║██║   ██║██║  ██║██╔══╝
 		██║  ██║███████╗███████║╚██████╗╚██████╔╝███████╗    ██║ ╚═╝ ██║╚██████╔╝██████╔╝███████╗
 		╚═╝  ╚═╝╚══════╝╚══════╝ ╚═════╝ ╚═════╝ ╚══════╝    ╚═╝     ╚═╝ ╚═════╝ ╚═════╝ ╚══════╝
 		`)
@@ -31,6 +32,7 @@ func RescueMode() {
 		log.Println("1. Send funds to another address")
 		log.Println("2. Sweep funds from platform")
 		log.Println("3. View platform balances")
+		log.Println("4. Sweep XLM from project escrow")
 		choice, err := scan.ScanInt()
 		if err != nil {
 			log.Fatal(err)
@@ -93,6 +95,35 @@ func RescueMode() {
 				continue
 			}
 			log.Println(balances)
+		case 4:
+			log.Println("Enter escrow address")
+			source, err := scan.ScanString()
+			if err != nil {
+				log.Println("!!!" + strings.ToUpper(err.Error()) + "!!!")
+				break
+			}
+			amount, err := xlm.GetNativeBalance(source)
+			if err != nil {
+				log.Println("could not get xlm balance of secondary account")
+				break
+			}
+			log.Println("Enter sweep address")
+			destination, err := scan.ScanString()
+			if err != nil {
+				log.Println("!!!" + strings.ToUpper(err.Error()) + "!!!")
+				break
+			}
+			log.Println("Enter other signer's seed")
+			otherSeed, err := scan.ScanString()
+			if err != nil {
+				log.Println("!!!" + strings.ToUpper(err.Error()) + "!!!")
+				break
+			}
+			err = multisig.Tx2of2(source, destination, otherSeed, seed, amount, "escrow sweep")
+			if err != nil {
+				log.Println("!!!" + strings.ToUpper(err.Error()) + "!!!")
+				break
+			}
 		}
 	}
 }

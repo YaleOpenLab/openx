@@ -3,6 +3,7 @@ package multisig
 import (
 	"github.com/pkg/errors"
 	"log"
+	"time"
 
 	utils "github.com/Varunram/essentials/utils"
 	xlm "github.com/YaleOpenLab/openx/chains/xlm"
@@ -99,9 +100,14 @@ func Newxofy(x int, y int, signers ...string) (string, error) {
 		return "", errors.Wrap(err, "error while getting keypair")
 	}
 
-	err = xlm.GetXLM(pubkey)
-	if err != nil {
-		return pubkey, errors.Wrap(err, "error while getting xlm from friendbot")
+	if xlm.Mainnet {
+		log.Println("SEND XLM TO THIS ADDRESS: ", pubkey)
+		time.Sleep(150 * time.Second)
+	} else {
+		err = xlm.GetXLM(pubkey)
+		if err != nil {
+			return pubkey, errors.Wrap(err, "error while getting xlm from friendbot")
+		}
 	}
 
 	for i := 0; i < y-1; i++ {

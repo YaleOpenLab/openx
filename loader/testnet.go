@@ -10,8 +10,6 @@ import (
 	algorand "github.com/YaleOpenLab/openx/chains/algorand"
 	stablecoin "github.com/YaleOpenLab/openx/chains/stablecoin"
 	// utils "github.com/Varunram/essentials/utils"
-	xlm "github.com/YaleOpenLab/openx/chains/xlm"
-	assets "github.com/YaleOpenLab/openx/chains/xlm/assets"
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
 	openx "github.com/YaleOpenLab/openx/platforms"
@@ -87,21 +85,5 @@ func Testnet() error {
 
 	fmt.Printf("PLATFORM SEED IS: %s\n PLATFORM PUBLIC KEY IS: %s\n", consts.PlatformSeed, consts.PlatformPublicKey)
 	fmt.Printf("STABLECOIN PUBLICKEY IS: %s\nSTABLECOIN SEED is: %s\n\n", consts.StablecoinPublicKey, consts.StablecoinSeed)
-	return nil
-}
-
-func StablecoinTrust() error {
-	_, txhash, err := xlm.SetAuthImmutable(consts.PlatformSeed)
-	log.Println("TX HASH FOR SETOPTIONS: ", txhash)
-	if err != nil {
-		log.Println("ERROR WHILE SETTING OPTIONS")
-		return err
-	}
-	// make the platform trust the stablecoin for receiving payments
-	txhash, err = assets.TrustAsset(consts.AnchorUSDCode, consts.AnchorUSDAddress, 10000000000, consts.PlatformSeed)
-	if err != nil {
-		log.Println("error while trusting stablecoin", consts.AnchorUSDCode, consts.AnchorUSDAddress, consts.PlatformSeed)
-		return err
-	}
 	return nil
 }
