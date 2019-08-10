@@ -13,6 +13,7 @@ import (
 // admin contains a list of all the functions that will hopefully never be used in practice
 // but if needed are incredibly powerful
 
+// adminHandlers are a list of all the admin handlers defined by openx
 func adminHandlers() {
 	killServer()
 	freezeServer()
@@ -21,6 +22,7 @@ func adminHandlers() {
 
 var KillCode string
 
+// validateAdmin validates whether a given user is an admin and returns a bool
 func validateAdmin(w http.ResponseWriter, r *http.Request) bool {
 	erpc.CheckGet(w, r)
 	erpc.CheckOrigin(w, r)
@@ -76,6 +78,8 @@ func freezeServer() {
 	})
 }
 
+// genNuclearCode generates a nuclear code capable of instantly killing the platform. Can only
+// be called by certain admins
 func genNuclearCode() {
 	http.HandleFunc("/admin/gennuke", func(w http.ResponseWriter, r *http.Request) {
 		// need to pass the pwhash param here

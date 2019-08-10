@@ -9,21 +9,21 @@ import (
 	database "github.com/YaleOpenLab/openx/database"
 )
 
+// public contains all the RPC routes that we explicitly intend to make public
+
+// setupPublicRoutes sets up public routes that can be called by anyone without an
+// acount on openx
+func setupPublicRoutes() {
+	getTopReputationPublic()
+	getUserInfo()
+}
+
 // SnUser defines a sanitized user
 type SnUser struct {
 	Name       string
 	PublicKey  string
 	Reputation float64
 }
-
-func setupPublicRoutes() {
-	getTopReputationPublic()
-	getUserInfo()
-}
-
-// public contains all the RPC routes that we explicitly intend to make public. Other
-// routes such as the invest route are things we could make private as well, but that
-// doesn't change the security model since we ask for username+pwauth
 
 // sanitizeUser sanitizes a particular user
 func sanitizeUser(user database.User) SnUser {
@@ -43,8 +43,7 @@ func sanitizeAllUsers(users []database.User) []SnUser {
 	return arr
 }
 
-// this is to publish a list of the users with the best feedback in the system in order
-// to award them badges or something similar
+// getTopReputationPublic returns a list of users sorted by descending order of reputation
 func getTopReputationPublic() {
 	http.HandleFunc("/public/reputation/top", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
@@ -60,6 +59,7 @@ func getTopReputationPublic() {
 	})
 }
 
+// getUserInfo returns a list of sanitised users of the openx platform
 func getUserInfo() {
 	http.HandleFunc("/public/user", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)

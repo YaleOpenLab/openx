@@ -11,17 +11,14 @@ import (
 	consts "github.com/YaleOpenLab/openx/consts"
 )
 
-// this file handles the RPCs necessary for converting a fixed amount of XLM into
-// stablecoins. Right now, this is hooked to our account which serves the stablecoin
-// but in the future, we can have any provider that is willing to provide this
-// We have get requests here simply because they're easy to handle.
-
+// setupStableCoinRPCs sets up the endpoints that would be required to interact with
+// openx's inhouse stablecoin
 func setupStableCoinRPCs() {
 	getTestStableCoin()
 	getAnchorUSD()
 }
 
-// getStableCoin gets stablecoin in exchange for xlm
+// getTestStableCoin gets stablecoin in exchange for xlm
 func getTestStableCoin() {
 	http.HandleFunc("/stablecoin/get", func(w http.ResponseWriter, r *http.Request) {
 		if consts.Mainnet {
@@ -37,8 +34,7 @@ func getTestStableCoin() {
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
-		// we need to validate the user and check if its a part of the platform. If not,
-		// we don't allow it to exchange xlm for stablecoin.
+
 		receiverSeed, err := wallet.DecryptSeed(user.StellarWallet.EncryptedSeed, r.URL.Query()["seedpwd"][0])
 		if err != nil {
 			log.Println(err)
@@ -67,6 +63,7 @@ func getTestStableCoin() {
 	})
 }
 
+// GetAnchorResponse is a wrapper around the txhash for sent XLM
 type GetAnchorResponse struct {
 	Txhash string // this tx hash is for the sent xlm, not for the received anchorUSD
 }

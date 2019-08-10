@@ -10,6 +10,12 @@ import (
 	database "github.com/YaleOpenLab/openx/database"
 )
 
+// this file has routes that are to be exclusively used by external platforms in order to call
+// data that is exclusive to openx. These platforms can request a code to be generated and they
+// can call openx's endpoints
+
+// setupPlatformRoutes sets up routes that are related with external third party platforms
+// which need information from openx to operate
 func setupPlatformRoutes() {
 	mainnetRPC()
 	pfGetConsts()
@@ -19,6 +25,7 @@ func setupPlatformRoutes() {
 	pfCollisionCheck()
 }
 
+// mainnetRPC is an RPC that reutrns 0 if openx is running on mainnet, 1 if running on testnet
 func mainnetRPC() {
 	http.HandleFunc("/mainnet", func(w http.ResponseWriter, r *http.Request) {
 		// set a single byte response for mainnet / testnet
@@ -34,6 +41,7 @@ func mainnetRPC() {
 	})
 }
 
+// OpensolarConstReturn is a struct that can be used to export consts from openx
 type OpensolarConstReturn struct {
 	PlatformPublicKey   string
 	PlatformSeed        string
@@ -49,6 +57,7 @@ type OpensolarConstReturn struct {
 	DbDir               string
 }
 
+// pfGetConsts is an RPC that returns running constants to platforms which might need this information
 func pfGetConsts() {
 	http.HandleFunc("/platform/getconsts", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
@@ -82,6 +91,7 @@ func pfGetConsts() {
 	})
 }
 
+// pfGetUser retrieves a user from openx's database and returns it to the requesting platform
 func pfGetUser() {
 	http.HandleFunc("/platform/user/retrieve", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
@@ -110,6 +120,7 @@ func pfGetUser() {
 	})
 }
 
+// pfValidateUser validates a given user and returns the user struct
 func pfValidateUser() {
 	http.HandleFunc("/platform/user/validate", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
@@ -142,6 +153,7 @@ func pfValidateUser() {
 	})
 }
 
+// pfNewUser creates a new user
 func pfNewUser() {
 	http.HandleFunc("/platform/user/new", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
@@ -176,6 +188,7 @@ func pfNewUser() {
 	})
 }
 
+// pfCollisionCheck checks for username collision
 func pfCollisionCheck() {
 	http.HandleFunc("/platform/user/collision", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)

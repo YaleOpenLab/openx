@@ -12,11 +12,13 @@ import (
 	consts "github.com/YaleOpenLab/openx/consts"
 )
 
+// setupCAHandlers sets up rpc handlers that are involved with integrating ComplyAdvantage into openx
 func setupCAHandlers() {
 	searchComplyAdvantage()
 	getAllCAUsers()
 }
 
+// CAResponse defines a struct that ComplyAdvantage returns
 type CAResponse struct {
 	Code    int    `json:"code"`
 	Status  string `json:"string"`
@@ -130,6 +132,7 @@ func PostAndSendCA(w http.ResponseWriter, r *http.Request, body string, payload 
 	erpc.MarshalSend(w, x)
 }
 
+// searchComplyAdvantage searches for a particular entity on ComplyAdvantage's platform
 func searchComplyAdvantage() {
 	http.HandleFunc("/user/ca/search", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
@@ -176,6 +179,7 @@ type caAllUserResponse struct {
 	} `json:"content"`
 }
 
+// getAllCAUsers gets a list of all users serached for using ComplyAdvantage
 func getAllCAUsers() {
 	http.HandleFunc("/admin/ca/users/all", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)

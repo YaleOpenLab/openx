@@ -1,8 +1,18 @@
 package rpc
 
-// anchor connects with AnchorUSD's endpoints and returns the relevant endpoints in order
-// for us to parse correctly. Broadly when a user wants to procure or deal with AnchorUSD,
-// there are a couple things that he needs to do:
+import (
+	"encoding/json"
+	"io"
+	"log"
+	"net/http"
+	"net/url"
+	"strings"
+
+	erpc "github.com/Varunram/essentials/rpc"
+	consts "github.com/YaleOpenLab/openx/consts"
+)
+
+// When a user wants to procure or deal with AnchorUSD, there are a couple things that they need to do:
 // 1. Deposit Funds and get AnchorUSD:
 // 1a. Create a deposit intent - this wouuld be returned with a 403 since the user has not
 // gone through Anchor's KYC process
@@ -16,20 +26,10 @@ package rpc
 // 2a. Create Withdraw intent - returns the identifier / an error if the user hasn't gone through KYC
 // 2b. Go through KYC / Withdraw funds - this again takes 2 or 3 business days for AnchorUSD
 // to deposit or withdraw funds.
-// there are a couple problems with automation in betwee nsince there's a delay of 2/3 days with
-// each associated fiat operation. Hopefully, we can solve this in some way or the other.
-import (
-	"encoding/json"
-	"io"
-	"log"
-	"net/http"
-	"net/url"
-	"strings"
+// there are a couple problems with automation in between since there's a delay of 2/3 days with
+// each associated fiat operation.
 
-	erpc "github.com/Varunram/essentials/rpc"
-	consts "github.com/YaleOpenLab/openx/consts"
-)
-
+// setupAnchorHandlers sets up all anchorUSD related endpoints
 func setupAnchorHandlers() {
 	intentDeposit()
 	kycDeposit()
@@ -37,12 +37,14 @@ func setupAnchorHandlers() {
 	kycWithdraw()
 }
 
+// AnchorIntentResponse defines the intent response struct for AnchorUSD
 type AnchorIntentResponse struct {
 	Type       string `json:"type"`
 	Url        string `json:"url"`
 	Identifier string `json:"identifier"`
 }
 
+// kycDepositResponse defines the kyc response st ruct for AnchorUSD
 type kycDepositResponse struct {
 	Error  string
 	Result string
@@ -84,6 +86,7 @@ func PostAndSend(w http.ResponseWriter, r *http.Request, body string, payload io
 	erpc.MarshalSend(w, x)
 }
 
+// intentDeposit creates an intent to deposit funds in order to fetch AnchorUSD
 func intentDeposit() {
 	// curl 'https://sandbox-api.anchorusd.com/transfer/deposit?account=GBP3XOFYC6TWUIRZAB7MB6MTUZBCREAYB4E7XKE3OWDP75VU5JB74ZF6&asset_code=USD&email_address=j%40anchorusd.com
 	http.HandleFunc("/user/anchorusd/deposit/intent", func(w http.ResponseWriter, r *http.Request) {
@@ -115,6 +118,7 @@ func intentDeposit() {
 	})
 }
 
+// kycDeposit is the kyc workflow involved when a user wants to obtain AnchorUSD
 func kycDeposit() {
 	http.HandleFunc("/user/anchorusd/deposit/kyc", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
@@ -148,6 +152,7 @@ func kycDeposit() {
 	})
 }
 
+// intentWithdraw creates an intent to withdraw funds from AnchorUSD
 func intentWithdraw() {
 	// curl 'https://sandbox-api.anchorusd.com/transfer/withdraw?type=bank_account&asset_code=USD&email_address=j%40anchorusd.com
 	http.HandleFunc("/user/anchorusd/withdraw/intent", func(w http.ResponseWriter, r *http.Request) {
@@ -182,6 +187,7 @@ func intentWithdraw() {
 	})
 }
 
+// kycDeposit is the kyc workflow involved when a user wants to withdraw fiat
 func kycWithdraw() {
 	http.HandleFunc("/user/anchorusd/withdraw/kyc", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
@@ -216,6 +222,7 @@ func kycWithdraw() {
 			data.Set("identifier", prepUser.AnchorKYC.WithdrawIdentifier)
 		}
 		payload := strings.NewReader(data.Encode())
-		PostAndSend(w, r, body, payload) // send the payload and response, will be handled by Anchor's KYC and withdrawal system
+		PostAndSend(w, r, body, payload)
+		// after this, the workflow will be handled by Anchor's KYC and withdrawal system
 	})
 }
