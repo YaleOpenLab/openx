@@ -1051,10 +1051,9 @@ func sweepAsset() {
 			log.Println("asset balance for user too smal lto sweep funds, quitting!")
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
-		} else {
-			assetBalanceF -= 5
 		}
 
+		assetBalanceF -= 5
 		sweepAmt := math.Round(assetBalanceF)
 		_, txhash, err := assets.SendAsset(assetName, issuerPubkey, destination, sweepAmt, seed, "sweeping funds")
 		if err != nil {
@@ -1270,9 +1269,8 @@ func auth2fa() {
 		if !result {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
-		} else {
-			erpc.ResponseHandler(w, erpc.StatusOK)
 		}
+		erpc.ResponseHandler(w, erpc.StatusOK)
 	})
 }
 

@@ -93,7 +93,7 @@ type KycStruct struct {
 	PersonalPhoto  string
 }
 
-// AnchorKYC contains the parameters required by Anchor
+// AnchorKYCHelper contains the KYC parameters required by Anchor
 type AnchorKYCHelper struct {
 	Name     string
 	Birthday struct {

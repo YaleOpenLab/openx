@@ -20,6 +20,7 @@ func adminHandlers() {
 	genNuclearCode()
 }
 
+// KillCode is a code that can immediately shut down the server in case of hacks / crises
 var KillCode string
 
 // validateAdmin validates whether a given user is an admin and returns a bool

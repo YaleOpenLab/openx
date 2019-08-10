@@ -72,10 +72,12 @@ func StablecoinTrust() error {
 	if err != nil {
 		return errors.Wrap(err, "ERROR WHILE SETTING OPTIONS")
 	}
+	log.Println("TX HASH FOR SETTING AUTH IMMUTABLE: ", txhash)
 
 	txhash, err = assets.TrustAsset(consts.AnchorUSDCode, consts.AnchorUSDAddress, 10000000000, consts.PlatformSeed)
 	if err != nil {
 		return errors.Wrap(err, "error while trusting stablecoin")
 	}
+	log.Println("TX HASH FOR TRUSTING ANCHORUSD: ", txhash)
 	return nil
 }

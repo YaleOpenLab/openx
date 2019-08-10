@@ -56,7 +56,7 @@ var StablecoinTrustLimit float64
 // AnchorUSDCode is the code for AnchorUSD's stablecoin
 var AnchorUSDCode string
 
-// AnchorUSDAddresss is the address associated with AnchorUSD
+// AnchorUSDAddress is the address associated with AnchorUSD
 var AnchorUSDAddress string
 
 // AnchorUSDTrustLimit is the trust limit till which an account trusts AnchorUSD's stablecoin
@@ -77,7 +77,6 @@ var KmdAddress string
 // KmdToken is the token required to access the Algorand Key Management Daemon
 var KmdToken string
 
-// directories
 // HomeDir is the directory where openx users and other elements specific to openx are stored
 var HomeDir = os.Getenv("HOME") + "/.openx"
 

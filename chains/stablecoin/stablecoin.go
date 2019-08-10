@@ -21,7 +21,7 @@ import (
 // Package stablecoin implements a stablecoin with code STABLEUSD built on Stellar.
 
 // InitStableCoin starts the stablecoin daemon
-func InitStableCoin(mainnet bool) (string, string, error) {
+func InitStableCoin() (string, string, error) {
 	if Mainnet {
 		return "", "", errors.New("Stablecoin in mainnet defaults to AnchorUSD")
 	}
@@ -50,22 +50,9 @@ func InitStableCoin(mainnet bool) (string, string, error) {
 		if err != nil {
 			return "", "", err
 		}
-		if !mainnet {
-			err = xlm.GetXLM(publicKey)
-			if err != nil {
-				return "", "", err
-			}
-		}
-	}
-
-	if Mainnet {
-		if !xlm.AccountExists(publicKey) {
-			return "", "", errors.New("please refill your account: " + publicKey + " with funds to setup a stellar account. Your seed is: " + seed)
-		} else {
-			err := xlm.GetXLM(publicKey)
-			if err != nil {
-				return "", "", err
-			}
+		err = xlm.GetXLM(publicKey)
+		if err != nil {
+			return "", "", err
 		}
 	}
 

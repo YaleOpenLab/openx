@@ -24,43 +24,43 @@ type CAResponse struct {
 	Status  string `json:"string"`
 	Content struct {
 		Data struct {
-			Id          int64  `json:"id"`
-			Ref         string `json:"ref"`
-			Searcher_id int64  `json:"searcher_id"`
-			Assignee_id int64  `json:"assignee_id"`
-			Filters     struct {
-				Birth_year      int64    `json:"birth_year"`
-				Country_codes   []int    `json:"country_codes"`
-				Remove_deceased int      `json:"remove_deceased"`
-				Types           []string `json:"types"`
-				Exact_match     bool     `json:"exact_match"`
-				Fuzziness       float64  `json:"fuzziness"`
+			Id         int64  `json:"id"`
+			Ref        string `json:"ref"`
+			Searcherid int64  `json:"searcher_id"`
+			Assigneeid int64  `json:"assignee_id"`
+			Filters    struct {
+				Birthyear      int64    `json:"birth_year"`
+				Countrycodes   []int    `json:"country_codes"`
+				Removedeceased int      `json:"remove_deceased"`
+				Types          []string `json:"types"`
+				Exactmatch     bool     `json:"exact_match"`
+				Fuzziness      float64  `json:"fuzziness"`
 			}
 
-			Match_status   string   `json:"match_status"`
-			Risk_level     string   `json:"risk_level"`
-			Search_term    string   `json:"search_term"`
-			Submitted_term string   `json:"submitted_term"`
-			Client_ref     string   `json:"client_ref"`
-			Total_hits     int      `json:"total_hits"`
-			Updated_at     string   `json:"updated_at"`
-			Created_at     string   `json:"created_at"`
-			Tags           []string `json:"tags"`
-			Limit          int      `json:"limit"`
-			Offset         int      `json:"offset"`
-			Share_url      string   `json:"share_url"`
-			Hits           []struct {
+			Matchstatus   string   `json:"match_status"`
+			Risklevel     string   `json:"risk_level"`
+			Searchterm    string   `json:"search_term"`
+			Submittedterm string   `json:"submitted_term"`
+			Clientref     string   `json:"client_ref"`
+			Totalhits     int      `json:"total_hits"`
+			Updatedat     string   `json:"updated_at"`
+			Createdat     string   `json:"created_at"`
+			Tags          []string `json:"tags"`
+			Limit         int      `json:"limit"`
+			Offset        int      `json:"offset"`
+			Shareurl      string   `json:"share_url"`
+			Hits          []struct {
 				Doc struct {
 					Aka []struct {
 						Name string `json:"name"`
 					} `json:"aka"`
 					Assets []struct {
-						Public_url string `json:"public_url"`
-						Source     string `json:"source"`
-						Type       string `json:"type"`
+						Publicurl string `json:"public_url"`
+						Source    string `json:"source"`
+						Type      string `json:"type"`
 					} `json:"assets"`
-					Entity_type string `json:"entity_type"`
-					Fields      []struct {
+					Entitytype string `json:"entity_type"`
+					Fields     []struct {
 						Name   string `json:"name"`
 						Source string `json:"source"`
 						Tag    string `json:"tag"`
@@ -77,10 +77,10 @@ type CAResponse struct {
 					Sources []string `json:"sources"`
 					Types   []string `json:"types"`
 				} `json:"doc"`
-				Match_types    []string `json:"match_types"`
-				Score          float64  `json:"score"`
-				Match_status   string   `json:"match_status"`
-				Is_whitelisted bool     `json:"is_whitelisted"`
+				Match_ypes    []string `json:"match_types"`
+				Score         float64  `json:"score"`
+				Matchstatus   string   `json:"match_status"`
+				Iswhitelisted bool     `json:"is_whitelisted"`
 			} `json:"hits"`
 		} `json:"data"`
 	} `json:"content"`
@@ -113,7 +113,7 @@ func PostRequestCA(body string, payload io.Reader) ([]byte, error) {
 	return x, nil
 }
 
-// PostAndSend is a handler that POSTs data and returns the response
+// PostAndSendCA is a handler that POSTs data and returns the response
 func PostAndSendCA(w http.ResponseWriter, r *http.Request, body string, payload io.Reader) {
 	data, err := PostRequestCA(body, payload)
 	if err != nil {
@@ -169,17 +169,17 @@ type caAllUserResponse struct {
 	Status  string `json:"status"`
 	Content struct {
 		Data []struct {
-			Id         int    `json:"id"`
-			Email      string `json:"email"`
-			Name       string `json:"name"`
-			Phone      string `json:"phone"`
-			Updated_at string `json:"updated_at"`
-			Created_at string `json:"created_at"`
+			Id        int    `json:"id"`
+			Email     string `json:"email"`
+			Name      string `json:"name"`
+			Phone     string `json:"phone"`
+			Updatedat string `json:"updated_at"`
+			Createdat string `json:"created_at"`
 		} `json:"data"`
 	} `json:"content"`
 }
 
-// getAllCAUsers gets a list of all users serached for using ComplyAdvantage
+// getAllCAUsers gets a list of all users searched for using ComplyAdvantage
 func getAllCAUsers() {
 	http.HandleFunc("/admin/ca/users/all", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)

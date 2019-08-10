@@ -24,7 +24,7 @@ func Testnet() error {
 	database.CreateHomeDir()
 	var err error
 	// init stablecoin before platform so we don't have to create a stablecoin in case our dbdir is wiped
-	consts.StablecoinPublicKey, consts.StablecoinSeed, err = stablecoin.InitStableCoin(consts.Mainnet)
+	consts.StablecoinPublicKey, consts.StablecoinSeed, err = stablecoin.InitStableCoin()
 	if err != nil {
 		return errors.Wrap(err, "errored out while starting stablecoin")
 	}

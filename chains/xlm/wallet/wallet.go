@@ -19,6 +19,9 @@ func NewSeedStore(path string, password string) (string, string, error) {
 	var err error
 
 	pair, err := keypair.Random()
+	if err != nil {
+		return publicKey, seed, err
+	}
 	seed = pair.Seed()
 	publicKey = pair.Address()
 	log.Printf("\nTHE GENERATED SEED IS: %s\nAND YOUR PUBLIC KEY IS: %s\nKEEP IT SUPER SAFE OR YOU MIGHT NOT HAVE ACCESS TO THESE FUNDS AGAIN \n", seed, publicKey)

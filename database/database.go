@@ -9,6 +9,7 @@ import (
 // the database package contains the handlers necesssary for openx to interact with the
 // underlying boltdb database
 
+// UserBucket is the bucket in which we'll store openx users
 var UserBucket = []byte("Users")
 
 // CreateHomeDir creates the home and database directories

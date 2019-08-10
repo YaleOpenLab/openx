@@ -21,6 +21,7 @@ var (
 	Mainnet bool
 )
 
+// SetConsts sets stablecoin consts
 func SetConsts(code string, pubkey string, seed string, seedfile string, trustLimit float64,
 	anchorUSDCode string, anchorUSDAddress string, anchorUSDTrustLimit float64, mainnet bool) {
 

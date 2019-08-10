@@ -22,6 +22,7 @@ var (
 // RefillAmount defines the default stellar refill amount
 var RefillAmount float64
 
+// SetConsts XLM consts
 func SetConsts(amount float64, mainnet bool) {
 	RefillAmount = amount
 	Mainnet = mainnet

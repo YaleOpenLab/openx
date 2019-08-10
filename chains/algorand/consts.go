@@ -11,6 +11,7 @@ var (
 	KmdToken string
 )
 
+// SetConsts sets algorand consts
 func SetConsts(address string, token string, kmdaddress string, kmdtoken string) {
 	AlgodAddress = address
 	AlgodToken = token
