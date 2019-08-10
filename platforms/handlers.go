@@ -12,27 +12,15 @@ import (
 	"github.com/pkg/errors"
 )
 
-// the platform structure is the backend representation of the frontend UI.
-// on a very low level, this should just be a pubkey + seed pair. Each platform
-// needs to be hosted somewhere, so it is necessary that each platform should have
-// its own pubkey and seed pair
-// InitializePlatform returns the platform publickey and seed
-// We have a new model in which we have a new seed for every project that is
-// advertised on the platform. The way this would work is that it sets up the assets,
-// and then we freeze the account to freeze issuance. This would mean we would no longer
-// be able to transact with the account although people can still send funds to it
-// in this case, they would send us back DebtAssets provided they have sufficient
-// stableUSD balance. Else they would not be able to trigger payback.
-
-// InitializePlatform starts the platform
+// InitializePlatform starts the platform, initializing the platform seed and publickey
 func InitializePlatform() error {
 	var publicKey string
 	var seed string
 	var err error
 
-	// now we can be sure we have the directory, check for seed
+	// check whether the home directory exists
 	if _, err := os.Stat(consts.PlatformSeedFile); !os.IsNotExist(err) {
-		// the seed exists
+		// home dir exists, ask for password
 		log.Println("ENTER YOUR PASSWORD TO DECRYPT THE PLATFORM SEED FILE")
 		password, err := scan.ScanRawPassword()
 		if err != nil {
@@ -61,7 +49,7 @@ func InitializePlatform() error {
 		}
 		return nil
 	}
-	// platform doesn't exist or user doesn't have encrypted file. Ask
+	// the home directory doesn't exist, two cases: seed doesn't exist or user has deleted it
 	log.Println("DO YOU HAVE YOUR RAW PLATFORM SEED? IF SO, ENTER SEED. ELSE ENTER N")
 	seed, err = scan.ScanString()
 	if err != nil {
@@ -69,7 +57,6 @@ func InitializePlatform() error {
 	}
 	if seed == "N" || seed == "n" {
 		// no seed, no file, create new keypair
-		// need to pass the password for the  eed file
 		log.Println("Enter a password to encrypt your master seed. Please store this in a very safe place. This prompt will not ask to confirm your password")
 		password, err := scan.ScanRawPassword()
 		if err != nil {
@@ -83,14 +70,12 @@ func InitializePlatform() error {
 		consts.PlatformPublicKey = publicKey
 		consts.PlatformSeed = seed
 
-		// depending on chain, continue exec or quit
 		if consts.Mainnet {
 			// in mainnet, don't init stablecoin
 			return nil
 		}
 	} else {
-		// no file, retrieve pukbey
-		// user has given us a seed, validate
+		// no file but user remembers seed, retrieve pukbey
 		log.Println("ENTER A PASSWORD TO ENCRYPT YOUR SEED")
 		password, err := scan.ScanRawPassword()
 		if err != nil {
@@ -110,24 +95,29 @@ func InitializePlatform() error {
 		return nil
 	}
 
-	// only testnet exec from here
+	// comes here only if we're on testnet and we didn't have a seed earlier
+
+	// getXLM and setup the account
 	err = xlm.GetXLM(publicKey)
 	if err != nil {
 		return errors.Wrap(err, "error while getting xlm")
 	}
 
+	// set auth immutable on the account
 	_, txhash, err := xlm.SetAuthImmutable(seed)
 	log.Println("TX HASH FOR SETOPTIONS: ", txhash)
 	if err != nil {
 		log.Println("ERROR WHILE SETTING OPTIONS")
 	}
-	// make the platform trust the stablecoin for receiving payments
+
+	// make the platform trust the in house stablecoin for receiving payments
 	txhash, err = assets.TrustAsset(consts.StablecoinCode, consts.StablecoinPublicKey, 10000000000, seed)
 	if err != nil {
 		log.Println("error while trusting stablecoin", consts.StablecoinCode, consts.StablecoinPublicKey, seed)
 		return err
 	}
 
+	// send the platform some stablecoin to test if the trustline is setup correctly
 	_, _, err = assets.SendAssetFromIssuer(consts.StablecoinCode, publicKey, 10, consts.StablecoinSeed, consts.StablecoinPublicKey)
 	if err != nil {
 		log.Println("error while sending stablecoin tp platform")
@@ -139,25 +129,22 @@ func InitializePlatform() error {
 	return err
 }
 
-// RefillPlatform checks whether the publicKey passed has any xlm and if its balance
-// is less than 21 XLM, it proceeds to ask the friendbot for more test xlm
+// RefillPlatform asks friendbot for XLM in case the platform's funds are running low (below 20XLM).
+// For obvious reasons, available only on testnet
 func RefillPlatform(publicKey string) error {
-	// check whether the investor has XLM already
 	if consts.Mainnet {
 		return errors.New("no provision to refill on mainnet") // refilling platform has to be done manually in the case of mainnet
 	}
+
 	balance, err := xlm.GetNativeBalance(publicKey)
 	if err != nil {
 		return err
 	}
 
 	log.Println("Platform's balance is: ", balance)
-	if balance < 21 { // 1 to account for fees
-		// get coins if balance is this low
+	if balance < 21 {
 		log.Println("Refilling platform balance")
 		err := xlm.GetXLM(publicKey)
-		// refill platform sufficiently well and interact with a cold wallet that we
-		// have previously set earlier to avoid hacks and similar
 		if err != nil {
 			return err
 		}

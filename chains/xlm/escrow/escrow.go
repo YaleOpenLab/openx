@@ -4,10 +4,10 @@ import (
 	"log"
 
 	stablecoin "github.com/YaleOpenLab/openx/chains/stablecoin"
+	xlm "github.com/YaleOpenLab/openx/chains/xlm"
 	assets "github.com/YaleOpenLab/openx/chains/xlm/assets"
 	multisig "github.com/YaleOpenLab/openx/chains/xlm/multisig"
 	wallet "github.com/YaleOpenLab/openx/chains/xlm/wallet"
-	xlm "github.com/YaleOpenLab/openx/chains/xlm"
 	consts "github.com/YaleOpenLab/openx/consts"
 	"github.com/pkg/errors"
 )

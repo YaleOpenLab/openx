@@ -9,13 +9,12 @@ import (
 	consts "github.com/YaleOpenLab/openx/consts"
 )
 
-// this file contains commong methods that are repeated across interfaces
-// Save inserts a passed User object into the database
+// Save inserts a User object into the database
 func (a *User) Save() error {
 	return edb.Save(consts.DbDir+consts.DbName, UserBucket, a, a.Index)
 }
 
-// RetrieveUser retrieves a particular User indexed by key from the database
+// RetrieveUser retrieves a User from the database
 func RetrieveUser(key int) (User, error) {
 	var user User
 	x, err := edb.Retrieve(consts.DbDir+consts.DbName, UserBucket, key)
@@ -27,7 +26,7 @@ func RetrieveUser(key int) (User, error) {
 	return user, err
 }
 
-// RetrieveAllUsers gets a list of all User in the database
+// RetrieveAllUsers gets a list of all Users in the database
 func RetrieveAllUsers() ([]User, error) {
 	var arr []User
 	x, err := edb.RetrieveAllKeys(consts.DbDir+consts.DbName, UserBucket)
@@ -46,11 +45,12 @@ func RetrieveAllUsers() ([]User, error) {
 	return arr, nil
 }
 
+// RetrieveAllUsersLim gets the number of users in the bucket
 func RetrieveAllUsersLim() (int, error) {
 	return edb.RetrieveAllKeysLim(consts.DbDir+consts.DbName, UserBucket)
 }
 
-// TopReputationUsers gets the users with top reputation
+// TopReputationUsers gets a list of users sorted by descending reputation
 func TopReputationUsers() ([]User, error) {
 	// these reputation functions should mostly be used by the frontend through the
 	// RPC to display to other users what other users' reputation is.
@@ -70,7 +70,7 @@ func TopReputationUsers() ([]User, error) {
 	return arr, nil
 }
 
-// ValidateUser validates a particular user
+// ValidateUser validates a username / pwhash combination
 func ValidateUser(name string, pwhash string) (User, error) {
 	var dummy User
 	users, err := RetrieveAllUsers()

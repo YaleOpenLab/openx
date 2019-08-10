@@ -24,6 +24,7 @@ import (
 	recovery "github.com/bithyve/research/sss"
 )
 
+// setupUserRpcs sets up user related RPCs
 func setupUserRpcs() {
 	validateUser()
 	getBalances()
@@ -64,41 +65,16 @@ const (
 	TellerUrl = "https://localhost"
 )
 
-// we want to pass to the caller whether the user is a recipient or an investor.
-// For this, we have an additional param called Role which we can use to classify
-// this information and return to the caller
-
 // ValidateParams is a struct used fro validating user params
 type ValidateParams struct {
-	Role   string
+	// Role is a string identifying the user on the pilot opensolar platform
+	Role string
+	// Entity is an interface containing the user struct
 	Entity interface{}
 }
 
-// removeSeedRecp removes the encrypted seed from the recipient structure
-func removeSeedRecp(recipient opensolar.Recipient) opensolar.Recipient {
-	// any field that is private needs to be set to null here. A person using the API
-	// knows the username and password anyway, so the route must return all routes
-	// that are accessible by a single login (uname + pwhash)
-	var dummy []byte
-	recipient.U.StellarWallet.EncryptedSeed = dummy
-	return recipient
-}
-
-// removeSeedInv removes the encrypted seed from the investor structure
-func removeSeedInv(investor opensolar.Investor) opensolar.Investor {
-	var dummy []byte
-	investor.U.StellarWallet.EncryptedSeed = dummy
-	return investor
-}
-
-// removeSeedEntity removes the encrypted seed from the entity structure
-func removeSeedEntity(entity opensolar.Entity) opensolar.Entity {
-	var dummy []byte
-	entity.U.StellarWallet.EncryptedSeed = dummy
-	return entity
-}
-
-// CheckReqdParams is a helper that validates a user on the platform
+// CheckReqdParams is a helper that validates the username, pwhash and if passed, seedpwd along with other
+// params that are required by each endpoint
 func CheckReqdParams(w http.ResponseWriter, r *http.Request, options ...string) (database.User, error) {
 	var prepUser database.User
 	var err error
@@ -136,7 +112,7 @@ func CheckReqdParams(w http.ResponseWriter, r *http.Request, options ...string) 
 	return prepUser, nil
 }
 
-// validateUser is a route that helps validate users on the platform
+// validateUser validates a user and returns whether the user is an investor or recipient on the opensolar platform
 func validateUser() {
 	http.HandleFunc("/user/validate", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
@@ -181,7 +157,7 @@ func validateUser() {
 	})
 }
 
-// getBalances returns a list of all balances (assets and coins) held by the user
+// getBalances returns a list of all balances (assets and XLM) held by the user
 func getBalances() {
 	http.HandleFunc("/user/balances", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
@@ -204,7 +180,7 @@ func getBalances() {
 	})
 }
 
-// getXLMBalance gets the XLM balance of a user's account
+// getXLMBalance gets the XLM balance of the user's primary XLM account
 func getXLMBalance() {
 	http.HandleFunc("/user/balance/xlm", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
@@ -227,7 +203,7 @@ func getXLMBalance() {
 	})
 }
 
-// getAssetBalance gets the balance of a specific asset
+// getAssetBalance gets the balance of a specific asset on Stellar
 func getAssetBalance() {
 	http.HandleFunc("/user/balance/asset", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
@@ -250,7 +226,7 @@ func getAssetBalance() {
 	})
 }
 
-// getIpfsHash gets the ipfs hash of the passed string
+// getIpfsHash returns the ipfs hash of the passed string
 func getIpfsHash() {
 	http.HandleFunc("/ipfs/hash", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
@@ -279,8 +255,7 @@ func getIpfsHash() {
 	})
 }
 
-// authKyc authenticates a user. Should ideally be part of a callback from the third
-// party service that we choose
+// authKyc authenticates a user for KYC services
 func authKyc() {
 	http.HandleFunc("/user/kyc", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
@@ -347,7 +322,8 @@ func sendXLM() {
 	})
 }
 
-// notKycView returns a list of all the users who have not yet been verified through KYC. Called by KYC Inspectors
+// notKycView returns a list of all the users who have not yet been verified through KYC. Can be
+// called only by KYC Inspectors
 func notKycView() {
 	http.HandleFunc("/user/notkycview", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
@@ -374,7 +350,8 @@ func notKycView() {
 	})
 }
 
-// kycView returns a list of all the users who have been verified through KYC. Called by KYC Inspectors
+// kycView returns a list of all the users who have been KYC verified. Can be called
+// only by KYC Inspectors
 func kycView() {
 	http.HandleFunc("/user/kycview", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
@@ -401,7 +378,7 @@ func kycView() {
 	})
 }
 
-// askForCoins asks for coins from the testnet faucet. Will be disabled once we move to mainnet
+// askForCoins asks for coins from the Stellar testnet faucet Available only on Stellar testnet
 func askForCoins() {
 	http.HandleFunc("/user/askxlm", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
@@ -431,7 +408,7 @@ func askForCoins() {
 	})
 }
 
-// trustAsset creates a trustline for the given limit with a remote peer for receiving that asset.
+// trustAsset creates a trustline for the given limit with a remote peer for receiving assets.
 func trustAsset() {
 	http.HandleFunc("/user/trustasset", func(w http.ResponseWriter, r *http.Request) {
 		// since this is testnet, give caller coins from the testnet faucet
@@ -460,7 +437,6 @@ func trustAsset() {
 			return
 		}
 
-		// func TrustAsset(assetCode string, assetIssuer string, limit string, PublicKey string, Seed string) (string, error) {
 		txhash, err := assets.TrustAsset(assetCode, assetIssuer, limit, seed)
 		if err != nil {
 			log.Println("did not trust asset", err)
@@ -472,8 +448,7 @@ func trustAsset() {
 	})
 }
 
-// uploadFile uploads a file to ipfs and returns the ipfs hash of the uploaded file
-// this is a POST request
+// uploadFile uploads a file to ipfs and returns the ipfs hash of the uploaded file. This is a POST request
 func uploadFile() {
 	http.HandleFunc("/upload", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckPost(w, r)
@@ -537,6 +512,7 @@ type PlatformEmailResponse struct {
 	Email string
 }
 
+// platformEmail returns the platform's email address
 func platformEmail() {
 	http.HandleFunc("/platformemail", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
@@ -554,6 +530,7 @@ func platformEmail() {
 	})
 }
 
+// sendTellerShutdownEmail sends a teller shutdown email
 func sendTellerShutdownEmail() {
 	http.HandleFunc("/tellershutdown", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
@@ -573,6 +550,7 @@ func sendTellerShutdownEmail() {
 	})
 }
 
+// sendTellerFailedPaybackEmail sends a teller failed payback email
 func sendTellerFailedPaybackEmail() {
 	http.HandleFunc("/tellerpayback", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
@@ -590,6 +568,7 @@ func sendTellerFailedPaybackEmail() {
 	})
 }
 
+// tellerPing pings the teller to check if its up
 func tellerPing() {
 	http.HandleFunc("/tellerping", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
@@ -639,6 +618,7 @@ func tellerPing() {
 	})
 }
 
+// increaseTrustLimit increases the trust limit a user has towards a specific asset on stellar
 func increaseTrustLimit() {
 	http.HandleFunc("/user/increasetrustlimit", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
@@ -668,7 +648,7 @@ func increaseTrustLimit() {
 	})
 }
 
-// AddContractHash adds a specific contract hash to the database
+// addContractHash adds a specific contract hash to the database
 func addContractHash() {
 	http.HandleFunc("/utils/addhash", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
@@ -773,6 +753,7 @@ func sendSecrets() {
 	})
 }
 
+// SeedResponse is a wrapper around the Seed
 type SeedResponse struct {
 	Seed string
 }
@@ -807,7 +788,7 @@ func mergeSecrets() {
 	})
 }
 
-// generateNewSecrets generates an ew set of secrets for the given function
+// generateNewSecrets generates a new set of secrets for the given function
 func generateNewSecrets() {
 	http.HandleFunc("/user/newsecrets", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
@@ -852,6 +833,7 @@ func generateNewSecrets() {
 	})
 }
 
+// generateResetPwdCode generates a password reset code
 func generateResetPwdCode() {
 	http.HandleFunc("/user/resetpwd", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
@@ -900,6 +882,7 @@ func generateResetPwdCode() {
 	})
 }
 
+// resetPassword is a reset password route that can be called by the user in case they forget their password
 func resetPassword() {
 	http.HandleFunc("/user/pwdreset", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
@@ -948,8 +931,8 @@ func resetPassword() {
 	})
 }
 
-// sweepFunds tries to sweep all funds that we have from one account to another. Requires
-// the seedpwd. Can't transfre assets automatically since platform does not know the list
+// sweepFunds tries to sweep all XLM that a user has from one account to another. Requires
+// the seedpwd. Can't transfer assets automatically since platform does not know the list
 // of issuer publickeys
 func sweepFunds() {
 	http.HandleFunc("/user/sweep", func(w http.ResponseWriter, r *http.Request) {
@@ -1018,7 +1001,7 @@ func sweepFunds() {
 }
 
 // sweepAsset sweeps a given asset from one account to another. Can't transfer multiple
-// assets since we require the issuer pubkey
+// assets since we require the issuer pubkey(s)
 func sweepAsset() {
 	http.HandleFunc("/user/sweepasset", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
@@ -1085,11 +1068,13 @@ func sweepAsset() {
 	})
 }
 
+// KycResponse is a wrapper around status and reason for KYC responses
 type KycResponse struct {
 	Status string // the status whether the kyc verification request was succcessful or not
 	Reason string // the reason why the person was rejected (OFAC blacklist, sanctioned individual, etc)
 }
 
+// validateKYC verifies whether a given user has passed kyc
 func validateKYC() {
 	http.HandleFunc("/user/verifykyc", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
@@ -1169,6 +1154,7 @@ func validateKYC() {
 	})
 }
 
+// giveStarRating gives a star rating towards another person
 func giveStarRating() {
 	http.HandleFunc("/user/giverating", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
@@ -1211,10 +1197,12 @@ func giveStarRating() {
 	})
 }
 
+// TwoFAResponse is a wrapper around the QRCode data
 type TwoFAResponse struct {
 	ImageData string
 }
 
+// new2fa generates a new 2fa code
 func new2fa() {
 	http.HandleFunc("/user/2fa/generate", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
@@ -1260,6 +1248,7 @@ func new2fa() {
 	})
 }
 
+// auth2fa authenticates the passed 2fa code
 func auth2fa() {
 	http.HandleFunc("/user/2fa/authenticate", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
@@ -1287,6 +1276,7 @@ func auth2fa() {
 	})
 }
 
+// addAnchorKYCInfo adds anchorKYC info that the user passes to our platform.
 func addAnchorKYCInfo() {
 	http.HandleFunc("/user/anchorusd/kyc", func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
@@ -1349,6 +1339,7 @@ func changeReputation() {
 	})
 }
 
+// ValidateSeedPwd validates only the seedpwd and not the username / pwhash
 func ValidateSeedPwd(w http.ResponseWriter, r *http.Request, encryptedSeed []byte, userPublickey string) (string, error) {
 	seedpwd := r.URL.Query()["seedpwd"][0]
 	// we've validated the seedpwd, try decrypting the Encrypted Seed.

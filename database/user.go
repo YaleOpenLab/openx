@@ -17,95 +17,83 @@ import (
 	recovery "github.com/bithyve/research/sss"
 )
 
-// User is a metastrucutre that contains commonly used keys within a single umbrella
-// so that we can import it wherever needed.
+// User defines a base layer structure that can be used by entities on platforms built on openx
 type User struct {
+	// Index is an incremental index maintained to easily retrieve users
 	Index int
-	// default index, gets us easy stats on how many people are there
+	// Name is the real name of the user
 	Name string
-	// Name of the primary stakeholder involved (principal trustee of school, for eg.)
-	StellarWallet  StellWallet
-	AlgorandWallet algorand.AlgorandWallet
-	// PublicKey denotes the public key of the recipient
-	City string
-	// the city of residence of the resident
-	ZipCode string
-	// the zipcode of the particular city
-	Country string
-	// the coutnry of residence of the resident
-	RecoveryPhone string
-	// the phone number where we need to send recovery codes to
-	Username string
-	// the username you use to login to the platform
-	Pwhash string
-	// the password hash, which you use to authenticate on the platform
-	Address string
-	// the registered address of the above company
+	// Description contains some other stuff that a user might wish to describe about themselves
 	Description string
-	// Does the contractor need to have a seed and a publickey?
-	// we assume that it does in this case and proceed.
-	// information on company credentials, their experience
+	// Image is an optional profile image that users might upload
 	Image string
-	// image can be company logo, founder selfie
+	// FirstSignedUp contains the date on which the users signed up on openx
 	FirstSignedUp string
-	// auto generated timestamp
-	Kyc bool
-	// false if kyc is not accepted / reviewed, true if user has been verified.
-	Admin bool
-	// admin users can call all the endpoints even on mainnet, responsible for audits and stuff
-	Inspector bool
-	// inspector is a kyc inspector who valdiates the data of people who would like
-	// to signup on the platform
-	Banned bool
-	// a field which can be used to set a ban on a user. Can be only used by inspectors in the event someone
-	// who has KYC is known to behave in a suspicious way.
+	// Address is the address of the user
+	Address string
+	// City denotes the city of residence of the user
+	City string
+	// ZipCode is the zipcode iof the user's residence
+	ZipCode string
+	// Country is the country of residence of the user. Some platforms may be restricted to a certain subset of countries
+	Country string
+	// RecoveryPhone used to send recovery codes or contact the user in the event of an emergency
+	RecoveryPhone string
+	// Email is used to send users notifications on their actions on openx based platforms
 	Email string
-	// user email to send out notifications
+	// Notification is a bool which denotes whether the user wants to receive notifications related to the openx platform
 	Notification bool
-	// GDPR, if user wants to opt in, set this to true. Default is false
+	// StellarWallet contains a publickey and encrypted seed that can be used to interact with the Stellar blockchain
+	StellarWallet StellWallet
+	// AlgorandWallet contains a publickey and privatekey pair which can be used to interact with the Algorand blockchain
+	AlgorandWallet algorand.AlgorandWallet
+	// Username denoteds the username of the user to log on to openx
+	Username string
+	// Pwhash is the 512 byte SHA-3 hash of the user's password
+	Pwhash string
+	// Kyc denotes whether the user has passed KYC
+	Kyc bool
+	// Admin denotes whether the user has passed kyc or not
+	Admin bool
+	// Inspector denotes whether the user is a KYC inspector ie whether they're authorized to approve other's KYC requests
+	Inspector bool
+	// Banned is true if the user is banned on openx
+	Banned bool
+	// Reputation is a float which denotes the reputation of a user on the openx platform
 	Reputation float64
-	// Reputation contains the max reputation that can be gained by a user. Reputation increases
-	// for each completed bond and decreases for each bond cancelled. The frontend
-	// could have a table based on reputation scores and use the appropriate scores for
-	// awarding badges or something to users with high reputation
+	// LocalAssets is a list of P2P assets belonging to the user
 	LocalAssets []string
-	// a collection of assets that the user can own and trade locally using the emulator
+	// RecoveryShares is a collection of shares that a user can distribute to aid recovery of their seed later on
 	RecoveryShares []string
-	// RecoveryShares are shares that you could hare out to a party and one could reconstruct the
-	// seed from 2 out of 3 parts. Based on Shamir's Secret Sharing Scheme.
+	// PwdResetCode is a code that's set when a user wants to reset their password
 	PwdResetCode string
-
+	// SecondaryWallet is a secondary wallet where people can store their funds in
 	SecondaryWallet StellWallet
-	// SecondaryWallet defines a higher level wallet which can be imagined to be similar to a savings account
-
+	// EthereumWallet is an ethereum wallet where users' RECs and other ETH based assets are stored in
 	EthereumWallet ethereum.EthereumWallet
-	// EthereumWallet defines a separate wallet for ethereum which people can use to control their ERC721 RECs
-
+	// PendingDocuments is a list of pending documents which a user must upload before progressing on to the next stage
 	PendingDocuments map[string]string
-	// a Pending documents map to keep track of documents that the user in question has to keep track of
-	// related to a specific project. The key is the same as the value of the project and the value is a description
-	// of what exactly needs to be submitted.
+	// KYC contains KYC information required by ComplyAdvantage
 	KYC KycStruct
-
-	StarRating map[int]int // peer based star rating that users can give of each other. Can be gamed, but this is complemented by
-	// the automated feedback system, so we should be good.
-
-	GivenStarRating map[int]int // to keep track of users for whom you've given feedback
-
-	TwoFASecret string // the 2FA secret that users can use to authenticate with something like Google Authenticator
-
-	AnchorKYC AnchorKYCHelper // kyc stuff required by AnchorUSD
+	// StarRating is a star rating similar to popular platforms which users can use to rate each other
+	StarRating map[int]int
+	// GivenStarRating contains a list of users whom this user has rated
+	GivenStarRating map[int]int
+	// TwoFASecret is the secret associated with Google 2FA that users can enable while logging on openx
+	TwoFASecret string
+	// AnchorKYC contains KYC information required by AnchorUSD
+	AnchorKYC AnchorKYCHelper
 }
 
-// KycStruct contains the parameters required by the kyc partner for querynig kyc compliance
+// KycStruct contains the parameters required by ComplyAdvantage
 type KycStruct struct {
-	PassportPhoto  string // should be a base64 string or similar according to what the API provider wants
+	PassportPhoto  string
 	IDCardPhoto    string
 	DriversLicense string
-	PersonalPhoto  string // a selfie to verify that  the person registering on the platform is the same person whose documents have been uploaded
+	PersonalPhoto  string
 }
 
-// AAnchorKYC defines the list of fields that AnchorUSD requires us to provide for getting AnchorUSD
+// AnchorKYC contains the parameters required by Anchor
 type AnchorKYCHelper struct {
 	Name     string
 	Birthday struct {
@@ -131,16 +119,15 @@ type AnchorKYCHelper struct {
 	WithdrawIdentifier string
 }
 
+// StellWallet hold the Stellar Publickey and Encrypted Seed
 type StellWallet struct {
 	PublicKey     string
 	EncryptedSeed []byte
 	SeedPwhash    string
 }
 
-// NewUser creates a new user
+// NewUser creates a new user, stores it in the openx database and returns a user struct
 func NewUser(uname string, pwhash string, seedpwd string, Name string) (User, error) {
-	// call this after the user has failled in username and password.
-	// Store hashed password in the database
 	var a User
 
 	lim, err := RetrieveAllUsersLim()
@@ -162,13 +149,12 @@ func NewUser(uname string, pwhash string, seedpwd string, Name string) (User, er
 		return a, errors.Wrap(err, "username collision")
 	}
 
-	a.Pwhash = pwhash // store tha sha3 hash
-	// now we have a new User, take this and then send this struct off to be stored in the database
+	a.Pwhash = pwhash
 	a.FirstSignedUp = utils.Timestamp()
 	a.Kyc = false
 	a.Notification = false
 	err = a.Save()
-	return a, err // since user is a meta structure, insert it and then return the function
+	return a, err
 }
 
 // RetrieveAllUsersWithoutKyc retrieves all users without kyc
@@ -191,7 +177,6 @@ func RetrieveAllUsersWithoutKyc() ([]User, error) {
 
 // RetrieveAllUsersWithKyc retrieves all users with kyc
 func RetrieveAllUsersWithKyc() ([]User, error) {
-	// RetrieveAllUsersWithoutKyc retrieves all users without kyc
 	var arr []User
 
 	users, err := RetrieveAllUsers()
@@ -208,8 +193,7 @@ func RetrieveAllUsersWithKyc() ([]User, error) {
 	return arr, nil
 }
 
-// ValidateSeedpwd acts as a pre verify function so we don't try to decrypt the encrypted seed
-// each time a malicious entity tries to guess the password.
+// ValidateSeedpwd validates a user and their seedpwd
 func ValidateSeedpwd(name string, pwhash string, seedpwd string) (User, error) {
 	user, err := ValidateUser(name, pwhash)
 	if err != nil {
@@ -230,7 +214,7 @@ func ValidateSeedpwd(name string, pwhash string, seedpwd string) (User, error) {
 	return user, nil
 }
 
-// GenKeys generates a keypair for the user
+// GenKeys generates a keypair for the user and takes in options on which blockchain to generate keys for
 func (a *User) GenKeys(seedpwd string, options ...string) error {
 	if len(options) == 1 {
 		if consts.Mainnet {
@@ -264,20 +248,20 @@ func (a *User) GenKeys(seedpwd string, options ...string) error {
 				return errors.Wrap(err, "error while storing recovery shares")
 			}
 
-			a.RecoveryShares = append(a.RecoveryShares, tmp...) // this is for the primary account
+			a.RecoveryShares = append(a.RecoveryShares, tmp...)
 		default:
 			log.Println("Chain not supported, please feel free to add support in aanew Pull Request")
 			return errors.New("chain not supported, returning")
 		} // end of switch
 	} else if len(options) == 0 {
-		// default user account supported is stellar
+		// if no option is provided, default to Stellar
 		var err error
 		var seed string
 		seed, a.StellarWallet.PublicKey, err = xlm.GetKeyPair()
 		if err != nil {
 			return errors.Wrap(err, "error while generating public and private key pair")
 		}
-		// don't store the seed in the database
+
 		a.StellarWallet.EncryptedSeed, err = aes.Encrypt([]byte(seed), seedpwd)
 		if err != nil {
 			return errors.Wrap(err, "error while encrypting seed")
@@ -288,9 +272,11 @@ func (a *User) GenKeys(seedpwd string, options ...string) error {
 			return errors.Wrap(err, "error while storing recovery shares")
 		}
 
-		a.RecoveryShares = append(a.RecoveryShares, tmp...) // this is for the primary account
+		a.RecoveryShares = append(a.RecoveryShares, tmp...)
 	}
 
+	// the secondary account is Ethereum by definition since we need to store Swytch RECs
+	// which are based off Ethereum
 	secSeed, secPubkey, err := xlm.GetKeyPair()
 	if err != nil {
 		return errors.Wrap(err, "could not generate secondary keypair")
@@ -311,8 +297,8 @@ func (a *User) GenKeys(seedpwd string, options ...string) error {
 	return err
 }
 
-// CheckUsernameCollision checks if a username is available to a new user who
-// wants to signup on the platform
+// CheckUsernameCollision checks if a passed username collides with someone who's already
+// on the platform. If a collision does exist, return the existing user in the database
 func CheckUsernameCollision(uname string) (User, error) {
 	var dummy User
 	users, err := RetrieveAllUsers()
@@ -329,7 +315,7 @@ func CheckUsernameCollision(uname string) (User, error) {
 	return dummy, nil
 }
 
-// Authorize authorizes a user
+// Authorize sets the Kyc flag on a user. Can only be called by Inspectors
 func (a *User) Authorize(userIndex int) error {
 	// we don't really mind who this user is since all we need to verify is his identity
 	if !a.Inspector {
@@ -347,7 +333,7 @@ func (a *User) Authorize(userIndex int) error {
 	return user.Save()
 }
 
-// AddInspector adds a kyc inspector
+// AddInspector sets the Inspector flag on a user
 func AddInspector(userIndex int) error {
 	// this should only be called by the platform itself and not open to others
 	user, err := RetrieveUser(userIndex)
@@ -358,13 +344,13 @@ func AddInspector(userIndex int) error {
 	return user.Save()
 }
 
-// IncreaseReputation increases reputation
+// ChangeReputation changes the reputation associated with a user
 func (a *User) ChangeReputation(reputation float64) error {
 	a.Reputation += reputation
 	return a.Save()
 }
 
-// IncreaseTrustLimit increases the trustl imit of a specific user towards the STABLEUSD asset
+// IncreaseTrustLimit increases the trust limit of a user towards the in house stablecoin
 func (a *User) IncreaseTrustLimit(seedpwd string, trust float64) error {
 
 	seed, err := wallet.DecryptSeed(a.StellarWallet.EncryptedSeed, seedpwd)
@@ -372,8 +358,6 @@ func (a *User) IncreaseTrustLimit(seedpwd string, trust float64) error {
 		return errors.Wrap(err, "couldn't decrypt seed, quitting!")
 	}
 
-	// we now have the seed, so we should upgrade the trustlimit by the margin requested. The margin passed here
-	// must not include the old trustlimit
 	if !consts.Mainnet {
 		_, err = assets.TrustAsset(consts.StablecoinCode, consts.StablecoinPublicKey, trust+consts.StablecoinTrustLimit, seed)
 		if err != nil {
@@ -391,7 +375,7 @@ func (a *User) IncreaseTrustLimit(seedpwd string, trust float64) error {
 	return nil
 }
 
-// SearchWithEmailId searches for a given user who has the given email id
+// SearchWithEmailId searches for a user given their email id
 func SearchWithEmailId(email string) (User, error) {
 	var dummy User
 	users, err := RetrieveAllUsers()
@@ -408,7 +392,7 @@ func SearchWithEmailId(email string) (User, error) {
 	return dummy, errors.New("could not find user with requested email id, quitting")
 }
 
-// MoveFundsFromSecondaryWallet moves funds from the secondary wallet to the primary wallet
+// MoveFundsFromSecondaryWallet moves XLM from the secondary wallet to the primary wallet
 func (a *User) MoveFundsFromSecondaryWallet(amount float64, seedpwd string) error {
 	// unlock secondary account
 	secSeed, err := wallet.DecryptSeed(a.SecondaryWallet.EncryptedSeed, seedpwd)
@@ -416,7 +400,6 @@ func (a *User) MoveFundsFromSecondaryWallet(amount float64, seedpwd string) erro
 		return errors.Wrap(err, "could not unlock secondary seed, quitting")
 	}
 
-	// get secondary balance
 	secFunds, err := xlm.GetNativeBalance(a.SecondaryWallet.PublicKey)
 	if err != nil {
 		return errors.Wrap(err, "could not get xlm balance of secondary account")
@@ -426,7 +409,6 @@ func (a *User) MoveFundsFromSecondaryWallet(amount float64, seedpwd string) erro
 		return errors.New("amount to be transferred is greater than the funds available in the secondary account, quitting")
 	}
 
-	// send the tx over
 	_, txhash, err := xlm.SendXLM(a.StellarWallet.PublicKey, amount, secSeed, "fund transfer to secondary")
 	if err != nil {
 		return errors.Wrap(err, "error while transferring funds to secondary account, quitting")
@@ -436,7 +418,7 @@ func (a *User) MoveFundsFromSecondaryWallet(amount float64, seedpwd string) erro
 	return nil
 }
 
-// SweepSecondaryWallet sweeps fudsd from the secondary account to the primary account
+// SweepSecondaryWallet sweeps XLM from the secondary account to the primary account
 func (a *User) SweepSecondaryWallet(seedpwd string) error {
 	// unlock secondary account
 
@@ -445,13 +427,11 @@ func (a *User) SweepSecondaryWallet(seedpwd string) error {
 		return errors.Wrap(err, "could not unlock primary seed, quitting")
 	}
 
-	// get secondary balance
 	secFunds, err := xlm.GetNativeBalance(a.SecondaryWallet.PublicKey)
 	if err != nil {
 		return errors.Wrap(err, "could not get xlm balance of secondary account")
 	}
 
-	// send the tx over
 	_, txhash, err := xlm.SendXLM(a.StellarWallet.PublicKey, secFunds-5, secSeed, "fund transfer to secondary")
 	if err != nil {
 		return errors.Wrap(err, "error while transferring funds to secondary account, quitting")
@@ -461,10 +441,8 @@ func (a *User) SweepSecondaryWallet(seedpwd string) error {
 	return nil
 }
 
-// AddEmail stores the passed email as the user's email.
+// AddEmail adds the email field to a given user
 func (a *User) AddEmail(email string) error {
-	// call this function when a user wants to get notifications. Ask on frontend whether
-	// it wants to
 	a.Email = email
 	a.Notification = true
 	err := a.Save()
@@ -474,9 +452,9 @@ func (a *User) AddEmail(email string) error {
 	return a.Save()
 }
 
-// SetBan can be used by an inspector to se a ban on any user for violating certain terms and conditions
+// SetBan sets the Banned flag on a particular user
 func (a *User) SetBan(userIndex int) error {
-	if !a.Inspector {
+	if !a.Admin {
 		return errors.New("user not authorized to ban a user")
 	}
 
@@ -497,7 +475,7 @@ func (a *User) SetBan(userIndex int) error {
 	return user.Save()
 }
 
-// GiveFeedback is used by a user to give a star based feedback about the other user
+// GiveFeedback is used to rate another user
 func (a *User) GiveFeedback(userIndex int, feedback int) error {
 	user, err := RetrieveUser(userIndex)
 	if err != nil {
@@ -505,7 +483,6 @@ func (a *User) GiveFeedback(userIndex int, feedback int) error {
 	}
 
 	if len(user.StarRating) == 0 {
-		// no one has given t3his user a starr rating before, so create a new map
 		user.StarRating = make(map[int]int)
 	}
 
@@ -522,7 +499,6 @@ func (a *User) GiveFeedback(userIndex int, feedback int) error {
 	}
 
 	if len(a.GivenStarRating) == 0 {
-		// no one has given t3his user a starr rating before, so create a new map
 		a.GivenStarRating = make(map[int]int)
 	}
 
@@ -532,7 +508,7 @@ func (a *User) GiveFeedback(userIndex int, feedback int) error {
 
 // Generate2FA generates a new 2FA secret for the given user
 func (a *User) Generate2FA() (string, error) {
-	secret := utils.GetRandomString(35) // multiples of 5 to prevent the = padding at the end
+	secret := utils.GetRandomString(35)
 	secretBase32 := base32.StdEncoding.EncodeToString([]byte(secret))
 	otpc := &googauth.OTPConfig{
 		Secret:     secretBase32,
@@ -554,7 +530,7 @@ func (a *User) Generate2FA() (string, error) {
 	return otpString, nil
 }
 
-// Authenticate2FA authenticates the given password against the user's stored password
+// Authenticate2FA authenticates the given password against the user's stored 2fA secret
 func (a *User) Authenticate2FA(password string) (bool, error) {
 	secretBase32 := base32.StdEncoding.EncodeToString([]byte(a.TwoFASecret))
 	otpc := &googauth.OTPConfig{
@@ -566,7 +542,7 @@ func (a *User) Authenticate2FA(password string) (bool, error) {
 	return otpc.Authenticate(password)
 }
 
-// ImportSeed can be used to import an ecrypted seed onto the openx platform.
+// ImportSeed can be used to import an ecrypted seed
 func (a *User) ImportSeed(encryptedSeed []byte, pubkey string, seedpwd string) error {
 	seed, err := wallet.DecryptSeed(encryptedSeed, seedpwd)
 	if err != nil {
