@@ -16,29 +16,27 @@ import (
 	openx "github.com/YaleOpenLab/openx/platforms"
 )
 
-// imagine the loader like in a retro game, loading mainnet
+// Mainnet loads the stuff needed for mainnet. Ordering is very important since some consts need the others
+// to function correctly
 func Mainnet() error {
 	log.Println("initializing openx mainnet..")
-	consts.SetConsts(true)
-
 	var err error
+	consts.SetConsts(true) // set in house  consts
 
 	lim, _ := database.RetrieveAllUsersLim()
 	if lim == 0 {
 		// nothing exists, create dbs and buckets
 		log.Println("creating mainnet home dir")
 		database.CreateHomeDir()
-		err = openx.InitializePlatform()
-		if err != nil {
-			return err
-		}
-	} else {
-		err = openx.InitializePlatform()
-		if err != nil {
-			return err
-		}
 	}
 
+	// Initialize platform stuff like the platform seed
+	err = openx.InitializePlatform()
+	if err != nil {
+		return err
+	}
+
+	// read from the config file
 	viper.SetConfigType("yaml")
 	viper.SetConfigName("config")
 	viper.AddConfigPath(".")
@@ -66,18 +64,18 @@ func Mainnet() error {
 	return nil
 }
 
+// StablecoinTrust creates a trustline with AnchorUSD on mainnet. We can't do this automatically since
+// we need to wait for the platform to be funded before doing stuff on mainnet
 func StablecoinTrust() error {
 	_, txhash, err := xlm.SetAuthImmutable(consts.PlatformSeed)
 	log.Println("TX HASH FOR SETOPTIONS: ", txhash)
 	if err != nil {
-		log.Println("ERROR WHILE SETTING OPTIONS")
-		return err
+		return errors.Wrap(err, "ERROR WHILE SETTING OPTIONS")
 	}
-	// make the platform trust the stablecoin for receiving payments
+
 	txhash, err = assets.TrustAsset(consts.AnchorUSDCode, consts.AnchorUSDAddress, 10000000000, consts.PlatformSeed)
 	if err != nil {
-		log.Println("error while trusting stablecoin", consts.AnchorUSDCode, consts.AnchorUSDAddress, consts.PlatformSeed)
-		return err
+		return errors.Wrap(err, "error while trusting stablecoin")
 	}
 	return nil
 }

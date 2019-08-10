@@ -16,22 +16,26 @@ import (
 	// opensolarconsts "github.com/YaleOpenLab/opensolar/consts"
 )
 
+// Testnet loads the stuff needed for mainnet Ordering is very important since some consts need the others
+// to function correctly
 func Testnet() error {
 	log.Println("initializing openx testnet..")
 	consts.SetConsts(false)
 	database.CreateHomeDir()
 	var err error
 	// init stablecoin before platform so we don't have to create a stablecoin in case our dbdir is wiped
-	consts.StablecoinPublicKey, consts.StablecoinSeed, err = stablecoin.InitStableCoin(consts.Mainnet) // start the stablecoin daemon
+	consts.StablecoinPublicKey, consts.StablecoinSeed, err = stablecoin.InitStableCoin(consts.Mainnet)
 	if err != nil {
 		return errors.Wrap(err, "errored out while starting stablecoin")
 	}
 
+	// start platform
 	err = openx.InitializePlatform()
 	if err != nil {
 		return err
 	}
 
+	// read from consts
 	viper.SetConfigType("yaml")
 	viper.SetConfigName("config")
 	viper.AddConfigPath(".")
@@ -41,7 +45,6 @@ func Testnet() error {
 		return err
 	}
 
-	// alogrand is supported only in testnet mode
 	if viper.IsSet("algodAddress") {
 		consts.AlgodAddress = viper.GetString("algodAddress")
 	}
@@ -69,7 +72,7 @@ func Testnet() error {
 	if !viper.IsSet("platformpass") {
 		log.Println("platform email password not set")
 	} else {
-		consts.PlatformEmailPass = viper.Get("password").(string) // interface to string
+		consts.PlatformEmailPass = viper.GetString("password")
 	}
 	if !viper.IsSet("kycapikey") {
 		log.Println("kyc api key not set, kyc will be disabled")
