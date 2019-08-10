@@ -12,18 +12,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-// the platform structure is the backend representation of the frontend UI.
-// on a very low level, this should just be a pubkey + seed pair. Each platform
-// needs to be hosted somewhere, so it is necessary that each platform should have
-// its own pubkey and seed pair
-// InitializePlatform returns the platform publickey and seed
-// We have a new model in which we have a new seed for every project that is
-// advertised on the platform. The way this would work is that it sets up the assets,
-// and then we freeze the account to freeze issuance. This would mean we would no longer
-// be able to transact with the account although people can still send funds to it
-// in this case, they would send us back DebtAssets provided they have sufficient
-// stableUSD balance. Else they would not be able to trigger payback.
-
 // InitializePlatform starts the platform
 func InitializePlatform() error {
 	var publicKey string

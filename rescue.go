@@ -11,7 +11,7 @@ import (
 	consts "github.com/YaleOpenLab/openx/consts"
 )
 
-// resuce mode contains a list of handlers that can be used when we need to login as any account and perform emergency resuce fns
+// rescue mode contains a list of handlers that can be used when we need to login as any account and perform emergency resuce fns
 // call this after starting the platform so we don't have to do the boring stuff again if we're the platform
 // this will no have any sort of input parsing since only admins will be using it in the event of an emergency
 

@@ -14,15 +14,10 @@ import (
 	database "github.com/YaleOpenLab/openx/database"
 	openx "github.com/YaleOpenLab/openx/platforms"
 
-	opensolarconsts "github.com/YaleOpenLab/opensolar/consts"
+	// opensolarconsts "github.com/YaleOpenLab/opensolar/consts"
 )
 
 func Testnet() error {
-
-	opensolarconsts.HomeDir += "/testnet"
-	opensolarconsts.DbDir = opensolarconsts.HomeDir + "/database/"                   // the directory where the database is stored (project info, user info, etc)
-	opensolarconsts.PlatformSeedFile = opensolarconsts.HomeDir + "/platformseed.hex" // where the platform's seed is stored
-
 	log.Println("initializing openx testnet..")
 	consts.SetConsts(false)
 	database.CreateHomeDir()

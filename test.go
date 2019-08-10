@@ -56,7 +56,7 @@ func ParseConfig(args []string) (bool, int, error) {
 
 func main() {
 	var err error
-	insecure, port, err := ParseConfig(os.Args) // parseconfig should be before StartPlatform to parse the mainnet bool
+	insecure, port, err := ParseConfig(os.Args)
 	if err != nil {
 		log.Fatal(err)
 	}
