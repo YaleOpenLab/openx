@@ -181,3 +181,288 @@ func newConstructionBond(mdate string, stype string, intrate float64, rating str
 		return err
 	}
 */
+
+
+
+/*
+// http://localhost:8080/entity/newproject/opzone/constructionbond?username=samuel&pwhash=9a768ace36ff3d1771d5c145a544de3d68343b2e76093cb7b2a8ea89ac7f1a20c852e6fc1d71275b43abffefac381c5b906f55c3bcff4225353d02f1d3498758&Title=opzonetest&Location=SFBay&Description=Mocksecription&InstrumentType=OpZoneConstruction&Amount=10million&CostOfUnit=200000&NoOfUnits=50&SecurityType=SEC1&Tax=10pcofffed&MaturationDate=2040&InterestRate=5.5&Rating=AAA&BondIssuer=FEDGOV&BondHolders=BHolder&Underwriter=WellsFargo
+func createOpzonesCBond() {
+	http.HandleFunc("/entity/newproject/opzone/constructionbond", func(w http.ResponseWriter, r *http.Request) {
+		erpc.CheckGet(w, r)
+		erpc.CheckOrigin(w, r)
+
+		_, err := EntityValidateHelper(w, r)
+		if err != nil {
+			log.Println("Error while validating entity", err)
+			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
+			return
+		}
+
+		if r.URL.Query()["Title"] == nil || r.URL.Query()["Location"] == nil || r.URL.Query()["Description"] == nil ||
+			r.URL.Query()["InstrumentType"] == nil || r.URL.Query()["Amount"] == nil || r.URL.Query()["CostOfUnit"] == nil ||
+			r.URL.Query()["NoOfUnits"] == nil || r.URL.Query()["SecurityType"] == nil || r.URL.Query()["Tax"] == nil ||
+			r.URL.Query()["MaturationDate"] == nil || r.URL.Query()["InterestRate"] == nil || r.URL.Query()["Rating"] == nil ||
+			r.URL.Query()["BondIssuer"] == nil || r.URL.Query()["BondHolders"] == nil || r.URL.Query()["Underwriter"] == nil {
+			log.Println("required params missing, quitting!")
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+		}
+
+		var x opzones.ConstructionBond
+
+		x.CostOfUnit, err = utils.ToFloat(r.URL.Query()["CostOfUnit"][0])
+		if err != nil {
+			log.Println("param passed not float, quitting!")
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+		x.NoOfUnits, err = utils.ToInt(r.URL.Query()["NoOfUnits"][0])
+		if err != nil {
+			log.Println("param passed not int, quitting!")
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+		x.InterestRate, err = utils.ToFloat(r.URL.Query()["InterestRate"][0])
+		if err != nil {
+			log.Println("param passed not float, quitting!")
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+		allCBonds, err := opzones.RetrieveAllConstructionBonds()
+		if err != nil {
+			log.Println("error while retreiveing all construction bonds, quitting!")
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+			return
+		}
+		x.Index = len(allCBonds) + 1
+
+		x.Title = r.URL.Query()["Title"][0]
+		x.Location = r.URL.Query()["Location"][0]
+		x.Description = r.URL.Query()["Description"][0]
+		x.InstrumentType = r.URL.Query()["InstrumentType"][0]
+		x.Amount = r.URL.Query()["Amount"][0]
+		x.SecurityType = r.URL.Query()["SecurityType"][0]
+		x.Tax = r.URL.Query()["Tax"][0]
+		x.MaturationDate = r.URL.Query()["MaturationDate"][0]
+		x.Rating = r.URL.Query()["Rating"][0]
+		x.BondIssuer = r.URL.Query()["BondIssuer"][0]
+		x.BondHolders = r.URL.Query()["BondHolders"][0]
+		x.Underwriter = r.URL.Query()["Underwriter"][0]
+		x.DateInitiated = utils.Timestamp()
+		x.AmountRaised = 0
+
+		err = x.Save()
+		if err != nil {
+			log.Println("error while saving project")
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+			return
+		}
+
+		erpc.MarshalSend(w, x)
+	})
+}
+
+// http://localhost:8080/entity/newproject/opzone/lucoop?username=samuel&pwhash=9a768ace36ff3d1771d5c145a544de3d68343b2e76093cb7b2a8ea89ac7f1a20c852e6fc1d71275b43abffefac381c5b906f55c3bcff4225353d02f1d3498758&Title=lucoop&Location=SFBay&Description=adfemolivingunitcoop&TypeOfUnit=transformable&Amount=300&SecurityType=SEC1&MaturationDate=2040&MonthlyPayment=3000&MemberRights=memberrights&InterestRate=5.5&Rating=AAA&BondIssuer=BWriter&Underwriter=WellsFargo&recpIndex=1
+func createOpzonesLuCoop() {
+	http.HandleFunc("/entity/newproject/opzone/lucoop", func(w http.ResponseWriter, r *http.Request) {
+		erpc.CheckGet(w, r)
+		erpc.CheckOrigin(w, r)
+
+		_, err := EntityValidateHelper(w, r)
+		if err != nil {
+			log.Println("Error while validating entity", err)
+			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
+			return
+		}
+
+		var x opzones.LivingUnitCoop
+
+		if r.URL.Query()["Title"] == nil || r.URL.Query()["Description"] == nil || r.URL.Query()["TypeOfUnit"] == nil ||
+			r.URL.Query()["SecurityType"] == nil || r.URL.Query()["MaturationDate"] == nil || r.URL.Query()["MonthlyPayment"] == nil ||
+			r.URL.Query()["MemberRights"] == nil || r.URL.Query()["InterestRate"] == nil || r.URL.Query()["Rating"] == nil ||
+			r.URL.Query()["BondIssuer"] == nil || r.URL.Query()["Underwriter"] == nil || r.URL.Query()["recpIndex"] == nil {
+			log.Println("required params not passed, quitting!")
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+
+		x.Title = r.URL.Query()["Title"][0]
+		x.Location = r.URL.Query()["Location"][0]
+		x.Description = r.URL.Query()["Description"][0]
+		x.TypeOfUnit = r.URL.Query()["TypeOfUnit"][0]
+		x.Amount, err = utils.ToFloat(r.URL.Query()["Amount"][0])
+		if err != nil {
+			log.Println("param passed not float, quitting!")
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+		x.SecurityType = r.URL.Query()["SecurityType"][0]
+		x.MaturationDate = r.URL.Query()["MaturationDate"][0]
+		x.MonthlyPayment, err = utils.ToFloat(r.URL.Query()["MonthlyPayment"][0])
+		if err != nil {
+			log.Println("param passed not float, quitting!")
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+		x.MemberRights = r.URL.Query()["MemberRights"][0]
+		x.InterestRate, err = utils.ToFloat(r.URL.Query()["InterestRate"][0])
+		if err != nil {
+			log.Println("param passed not float, quitting!")
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+		x.Rating = r.URL.Query()["Rating"][0]
+		x.BondIssuer = r.URL.Query()["BondIssuer"][0]
+		x.Underwriter = r.URL.Query()["Underwriter"][0]
+
+		x.RecipientIndex, err = utils.ToInt(r.URL.Query()["recpIndex"][0])
+		if err != nil {
+			log.Println("recpIndex not int, quitting!")
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+
+		allLuCoops, err := opzones.RetrieveAllLivingUnitCoops()
+		if err != nil {
+			log.Println("Couldn't retriev all living unit coops, quitting!")
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+			return
+		}
+
+		x.Index = len(allLuCoops) + 1
+		x.DateInitiated = utils.Timestamp()
+		x.UnitsSold = 0
+
+		err = x.Save()
+		if err != nil {
+			log.Println("error while saving project")
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+			return
+		}
+
+		erpc.MarshalSend(w, x)
+	})
+}
+*/
+
+
+/*
+// investInConstructionBond invests a specific amount in a bond of the user's choice
+func investInConstructionBond() {
+	http.HandleFunc("/constructionbond/invest", func(w http.ResponseWriter, r *http.Request) {
+		erpc.CheckGet(w, r)
+		var err error
+
+		prepInvestor, err := InvValidateHelper(w, r, "amount", "projIndex", "seedpwd")
+		if err != nil {
+			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
+			return
+		}
+
+		invAmount, err := utils.ToFloat(r.URL.Query()["amount"][0])
+		if err != nil {
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+
+		projIndex, err := utils.ToInt(r.URL.Query()["projIndex"][0])
+		if err != nil {
+			log.Println("error while converting project index to int: ", err)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+		seedpwd := r.URL.Query()["seedpwd"][0]
+
+		invSeed, err := wallet.DecryptSeed(prepInvestor.U.StellarWallet.EncryptedSeed, seedpwd)
+		if err != nil {
+			log.Println("did not get investor seed from password", err)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+
+		err = opzones.InvestInConstructionBond(projIndex, prepInvestor.U.Index, invAmount, invSeed)
+		if err != nil {
+			log.Println("did not invest in bond", err)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+		erpc.ResponseHandler(w, erpc.StatusOK)
+	})
+}
+
+// InvestInCoop invests in a coop of the user's choice
+func investInLivingUnitCoop() {
+	http.HandleFunc("/livingunitcoop/invest", func(w http.ResponseWriter, r *http.Request) {
+		erpc.CheckGet(w, r)
+		var err error
+
+		prepInvestor, err := InvValidateHelper(w, r, "amount", "projIndex", "seedpwd")
+		if err != nil {
+			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
+			return
+		}
+
+		invAmount, err := utils.ToFloat(r.URL.Query()["amount"][0])
+		if err != nil {
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+
+		projIndex, err := utils.ToInt(r.URL.Query()["projIndex"][0])
+		if err != nil {
+			log.Println("error while converting project index to int: ", err)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+		seedpwd := r.URL.Query()["seedpwd"][0]
+
+		invSeed, err := wallet.DecryptSeed(prepInvestor.U.StellarWallet.EncryptedSeed, seedpwd)
+		if err != nil {
+			log.Println("did not get investor seed from password", err)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+
+		recpSeed := "SA5LO2G3XR37YY7566K2NHWQCK6PFXMF7UE64WGFBCOAPFHEKNSWT6PE"
+		err = opzones.InvestInLivingUnitCoop(projIndex, prepInvestor.U.Index, invAmount, invSeed, recpSeed)
+		if err != nil {
+			log.Println("did not invest in the coop", err)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+			return
+		}
+
+		erpc.ResponseHandler(w, erpc.StatusOK)
+	})
+}
+*/
+/*
+// unlock unlocks a speciifc projectwhich has been invested in, signalling that the recipient
+// has accepted the investment.
+func unlockCBond() {
+	http.HandleFunc("/recipient/unlock/opzones/cbond", func(w http.ResponseWriter, r *http.Request) {
+		erpc.CheckGet(w, r)
+		erpc.CheckOrigin(w, r)
+		recipient, err := RecpValidateHelper(w, r, "seedpwd")
+		if err != nil {
+			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
+			return
+		}
+
+		seedpwd := r.URL.Query()["seedpwd"][0]
+		projIndex, err := utils.ToInt(r.URL.Query()["projIndex"][0])
+		if err != nil {
+			log.Println("did not parse to integer", err)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+
+		err = opzones.UnlockProject(recipient.U.Username, recipient.U.Pwhash, projIndex, seedpwd, "constructionbond")
+		if err != nil {
+			log.Println("did not unlock project", err)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+			return
+		}
+
+		erpc.ResponseHandler(w, erpc.StatusOK)
+	})
+}
+*/

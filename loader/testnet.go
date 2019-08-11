@@ -16,7 +16,7 @@ import (
 	// opensolarconsts "github.com/YaleOpenLab/opensolar/consts"
 )
 
-// Testnet loads the stuff needed for mainnet Ordering is very important since some consts need the others
+// Testnet loads the stuff needed for testnet. Ordering is very important since some consts need the others
 // to function correctly
 func Testnet() error {
 	log.Println("initializing openx testnet..")
