@@ -12,6 +12,14 @@ import (
 	consts "github.com/YaleOpenLab/openx/consts"
 )
 
+// AnchorRPC is a collection of all Anchor RPC endpoints and their required params
+var AnchorRPC = map[int][]string{
+	1: []string{"/user/anchorusd/deposit/intent"},
+	2: []string{"/user/anchorusd/deposit/kyc"},
+	3: []string{"/user/anchorusd/withdraw/intent"},
+	4: []string{"/user/anchorusd/withdraw/kyc"},
+}
+
 // When a user wants to procure or deal with AnchorUSD, there are a couple things that they need to do:
 // 1. Deposit Funds and get AnchorUSD:
 // 1a. Create a deposit intent - this wouuld be returned with a 403 since the user has not
@@ -89,11 +97,11 @@ func PostAndSend(w http.ResponseWriter, r *http.Request, body string, payload io
 // intentDeposit creates an intent to deposit funds in order to fetch AnchorUSD
 func intentDeposit() {
 	// curl 'https://sandbox-api.anchorusd.com/transfer/deposit?account=GBP3XOFYC6TWUIRZAB7MB6MTUZBCREAYB4E7XKE3OWDP75VU5JB74ZF6&asset_code=USD&email_address=j%40anchorusd.com
-	http.HandleFunc("/user/anchorusd/deposit/intent", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(AnchorRPC[1][0], func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
 
-		prepUser, err := CheckReqdParams(w, r)
+		prepUser, err := CheckReqdParams(w, r, AnchorRPC[1][1:])
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
@@ -120,11 +128,11 @@ func intentDeposit() {
 
 // kycDeposit is the kyc workflow involved when a user wants to obtain AnchorUSD
 func kycDeposit() {
-	http.HandleFunc("/user/anchorusd/deposit/kyc", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(AnchorRPC[2][0], func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
 
-		prepUser, err := CheckReqdParams(w, r)
+		prepUser, err := CheckReqdParams(w, r, AnchorRPC[2][1:])
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
@@ -155,12 +163,12 @@ func kycDeposit() {
 // intentWithdraw creates an intent to withdraw funds from AnchorUSD
 func intentWithdraw() {
 	// curl 'https://sandbox-api.anchorusd.com/transfer/withdraw?type=bank_account&asset_code=USD&email_address=j%40anchorusd.com
-	http.HandleFunc("/user/anchorusd/withdraw/intent", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(AnchorRPC[3][0], func(w http.ResponseWriter, r *http.Request) {
 		// the withdraw endpoint doesn't return an identifier and we'd have to parse some stuff ourselves. Ugly hack and we shouldn't really have to do this, should be fixed by Anchor
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
 
-		prepUser, err := CheckReqdParams(w, r)
+		prepUser, err := CheckReqdParams(w, r, AnchorRPC[3][1:])
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
@@ -189,11 +197,11 @@ func intentWithdraw() {
 
 // kycDeposit is the kyc workflow involved when a user wants to withdraw fiat
 func kycWithdraw() {
-	http.HandleFunc("/user/anchorusd/withdraw/kyc", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(AnchorRPC[4][0], func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
 
-		prepUser, err := CheckReqdParams(w, r)
+		prepUser, err := CheckReqdParams(w, r, AnchorRPC[4][1:])
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return

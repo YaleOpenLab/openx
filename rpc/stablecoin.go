@@ -11,6 +11,12 @@ import (
 	consts "github.com/YaleOpenLab/openx/consts"
 )
 
+// StablecoinRPC is a collection of all stablecoin RPC endpoints and their required params
+var StablecoinRPC = map[int][]string{
+	1: []string{"/stablecoin/get", "seedpwd", "amount"},
+	2: []string{"/anchor/get"},
+}
+
 // setupStableCoinRPCs sets up the endpoints that would be required to interact with
 // openx's inhouse stablecoin
 func setupStableCoinRPCs() {
@@ -20,7 +26,7 @@ func setupStableCoinRPCs() {
 
 // getTestStableCoin gets stablecoin in exchange for xlm
 func getTestStableCoin() {
-	http.HandleFunc("/stablecoin/get", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(StablecoinRPC[1][0], func(w http.ResponseWriter, r *http.Request) {
 		if consts.Mainnet {
 			log.Println("test stablecoin not available on testnet")
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
@@ -28,7 +34,7 @@ func getTestStableCoin() {
 		}
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
-		user, err := CheckReqdParams(w, r, "seedpwd", "amount")
+		user, err := CheckReqdParams(w, r, StablecoinRPC[1][1:])
 		if err != nil {
 			log.Println(err)
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
@@ -70,10 +76,10 @@ type GetAnchorResponse struct {
 
 // getAnchorUSD gets anchorUSD from Anchor
 func getAnchorUSD() {
-	http.HandleFunc("/anchor/get", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(StablecoinRPC[2][0], func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
-		user, err := CheckReqdParams(w, r)
+		user, err := CheckReqdParams(w, r, StablecoinRPC[2][1:])
 		if err != nil {
 			log.Println(err)
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)

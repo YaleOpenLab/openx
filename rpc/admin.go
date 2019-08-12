@@ -28,7 +28,7 @@ func validateAdmin(w http.ResponseWriter, r *http.Request) bool {
 	erpc.CheckGet(w, r)
 	erpc.CheckOrigin(w, r)
 
-	prepUser, err := CheckReqdParams(w, r)
+	prepUser, err := CheckReqdParams(w, r, []string{})
 	if err != nil {
 		return false
 	}
