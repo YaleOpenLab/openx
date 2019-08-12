@@ -12,6 +12,11 @@ import (
 	consts "github.com/YaleOpenLab/openx/consts"
 )
 
+var CARPC = map[int][]string{
+	1: []string{"/user/ca/search", "name", "birthyear"},
+	2: []string{"/admin/ca/users/all"},
+}
+
 // setupCAHandlers sets up rpc handlers that are involved with integrating ComplyAdvantage into openx
 func setupCAHandlers() {
 	searchComplyAdvantage()
@@ -134,11 +139,11 @@ func PostAndSendCA(w http.ResponseWriter, r *http.Request, body string, payload 
 
 // searchComplyAdvantage searches for a particular entity on ComplyAdvantage's platform
 func searchComplyAdvantage() {
-	http.HandleFunc("/user/ca/search", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(CARPC[1][0], func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
 
-		_, err := CheckReqdParams(w, r, "name", "birthyear")
+		_, err := CheckReqdParams(w, r, CARPC[1][1:])
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
@@ -181,11 +186,11 @@ type caAllUserResponse struct {
 
 // getAllCAUsers gets a list of all users searched for using ComplyAdvantage
 func getAllCAUsers() {
-	http.HandleFunc("/admin/ca/users/all", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(CARPC[2][0], func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckGet(w, r)
 		erpc.CheckOrigin(w, r)
 
-		_, err := CheckReqdParams(w, r)
+		_, err := CheckReqdParams(w, r, CARPC[2][1:])
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
