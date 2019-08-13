@@ -12,10 +12,13 @@ import (
 // UserBucket is the bucket in which we'll store openx users
 var UserBucket = []byte("Users")
 
+// PlatformBucket is the bucket where we'll store platforms that are under openx1
+var PlatformBucket = []byte("Platforms")
+
 // CreateHomeDir creates the home and database directories
 func CreateHomeDir() {
 	edb.CreateDirs(consts.HomeDir, consts.DbDir)
-	db, _ := edb.CreateDB(consts.DbDir+consts.DbName, UserBucket)
+	db, _ := edb.CreateDB(consts.DbDir+consts.DbName, UserBucket, PlatformBucket)
 	db.Close()
 }
 
