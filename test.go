@@ -65,13 +65,13 @@ func main() {
 			log.Fatal(err)
 		}
 		opensolar.SetMnConsts()
+		if opts.Trustline {
+			loader.StablecoinTrust()
+		}
 	} else {
 		err = loader.Testnet()
 		if err != nil {
 			log.Fatal(err)
-		}
-		if opts.Trustline {
-			loader.StablecoinTrust()
 		}
 		opensolar.SetTnConsts()
 	}

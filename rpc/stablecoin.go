@@ -87,7 +87,7 @@ func getAnchorUSD() {
 		}
 
 		if !user.Kyc || user.Banned {
-			// banned  or user without kyc is trying to request stablecoin, don't allow
+			// banned or user without kyc is trying to request stablecoin, don't allow
 			log.Println("user who is not verified under kyc / is sanctioned is requesting stablecoin: ", user.Name, user.Pwhash)
 			erpc.ResponseHandler(w, erpc.StatusNotAcceptable)
 			return

@@ -12,7 +12,7 @@ import (
 
 var (
 	// Passphrase defines the stellar network passphrase
-	Passphrase = network.TestNetworkPassphrase
+	Passphrase string
 	// Mainnet is a bool which decides which chain to connect to
 	Mainnet bool
 	// TestNetClient defines the horizon client to connect to
@@ -27,12 +27,14 @@ func SetConsts(amount float64, mainnet bool) {
 	RefillAmount = amount
 	Mainnet = mainnet
 	if mainnet {
+		Passphrase = network.PublicNetworkPassphrase
 		log.Println("Pointing horizon to mainnet")
 		TestNetClient = &horizon.Client{
 			HorizonURL: "https://horizon.stellar.org/", // switch to mainnet horizon
 			HTTP:       http.DefaultClient,
 		}
 	} else {
+		Passphrase = network.TestNetworkPassphrase
 		TestNetClient = &horizon.Client{
 			HorizonURL: "https://horizon-testnet.stellar.org/",
 			HTTP:       http.DefaultClient,

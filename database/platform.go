@@ -15,6 +15,7 @@ type Platform struct {
 	Code  string
 }
 
+// NewPlatform creates a new platform and stores it in the database
 func NewPlatform(name string, code string) error {
 	index, err := RetrieveAllPfLim()
 	if err != nil {

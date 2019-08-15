@@ -35,11 +35,11 @@ func InitializePlatform() error {
 
 		if consts.Mainnet {
 			log.Println("mainnet init, stablecoin disabled")
-			if !xlm.AccountExists(publicKey) {
+			if !xlm.AccountExists(consts.PlatformPublicKey) {
 				// ie we're on mainnet and the account doesn't have enough funds to start
 				return errors.New("please refill the platform with xlm to be able to start openx. Min balance: 0.5XLM")
 			}
-			balance, err := xlm.GetNativeBalance(publicKey)
+			balance, err := xlm.GetNativeBalance(consts.PlatformPublicKey)
 			if err != nil {
 				return errors.Wrap(err, "could not get native balance")
 			}

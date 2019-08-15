@@ -7,6 +7,7 @@ import (
 
 	scan "github.com/Varunram/essentials/scan"
 	xlm "github.com/YaleOpenLab/openx/chains/xlm"
+	assets "github.com/YaleOpenLab/openx/chains/xlm/assets"
 	multisig "github.com/YaleOpenLab/openx/chains/xlm/multisig"
 	consts "github.com/YaleOpenLab/openx/consts"
 )
@@ -35,6 +36,7 @@ func RescueMode() {
 		log.Println("2. Sweep funds from platform")
 		log.Println("3. View platform balances")
 		log.Println("4. Sweep XLM from project escrow")
+		log.Println("5. Send USD to another address")
 		choice, err := scan.ScanInt()
 		if err != nil {
 			log.Fatal(err)
@@ -124,6 +126,40 @@ func RescueMode() {
 			err = multisig.Tx2of2(source, destination, otherSeed, seed, amount, "escrow sweep")
 			if err != nil {
 				log.Println("!!!" + strings.ToUpper(err.Error()) + "!!!")
+				break
+			}
+		case 5:
+			log.Println("Trustline must already exiust for specified seed")
+			log.Println("Enter address")
+			address, err := scan.ScanString()
+			if err != nil {
+				log.Println("!!!" + strings.ToUpper(err.Error()) + "!!!")
+				break
+			}
+
+			log.Println("Enter amount")
+			amount, err := scan.ScanFloat()
+			if err != nil {
+				log.Println("!!!" + strings.ToUpper(err.Error()) + "!!!")
+				break
+			}
+			log.Println("AMOUNT IS: ", amount)
+
+			balance, err := xlm.GetAssetBalance(pubkey, consts.AnchorUSDCode)
+			if err != nil {
+				log.Println("could not get xlm balance of secondary account")
+				break
+			}
+			log.Println("Available balance: ", balance)
+			if balance < amount {
+				log.Println("insufficient balance")
+				break
+			}
+
+			_, _, err = assets.SendAsset(consts.AnchorUSDCode, consts.AnchorUSDAddress, address, amount,
+				seed, "tf")
+			if err != nil {
+				log.Println(err)
 				break
 			}
 		}
