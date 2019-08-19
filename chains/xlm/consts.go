@@ -26,6 +26,7 @@ var RefillAmount float64
 func SetConsts(amount float64, mainnet bool) {
 	RefillAmount = amount
 	Mainnet = mainnet
+	log.Println("SETTING MAINNET TO: ", mainnet)
 	if mainnet {
 		Passphrase = network.PublicNetworkPassphrase
 		log.Println("Pointing horizon to mainnet")
@@ -34,6 +35,7 @@ func SetConsts(amount float64, mainnet bool) {
 			HTTP:       http.DefaultClient,
 		}
 	} else {
+		log.Println("Pointing horizon to testnet")
 		Passphrase = network.TestNetworkPassphrase
 		TestNetClient = &horizon.Client{
 			HorizonURL: "https://horizon-testnet.stellar.org/",

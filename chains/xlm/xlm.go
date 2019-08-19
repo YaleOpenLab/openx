@@ -26,6 +26,7 @@ func GetKeyPair() (string, string, error) {
 // AccountExists checks whether an account exists
 func AccountExists(publicKey string) bool {
 	x, err := ReturnSourceAccountPubkey(publicKey)
+	log.Println("X=", x)
 	if err != nil {
 		// error in the horizon api call
 		return false
