@@ -22,6 +22,7 @@ func adminHandlers() {
 	newPlatform()
 	retrieveAllPlatforms()
 	listAllAdmins()
+	addNewPlatform()
 }
 
 // KillCode is a code that can immediately shut down the server in case of hacks / crises
@@ -149,6 +150,7 @@ func listAllAdmins() {
 	http.HandleFunc("/admin/list", func(w http.ResponseWriter, r *http.Request) {
 		err := erpc.CheckGet(w, r)
 		if err != nil {
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -159,5 +161,54 @@ func listAllAdmins() {
 		}
 
 		erpc.MarshalSend(w, admins)
+	})
+}
+
+func addNewPlatform() {
+	http.HandleFunc("/admin/add/platform", func(w http.ResponseWriter, r *http.Request) {
+		err := erpc.CheckPost(w, r)
+		if err != nil {
+			log.Println("ERROR!!")
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+
+		var dummy []string
+		user, err := CheckReqdParams(w, r, dummy)
+		if err != nil {
+			log.Println("RP err: ", err)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+
+		if !user.Admin {
+			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
+			return
+		}
+
+		err = r.ParseForm()
+		if err != nil {
+			log.Println("PF err: ", err)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+
+		name := r.FormValue("name")
+		code := r.FormValue("code")
+
+		if name == "" || code == "" {
+			log.Println("code or desired name empty")
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+		}
+
+		err = database.NewPlatform(name, code)
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+			return
+		}
+
+		erpc.ResponseHandler(w, erpc.StatusOK)
 	})
 }

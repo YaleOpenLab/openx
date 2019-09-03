@@ -23,6 +23,7 @@ func setupPlatformRoutes() {
 	pfValidateUser()
 	pfNewUser()
 	pfCollisionCheck()
+	retrieveAllPlatformNames()
 }
 
 // mainnetRPC is an RPC that reutrns 0 if openx is running on mainnet, 1 if running on testnet
@@ -217,5 +218,32 @@ func pfCollisionCheck() {
 				w.Write(noCollision)
 			}
 		}
+	})
+}
+
+// retrieveAllPlatformNames retrieves all platforms from the database
+func retrieveAllPlatformNames() {
+	http.HandleFunc("/platforms/all", func(w http.ResponseWriter, r *http.Request) {
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+
+		platforms, err := database.RetrieveAllPlatforms()
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+			return
+		}
+
+		var platformNames []string
+
+		for _, platform := range platforms {
+			platformNames = append(platformNames, platform.Name)
+		}
+
+		erpc.MarshalSend(w, platformNames)
 	})
 }
