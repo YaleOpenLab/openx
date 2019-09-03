@@ -169,7 +169,7 @@ func genAccessToken() {
 		pwhash := r.FormValue("pwhash")
 
 		log.Println(username, pwhash)
-		user, err := database.ValidateUser(username, pwhash)
+		user, err := database.ValidatePwhash(username, pwhash)
 		if err != nil {
 			log.Println(err)
 			erpc.MarshalSend(w, erpc.StatusInternalServerError)

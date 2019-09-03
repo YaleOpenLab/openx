@@ -96,8 +96,8 @@ func RetrieveAllAdmins() ([]User, error) {
 	return arr, nil
 }
 
-// ValidateUser validates a username / pwhash combination
-func ValidateUser(name string, pwhash string) (User, error) {
+// ValidatePwhash validates a username / pwhash combination
+func ValidatePwhash(name string, pwhash string) (User, error) {
 	var dummy User
 	users, err := RetrieveAllUsers()
 	if err != nil {
@@ -121,7 +121,8 @@ func ValidateAccessToken(name string, accessToken string) (User, error) {
 	}
 
 	for _, user := range users {
-		if user.Username == name && user.AccessToken == accessToken && utils.Unix()-user.AccessTokenTimeout < consts.AccessTokenLife {
+		if user.Username == name && user.AccessToken == accessToken &&
+			utils.Unix()-user.AccessTokenTimeout < consts.AccessTokenLife {
 			return user, nil
 		}
 	}

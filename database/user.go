@@ -199,7 +199,7 @@ func RetrieveAllUsersWithKyc() ([]User, error) {
 
 // ValidateSeedpwd validates a user and their seedpwd
 func ValidateSeedpwd(name string, pwhash string, seedpwd string) (User, error) {
-	user, err := ValidateUser(name, pwhash)
+	user, err := ValidatePwhash(name, pwhash)
 	if err != nil {
 		return user, errors.Wrap(err, "could not validate user")
 	}
