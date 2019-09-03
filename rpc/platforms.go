@@ -135,15 +135,16 @@ func pfValidateUser() {
 
 		if code == "OPENSOLARTEST" {
 
-			if r.URL.Query()["name"] == nil || r.URL.Query()["pwhash"] == nil {
-				log.Println("code missing")
+			if r.URL.Query()["username"] == nil || r.URL.Query()["token"] == nil {
+				log.Println("token missing")
 				erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			}
 
-			name := r.URL.Query()["name"][0]
-			pwhash := r.URL.Query()["pwhash"][0]
+			log.Println("QUERY PARAMS: ", r.URL.Query())
+			name := r.URL.Query()["username"][0]
+			token := r.URL.Query()["token"][0]
 
-			user, err := database.ValidateUser(name, pwhash)
+			user, err := database.ValidateAccessToken(name, token)
 			if err != nil {
 				erpc.ResponseHandler(w, erpc.StatusBadRequest)
 				return
@@ -167,13 +168,13 @@ func pfNewUser() {
 		code := r.URL.Query()["code"][0]
 		if code == "OPENSOLARTEST" {
 
-			if r.URL.Query()["name"] == nil || r.URL.Query()["pwhash"] == nil || r.URL.Query()["seedpwd"] == nil ||
+			if r.URL.Query()["username"] == nil || r.URL.Query()["pwhash"] == nil || r.URL.Query()["seedpwd"] == nil ||
 				r.URL.Query()["realname"] == nil {
 				log.Println("code missing")
 				erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			}
 
-			name := r.URL.Query()["name"][0]
+			name := r.URL.Query()["username"][0]
 			pwhash := r.URL.Query()["pwhash"][0]
 			seedpwd := r.URL.Query()["seedpwd"][0]
 			realname := r.URL.Query()["realname"][0]
@@ -202,11 +203,11 @@ func pfCollisionCheck() {
 		code := r.URL.Query()["code"][0]
 
 		if code == "OPENSOLARTEST" {
-			if r.URL.Query()["name"] == nil {
+			if r.URL.Query()["username"] == nil {
 				erpc.ResponseHandler(w, erpc.StatusBadRequest)
 				return
 			}
-			name := r.URL.Query()["name"][0]
+			name := r.URL.Query()["username"][0]
 			noCollision := []byte{0}
 			collision := []byte{1}
 			_, err := database.CheckUsernameCollision(name)

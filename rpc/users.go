@@ -159,7 +159,6 @@ type GenAccessTokenReturn struct {
 func genAccessToken() {
 	http.HandleFunc(UserRPC[0][0], func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckPost(w, r)
-
 		err := r.ParseForm()
 		if err != nil {
 			erpc.MarshalSend(w, erpc.StatusBadRequest)
@@ -169,14 +168,17 @@ func genAccessToken() {
 		username := r.FormValue("username")
 		pwhash := r.FormValue("pwhash")
 
+		log.Println(username, pwhash)
 		user, err := database.ValidateUser(username, pwhash)
 		if err != nil {
+			log.Println(err)
 			erpc.MarshalSend(w, erpc.StatusInternalServerError)
 			return
 		}
 
 		token, err := user.GenAccessToken()
 		if err != nil {
+			log.Println(err)
 			erpc.MarshalSend(w, erpc.StatusInternalServerError)
 			return
 		}
