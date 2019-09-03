@@ -96,7 +96,7 @@ func ValidateAccessToken(name string, accessToken string) (User, error) {
 	}
 
 	for _, user := range users {
-		if user.Username == name && user.AccessToken == accessToken && utils.Unix() - user.AccessTokenTimeout < consts.AccessTokenLife {
+		if user.Username == name && user.AccessToken == accessToken && utils.Unix()-user.AccessTokenTimeout < consts.AccessTokenLife {
 			return user, nil
 		}
 	}

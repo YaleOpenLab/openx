@@ -7,8 +7,8 @@ import (
 	"os"
 
 	consts "github.com/YaleOpenLab/openx/consts"
-	loader "github.com/YaleOpenLab/openx/loader"
 	database "github.com/YaleOpenLab/openx/database"
+	loader "github.com/YaleOpenLab/openx/loader"
 	// ipfs "github.com/YaleOpenLab/openx/ipfs"
 	opensolar "github.com/YaleOpenLab/opensolar/consts"
 	rpc "github.com/YaleOpenLab/openx/rpc"
