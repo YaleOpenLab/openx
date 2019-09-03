@@ -83,6 +83,10 @@ type User struct {
 	TwoFASecret string
 	// AnchorKYC contains KYC information required by AnchorUSD
 	AnchorKYC AnchorKYCHelper
+	// AccessToken is the access token that will be used for authenticating RPC requests made to the server
+	AccessToken string
+	// AccessTokenTimeout is the unix time at which the accessToken was generated
+	AccessTokenTimeout int64
 }
 
 // KycStruct contains the parameters required by ComplyAdvantage
@@ -196,6 +200,27 @@ func RetrieveAllUsersWithKyc() ([]User, error) {
 // ValidateSeedpwd validates a user and their seedpwd
 func ValidateSeedpwd(name string, pwhash string, seedpwd string) (User, error) {
 	user, err := ValidateUser(name, pwhash)
+	if err != nil {
+		return user, errors.Wrap(err, "could not validate user")
+	}
+	seed, err := wallet.DecryptSeed(user.StellarWallet.EncryptedSeed, seedpwd)
+	if err != nil {
+		return user, errors.Wrap(err, "failed to decrypt user's seed")
+	}
+	pubkey, err := wallet.ReturnPubkey(seed)
+	if err != nil {
+		return user, errors.Wrap(err, "could not decrypt seed")
+	}
+	if pubkey != user.StellarWallet.PublicKey {
+		log.Println(pubkey, user.StellarWallet.PublicKey)
+		return user, errors.New("pubkeys don't match, quitting")
+	}
+	return user, nil
+}
+
+// ValidateSeedpwdAuthToken validates a user and their seedpwd using their accesstoken
+func ValidateSeedpwdAuthToken(name string, token string, seedpwd string) (User, error) {
+	user, err := ValidateAccessToken(name, token)
 	if err != nil {
 		return user, errors.Wrap(err, "could not validate user")
 	}
@@ -558,4 +583,15 @@ func (a *User) ImportSeed(encryptedSeed []byte, pubkey string, seedpwd string) e
 	a.StellarWallet.EncryptedSeed = encryptedSeed
 	a.StellarWallet.PublicKey = pubkey
 	return a.Save()
+}
+
+func (a *User) GenAccessToken() (string, error) {
+	a.AccessToken = utils.GetRandomString(consts.AccessTokenLength)
+	a.AccessTokenTimeout = utils.Unix()
+
+	err := a.Save()
+	if err != nil {
+		return "", errors.Wrap(err, "could not save user to database")
+	}
+	return a.AccessToken, nil
 }
