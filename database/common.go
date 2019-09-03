@@ -71,6 +71,31 @@ func TopReputationUsers() ([]User, error) {
 	return arr, nil
 }
 
+// RetrieveAllAdmins retrieves a list of all admisn from the database
+func RetrieveAllAdmins() ([]User, error) {
+	var arr []User
+	users, err := RetrieveAllUsers()
+	if err != nil {
+		return arr, errors.Wrap(err, "error while retrieving all users from database")
+	}
+
+	for _, user := range users {
+		if user.Admin {
+			var x User
+			x.Index = user.Index
+			x.Admin = user.Admin
+			x.Image = user.Image
+			x.Name = user.Name
+			x.Username = user.Username
+			x.Email = user.Email
+			x.Country = user.Country
+			arr = append(arr, x)
+		}
+	}
+
+	return arr, nil
+}
+
 // ValidateUser validates a username / pwhash combination
 func ValidateUser(name string, pwhash string) (User, error) {
 	var dummy User
