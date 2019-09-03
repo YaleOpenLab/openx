@@ -126,7 +126,7 @@ func CheckReqdParams(w http.ResponseWriter, r *http.Request, options []string) (
 
 	for _, option := range options {
 		if r.URL.Query()[option] == nil {
-			return prepUser, errors.New("required param: " + option + "not specified, quitting")
+			return prepUser, errors.New("required param: " + option + " not specified, quitting")
 		}
 	}
 
