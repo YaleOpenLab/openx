@@ -95,6 +95,11 @@ var Tlsport = 443
 // DefaultRpcPort is the default Insecure port on which openx starts
 var DefaultRpcPort = 8080
 
+// AccessTokenLife is the life of a generated access token
+var AccessTokenLife = int64(3600)
+
+// AccessTokenLength is the length of a user generated access token
+var AccessTokenLength = 32
 // SetConsts sets the consts required for openx to operate. Third party platforms should
 // call this before starting their platform.
 func SetConsts(mainnet bool) {

@@ -26,6 +26,7 @@ import (
 
 // UserRPC is a collection of all user RPC endpoints and their required params
 var UserRPC = map[int][]string{
+	0:  []string{"/token"},
 	1:  []string{"/user/validate"},
 	2:  []string{"/user/balances"},
 	3:  []string{"/user/balance/xlm"},
@@ -95,6 +96,7 @@ func setupUserRpcs() {
 	changeReputation()
 	addAnchorKYCInfo()
 	importSeed()
+	genAccessToken()
 }
 
 const (
@@ -120,7 +122,7 @@ func CheckReqdParams(w http.ResponseWriter, r *http.Request, options []string) (
 		return prepUser, errors.New("url query can't be empty")
 	}
 
-	options = append(options, "username", "pwhash")
+	options = append(options, "username", "token")
 
 	for _, option := range options {
 		if r.URL.Query()[option] == nil {
@@ -128,16 +130,16 @@ func CheckReqdParams(w http.ResponseWriter, r *http.Request, options []string) (
 		}
 	}
 
-	if len(r.URL.Query()["pwhash"][0]) != 128 {
+	if len(r.URL.Query()["token"][0]) != consts.AccessTokenLength {
 		return prepUser, errors.New("pwhash length not 128, quitting")
 	}
 
 	if r.URL.Query()["seedpwd"] != nil {
 		// check seed pwhash before decryption
-		prepUser, err = database.ValidateSeedpwd(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0], r.URL.Query()["seedpwd"][0])
+		prepUser, err = database.ValidateSeedpwdAuthToken(r.URL.Query()["username"][0], r.URL.Query()["token"][0], r.URL.Query()["seedpwd"][0])
 	} else {
 		// no seedpwhash, normal call
-		prepUser, err = database.ValidateUser(r.URL.Query()["username"][0], r.URL.Query()["pwhash"][0])
+		prepUser, err = database.ValidateAccessToken(r.URL.Query()["username"][0], r.URL.Query()["token"][0])
 	}
 
 	// catch the error from the relevant error call
@@ -147,6 +149,42 @@ func CheckReqdParams(w http.ResponseWriter, r *http.Request, options []string) (
 	}
 
 	return prepUser, nil
+}
+
+// GenAccessTokenReturn is the struct defined for returning access tokens
+type GenAccessTokenReturn struct {
+	Token string
+}
+
+func genAccessToken() {
+	http.HandleFunc(UserRPC[0][0], func(w http.ResponseWriter, r *http.Request) {
+		erpc.CheckPost(w, r)
+
+		err := r.ParseForm()
+		if err != nil {
+			erpc.MarshalSend(w, erpc.StatusBadRequest)
+			return
+		}
+
+		username := r.FormValue("username")
+		pwhash := r.FormValue("pwhash")
+
+		user, err := database.ValidateUser(username, pwhash)
+		if err != nil {
+			erpc.MarshalSend(w, erpc.StatusInternalServerError)
+			return
+		}
+
+		token, err := user.GenAccessToken()
+		if err != nil {
+			erpc.MarshalSend(w, erpc.StatusInternalServerError)
+			return
+		}
+
+		var x GenAccessTokenReturn
+		x.Token = token
+		erpc.MarshalSend(w, x)
+	})
 }
 
 // validateUser validates a user and returns whether the user is an investor or recipient on the opensolar platform
