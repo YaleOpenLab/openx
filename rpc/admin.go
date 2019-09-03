@@ -21,6 +21,7 @@ func adminHandlers() {
 	genNuclearCode()
 	newPlatform()
 	retrieveAllPlatforms()
+	listAllAdmins()
 }
 
 // KillCode is a code that can immediately shut down the server in case of hacks / crises
@@ -140,5 +141,23 @@ func retrieveAllPlatforms() {
 		}
 
 		erpc.MarshalSend(w, pfs)
+	})
+}
+
+// listAllAdmins lists all the admin users of openx so users can contact them in case they face any problem
+func listAllAdmins() {
+	http.HandleFunc("/admin/list", func(w http.ResponseWriter, r *http.Request) {
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			return
+		}
+
+		admins, err := database.RetrieveAllAdmins()
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		}
+
+		erpc.MarshalSend(w, admins)
 	})
 }
