@@ -36,7 +36,7 @@ func validateAdmin(w http.ResponseWriter, r *http.Request, options ...string) bo
 		return false
 	}
 
-	prepUser, err := CheckReqdParams(w, r, []string{})
+	prepUser, err := userValidateHelper(w, r, []string{})
 	if err != nil {
 		return false
 	}
@@ -181,10 +181,8 @@ func addNewPlatform() {
 		}
 
 		var dummy []string
-		user, err := CheckReqdParams(w, r, dummy)
+		user, err := userValidateHelper(w, r, dummy)
 		if err != nil {
-			log.Println("RP err: ", err)
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 

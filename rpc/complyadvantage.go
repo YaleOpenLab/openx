@@ -145,7 +145,7 @@ func searchComplyAdvantage() {
 			log.Println(err)
 			return
 		}
-		_, err = CheckReqdParams(w, r, CARPC[1][1:])
+		_, err = userValidateHelper(w, r, CARPC[1][1:])
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
@@ -195,7 +195,7 @@ func getAllCAUsers() {
 			return
 		}
 
-		_, err = CheckReqdParams(w, r, CARPC[2][1:])
+		_, err = userValidateHelper(w, r, CARPC[2][1:])
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return

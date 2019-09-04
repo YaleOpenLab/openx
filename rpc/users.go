@@ -112,26 +112,39 @@ type ValidateParams struct {
 	Entity interface{}
 }
 
-// CheckReqdParams is a helper that validates the username, pwhash and if passed, seedpwd along with other
-// params that are required by each endpoint
-func CheckReqdParams(w http.ResponseWriter, r *http.Request, options []string) (database.User, error) {
-	var prepUser database.User
-	var err error
-	// need to pass the pwhash param here
+func checkReqdParams(w http.ResponseWriter, r *http.Request, options []string) error {
+
 	if r.URL.Query() == nil {
-		return prepUser, errors.New("url query can't be empty")
+		erpc.ResponseHandler(w, erpc.StatusUnauthorized)
+		return errors.New("url query can't be empty")
 	}
 
-	options = append(options, "username", "token")
+	options = append(options, "username", "token") // default for all endpoints
 
 	for _, option := range options {
 		if r.URL.Query()[option] == nil {
-			return prepUser, errors.New("required param: " + option + " not specified, quitting")
+			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
+			return errors.New("required param: " + option + " not specified, quitting")
 		}
 	}
 
 	if len(r.URL.Query()["token"][0]) != consts.AccessTokenLength {
-		return prepUser, errors.New("pwhash length not 128, quitting")
+		erpc.ResponseHandler(w, erpc.StatusUnauthorized)
+		return errors.New("pwhash length not 128, quitting")
+	}
+
+	return nil
+}
+
+// userValidateHelper is a helper that validates the username, pwhash and if passed, seedpwd along with other
+// params that are required by each endpoint
+func userValidateHelper(w http.ResponseWriter, r *http.Request, options []string) (database.User, error) {
+	var prepUser database.User
+	var err error
+	// need to pass the pwhash param here
+	err = checkReqdParams(w, r, options)
+	if err != nil {
+		return prepUser, errors.New("url query can't be empty")
 	}
 
 	if r.URL.Query()["seedpwd"] != nil {
@@ -144,7 +157,7 @@ func CheckReqdParams(w http.ResponseWriter, r *http.Request, options []string) (
 
 	// catch the error from the relevant error call
 	if err != nil {
-		log.Println("did not validate user", err)
+		erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 		return prepUser, err
 	}
 
@@ -199,10 +212,8 @@ func validateUser() {
 		}
 
 		// need to pass the pwhash param here
-		prepUser, err := CheckReqdParams(w, r, UserRPC[1][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[1][1:])
 		if err != nil {
-			log.Println("did not validate user", err)
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 		// no we need to see whether this guy is an investor or a recipient.
@@ -247,10 +258,8 @@ func getBalances() {
 			return
 		}
 
-		prepUser, err := CheckReqdParams(w, r, UserRPC[2][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[2][1:])
 		if err != nil {
-			log.Println("did not validate user", err)
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
@@ -274,10 +283,8 @@ func getXLMBalance() {
 			return
 		}
 
-		prepUser, err := CheckReqdParams(w, r, UserRPC[3][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[3][1:])
 		if err != nil {
-			log.Println("did not validate user", err)
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
@@ -301,9 +308,8 @@ func getAssetBalance() {
 			return
 		}
 
-		prepUser, err := CheckReqdParams(w, r, UserRPC[4][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[4][1:])
 		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
@@ -328,9 +334,8 @@ func getIpfsHash() {
 			return
 		}
 
-		_, err = CheckReqdParams(w, r, UserRPC[5][1:])
+		_, err = userValidateHelper(w, r, UserRPC[5][1:])
 		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
@@ -361,9 +366,8 @@ func authKyc() {
 			return
 		}
 
-		prepUser, err := CheckReqdParams(w, r, UserRPC[6][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[6][1:])
 		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
@@ -391,9 +395,8 @@ func sendXLM() {
 			return
 		}
 
-		prepUser, err := CheckReqdParams(w, r, UserRPC[7][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[7][1:])
 		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
@@ -437,10 +440,9 @@ func notKycView() {
 			return
 		}
 
-		prepUser, err := CheckReqdParams(w, r, UserRPC[8][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[8][1:])
 		if err != nil {
 			log.Println("did not validate user", err)
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 		if !prepUser.Inspector && !prepUser.Admin {
@@ -469,10 +471,8 @@ func kycView() {
 			return
 		}
 
-		prepUser, err := CheckReqdParams(w, r, UserRPC[9][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[9][1:])
 		if err != nil {
-			log.Println("did not validate user", err)
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 		if !prepUser.Inspector && !prepUser.Admin {
@@ -506,10 +506,8 @@ func askForCoins() {
 			return
 		}
 
-		prepUser, err := CheckReqdParams(w, r, UserRPC[10][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[10][1:])
 		if err != nil {
-			log.Println("did not validate user", err)
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
@@ -534,10 +532,8 @@ func trustAsset() {
 			return
 		}
 
-		prepUser, err := CheckReqdParams(w, r, UserRPC[11][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[11][1:])
 		if err != nil {
-			log.Println("did not validate user", err)
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
@@ -573,10 +569,8 @@ func uploadFile() {
 	http.HandleFunc(UserRPC[12][0], func(w http.ResponseWriter, r *http.Request) {
 		erpc.CheckPost(w, r)
 
-		_, err := CheckReqdParams(w, r, UserRPC[12][1:])
+		_, err := userValidateHelper(w, r, UserRPC[12][1:])
 		if err != nil {
-			log.Println("did not validate user", err)
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
@@ -641,10 +635,8 @@ func platformEmail() {
 			return
 		}
 
-		_, err = CheckReqdParams(w, r, UserRPC[13][1:])
+		_, err = userValidateHelper(w, r, UserRPC[13][1:])
 		if err != nil {
-			log.Println("did not validate user", err)
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
@@ -663,9 +655,8 @@ func sendTellerShutdownEmail() {
 			return
 		}
 
-		prepUser, err := CheckReqdParams(w, r, UserRPC[14][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[14][1:])
 		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
@@ -687,9 +678,8 @@ func sendTellerFailedPaybackEmail() {
 			return
 		}
 
-		prepUser, err := CheckReqdParams(w, r, UserRPC[15][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[15][1:])
 		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
@@ -709,10 +699,8 @@ func tellerPing() {
 			return
 		}
 
-		_, err = CheckReqdParams(w, r, UserRPC[16][1:])
+		_, err = userValidateHelper(w, r, UserRPC[16][1:])
 		if err != nil {
-			log.Println("did not validate user", err)
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
@@ -763,9 +751,8 @@ func increaseTrustLimit() {
 			return
 		}
 
-		prepUser, err := CheckReqdParams(w, r, UserRPC[17][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[17][1:])
 		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
@@ -797,9 +784,8 @@ func addContractHash() {
 			return
 		}
 
-		_, err = CheckReqdParams(w, r, UserRPC[18][1:])
+		_, err = userValidateHelper(w, r, UserRPC[18][1:])
 		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
@@ -871,9 +857,8 @@ func sendSecrets() {
 			return
 		}
 
-		user, err := CheckReqdParams(w, r, UserRPC[19][1:])
+		user, err := userValidateHelper(w, r, UserRPC[19][1:])
 		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
@@ -913,9 +898,8 @@ func mergeSecrets() {
 			return
 		}
 
-		_, err = CheckReqdParams(w, r, UserRPC[20][1:])
+		_, err = userValidateHelper(w, r, UserRPC[20][1:])
 		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
@@ -946,9 +930,8 @@ func generateNewSecrets() {
 			return
 		}
 
-		user, err := CheckReqdParams(w, r, UserRPC[21][1:])
+		user, err := userValidateHelper(w, r, UserRPC[21][1:])
 		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
@@ -1100,9 +1083,8 @@ func sweepFunds() {
 			return
 		}
 
-		prepUser, err := CheckReqdParams(w, r, UserRPC[24][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[24][1:])
 		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
@@ -1171,9 +1153,8 @@ func sweepAsset() {
 			return
 		}
 
-		prepUser, err := CheckReqdParams(w, r, UserRPC[25][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[25][1:])
 		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
@@ -1247,9 +1228,8 @@ func validateKYC() {
 		}
 
 		// we first need to check the user params here
-		prepUser, err := CheckReqdParams(w, r, UserRPC[26][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[26][1:])
 		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
@@ -1329,9 +1309,8 @@ func giveStarRating() {
 			return
 		}
 
-		prepUser, err := CheckReqdParams(w, r, UserRPC[27][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[27][1:])
 		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
@@ -1380,9 +1359,8 @@ func new2fa() {
 			return
 		}
 
-		prepUser, err := CheckReqdParams(w, r, UserRPC[28][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[28][1:])
 		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
@@ -1429,9 +1407,8 @@ func auth2fa() {
 			return
 		}
 
-		prepUser, err := CheckReqdParams(w, r, UserRPC[29][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[29][1:])
 		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
@@ -1459,9 +1436,8 @@ func addAnchorKYCInfo() {
 			return
 		}
 
-		prepUser, err := CheckReqdParams(w, r, UserRPC[30][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[30][1:])
 		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
@@ -1493,9 +1469,8 @@ func addAnchorKYCInfo() {
 // on completion of a contract or on evaluation of feedback proposed by other entities on the system
 func changeReputation() {
 	http.HandleFunc(UserRPC[31][0], func(w http.ResponseWriter, r *http.Request) {
-		user, err := CheckReqdParams(w, r, UserRPC[31][1:])
+		user, err := userValidateHelper(w, r, UserRPC[31][1:])
 		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
@@ -1546,9 +1521,8 @@ func importSeed() {
 			return
 		}
 
-		prepUser, err := CheckReqdParams(w, r, UserRPC[32][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[32][1:])
 		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 

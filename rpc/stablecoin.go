@@ -38,17 +38,13 @@ func getTestStableCoin() {
 			return
 		}
 
-		user, err := CheckReqdParams(w, r, StablecoinRPC[1][1:])
+		user, err := userValidateHelper(w, r, StablecoinRPC[1][1:])
 		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
 		receiverSeed, err := wallet.DecryptSeed(user.StellarWallet.EncryptedSeed, r.URL.Query()["seedpwd"][0])
 		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 		amount, err := utils.ToFloat(r.URL.Query()["amount"][0])
@@ -87,10 +83,8 @@ func getAnchorUSD() {
 			return
 		}
 
-		user, err := CheckReqdParams(w, r, StablecoinRPC[2][1:])
+		user, err := userValidateHelper(w, r, StablecoinRPC[2][1:])
 		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 

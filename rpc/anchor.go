@@ -104,9 +104,8 @@ func intentDeposit() {
 			return
 		}
 
-		prepUser, err := CheckReqdParams(w, r, AnchorRPC[1][1:])
+		prepUser, err := userValidateHelper(w, r, AnchorRPC[1][1:])
 		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
@@ -138,9 +137,8 @@ func kycDeposit() {
 			return
 		}
 
-		prepUser, err := CheckReqdParams(w, r, AnchorRPC[2][1:])
+		prepUser, err := userValidateHelper(w, r, AnchorRPC[2][1:])
 		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
@@ -177,9 +175,8 @@ func intentWithdraw() {
 			return
 		}
 
-		prepUser, err := CheckReqdParams(w, r, AnchorRPC[3][1:])
+		prepUser, err := userValidateHelper(w, r, AnchorRPC[3][1:])
 		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
@@ -213,9 +210,8 @@ func kycWithdraw() {
 			return
 		}
 
-		prepUser, err := CheckReqdParams(w, r, AnchorRPC[4][1:])
+		prepUser, err := userValidateHelper(w, r, AnchorRPC[4][1:])
 		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
