@@ -30,8 +30,11 @@ var KillCode string
 
 // validateAdmin validates whether a given user is an admin and returns a bool
 func validateAdmin(w http.ResponseWriter, r *http.Request, options ...string) bool {
-	erpc.CheckGet(w, r)
-	erpc.CheckOrigin(w, r)
+	err := erpc.CheckGet(w, r)
+	if err != nil {
+		log.Println(err)
+		return false
+	}
 
 	prepUser, err := CheckReqdParams(w, r, []string{})
 	if err != nil {
@@ -150,7 +153,10 @@ func listAllAdmins() {
 	http.HandleFunc("/admin/list", func(w http.ResponseWriter, r *http.Request) {
 		err := erpc.CheckGet(w, r)
 		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			log.Println(err)
+			return
+		}
+		if err != nil {
 			return
 		}
 

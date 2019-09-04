@@ -46,8 +46,12 @@ func sanitizeAllUsers(users []database.User) []SnUser {
 // getTopReputationPublic returns a list of users sorted by descending order of reputation
 func getTopReputationPublic() {
 	http.HandleFunc("/public/reputation/top", func(w http.ResponseWriter, r *http.Request) {
-		erpc.CheckGet(w, r)
-		erpc.CheckOrigin(w, r)
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
 		allUsers, err := database.TopReputationUsers()
 		if err != nil {
 			log.Println("did not retrive all top reputation users", err)
@@ -62,8 +66,11 @@ func getTopReputationPublic() {
 // getUserInfo returns a list of sanitised users of the openx platform
 func getUserInfo() {
 	http.HandleFunc("/public/user", func(w http.ResponseWriter, r *http.Request) {
-		erpc.CheckGet(w, r)
-		erpc.CheckOrigin(w, r)
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			return
+		}
 
 		if r.URL.Query()["index"] == nil {
 			log.Println("no index retrieved, quitting!")

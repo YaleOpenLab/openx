@@ -32,8 +32,12 @@ func getTestStableCoin() {
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
-		erpc.CheckGet(w, r)
-		erpc.CheckOrigin(w, r)
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
 		user, err := CheckReqdParams(w, r, StablecoinRPC[1][1:])
 		if err != nil {
 			log.Println(err)
@@ -77,8 +81,12 @@ type GetAnchorResponse struct {
 // getAnchorUSD gets anchorUSD from Anchor
 func getAnchorUSD() {
 	http.HandleFunc(StablecoinRPC[2][0], func(w http.ResponseWriter, r *http.Request) {
-		erpc.CheckGet(w, r)
-		erpc.CheckOrigin(w, r)
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
 		user, err := CheckReqdParams(w, r, StablecoinRPC[2][1:])
 		if err != nil {
 			log.Println(err)

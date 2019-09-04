@@ -98,8 +98,11 @@ func PostAndSend(w http.ResponseWriter, r *http.Request, body string, payload io
 func intentDeposit() {
 	// curl 'https://sandbox-api.anchorusd.com/transfer/deposit?account=GBP3XOFYC6TWUIRZAB7MB6MTUZBCREAYB4E7XKE3OWDP75VU5JB74ZF6&asset_code=USD&email_address=j%40anchorusd.com
 	http.HandleFunc(AnchorRPC[1][0], func(w http.ResponseWriter, r *http.Request) {
-		erpc.CheckGet(w, r)
-		erpc.CheckOrigin(w, r)
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			return
+		}
 
 		prepUser, err := CheckReqdParams(w, r, AnchorRPC[1][1:])
 		if err != nil {
@@ -129,8 +132,11 @@ func intentDeposit() {
 // kycDeposit is the kyc workflow involved when a user wants to obtain AnchorUSD
 func kycDeposit() {
 	http.HandleFunc(AnchorRPC[2][0], func(w http.ResponseWriter, r *http.Request) {
-		erpc.CheckGet(w, r)
-		erpc.CheckOrigin(w, r)
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			return
+		}
 
 		prepUser, err := CheckReqdParams(w, r, AnchorRPC[2][1:])
 		if err != nil {
@@ -165,8 +171,11 @@ func intentWithdraw() {
 	// curl 'https://sandbox-api.anchorusd.com/transfer/withdraw?type=bank_account&asset_code=USD&email_address=j%40anchorusd.com
 	http.HandleFunc(AnchorRPC[3][0], func(w http.ResponseWriter, r *http.Request) {
 		// the withdraw endpoint doesn't return an identifier and we'd have to parse some stuff ourselves. Ugly hack and we shouldn't really have to do this, should be fixed by Anchor
-		erpc.CheckGet(w, r)
-		erpc.CheckOrigin(w, r)
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			return
+		}
 
 		prepUser, err := CheckReqdParams(w, r, AnchorRPC[3][1:])
 		if err != nil {
@@ -198,8 +207,11 @@ func intentWithdraw() {
 // kycDeposit is the kyc workflow involved when a user wants to withdraw fiat
 func kycWithdraw() {
 	http.HandleFunc(AnchorRPC[4][0], func(w http.ResponseWriter, r *http.Request) {
-		erpc.CheckGet(w, r)
-		erpc.CheckOrigin(w, r)
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			return
+		}
 
 		prepUser, err := CheckReqdParams(w, r, AnchorRPC[4][1:])
 		if err != nil {
