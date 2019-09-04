@@ -88,7 +88,7 @@ func main() {
 
 	insecure, port, _ := ParseConfFile()
 
-	insecure, port, err := ParseCLI(os.Args)
+	insecure, port, err = ParseCLI(os.Args)
 	if err != nil {
 		log.Fatal(err)
 	}
