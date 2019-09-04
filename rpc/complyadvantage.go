@@ -108,7 +108,12 @@ func PostRequestCA(body string, payload io.Reader) ([]byte, error) {
 		return dummy, err
 	}
 
-	defer res.Body.Close()
+	defer func() {
+		if ferr := res.Body.Close() ; ferr != nil {
+			err = ferr
+		}
+	}()
+
 	x, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		log.Println("did not read from ioutil", err)
@@ -147,7 +152,6 @@ func searchComplyAdvantage() {
 		}
 		_, err = userValidateHelper(w, r, CARPC[1][1:])
 		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
@@ -197,7 +201,6 @@ func getAllCAUsers() {
 
 		_, err = userValidateHelper(w, r, CARPC[2][1:])
 		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}
 
