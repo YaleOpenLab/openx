@@ -61,8 +61,11 @@ type OpensolarConstReturn struct {
 // pfGetConsts is an RPC that returns running constants to platforms which might need this information
 func pfGetConsts() {
 	http.HandleFunc("/platform/getconsts", func(w http.ResponseWriter, r *http.Request) {
-		erpc.CheckGet(w, r)
-		erpc.CheckOrigin(w, r)
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			return
+		}
 
 		if r.URL.Query()["code"] == nil {
 			log.Println("code missing")
@@ -95,8 +98,11 @@ func pfGetConsts() {
 // pfGetUser retrieves a user from openx's database and returns it to the requesting platform
 func pfGetUser() {
 	http.HandleFunc("/platform/user/retrieve", func(w http.ResponseWriter, r *http.Request) {
-		erpc.CheckGet(w, r)
-		erpc.CheckOrigin(w, r)
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			return
+		}
 
 		if r.URL.Query()["code"] == nil || r.URL.Query()["key"] == nil {
 			log.Println("code missing")
@@ -124,8 +130,11 @@ func pfGetUser() {
 // pfValidateUser validates a given user and returns the user struct
 func pfValidateUser() {
 	http.HandleFunc("/platform/user/validate", func(w http.ResponseWriter, r *http.Request) {
-		erpc.CheckGet(w, r)
-		erpc.CheckOrigin(w, r)
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			return
+		}
 
 		if r.URL.Query()["code"] == nil {
 			log.Println("code missing")
@@ -158,8 +167,11 @@ func pfValidateUser() {
 // pfNewUser creates a new user
 func pfNewUser() {
 	http.HandleFunc("/platform/user/new", func(w http.ResponseWriter, r *http.Request) {
-		erpc.CheckGet(w, r)
-		erpc.CheckOrigin(w, r)
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			return
+		}
 
 		if r.URL.Query()["code"] == nil {
 			log.Println("code missing")
@@ -193,8 +205,11 @@ func pfNewUser() {
 // pfCollisionCheck checks for username collision
 func pfCollisionCheck() {
 	http.HandleFunc("/platform/user/collision", func(w http.ResponseWriter, r *http.Request) {
-		erpc.CheckGet(w, r)
-		erpc.CheckOrigin(w, r)
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			return
+		}
 
 		if r.URL.Query()["code"] == nil {
 			log.Println("code missing")
@@ -227,7 +242,6 @@ func retrieveAllPlatformNames() {
 		err := erpc.CheckGet(w, r)
 		if err != nil {
 			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 

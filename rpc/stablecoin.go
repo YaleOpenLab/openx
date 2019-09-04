@@ -32,19 +32,19 @@ func getTestStableCoin() {
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
-		erpc.CheckGet(w, r)
-		erpc.CheckOrigin(w, r)
-		user, err := CheckReqdParams(w, r, StablecoinRPC[1][1:])
+		err := erpc.CheckGet(w, r)
 		if err != nil {
 			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+
+		user, err := userValidateHelper(w, r, StablecoinRPC[1][1:])
+		if err != nil {
 			return
 		}
 
 		receiverSeed, err := wallet.DecryptSeed(user.StellarWallet.EncryptedSeed, r.URL.Query()["seedpwd"][0])
 		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 		amount, err := utils.ToFloat(r.URL.Query()["amount"][0])
@@ -77,12 +77,14 @@ type GetAnchorResponse struct {
 // getAnchorUSD gets anchorUSD from Anchor
 func getAnchorUSD() {
 	http.HandleFunc(StablecoinRPC[2][0], func(w http.ResponseWriter, r *http.Request) {
-		erpc.CheckGet(w, r)
-		erpc.CheckOrigin(w, r)
-		user, err := CheckReqdParams(w, r, StablecoinRPC[2][1:])
+		err := erpc.CheckGet(w, r)
 		if err != nil {
 			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
+			return
+		}
+
+		user, err := userValidateHelper(w, r, StablecoinRPC[2][1:])
+		if err != nil {
 			return
 		}
 
