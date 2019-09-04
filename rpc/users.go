@@ -580,7 +580,12 @@ func uploadFile() {
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
-		defer file.Close()
+
+		defer func() {
+			if ferr := file.Close() ; ferr != nil {
+				err = ferr
+			}
+		}()
 
 		supportedType := false
 		header := fileHeader.Header.Get("Content-Type")
@@ -723,7 +728,13 @@ func tellerPing() {
 			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
-		defer res.Body.Close()
+
+		defer func() {
+			if ferr := res.Body.Close() ; ferr != nil {
+				err = ferr
+			}
+		}()
+
 		data, err := ioutil.ReadAll(res.Body)
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusInternalServerError)

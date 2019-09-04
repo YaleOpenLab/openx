@@ -25,7 +25,13 @@ func GetLedgerData(blockNumberx int) ([]byte, error) {
 	if err != nil || resp.Status != "200 OK" {
 		return data, errors.New("API Request did not succeed")
 	}
-	defer resp.Body.Close()
+
+	defer func() {
+		if ferr := resp.Body.Close() ; ferr != nil {
+			err = ferr
+		}
+	}()
+
 	data, err = ioutil.ReadAll(resp.Body)
 	return data, err
 }
@@ -53,7 +59,13 @@ func GetLatestBlockHash() (string, error) {
 	if err != nil || resp.Status != "200 OK" {
 		return "", errors.New("API Request did not succeed")
 	}
-	defer resp.Body.Close()
+
+	defer func() {
+		if ferr := resp.Body.Close() ; ferr != nil {
+			err = ferr
+		}
+	}()
+
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return "", errors.Wrap(err, "could not read response body")
@@ -92,7 +104,12 @@ func GetAccountData(a string) ([]byte, error) {
 		return data, errors.New("Request did not succeed")
 	}
 
-	defer resp.Body.Close()
+	defer func() {
+		if ferr := resp.Body.Close() ; ferr != nil {
+			err = ferr
+		}
+	}()
+
 	data, err = ioutil.ReadAll(resp.Body)
 	return data, err
 }
@@ -197,7 +214,12 @@ func GetTransactionData(txhash string) ([]byte, error) {
 		return data, errors.New("API Request did not succeed")
 	}
 
-	defer resp.Body.Close()
+	defer func() {
+		if ferr := resp.Body.Close() ; ferr != nil {
+			err = ferr
+		}
+	}()
+
 	data, err = ioutil.ReadAll(resp.Body)
 	return data, err
 }
