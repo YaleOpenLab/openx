@@ -1,3 +1,8 @@
+# daemon params
+port: 8080
+insecure: true
+mainnet: false
+
 # mainnet params
 email: myemail@domain.extension
 platformemail: platform@openx.com

@@ -22,7 +22,7 @@ import (
 	// xlm "github.com/YaleOpenLab/openx/xlm"
 	// assets "github.com/YaleOpenLab/openx/assets"
 	flags "github.com/jessevdk/go-flags"
-	// "github.com/spf13/viper"
+	"github.com/spf13/viper"
 )
 
 // the backend server powering the openx platform of platforms
@@ -36,8 +36,8 @@ var opts struct {
 	Rescue    bool `short:"r" description:"start rescue mode"`
 }
 
-// ParseConfig parses CLI parameters passed
-func ParseConfig(args []string) (bool, int, error) {
+// ParseCLI parses CLI parameters passed
+func ParseCLI(args []string) (bool, int, error) {
 	_, err := flags.ParseArgs(&opts, args)
 	if err != nil {
 		return false, -1, err
@@ -52,9 +52,43 @@ func ParseConfig(args []string) (bool, int, error) {
 	return opts.Insecure, port, nil
 }
 
+// ParseConfFile parses stuff from the config file provided
+func ParseConfFile() (bool, int, error) {
+
+	var port int
+	var insecure bool
+
+	viper.SetConfigType("yaml")
+	viper.SetConfigName("config")
+	viper.AddConfigPath(".")
+	err := viper.ReadInConfig()
+	if err != nil {
+		log.Println("error while reading platform email from config file")
+		return insecure, port, err
+	}
+
+	if viper.IsSet("port") {
+		port = viper.GetInt("port")
+	}
+
+	if viper.IsSet("insecure") {
+		insecure = viper.GetBool("insecure")
+
+	}
+
+	if viper.IsSet("mainnet") {
+		consts.Mainnet = viper.GetBool("mainnet")
+	}
+
+	return insecure, port, nil
+}
+
 func main() {
 	var err error
-	insecure, port, err := ParseConfig(os.Args)
+
+	insecure, port, _ := ParseConfFile()
+
+	insecure, port, err := ParseCLI(os.Args)
 	if err != nil {
 		log.Fatal(err)
 	}
