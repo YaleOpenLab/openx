@@ -36,6 +36,8 @@ var opts struct {
 	Rescue    bool `short:"r" description:"start rescue mode"`
 }
 
+var InsecureSet bool
+
 // ParseCLI parses CLI parameters passed
 func ParseCLI(args []string) (bool, int, error) {
 	_, err := flags.ParseArgs(&opts, args)
@@ -49,7 +51,10 @@ func ParseCLI(args []string) (bool, int, error) {
 	if opts.Mainnet {
 		consts.Mainnet = true
 	}
-	return opts.Insecure, port, nil
+	if opts.Insecure {
+		return opts.Insecure, port, nil
+	}
+	return InsecureSet, port, nil
 }
 
 // ParseConfFile parses stuff from the config file provided
@@ -73,7 +78,7 @@ func ParseConfFile() (bool, int, error) {
 
 	if viper.IsSet("insecure") {
 		insecure = viper.GetBool("insecure")
-
+		InsecureSet = insecure
 	}
 
 	if viper.IsSet("mainnet") {
