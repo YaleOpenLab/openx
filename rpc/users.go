@@ -60,6 +60,7 @@ var UserRPC = map[int][]string{
 		"taxid", "addrstreet", "addrcity", "addrpostal", "addrregion", "addrcountry", "addrphone", "primaryphone", "gender"},
 	31: []string{"/user/reputation", "reputation"},
 	32: []string{"/user/addseed", "encryptedseed", "seedpwd", "pubkey"},
+	33: []string{"/user/latestblockhash"},
 }
 
 // setupUserRpcs sets up user related RPCs
@@ -97,6 +98,7 @@ func setupUserRpcs() {
 	addAnchorKYCInfo()
 	importSeed()
 	genAccessToken()
+	getLatestBlockHash()
 }
 
 const (
@@ -1553,5 +1555,30 @@ func importSeed() {
 		}
 
 		erpc.ResponseHandler(w, erpc.StatusOK)
+	})
+}
+
+// getLatestBlockHash gets the latest Stellar blockchain hash from horizon
+func getLatestBlockHash() {
+	http.HandleFunc(UserRPC[33][0], func(w http.ResponseWriter, r *http.Request) {
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		_, err = userValidateHelper(w, r, UserRPC[33][1:])
+		if err != nil {
+			return
+		}
+
+		hash, err := xlm.GetLatestBlockHash()
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+			return
+		}
+
+		erpc.MarshalSend(w, hash)
 	})
 }
