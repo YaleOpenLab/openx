@@ -150,7 +150,6 @@ func pfValidateUser() {
 				erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			}
 
-			log.Println("QUERY PARAMS: ", r.URL.Query())
 			name := r.URL.Query()["username"][0]
 			token := r.URL.Query()["token"][0]
 
