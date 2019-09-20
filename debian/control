@@ -2,14 +2,12 @@ Source: openx
 Section: utils
 Priority: optional
 Maintainer: "Varunram Ganesh" <varunramganesh@gmail.com>
+Homepage: https://openx.solar
 
 Package: openx
-Build-Depends: debhelper (>=11~)
-Standards-Version: 4.1.4
-Homepage: https://openx.solar
-Version: 1.0-1
-Architecture: amd64
+Architecture: any
 Multi-Arch: foreign
+Depends: ${misc:Depends}, ${shlibs:Depends}
 Description: The official openx package
   Openx is a platform of platforms for next
   generation funding models powered by

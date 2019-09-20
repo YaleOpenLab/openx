@@ -92,9 +92,6 @@ var PlatformSeedFile = HomeDir + "/platformseed.hex"
 // Tlsport is the default SSL port on which openx starts
 var Tlsport = 443
 
-// DefaultRpcPort is the default Insecure port on which openx starts
-var DefaultRpcPort = 8080
-
 // AccessTokenLife is the life of a generated access token
 var AccessTokenLife = int64(3600)
 
