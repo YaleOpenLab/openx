@@ -13,7 +13,6 @@ import (
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
 	openx "github.com/YaleOpenLab/openx/platforms"
-	// opensolarconsts "github.com/YaleOpenLab/opensolar/consts"
 )
 
 // Testnet loads the stuff needed for testnet. Ordering is very important since some consts need the others

@@ -10,7 +10,7 @@ import (
 	database "github.com/YaleOpenLab/openx/database"
 	loader "github.com/YaleOpenLab/openx/loader"
 	// ipfs "github.com/YaleOpenLab/openx/ipfs"
-	opensolar "github.com/YaleOpenLab/opensolar/consts"
+	// opensolar "github.com/YaleOpenLab/opensolar/consts"
 	rpc "github.com/YaleOpenLab/openx/rpc"
 	// scan "github.com/YaleOpenLab/openx/scan"
 	// oracle "github.com/YaleOpenLab/openx/oracle"
@@ -84,7 +84,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		opensolar.SetMnConsts()
+		// opensolar.SetMnConsts()
 		if opts.Trustline {
 			loader.StablecoinTrust()
 		}
@@ -93,7 +93,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		opensolar.SetTnConsts()
+		// opensolar.SetTnConsts()
 	}
 
 	if opts.Rescue {

@@ -109,7 +109,7 @@ func PostRequestCA(body string, payload io.Reader) ([]byte, error) {
 	}
 
 	defer func() {
-		if ferr := res.Body.Close() ; ferr != nil {
+		if ferr := res.Body.Close(); ferr != nil {
 			err = ferr
 		}
 	}()

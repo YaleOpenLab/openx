@@ -14,13 +14,12 @@ import (
 	ipfs "github.com/Varunram/essentials/ipfs"
 	erpc "github.com/Varunram/essentials/rpc"
 	utils "github.com/Varunram/essentials/utils"
-	opensolar "github.com/YaleOpenLab/opensolar/core"
-	notif "github.com/YaleOpenLab/opensolar/notif"
 	xlm "github.com/YaleOpenLab/openx/chains/xlm"
 	assets "github.com/YaleOpenLab/openx/chains/xlm/assets"
 	wallet "github.com/YaleOpenLab/openx/chains/xlm/wallet"
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
+	notif "github.com/YaleOpenLab/openx/notif"
 	recovery "github.com/bithyve/research/sss"
 )
 
@@ -40,11 +39,11 @@ var UserRPC = map[int][]string{
 	11: []string{"/user/trustasset", "assetCode", "assetIssuer", "limit", "seedpwd"},
 	12: []string{"/upload"},
 	13: []string{"/platformemail"},
-	14: []string{"/tellershutdown", "projIndex", "deviceId", "tx1", "tx2"},
-	15: []string{"/tellerpayback", "deviceId", "projIndex"},
+	// 14: []string{"/tellershutdown", "projIndex", "deviceId", "tx1", "tx2"},
+	// 15: []string{"/tellerpayback", "deviceId", "projIndex"},
 	16: []string{"/tellerping"},
 	17: []string{"/user/increasetrustlimit", "trust", "seedpwd"},
-	18: []string{"/utils/addhash", "projIndex", "choice", "choicestr"},
+	// 18: []string{"/utils/addhash", "projIndex", "choice", "choicestr"},
 	19: []string{"/user/sendrecovery", "email1", "email2", "email3"},
 	20: []string{"/user/seedrecovery", "secret1", "secret2"},
 	21: []string{"/user/newsecrets", "seedpwd", "email1", "email2", "email3"},
@@ -78,11 +77,11 @@ func setupUserRpcs() {
 	trustAsset()
 	uploadFile()
 	platformEmail()
-	sendTellerShutdownEmail()
-	sendTellerFailedPaybackEmail()
+	// sendTellerShutdownEmail()
+	// sendTellerFailedPaybackEmail()
 	tellerPing()
 	increaseTrustLimit()
-	addContractHash()
+	// addContractHash()
 	sendSecrets()
 	mergeSecrets()
 	generateNewSecrets()
@@ -105,14 +104,6 @@ const (
 	// TellerUrl defines the teller URL to check. In future, would be an array
 	TellerUrl = "https://localhost"
 )
-
-// ValidateParams is a struct used fro validating user params
-type ValidateParams struct {
-	// Role is a string identifying the user on the pilot opensolar platform
-	Role string
-	// Entity is an interface containing the user struct
-	Entity interface{}
-}
 
 func checkReqdParams(w http.ResponseWriter, r *http.Request, options []string) error {
 
@@ -216,38 +207,11 @@ func validateUser() {
 		// need to pass the pwhash param here
 		prepUser, err := userValidateHelper(w, r, UserRPC[1][1:])
 		if err != nil {
-			return
-		}
-		// no we need to see whether this guy is an investor or a recipient.
-		var prepInvestor opensolar.Investor
-		var prepRecipient opensolar.Recipient
-		var prepEntity opensolar.Entity
-
-		var x ValidateParams
-
-		prepInvestor, err = opensolar.RetrieveInvestor(prepUser.Index)
-		if err == nil && prepInvestor.U.Index != 0 {
-			x.Role = "Investor"
-			x.Entity = prepInvestor
-			erpc.MarshalSend(w, x)
+			erpc.MarshalSend(w, erpc.StatusBadRequest)
 			return
 		}
 
-		prepRecipient, err = opensolar.RetrieveRecipient(prepUser.Index)
-		if err == nil && prepRecipient.U.Index != 0 {
-			x.Role = "Recipient"
-			x.Entity = prepRecipient
-			erpc.MarshalSend(w, x)
-			return
-		}
-
-		prepEntity, err = opensolar.RetrieveEntity(prepUser.Index)
-		if err == nil && prepEntity.U.Index != 0 {
-			x.Role = "Entity"
-			x.Entity = prepEntity
-			erpc.MarshalSend(w, x)
-			return
-		}
+		erpc.MarshalSend(w, prepUser)
 	})
 }
 
@@ -584,7 +548,7 @@ func uploadFile() {
 		}
 
 		defer func() {
-			if ferr := file.Close() ; ferr != nil {
+			if ferr := file.Close(); ferr != nil {
 				err = ferr
 			}
 		}()
@@ -653,50 +617,6 @@ func platformEmail() {
 	})
 }
 
-// sendTellerShutdownEmail sends a teller shutdown email
-func sendTellerShutdownEmail() {
-	http.HandleFunc(UserRPC[14][0], func(w http.ResponseWriter, r *http.Request) {
-		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		prepUser, err := userValidateHelper(w, r, UserRPC[14][1:])
-		if err != nil {
-			return
-		}
-
-		projIndex := r.URL.Query()["projIndex"][0]
-		deviceId := r.URL.Query()["deviceId"][0]
-		tx1 := r.URL.Query()["tx1"][0]
-		tx2 := r.URL.Query()["tx2"][0]
-		notif.SendTellerShutdownEmail(prepUser.Email, projIndex, deviceId, tx1, tx2)
-		erpc.ResponseHandler(w, erpc.StatusOK)
-	})
-}
-
-// sendTellerFailedPaybackEmail sends a teller failed payback email
-func sendTellerFailedPaybackEmail() {
-	http.HandleFunc(UserRPC[15][0], func(w http.ResponseWriter, r *http.Request) {
-		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		prepUser, err := userValidateHelper(w, r, UserRPC[15][1:])
-		if err != nil {
-			return
-		}
-
-		projIndex := r.URL.Query()["projIndex"][0]
-		deviceId := r.URL.Query()["deviceId"][0]
-		notif.SendTellerPaymentFailedEmail(prepUser.Email, projIndex, deviceId)
-		erpc.ResponseHandler(w, erpc.StatusOK)
-	})
-}
-
 // tellerPing pings the teller to check if its up
 func tellerPing() {
 	http.HandleFunc(UserRPC[16][0], func(w http.ResponseWriter, r *http.Request) {
@@ -732,7 +652,7 @@ func tellerPing() {
 		}
 
 		defer func() {
-			if ferr := res.Body.Close() ; ferr != nil {
+			if ferr := res.Body.Close(); ferr != nil {
 				err = ferr
 			}
 		}()
@@ -780,78 +700,6 @@ func increaseTrustLimit() {
 		err = prepUser.IncreaseTrustLimit(seedpwd, trust)
 		if err != nil {
 			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
-			return
-		}
-
-		erpc.ResponseHandler(w, erpc.StatusOK)
-	})
-}
-
-// addContractHash adds a specific contract hash to the database
-func addContractHash() {
-	http.HandleFunc(UserRPC[18][0], func(w http.ResponseWriter, r *http.Request) {
-		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		_, err = userValidateHelper(w, r, UserRPC[18][1:])
-		if err != nil {
-			return
-		}
-
-		choice := r.URL.Query()["choice"][0]
-		hashString := r.URL.Query()["choicestr"][0]
-		projIndex, err := utils.ToInt(r.URL.Query()["projIndex"][0])
-		if err != nil {
-			log.Println("passed project index not int, quitting!")
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
-			return
-		}
-
-		project, err := opensolar.RetrieveProject(projIndex)
-		if err != nil {
-			log.Println("couldn't retrieve prject index from database")
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
-			return
-		}
-		// there are in total 5 types of hashes: OriginatorMoUHash, ContractorContractHash,
-		// InvPlatformContractHash, RecPlatformContractHash, SpecSheetHash
-		// lets have a fixed set of strings that we can map on here so we have a single endpoint for storing all these hashes
-
-		// TODO: read from the pending docs map here and store this only if we need to.
-		switch choice {
-		case "omh":
-			if project.Stage == 0 {
-				project.StageData = append(project.StageData, hashString)
-			}
-		case "cch":
-			if project.Stage == 2 {
-				project.StageData = append(project.StageData, hashString)
-			}
-		case "ipch":
-			if project.Stage == 4 {
-				project.StageData = append(project.StageData, hashString)
-			}
-		case "rpch":
-			if project.Stage == 4 {
-				project.StageData = append(project.StageData, hashString)
-			}
-		case "ssh":
-			if project.Stage == 5 {
-				project.StageData = append(project.StageData, hashString)
-			}
-		default:
-			log.Println("invalid choice passed, quitting!")
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
-			return
-		}
-
-		err = project.Save()
-		if err != nil {
-			log.Println("error while saving project to db, quitting!")
 			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
