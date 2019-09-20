@@ -176,7 +176,7 @@ func genAccessToken() {
 		erpc.CheckPost(w, r)
 		err := r.ParseForm()
 		if err != nil {
-			erpc.MarshalSend(w, erpc.StatusBadRequest)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -187,14 +187,14 @@ func genAccessToken() {
 		user, err := database.ValidatePwhash(username, pwhash)
 		if err != nil {
 			log.Println(err)
-			erpc.MarshalSend(w, erpc.StatusInternalServerError)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
 
 		token, err := user.GenAccessToken()
 		if err != nil {
 			log.Println(err)
-			erpc.MarshalSend(w, erpc.StatusInternalServerError)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
 
@@ -1306,7 +1306,7 @@ func validateKYC() {
 		err = prepUser.Save()
 		if err != nil {
 			log.Println("error while saving user credentials to database, quitting")
-			erpc.MarshalSend(w, erpc.StatusInternalServerError)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
 		erpc.MarshalSend(w, response)

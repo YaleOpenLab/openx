@@ -1,0 +1,17 @@
+Source: openx
+Section: utils
+Priority: optional
+Maintainer: "Varunram Ganesh" <varunramganesh@gmail.com>
+
+Package: openx
+Build-Depends: debhelper (>=11~)
+Standards-Version: 4.1.4
+Homepage: https://openx.solar
+Version: 1.0-1
+Architecture: amd64
+Multi-Arch: foreign
+Description: The official openx package
+  Openx is a platform of platforms for next
+  generation funding models powered by
+  cryptocurrencies developed at the MIT Media
+  Lab and Yale OpenLab.
