@@ -10,7 +10,7 @@ import (
 	database "github.com/YaleOpenLab/openx/database"
 	loader "github.com/YaleOpenLab/openx/loader"
 	// ipfs "github.com/YaleOpenLab/openx/ipfs"
-	opensolar "github.com/YaleOpenLab/opensolar/consts"
+	// opensolar "github.com/YaleOpenLab/opensolar/consts"
 	rpc "github.com/YaleOpenLab/openx/rpc"
 	// scan "github.com/YaleOpenLab/openx/scan"
 	// oracle "github.com/YaleOpenLab/openx/oracle"
@@ -29,7 +29,7 @@ import (
 
 var opts struct {
 	Insecure  bool `short:"i" description:"Start the API using http. Not recommended"`
-	Port      int  `short:"p" description:"The port on which the server runs on. Default: HTTPS/8080"`
+	Port      int  `short:"p" description:"The port on which the server runs on" default:"8080"`
 	Simulate  bool `short:"t" description:"Simulate the test database with demo values (last updated: April 2019)"`
 	Mainnet   bool `short:"m" description:"Switch mainnet mode on"`
 	Trustline bool `short:"x" description:"create trustlines from platform seed to anchorUSD"`
@@ -37,25 +37,6 @@ var opts struct {
 }
 
 var InsecureSet bool
-
-// ParseCLI parses CLI parameters passed
-func ParseCLI(args []string) (bool, int, error) {
-	_, err := flags.ParseArgs(&opts, args)
-	if err != nil {
-		return false, -1, err
-	}
-	port := consts.DefaultRpcPort
-	if opts.Port != 0 {
-		port = opts.Port
-	}
-	if opts.Mainnet {
-		consts.Mainnet = true
-	}
-	if opts.Insecure {
-		return opts.Insecure, port, nil
-	}
-	return InsecureSet, port, nil
-}
 
 // ParseConfFile parses stuff from the config file provided
 func ParseConfFile() (bool, int, error) {
@@ -93,7 +74,7 @@ func main() {
 
 	insecure, port, _ := ParseConfFile()
 
-	insecure, port, err = ParseCLI(os.Args)
+	_, err = flags.ParseArgs(&opts, os.Args)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -103,7 +84,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		opensolar.SetMnConsts()
+		// opensolar.SetMnConsts()
 		if opts.Trustline {
 			loader.StablecoinTrust()
 		}
@@ -112,7 +93,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		opensolar.SetTnConsts()
+		// opensolar.SetTnConsts()
 	}
 
 	if opts.Rescue {

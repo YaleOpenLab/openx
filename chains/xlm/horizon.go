@@ -27,7 +27,7 @@ func GetLedgerData(blockNumberx int) ([]byte, error) {
 	}
 
 	defer func() {
-		if ferr := resp.Body.Close() ; ferr != nil {
+		if ferr := resp.Body.Close(); ferr != nil {
 			err = ferr
 		}
 	}()
@@ -61,7 +61,7 @@ func GetLatestBlockHash() (string, error) {
 	}
 
 	defer func() {
-		if ferr := resp.Body.Close() ; ferr != nil {
+		if ferr := resp.Body.Close(); ferr != nil {
 			err = ferr
 		}
 	}()
@@ -105,7 +105,7 @@ func GetAccountData(a string) ([]byte, error) {
 	}
 
 	defer func() {
-		if ferr := resp.Body.Close() ; ferr != nil {
+		if ferr := resp.Body.Close(); ferr != nil {
 			err = ferr
 		}
 	}()
@@ -215,7 +215,7 @@ func GetTransactionData(txhash string) ([]byte, error) {
 	}
 
 	defer func() {
-		if ferr := resp.Body.Close() ; ferr != nil {
+		if ferr := resp.Body.Close(); ferr != nil {
 			err = ferr
 		}
 	}()

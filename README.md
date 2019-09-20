@@ -17,6 +17,12 @@ This repo contains the architecture handlers necessary for building you own plat
 
 ## Getting Started
 
+### Installing from PPA
+
+Openx is available on PPA [here](https://launchpad.net/~varunram/+archive/ubuntu/openx)
+
+### Building from source
+
 In order to be able to run this, you need to have the latest version of go installed. [Here](https://tecadmin.net/install-go-on-ubuntu/) is a quick tutorial on how to get go installed on a Linux / macOS machine. Older versions of go (more than two versions old according to [the golang wiki](https://github.com/golang/go/wiki/MinorReleases)) may have unpatched vulnerabilities and as a result, we will not be backporting openx to older versions of go.
 
 Once you have go installed, you need to `go get` the packages in this repo. Before that, you might need to install the `stellar/go` package separately since it uses a separate dependency manager (`dep`). If this is the case, get the `stellar/go` package and then run `dep ensure -v` inside `$HOME/stellar/go`.
