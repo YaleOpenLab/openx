@@ -1,4 +1,4 @@
-node {
+pipeline {
 
 	environment {
 		WORKSPACE = '/home/jenkins'
