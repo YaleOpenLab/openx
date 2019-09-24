@@ -18,10 +18,8 @@ pipeline {
 				sh 'echo "GOROOT=/usr/local/go" >> ~/.profile'
 				sh 'echo "GOPATH=$HOME" >> ~/.profile'
 				sh 'echo "PATH=$GOPATH/bin:$GOROOT/bin:$PATH" >> ~/.profile'
-				sh '. ~/.profile'
 				sh '/usr/local/go/bin/go version'
-				sh 'go version'
-				sh 'go get -v github.com/YaleOpenLab/openx'
+				sh '/usr/local/go/bin/go get -v github.com/YaleOpenLab/openx'
 			}
 		}
 	}
