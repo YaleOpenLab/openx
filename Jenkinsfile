@@ -1,6 +1,6 @@
 pipeline {
 
-	agent none
+	agent {label 'master'}
 
 	environment{
 		WORKSPACE = '/home/jenkins'
@@ -8,7 +8,6 @@ pipeline {
 
 	stages {
 		stage ('Test') {
-			agent { label 'master'}
 			steps {
 				sh 'sudo rm -rf /usr/local/go'
  				sh "printenv | sort"
@@ -20,6 +19,8 @@ pipeline {
 				sh 'echo "PATH=$GOPATH/bin:$GOROOT/bin:$PATH" >> ~/.profile'
 				sh '/usr/local/go/bin/go version'
 				sh '/usr/local/go/bin/go get -v github.com/YaleOpenLab/openx'
+				sh 'cd ~/go/src/github.com/YaleOpenLab/openx'
+				sh '/usr/local/go/bin/go build -v ./...'
 			}
 		}
 	}
