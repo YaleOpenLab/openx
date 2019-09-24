@@ -19,4 +19,17 @@ go get -v github.com/YaleOpenLab/openx
 cd $GOPATH/go/src/github.com/YaleOpenLab/openx
 go get -v ./...
 go build -v ./...
-cp openx teller/teller ~/
+go build
+cp openx ~/
+
+go get -v github.com/YaleOpenLab/opensolar
+cd $GOPATH/go/src/github.com/YaleOpenLab/opensolar
+go get -v ./...
+go build -v ./...
+cp teller/teller ~/
+go build
+cp opensolar ~/
+
+tar -cvzf openx.gz openx
+tar -cvzf opensolar.gz opensolar
+tar -cvzf teller.gz teller
