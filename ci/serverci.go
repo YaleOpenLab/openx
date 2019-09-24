@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	erpc "github.com/Varunram/essentials/rpc"
 	utils "github.com/Varunram/essentials/utils"
@@ -46,10 +47,47 @@ func teller() {
 	})
 }
 
-func StartServer(portx int) {
+// FileSystem custom file system handler
+type FileSystem struct {
+	fs http.FileSystem
+}
+
+// Open opens file
+func (fs FileSystem) Open(path string) (http.File, error) {
+	f, err := fs.fs.Open(path)
+	if err != nil {
+		return nil, err
+	}
+
+	s, err := f.Stat()
+	if s.IsDir() {
+		index := strings.TrimSuffix(path, "/") + "/index.html"
+		if _, err := fs.fs.Open(index); err != nil {
+			return nil, err
+		}
+	}
+
+	return f, nil
+}
+
+func frontend() {
+	fileServer := http.FileServer(FileSystem{http.Dir("static")})
+	http.Handle("/fe", http.StripPrefix(strings.TrimRight("/fe/", "/"), fileServer))
+}
+
+func letsencrypt() {
+	http.HandleFunc("/letsencrypt", func(w http.ResponseWriter, r *http.Request) {
+		challenge := []byte("")
+		w.Write(challenge)
+	})
+}
+
+func StartServer(portx int, insecure bool) {
 	openx()
 	opensolar()
 	teller()
+	frontend()
+	letsencrypt()
 
 	port, err := utils.ToString(portx)
 	if err != nil {
@@ -57,11 +95,16 @@ func StartServer(portx int) {
 	}
 
 	log.Println("Starting RPC Server on Port: ", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	if insecure {
+		log.Fatal(http.ListenAndServe(":"+port, nil))
+	} else {
+		log.Fatal(http.ListenAndServeTLS(":"+port, "certs/server.crt", "certs/server.key", nil))
+	}
 }
 
 var opts struct {
 	Port int `short:"p" description:"The port on which the server runs on" default:"8081"`
+	Insecure  bool `short:"i" description:"Start the API using http. Not recommended"`
 }
 
 func main() {
@@ -69,5 +112,5 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	StartServer(opts.Port)
+	StartServer(opts.Port, opts.Insecure)
 }
