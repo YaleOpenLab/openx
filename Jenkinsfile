@@ -25,7 +25,7 @@ pipeline {
 		stage ('Go Buils') {
 			steps {
 				sh 'cd ~/go/src/github.com/YaleOpenLab/openx'
-				sh '/usr/local/go/bin/go get ./...'
+				sh '/usr/local/go/bin/go get .'
 				sh '/usr/local/go/bin/go build -v ./...'
 			}
 		}
