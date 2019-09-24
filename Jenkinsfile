@@ -1,11 +1,14 @@
 pipeline {
 
+	agent none
+
 	environment{
 		WORKSPACE = '/home/jenkins'
 	}
 
 	stages {
 		stage ('Test') {
+			agent { label 'master'}
 			steps {
  				sh "printenv | sort"
 				sh 'sudo apt-get -y upgrade'
