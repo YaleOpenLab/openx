@@ -1,7 +1,8 @@
-
 pipeline {
 
-	environment name: 'WORKSPACE', value: '/home/jenkins'
+	environment{
+		WORKSPACE = '/home/jenkins'
+	}
 
 	agent {
 		docker { image 'golang'}
