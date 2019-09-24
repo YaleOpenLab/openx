@@ -5,10 +5,14 @@ node {
     	sh 'go version'
   	}
 
+		environment {
+			WORKSPACE = '/home/jenkins'
+		}
+
 		stage('Get openx package') {
-			sh 'export "GOROOT=/usr/local/go"'
-			sh 'export "GOPATH=/home/go"'
-			sh 'export "PATH=$GOPATH/bin:$GOROOT/bin:$PATH"'
+			sh 'export GOROOT="/usr/local/go"'
+			sh 'export GOPATH="/home/go"'
+			sh 'export PATH="$GOPATH/bin:$GOROOT/bin:$PATH"'
 			sh 'echo "$GOPATH"'
 			sh 'export GOCACHE="/tmp/.cache"'
 			sh 'export XDG_CACHE_HOME="/tmp/.cache"'
