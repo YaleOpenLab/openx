@@ -2,6 +2,8 @@ node {
   docker.image('golang').inside {
 
 		stage ('Setup env vars') {
+			sh 'echo $HOME'
+			sh 'export $HOME="/home/jenkins"'
 			sh 'echo "GOROOT=/usr/local/go" >> ~/.profile'
 			sh 'echo "GOPATH=$HOME" >> ~/.profile'
 			sh 'echo "PATH=$GOPATH/bin:$GOROOT/bin:$PATH" >> ~/.profile'
