@@ -1,7 +1,5 @@
 pipeline {
 
-	agent none
-
 	environment{
 		WORKSPACE = '/home/jenkins'
 	}
