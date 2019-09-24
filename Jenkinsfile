@@ -2,7 +2,7 @@ node {
   docker.image('golang').inside {
 
 		stage ('Setup env vars') {
-			sh 'useradd -ms /bin/bash jenkins'
+			sh 'sudo useradd -ms /bin/bash jenkins'
 			sh 'sudo su jenkins'
 			sh 'echo "GOROOT=/usr/local/go" >> ~/.profile'
 			sh 'echo "GOPATH=$HOME" >> ~/.profile'
