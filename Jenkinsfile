@@ -1,8 +1,7 @@
-node('docker') {
-    checkout scm
-    stage('Build') {
-        docker.image('go').inside {
-            sh 'go version'
-        }
-    }
+node {
+  docker.image('go').inside {
+		stage('Build') {
+    	sh 'go version'
+  	}
+  }
 }
