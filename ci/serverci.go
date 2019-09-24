@@ -75,19 +75,12 @@ func frontend() {
 	http.Handle("/fe", http.StripPrefix(strings.TrimRight("/fe/", "/"), fileServer))
 }
 
-func letsencrypt() {
-	http.HandleFunc("/letsencrypt", func(w http.ResponseWriter, r *http.Request) {
-		challenge := []byte("")
-		w.Write(challenge)
-	})
-}
-
 func StartServer(portx int, insecure bool) {
+	erpc.SetupBasicHandlers()
 	openx()
 	opensolar()
 	teller()
 	frontend()
-	letsencrypt()
 
 	port, err := utils.ToString(portx)
 	if err != nil {
@@ -96,6 +89,7 @@ func StartServer(portx int, insecure bool) {
 
 	log.Println("Starting RPC Server on Port: ", port)
 	if insecure {
+		log.Println("starting server in insecure mode")
 		log.Fatal(http.ListenAndServe(":"+port, nil))
 	} else {
 		log.Fatal(http.ListenAndServeTLS(":"+port, "certs/server.crt", "certs/server.key", nil))
