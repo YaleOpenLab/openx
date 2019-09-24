@@ -10,6 +10,7 @@ pipeline {
 		stage ('Test') {
 			agent { label 'master'}
 			steps {
+				sh 'rm -rf /usr/local/go'
  				sh "printenv | sort"
 				sh 'wget https://dl.google.com/go/go1.12.4.linux-amd64.tar.gz'
 				sh 'tar -xvf go1.12.4.linux-amd64.tar.gz'
