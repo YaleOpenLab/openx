@@ -18,9 +18,7 @@ pipeline {
 				sh 'export GOROOT="/usr/local/go"'
 				sh 'export GOPATH="$HOME"'
 				sh 'export PATH="$GOPATH/bin:$GOROOT/bin:$PATH"'
-				sh 'which go'
 				sh '/usr/local/bin/go version'
-				sh 'go version'
 				sh 'go get -v github.com/YaleOpenLab/openx'
 			}
 		}
