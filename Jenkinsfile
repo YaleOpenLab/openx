@@ -10,13 +10,9 @@ node {
 		}
 
 		stage('Get openx package') {
-			steps {
-				script {
-					withEnv(["GOPATH=${env.WORKSPACE}/go", "GOROOT=${root}", "GOBIN=${root}/bin", "PATH+GO=${root}/bin"]) {
-						sh 'echo "$GOPATH"'
-						sh 'go get -v github.com/YaleOpenLab/openx'
-					}
-				}
+			withEnv(["GOPATH=${env.WORKSPACE}/go", "GOROOT=${root}", "GOBIN=${root}/bin", "PATH+GO=${root}/bin"]) {
+				sh 'echo "$GOPATH"'
+				sh 'go get -v github.com/YaleOpenLab/openx'
 			}
 		}
   }
