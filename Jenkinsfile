@@ -17,6 +17,8 @@ pipeline {
 				sh 'echo "GOROOT=/usr/local/go" >> ~/.profile'
 				sh 'echo "GOPATH=/var/lib/jenkins/go" >> ~/.profile'
 				sh 'echo "PATH=$GOPATH/bin:$GOROOT/bin:$PATH" >> ~/.profile'
+				sh '. ~/.profile'
+				sh 'echo $GOPATH'
 				sh '/usr/local/go/bin/go version'
 				sh '/usr/local/go/bin/go get -v github.com/YaleOpenLab/openx'
 				sh '/usr/local/go/bin/go get -v github.com/YaleOpenLab/opensolar'
