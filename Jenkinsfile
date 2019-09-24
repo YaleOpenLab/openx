@@ -12,8 +12,8 @@ pipeline {
 			steps {
  				sh "printenv | sort"
 				sh 'wget https://dl.google.com/go/go1.12.4.linux-amd64.tar.gz'
-				sh 'sudo tar -xvf go1.12.4.linux-amd64.tar.gz'
-				sh 'sudo mv go /usr/local'
+				sh 'tar -xvf go1.12.4.linux-amd64.tar.gz'
+				sh 'mv go /usr/local'
 				sh 'export GOROOT="/usr/local/go"'
 				sh 'export GOPATH="$HOME"'
 				sh 'export PATH="$GOPATH/bin:$GOROOT/bin:$PATH"'
