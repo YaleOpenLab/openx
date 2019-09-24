@@ -21,7 +21,6 @@ pipeline {
 				sh '/usr/local/go/bin/go get -v github.com/YaleOpenLab/openx'
 				sh '/usr/local/go/bin/go get -v github.com/YaleOpenLab/opensolar'
 				sh 'cd ~/go/src/github.com/YaleOpenLab/openx'
-				sh '/usr/local/go/bin/go get ./...'
 				sh '/usr/local/go/bin/go build -v ./...'
 			}
 		}
