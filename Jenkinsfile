@@ -5,7 +5,7 @@ pipeline {
             steps {
                 sh 'go version'
 								sh 'go env gocache'
-								sh 'go get -v github.com/YaleOpenLab/openx'
+								sh 'sudo go get -v github.com/YaleOpenLab/openx'
             }
         }
     }
