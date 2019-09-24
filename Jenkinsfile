@@ -5,17 +5,21 @@ pipeline {
 	}
 
 	agent {
-		docker { image: 'golang'}
+		docker { image 'golang'}
 	}
 
 	stages {
 		stage('Print go version') {
-			sh 'go version'
+			steps {
+				sh 'go version'
+			}
 		}
 
 		stage('Get openx package') {
-			sh 'echo "$GOPATH"'
-			sh 'go get -v github.com/YaleOpenLab/openx'
+			steps {
+				sh 'echo "$GOPATH"'
+				sh 'go get -v github.com/YaleOpenLab/openx'
+			}
 		}
 	}
 }
