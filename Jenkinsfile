@@ -1,8 +1,18 @@
-node {
-    withEnv(["WORKSPACE=/home/jenkins", "GOPATH=${env.WORKSPACE}/go", "GOROOT=${root}", "GOBIN=${root}/bin", "PATH+GO=${root}/bin"]) {
-			docker.image('golang').inside {
-				sh 'echo "$GOPATH"'
-	    	sh 'go get -v github.com/YaleOpenLab/openx'
-		  }
-    }
+
+pipeline {
+
+	environment name: 'WORKSPACE', value: '/home/jenkins'
+
+	agent {
+		docker { image 'golang'}
+	}
+
+	stages {
+		stage ('Test') {
+			steps {
+				sh 'echo $GOPATH'
+				sh 'echo $HOME'
+			}
+		}
+	}
 }
