@@ -1,11 +1,11 @@
 pipeline {
 
-	environment {
-		WORKSPACE = '/home/jenkins'
-	}
-
 	agent {
 		docker { image 'golang'}
+	}
+
+	environment {
+		WORKSPACE = '/home/jenkins'
 	}
 
 	stages {
