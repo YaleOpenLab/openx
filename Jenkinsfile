@@ -2,11 +2,9 @@ node {
   docker.image('golang').inside {
 
 		stage ('Setup env vars') {
-			sh 'sudo useradd -ms /bin/bash jenkins'
-			sh 'sudo su jenkins'
-			sh 'echo "GOROOT=/usr/local/go" >> ~/.profile'
-			sh 'echo "GOPATH=$HOME" >> ~/.profile'
-			sh 'echo "PATH=$GOPATH/bin:$GOROOT/bin:$PATH" >> ~/.profile'
+			sh 'echo "GOROOT=/usr/local/go"'
+			sh 'echo "GOPATH=/home/go"'
+			sh 'echo "PATH=$GOPATH/bin:$GOROOT/bin:$PATH"'
 			sh 'export GOCACHE="/tmp/.cache"'
 			sh 'export XDG_CACHE_HOME="/tmp/.cache"'
 		}
