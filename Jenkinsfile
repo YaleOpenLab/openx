@@ -7,7 +7,7 @@ pipeline {
 	}
 
 	stages {
-		stage ('Test') {
+		stage ('Install Golang') {
 			steps {
 				sh 'sudo rm -rf /usr/local/go'
  				sh "printenv | sort"
@@ -19,7 +19,13 @@ pipeline {
 				sh 'echo "PATH=$GOPATH/bin:$GOROOT/bin:$PATH" >> ~/.profile'
 				sh '/usr/local/go/bin/go version'
 				sh '/usr/local/go/bin/go get -v github.com/YaleOpenLab/openx'
+			}
+		}
+
+		stage ('Go Buils') {
+			steps {
 				sh 'cd ~/go/src/github.com/YaleOpenLab/openx'
+				sh '/usr/local/go/bin/go get ./...'
 				sh '/usr/local/go/bin/go build -v ./...'
 			}
 		}
