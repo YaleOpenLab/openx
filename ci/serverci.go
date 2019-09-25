@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"github.com/pkg/errors"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -16,6 +18,8 @@ import (
 
 var (
 	LastBuilt string
+	GithubSecret string
+	Sha Shastruct
 )
 
 func openx() {
@@ -51,6 +55,18 @@ func lastbuilt() {
 		}
 
 		erpc.MarshalSend(w, LastBuilt)
+	})
+}
+
+func shaEndpoint() {
+	http.HandleFunc("/sha", func(w http.ResponseWriter, r *http.Request) {
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		}
+
+		erpc.MarshalSend(w, Sha)
 	})
 }
 
@@ -101,6 +117,7 @@ func StartServer(portx int, insecure bool) {
 	teller()
 	frontend()
 	lastbuilt()
+	shaEndpoint()
 
 	port, err := utils.ToString(portx)
 	if err != nil {
@@ -139,18 +156,95 @@ func readLastBuilt() {
 	LastBuilt = string(data)
 }
 
+func readGhSecret() {
+	data, err := ioutil.ReadFile("secret.txt")
+	if err != nil {
+		// don't return error
+		log.Println(err)
+	}
+	GithubSecret = string(data)[0:40] // splice off the \n at the end
+}
+
+// GetRequest is a handler that makes it easy to send out GET requests
+func GetRequest(url string) ([]byte, error) {
+	var dummy []byte
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+	}
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return dummy, errors.Wrap(err, "did not create new GET request")
+	}
+	req.Header.Set("Origin", "localhost")
+	req.SetBasicAuth("Varunram", GithubSecret)
+
+	res, err := client.Do(req)
+	if err != nil {
+		return dummy, errors.Wrap(err, "did not make request")
+	}
+
+	defer func() {
+		if ferr := res.Body.Close(); ferr != nil {
+			err = ferr
+		}
+	}()
+
+	return ioutil.ReadAll(res.Body)
+}
+
+type GithubSha struct {
+	Sha string `json:"sha"`
+}
+
+type Shastruct struct {
+	OpenxSha string
+	OpensolarSha string
+}
+
+func updateShastruct() {
+	var gh GithubSha
+
+	data, err := GetRequest("https://api.github.com/repos/YaleOpenLab/openx/commits/master")
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	err = json.Unmarshal(data, &gh)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	Sha.OpenxSha = string(gh.Sha)
+
+	data, err = GetRequest("https://api.github.com/repos/YaleOpenLab/opensolar/commits/master")
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	err = json.Unmarshal(data, &gh)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	Sha.OpensolarSha = string(gh.Sha)
+	log.Println(Sha)
+}
+
 func main() {
 	_, err := flags.ParseArgs(&opts, os.Args)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	readGhSecret()
+	updateShastruct()
 	// writeLastBuilt()
 	readLastBuilt()
 
 	go func() {
 		for {
-			time.Sleep(24 * time.Hour)
 			log.Println("triggering build script")
 			_, err := exec.Command("./build.sh").Output()
 			if err != nil {
@@ -159,6 +253,7 @@ func main() {
 			}
 			log.Println("build built succesfully")
 			writeLastBuilt()
+			time.Sleep(24 * time.Hour)
 		}
 	}()
 

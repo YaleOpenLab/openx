@@ -2,24 +2,28 @@
 
 <head>
   <title>Openx Generator</title>
-  <link rel="stylesheet" href="./style.css">
   <style>
     body {
         background: white;
       }
       * {
         font-family: Helvetica, sans-serif;
-        text-align: center;
+        text-align: left;
       }
       input {
         font-size: 16px !important;
+      }
+      #lastbuilt, #oxsha, #ossha {
+        display: inline !important;
       }
 </style>
 </head>
 
 <body>
-  <h1>Welcome to the openx builder</h1>
-  <h3>Builds generated once stable</h3>
+  <h1>Openx builds</h1>
+  <h3>Last built on: <p id="lastbuilt"></p></h3>
+  <p>Openx SHA hash: <a id="oxsha" href="blah" target=_blank></a></p>
+  <p>Opensolar / Teller SHA hash: <a id="ossha" href="blah" target=_blank></a></p>
   <form action="https://builds.openx.solar/openx" method="get">
     <input type="submit" value="Openx" />
   </form>
@@ -30,4 +34,23 @@
     <input type="submit" value="Teller" />
   </form>
 </body>
+<script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+<script>
+  $(document).ready(function() {
+    $.get("http://localhost:8081/lastbuilt", function(data, status) {
+      $('#lastbuilt').text(data);
+    });
+  });
+
+  $(document).ready(function() {
+    $.get("http://localhost:8081/sha", function(data, status) {
+      $('#oxsha').attr("href", "https://github.com/YaleOpenLab/openx/commit/" + data.OpenxSha);
+      $('#oxsha').text(data.OpenxSha);
+      $('#ossha').attr("href", "https://github.com/YaleOpenLab/opensolar/commit/" + data.OpensolarSha);
+      $('#ossha').text(data.OpensolarSha);
+    });
+  });
+
+</script>
+
 </html>
