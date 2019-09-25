@@ -14,3 +14,5 @@ blah
 blahopenx.db
 debian.deb
 ci/ci
+ci/secret.txt
+ci/lastbuilt.txt

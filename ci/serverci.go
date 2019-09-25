@@ -1,49 +1,193 @@
 package main
 
 import (
+	"encoding/json"
+	"github.com/pkg/errors"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"strings"
+	"time"
 
 	erpc "github.com/Varunram/essentials/rpc"
 	utils "github.com/Varunram/essentials/utils"
 	flags "github.com/jessevdk/go-flags"
 )
 
+var (
+	LastBuilt string
+	GithubSecret string
+	Sha Shastruct
+)
+
 func openx() {
-	http.HandleFunc("/openx", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/openx-darwinamd64", func(w http.ResponseWriter, r *http.Request) {
 		err := erpc.CheckGet(w, r)
 		if err != nil {
 			log.Println(err)
-			return
+			erpc.ResponseHandler(w, erpc.StatusNotFound)
 		}
 
-		http.ServeFile(w, r, "openx.gz")
+		http.ServeFile(w, r, "openx-darwinamd64.gz")
+	})
+	http.HandleFunc("/openx-linuxamd64", func(w http.ResponseWriter, r *http.Request) {
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		}
+
+		http.ServeFile(w, r, "openx-linuxamd64.gz")
+	})
+	http.HandleFunc("/openx-linux386", func(w http.ResponseWriter, r *http.Request) {
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		}
+
+		http.ServeFile(w, r, "openx-linux386.gz")
+	})
+	http.HandleFunc("/openx-arm64", func(w http.ResponseWriter, r *http.Request) {
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		}
+
+		http.ServeFile(w, r, "openx-arm64.gz")
+	})
+	http.HandleFunc("/openx-arm", func(w http.ResponseWriter, r *http.Request) {
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		}
+
+		http.ServeFile(w, r, "openx-arm.gz")
 	})
 }
 
 func opensolar() {
-	http.HandleFunc("/opensolar", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/opensolar-darwinamd64", func(w http.ResponseWriter, r *http.Request) {
 		err := erpc.CheckGet(w, r)
 		if err != nil {
 			log.Println(err)
-			return
+			erpc.ResponseHandler(w, erpc.StatusNotFound)
 		}
 
-		http.ServeFile(w, r, "opensolar.gz")
+		http.ServeFile(w, r, "opensolar-darwinamd64.gz")
+	})
+	http.HandleFunc("/opensolar-linuxamd64", func(w http.ResponseWriter, r *http.Request) {
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		}
+
+		http.ServeFile(w, r, "opensolar-linuxamd64.gz")
+	})
+	http.HandleFunc("/opensolar-linux386", func(w http.ResponseWriter, r *http.Request) {
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		}
+
+		http.ServeFile(w, r, "opensolar-linux386.gz")
+	})
+	http.HandleFunc("/opensolar-arm64", func(w http.ResponseWriter, r *http.Request) {
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		}
+
+		http.ServeFile(w, r, "opensolar-arm64.gz")
+	})
+	http.HandleFunc("/opensolar-arm", func(w http.ResponseWriter, r *http.Request) {
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		}
+
+		http.ServeFile(w, r, "opensolar-arm.gz")
 	})
 }
 
 func teller() {
-	http.HandleFunc("/teller", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/teller-darwinamd64", func(w http.ResponseWriter, r *http.Request) {
 		err := erpc.CheckGet(w, r)
 		if err != nil {
 			log.Println(err)
-			return
+			erpc.ResponseHandler(w, erpc.StatusNotFound)
 		}
 
-		http.ServeFile(w, r, "teller.gz")
+		http.ServeFile(w, r, "teller-darwinamd64.gz")
+	})
+	http.HandleFunc("/teller-linuxamd64", func(w http.ResponseWriter, r *http.Request) {
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		}
+
+		http.ServeFile(w, r, "teller-linuxamd64.gz")
+	})
+	http.HandleFunc("/teller-linux386", func(w http.ResponseWriter, r *http.Request) {
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		}
+
+		http.ServeFile(w, r, "teller-linux386.gz")
+	})
+	http.HandleFunc("/teller-arm64", func(w http.ResponseWriter, r *http.Request) {
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		}
+
+		http.ServeFile(w, r, "teller-arm64.gz")
+	})
+	http.HandleFunc("/teller-arm", func(w http.ResponseWriter, r *http.Request) {
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		}
+
+		http.ServeFile(w, r, "teller-arm.gz")
+	})
+}
+
+
+func lastbuilt() {
+	http.HandleFunc("/lastbuilt", func(w http.ResponseWriter, r *http.Request) {
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		}
+
+		erpc.MarshalSend(w, LastBuilt)
+	})
+}
+
+func shaEndpoint() {
+	http.HandleFunc("/sha", func(w http.ResponseWriter, r *http.Request) {
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		}
+
+		erpc.MarshalSend(w, Sha)
 	})
 }
 
@@ -81,6 +225,8 @@ func StartServer(portx int, insecure bool) {
 	opensolar()
 	teller()
 	frontend()
+	lastbuilt()
+	shaEndpoint()
 
 	port, err := utils.ToString(portx)
 	if err != nil {
@@ -97,8 +243,102 @@ func StartServer(portx int, insecure bool) {
 }
 
 var opts struct {
-	Port int `short:"p" description:"The port on which the server runs on" default:"8081"`
-	Insecure  bool `short:"i" description:"Start the API using http. Not recommended"`
+	Port     int  `short:"p" description:"The port on which the server runs on" default:"8081"`
+	Insecure bool `short:"i" description:"Start the API using http. Not recommended"`
+}
+
+func writeLastBuilt() {
+	data := time.Now().String()
+	err := ioutil.WriteFile("lastbuilt.txt", []byte(data), 0644)
+	if err != nil {
+		// don't return error
+		log.Println(err)
+	}
+}
+
+func readLastBuilt() {
+	data, err := ioutil.ReadFile("lastbuilt.txt")
+	if err != nil {
+		// don't return error
+		log.Println(err)
+	}
+	LastBuilt = string(data)
+}
+
+func readGhSecret() {
+	data, err := ioutil.ReadFile("secret.txt")
+	if err != nil {
+		// don't return error
+		log.Println(err)
+	}
+	GithubSecret = string(data)[0:40] // splice off the \n at the end
+}
+
+// GetRequest is a handler that makes it easy to send out GET requests
+func GetRequest(url string) ([]byte, error) {
+	var dummy []byte
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+	}
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return dummy, errors.Wrap(err, "did not create new GET request")
+	}
+	req.Header.Set("Origin", "localhost")
+	req.SetBasicAuth("Varunram", GithubSecret)
+
+	res, err := client.Do(req)
+	if err != nil {
+		return dummy, errors.Wrap(err, "did not make request")
+	}
+
+	defer func() {
+		if ferr := res.Body.Close(); ferr != nil {
+			err = ferr
+		}
+	}()
+
+	return ioutil.ReadAll(res.Body)
+}
+
+type GithubSha struct {
+	Sha string `json:"sha"`
+}
+
+type Shastruct struct {
+	OpenxSha string
+	OpensolarSha string
+}
+
+func updateShastruct() {
+	var gh GithubSha
+
+	data, err := GetRequest("https://api.github.com/repos/YaleOpenLab/openx/commits/master")
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	err = json.Unmarshal(data, &gh)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	Sha.OpenxSha = string(gh.Sha)
+
+	data, err = GetRequest("https://api.github.com/repos/YaleOpenLab/opensolar/commits/master")
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	err = json.Unmarshal(data, &gh)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	Sha.OpensolarSha = string(gh.Sha)
+	log.Println(Sha)
 }
 
 func main() {
@@ -106,5 +346,25 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	readGhSecret()
+	updateShastruct()
+	// writeLastBuilt()
+	readLastBuilt()
+
+	go func() {
+		for {
+			time.Sleep(24 * time.Hour)
+			log.Println("triggering build script")
+			_, err := exec.Command("./build.sh").Output()
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+			log.Println("build built succesfully")
+			writeLastBuilt()
+		}
+	}()
+
 	StartServer(opts.Port, opts.Insecure)
 }
