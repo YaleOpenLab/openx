@@ -17,11 +17,11 @@ cd $GOPATH/go/src/github.com/YaleOpenLab/openx
 git pull origin master
 go get -v ./...
 
+env GOOS=darwin GOARCH=amd64 go build -o openx-darwinamd64
 env GOOS=linux GOARCH=amd64 go build -o openx-linuxamd64
 env GOOS=linux GOARCH=386 go build -o openx-linux386
 env GOOS=linux GOARCH=arm64 go build -o openx-arm64
 env GOOS=linux GOARCH=arm go build -o openx-arm
-env GOOS=darwin GOARCH=amd64 go build -o openx-darwinamd64
 cp openx-linuxamd64 openx-linux386 openx-arm64 openx-arm openx-darwinamd64 ci/
 
 go get -v github.com/YaleOpenLab/opensolar

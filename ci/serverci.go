@@ -354,6 +354,7 @@ func main() {
 
 	go func() {
 		for {
+			time.Sleep(24 * time.Hour)
 			log.Println("triggering build script")
 			_, err := exec.Command("./build.sh").Output()
 			if err != nil {
@@ -362,7 +363,6 @@ func main() {
 			}
 			log.Println("build built succesfully")
 			writeLastBuilt()
-			time.Sleep(24 * time.Hour)
 		}
 	}()
 
