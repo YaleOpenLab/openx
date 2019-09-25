@@ -37,13 +37,13 @@
 <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <script>
   $(document).ready(function() {
-    $.get("http://localhost:8081/lastbuilt", function(data, status) {
+    $.get("https://builds.openx.solar/lastbuilt", function(data, status) {
       $('#lastbuilt').text(data);
     });
   });
 
   $(document).ready(function() {
-    $.get("http://localhost:8081/sha", function(data, status) {
+    $.get("https://builds.openx.solar/sha", function(data, status) {
       $('#oxsha').attr("href", "https://github.com/YaleOpenLab/openx/commit/" + data.OpenxSha);
       $('#oxsha').text(data.OpenxSha);
       $('#ossha').attr("href", "https://github.com/YaleOpenLab/opensolar/commit/" + data.OpensolarSha);
