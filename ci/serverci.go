@@ -1,14 +1,21 @@
 package main
 
 import (
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"strings"
+	"time"
 
 	erpc "github.com/Varunram/essentials/rpc"
 	utils "github.com/Varunram/essentials/utils"
 	flags "github.com/jessevdk/go-flags"
+)
+
+var (
+	LastBuilt string
 )
 
 func openx() {
@@ -16,7 +23,7 @@ func openx() {
 		err := erpc.CheckGet(w, r)
 		if err != nil {
 			log.Println(err)
-			return
+			erpc.ResponseHandler(w, erpc.StatusNotFound)
 		}
 
 		http.ServeFile(w, r, "openx.gz")
@@ -28,10 +35,22 @@ func opensolar() {
 		err := erpc.CheckGet(w, r)
 		if err != nil {
 			log.Println(err)
-			return
+			erpc.ResponseHandler(w, erpc.StatusNotFound)
 		}
 
 		http.ServeFile(w, r, "opensolar.gz")
+	})
+}
+
+func lastbuilt() {
+	http.HandleFunc("/lastbuilt", func(w http.ResponseWriter, r *http.Request) {
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		}
+
+		erpc.MarshalSend(w, LastBuilt)
 	})
 }
 
@@ -40,7 +59,7 @@ func teller() {
 		err := erpc.CheckGet(w, r)
 		if err != nil {
 			log.Println(err)
-			return
+			erpc.ResponseHandler(w, erpc.StatusNotFound)
 		}
 
 		http.ServeFile(w, r, "teller.gz")
@@ -81,6 +100,7 @@ func StartServer(portx int, insecure bool) {
 	opensolar()
 	teller()
 	frontend()
+	lastbuilt()
 
 	port, err := utils.ToString(portx)
 	if err != nil {
@@ -97,8 +117,26 @@ func StartServer(portx int, insecure bool) {
 }
 
 var opts struct {
-	Port int `short:"p" description:"The port on which the server runs on" default:"8081"`
-	Insecure  bool `short:"i" description:"Start the API using http. Not recommended"`
+	Port     int  `short:"p" description:"The port on which the server runs on" default:"8081"`
+	Insecure bool `short:"i" description:"Start the API using http. Not recommended"`
+}
+
+func writeLastBuilt() {
+	data := time.Now().String()
+	err := ioutil.WriteFile("lastbuilt.txt", []byte(data), 0644)
+	if err != nil {
+		// don't return error
+		log.Println(err)
+	}
+}
+
+func readLastBuilt() {
+	data, err := ioutil.ReadFile("lastbuilt.txt")
+	if err != nil {
+		// don't return error
+		log.Println(err)
+	}
+	LastBuilt = string(data)
 }
 
 func main() {
@@ -106,5 +144,23 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// writeLastBuilt()
+	readLastBuilt()
+
+	go func() {
+		for {
+			time.Sleep(24 * time.Hour)
+			log.Println("triggering build script")
+			_, err := exec.Command("./build.sh").Output()
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+			log.Println("build built succesfully")
+			writeLastBuilt()
+		}
+	}()
+
 	StartServer(opts.Port, opts.Insecure)
 }
