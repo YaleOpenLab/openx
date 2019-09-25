@@ -348,8 +348,6 @@ func main() {
 	}
 
 	readGhSecret()
-	updateShastruct()
-	// writeLastBuilt()
 	readLastBuilt()
 
 	go func() {
@@ -363,6 +361,7 @@ func main() {
 			}
 			log.Println("build built succesfully")
 			writeLastBuilt()
+			updateShastruct()
 		}
 	}()
 
