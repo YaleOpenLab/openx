@@ -1,74 +1,413 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
-  <title>Openx Generator</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="description" content="Opensolar is a platform that can be used ot advertise smart solar infrastructure investments">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#00ADD8">
+  <title>Downloads - The Opensolar Project</title>
+  <link type="text/css" rel="stylesheet" href="./godoc.css">
+  <link href="https://fonts.googleapis.com/css?family=Work+Sans:600|Roboto:400,700" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Product+Sans&amp;text=Supported%20by%20Google&amp;display=swap" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+  <script src="godocs.js"></script>
   <style>
-    body {
-        background: white;
-      }
-      * {
-        font-family: Helvetica, sans-serif;
-        text-align: left;
-      }
-      input {
-        font-size: 16px !important;
-      }
-      #lastbuilt, #oxsha, #ossha {
-        display: inline !important;
-      }
-</style>
+    table.codetable {
+      margin-left: 20px;
+      margin-right: 20px;
+      border-collapse: collapse;
+    }
+
+    table.codetable tr {
+      background-color: #f0f0f0;
+    }
+
+    table.codetable tr:nth-child(2n),
+    table.codetable tr.first {
+      background-color: white;
+    }
+
+    table.codetable td,
+    table.codetable th {
+      white-space: nowrap;
+      padding: 6px 10px;
+    }
+
+    table.codetable tt {
+      font-size: xx-small;
+    }
+
+    table.codetable tr.highlight td {
+      font-weight: bold;
+    }
+
+    a.downloadBox {
+      display: block;
+      color: #222;
+      border: 1px solid #375EAB;
+      border-radius: 5px;
+      background: #E0EBF5;
+      width: 280px;
+      float: left;
+      margin-left: 10px;
+      margin-bottom: 10px;
+      padding: 10px;
+    }
+
+    a.downloadBox:hover {
+      text-decoration: none;
+    }
+
+    .downloadBox .platform {
+      font-size: large;
+    }
+
+    .downloadBox .filename {
+      color: #007d9c;
+      font-weight: bold;
+      line-height: 1.5em;
+    }
+
+    a.downloadBox:hover .filename {
+      text-decoration: underline;
+    }
+
+    .downloadBox .size {
+      font-size: small;
+      font-weight: normal;
+    }
+
+    .downloadBox .reqs {
+      font-size: small;
+      font-style: italic;
+    }
+
+    .downloadBox .checksum {
+      font-size: 5pt;
+    }
+  </style>
 </head>
 
-<body>
-  <h1>Openx builds</h1>
-  <h3>Last built on: <p id="lastbuilt"></p></h3>
-  <p>Openx SHA hash: <a id="oxsha" href="blah" target=_blank></a>
-    Opensolar / Teller SHA hash: <a id="ossha" href="blah" target=_blank></a>
-  </p>
+<body class="Site">
+  <header class="Header js-header">
+    <nav class="Header-nav">
+      <a href="https://golang.org/"><img class="Header-logo" src="go-logo-blue.svg" alt="Go"></a>
+      <button class="Header-menuButton js-headerMenuButton" aria-label="Main menu" aria-expanded="false">
+        <div class="Header-menuButtonInner">
+        </div>
+      </button>
+      <ul class="Header-menu">
+        <li class="Header-menuItem"><a href="#">Documents</a></li>
+        <li class="Header-menuItem"><a href="#">The Project</a></li>
+        <li class="Header-menuItem"><a href="#">Help</a></li>
+        <li class="Header-menuItem"><a href="#/">Blog</a></li>
+      </ul>
+    </nav>
+  </header>
 
-  <br>
-  <p>Openx</p>
-  <form action="https://builds.openx.solar/openx-darwinamd64" method="get" style="display:inline"><input type="submit" value="openx-darwinamd64" /></form>
-  <form action="https://builds.openx.solar/openx-linuxamd64" method="get" style="display:inline"><input type="submit" value="openx-linuxamd64" /></form>
-  <form action="https://builds.openx.solar/openx-linux386" method="get" style="display:inline"><input type="submit" value="openx-linux386" /></form>
-  <form action="https://builds.openx.solar/openx-arm64" method="get" style="display:inline"><input type="submit" value="openx-arm64" /></form>
-  <form action="https://builds.openx.solar/openx-arm" method="get" style="display:inline"><input type="submit" value="openx-arm" /></form>
-  <br>
+  <main id="page" class="Site-content" tabindex="-1" style="outline: 0px;">
+    <div class="container">
+      <h1>Downloads</h1>
+      <p>
+        After downloading a binary release suitable for your system,
+        please follow the <a href="https://golang.org/doc/install">installation instructions</a>.
+      </p>
+      <p>
+        If you are building from source,
+        follow the <a href="https://golang.org/doc/install/source">source installation instructions</a>.
+      </p>
+      <p>Openx GitHub Commit hash: <a id="oxsha" href="blah" target=_blank></a><br>
+        Opensolar / Teller GitHub Commit hash: <a id="ossha" href="blah" target=_blank></a><br>
+        Last built on: <a id="lastbuilt"></a>
+      </p>
+      <h3 id="featured">Featured downloads</h3>
+      <a class="download downloadBox" href="https://dl.google.com/go/go1.13.1.darwin-amd64.pkg">
+        <div class="platform">Apple macOS</div>
+        <div class="reqs">macOS 10.11 or later, Intel 64-bit processor</div>
+        <div>
+          <span class="filename">go1.13.1.darwin-amd64.pkg</span>
+          <span class="size">(115MB)</span>
+        </div>
+      </a>
+      <a class="download downloadBox" href="https://dl.google.com/go/go1.13.1.linux-amd64.tar.gz">
+        <div class="platform">Linux</div>
+        <div class="reqs">Linux 2.6.23 or later, Intel 64-bit processor</div>
+        <div>
+          <span class="filename">go1.13.1.linux-amd64.tar.gz</span>
+          <span class="size">(114MB)</span>
+        </div>
+      </a>
+      <a class="download downloadBox" href="https://dl.google.com/go/go1.13.1.src.tar.gz">
+        <div class="platform">Source</div>
+        <div class="reqs">Go 1.13 or later</div>
+        <div>
+          <span class="filename">go1.13.1.src.tar.gz</span>
+          <span class="size">(21MB)</span>
+        </div>
+      </a>
+      <div style="clear: both;"></div>
+      <h3 id="stable">Versions</h3>
+      <div class="toggleVisible" id="openx">
+        <div class="collapsed">
+          <h2 class="toggleButton" title="Click to show downloads for this version">Openx ▹</h2>
+        </div>
+        <div class="expanded">
+          <h2 class="toggleButton" title="Click to hide downloads for this version">Openx ▾</h2>
+          <table class="codetable">
+            <thead>
+              <tr class="first">
+                <th>File name</th>
+                <th>Kind</th>
+                <th>OS</th>
+                <th>Arch</th>
+                <th>Size</th>
+                <th>SHA256 Checksum</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="highlight">
+                <td class="filename"><a class="download" href="https://builds.openx.solar/opensolar">openx.gz</a></td>
+                <td>Source</td>
+                <td></td>
+                <td></td>
+                <td>21MB</td>
+                <td><tt id="openx6"></tt></td>
+              </tr>
+              <tr class="highlight">
+                <td class="filename"><a class="download" href="https://builds.openx.solar/openx-darwinamd64">openx-darwinamd64.gz</a></td>
+                <td>Archive</td>
+                <td>macOS</td>
+                <td>x86-64</td>
+                <td>116MB</td>
+                <td><tt id="openx1"></tt></td>
+              </tr>
+              <tr class="highlight">
+                <td class="filename"><a class="download" href="https://builds.openx.solar/openx-linuxamd64">openx-linuxamd64.gz</a></td>
+                <td>Archive</td>
+                <td>Linux</td>
+                <td>x86-64</td>
+                <td>116MB</td>
+                <td><tt id="openx2"></tt></td>
+              </tr>
+              <tr>
+                <td class="filename"><a class="download" href="https://builds.openx.solar/openx-linux386">openx-linux386.gz</a></td>
+                <td>Archive</td>
+                <td>Linux</td>
+                <td>x86</td>
+                <td>115MB</td>
+                <td><tt id="openx3"></tt></td>
+              </tr>
+              <tr class="highlight">
+                <td class="filename"><a class="download" href="https://builds.openx.solar/openx-arm64">openx-arm64.gz</a></td>
+                <td>Archive</td>
+                <td>Linux</td>
+                <td>ARMv8</td>
+                <td>97MB</td>
+                <td><tt id="openx4"></tt></td>
+              </tr>
+              <tr>
+                <td class="filename"><a class="download" href="https://builds.openx.solar/openx-arm">openx-arm.gz</a></td>
+                <td>Archive</td>
+                <td>Linux</td>
+                <td>x86-64</td>
+                <td>114MB</td>
+                <td><tt id="openx5"></tt></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="toggleVisible" id="opensolar">
+        <div class="collapsed">
+          <h2 class="toggleButton" title="Click to show downloads for this version">Opensolar ▹</h2>
+        </div>
+        <div class="expanded">
+          <h2 class="toggleButton" title="Click to hide downloads for this version">Opensolar ▾</h2>
+          <table class="codetable">
+            <thead>
+              <tr class="first">
+                <th>File name</th>
+                <th>Kind</th>
+                <th>OS</th>
+                <th>Arch</th>
+                <th>Size</th>
+                <th>SHA256 Checksum</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="highlight">
+                <td class="filename"><a class="download" href="https://builds.openx.solar/opensolar">opensolar.gz</a></td>
+                <td>Source</td>
+                <td></td>
+                <td></td>
+                <td>21MB</td>
+                <td><tt id="opensolar6"></tt></td>
+              </tr>
+              <tr class="highlight">
+                <td class="filename"><a class="download" href="https://builds.openx.solar/opensolar-darwinamd64">opensolar-darwinamd64.gz</a></td>
+                <td>Archive</td>
+                <td>macOS</td>
+                <td>x86-64</td>
+                <td>116MB</td>
+                <td><tt id="opensolar1"></tt></td>
+              </tr>
+              <tr class="highlight">
+                <td class="filename"><a class="download" href="https://builds.openx.solar/opensolar-linuxamd64">opensolar-linuxamd64.gz</a></td>
+                <td>Archive</td>
+                <td>Linux</td>
+                <td>x86-64</td>
+                <td>116MB</td>
+                <td><tt id="opensolar2"></tt></td>
+              </tr>
+              <tr>
+                <td class="filename"><a class="download" href="https://builds.openx.solar/opensolar-linux386">opensolar-linux386.gz</a></td>
+                <td>Archive</td>
+                <td>Linux</td>
+                <td>x86</td>
+                <td>115MB</td>
+                <td><tt id="opensolar3"></tt></td>
+              </tr>
+              <tr class="highlight">
+                <td class="filename"><a class="download" href="https://builds.openx.solar/opensolar-arm64">opensolar-arm64.gz</a></td>
+                <td>Archive</td>
+                <td>Linux</td>
+                <td>ARMv8</td>
+                <td>97MB</td>
+                <td><tt id="opensolar4"></tt></td>
+              </tr>
+              <tr>
+                <td class="filename"><a class="download" href="https://builds.openx.solar/opensolar-arm">opensolar-arm.gz</a></td>
+                <td>Archive</td>
+                <td>Linux</td>
+                <td>x86-64</td>
+                <td>114MB</td>
+                <td><tt id="opensolar5"></tt></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="toggleVisible" id="teller">
+        <div class="collapsed">
+          <h2 class="toggleButton" title="Click to show downloads for this version">Teller ▹</h2>
+        </div>
+        <div class="expanded">
+          <h2 class="toggleButton" title="Click to hide downloads for this version">Teller ▾</h2>
+          <table class="codetable">
+            <thead>
+              <tr class="first">
+                <th>File name</th>
+                <th>Kind</th>
+                <th>OS</th>
+                <th>Arch</th>
+                <th>Size</th>
+                <th>SHA256 Checksum</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="highlight">
+                <td class="filename"><a class="download" href="https://builds.openx.solar/teller">teller.gz</a></td>
+                <td>Source</td>
+                <td></td>
+                <td></td>
+                <td>21MB</td>
+                <td><tt id="teller6"></tt></td>
+              </tr>
+              <tr class="highlight">
+                <td class="filename"><a class="download" href="https://builds.openx.solar/teller-darwinamd64">teller-darwinamd64.gz</a></td>
+                <td>Archive</td>
+                <td>macOS</td>
+                <td>x86-64</td>
+                <td>116MB</td>
+                <td><tt id="teller1"></tt></td>
+              </tr>
+              <tr class="highlight">
+                <td class="filename"><a class="download" href="https://builds.openx.solar/teller-linuxamd64">teller-linuxamd64.gz</a></td>
+                <td>Archive</td>
+                <td>Linux</td>
+                <td>x86-64</td>
+                <td>116MB</td>
+                <td><tt id="teller2"></tt></td>
+              </tr>
+              <tr>
+                <td class="filename"><a class="download" href="https://builds.openx.solar/teller-linux386">teller-linux386.gz</a></td>
+                <td>Archive</td>
+                <td>Linux</td>
+                <td>x86</td>
+                <td>115MB</td>
+                <td><tt id="teller3"></tt></td>
+              </tr>
+              <tr class="highlight">
+                <td class="filename"><a class="download" href="https://builds.openx.solar/teller-arm64">teller-arm64.gz</a></td>
+                <td>Archive</td>
+                <td>Linux</td>
+                <td>ARMv8</td>
+                <td>97MB</td>
+                <td><tt id="teller4"></tt></td>
+              </tr>
+              <tr>
+                <td class="filename"><a class="download" href="https://builds.openx.solar/teller-arm">teller-arm.gz</a></td>
+                <td>Archive</td>
+                <td>Linux</td>
+                <td>x86-64</td>
+                <td>114MB</td>
+                <td><tt id="teller5"></tt></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+  <footer>
+    <div class="Footer">
+      <img class="Footer-gopher" src="footer-gopher.jpg" alt="The Go Gopher">
+      <ul class="Footer-links">
+        <li class="Footer-link"><a href="https://golang.org/doc/copyright.html">Copyright</a></li>
+        <li class="Footer-link"><a href="http://golang.org/issues/new?title=x/website:" target="_blank" rel="noopener">Report a website issue</a></li>
+      </ul>
+      <a class="Footer-supportedBy" href="https://golang.org/dl/" target=_blank>Site courtesy Godoc</a>
+    </div>
+  </footer>
+  <script>
+    $(document).ready(function() {
+      $.get("https://builds.openx.solar/lastbuilt", function(data, status) {
+        $('#lastbuilt').text(data);
+      });
 
-  <p>Opensolar</p>
-  <form action="https://builds.openx.solar/opensolar-darwinamd64" method="get" style="display:inline"><input type="submit" value="opensolar-darwinamd64" /></form>
-  <form action="https://builds.openx.solar/opensolar-linuxamd64" method="get" style="display:inline"><input type="submit" value="opensolar-linuxamd64" /></form>
-  <form action="https://builds.openx.solar/opensolar-linux386" method="get" style="display:inline"><input type="submit" value="opensolar-linux386" /></form>
-  <form action="https://builds.openx.solar/opensolar-arm64" method="get" style="display:inline"><input type="submit" value="opensolar-arm64" /></form>
-  <form action="https://builds.openx.solar/opensolar-arm" method="get" style="display:inline"><input type="submit" value="opensolar-arm" /></form>
-  <br>
+      $.get("https://builds.openx.solar/sha", function(data, status) {
+        $('#oxsha').attr("href", "https://github.com/YaleOpenLab/openx/commit/" + data.OpenxSha);
+        $('#oxsha').text(data.OpenxSha);
+        $('#ossha').attr("href", "https://github.com/YaleOpenLab/opensolar/commit/" + data.OpensolarSha);
+        $('#ossha').text(data.OpensolarSha);
+      });
 
-  <p>Teller</p>
-  <form action="https://builds.openx.solar/teller-darwinamd64" method="get" style="display:inline"><input type="submit" value="teller-darwinamd64" /></form>
-  <form action="https://builds.openx.solar/teller-linuxamd64" method="get" style="display:inline"><input type="submit" value="teller-linuxamd64" /></form>
-  <form action="https://builds.openx.solar/teller-linux386" method="get" style="display:inline"><input type="submit" value="teller-linux386" /></form>
-  <form action="https://builds.openx.solar/teller-arm64" method="get" style="display:inline"><input type="submit" value="teller-arm64" /></form>
-  <form action="https://builds.openx.solar/teller-arm" method="get" style="display:inline"><input type="submit" value="teller-arm" /></form>
-  <br>
+      $.get("http://localhost:8081/hashes", function(data, status) {
+        $("#openx1").text(data.Openx[0]);
+        $("#openx2").text(data.Openx[1]);
+        $("#openx3").text(data.Openx[2]);
+        $("#openx4").text(data.Openx[3]);
+        $("#openx5").text(data.Openx[4]);
+        $("#openx6").text(data.Openx[5]);
+
+
+        $("#opensolar1").text(data.Opensolar[0]);
+        $("#opensolar2").text(data.Opensolar[1]);
+        $("#opensolar3").text(data.Opensolar[2]);
+        $("#opensolar4").text(data.Opensolar[3]);
+        $("#opensolar5").text(data.Opensolar[4]);
+        $("#opensolar6").text(data.Opensolar[5]);
+
+        $("#teller1").text(data.Teller[0]);
+        $("#teller2").text(data.Teller[1]);
+        $("#teller3").text(data.Teller[2]);
+        $("#teller4").text(data.Teller[3]);
+        $("#teller5").text(data.Teller[4]);
+        $("#teller6").text(data.Teller[5]);
+      });
+    });
+  </script>
 </body>
-
-<script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
-<script>
-  $(document).ready(function() {
-    $.get("https://builds.openx.solar/lastbuilt", function(data, status) {
-      $('#lastbuilt').text(data);
-    });
-  });
-
-  $(document).ready(function() {
-    $.get("https://builds.openx.solar/sha", function(data, status) {
-      $('#oxsha').attr("href", "https://github.com/YaleOpenLab/openx/commit/" + data.OpenxSha);
-      $('#oxsha').text(data.OpenxSha);
-      $('#ossha').attr("href", "https://github.com/YaleOpenLab/opensolar/commit/" + data.OpensolarSha);
-      $('#ossha').text(data.OpensolarSha);
-    });
-  });
-
-</script>
 
 </html>

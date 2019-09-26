@@ -75,7 +75,7 @@ mv openx.gz $GOPATH/go/src/github.com/YaleOpenLab/openx/ci
 
 cd $GOPATH/go/src/github.com/YaleOpenLab/
 cp -r opensolar opensolar-temp
-cd openx-temp
+cd opensolar-temp
 rm -rf .git/ ci/
 cd ..
 tar -cvzf opensolar.gz opensolar-temp/
