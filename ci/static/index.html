@@ -383,7 +383,7 @@
         $('#ossha').text(data.OpensolarSha);
       });
 
-      $.get("http://localhost:8081/hashes", function(data, status) {
+      $.get("https://builds.openx.solar/hashes", function(data, status) {
         $("#openx1").text(data.Openx[0]);
         $("#openx2").text(data.Openx[1]);
         $("#openx3").text(data.Openx[2]);

@@ -73,6 +73,15 @@ func openx() {
 
 		http.ServeFile(w, r, "openx-arm.gz")
 	})
+	http.HandleFunc("/openx", func(w http.ResponseWriter, r *http.Request) {
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		}
+
+		http.ServeFile(w, r, "openx.gz")
+	})
 }
 
 func opensolar() {
@@ -121,6 +130,15 @@ func opensolar() {
 
 		http.ServeFile(w, r, "opensolar-arm.gz")
 	})
+	http.HandleFunc("/opensolar", func(w http.ResponseWriter, r *http.Request) {
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		}
+
+		http.ServeFile(w, r, "opensolar.gz")
+	})
 }
 
 func teller() {
@@ -168,6 +186,15 @@ func teller() {
 		}
 
 		http.ServeFile(w, r, "teller-arm.gz")
+	})
+	http.HandleFunc("/teller", func(w http.ResponseWriter, r *http.Request) {
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		}
+
+		http.ServeFile(w, r, "teller.gz")
 	})
 }
 
@@ -383,6 +410,8 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// updateShaHashes()
+	// writeLastBuilt()
 	readLastBuilt()
 	updateShaHashes()
 	readGhSecret()
