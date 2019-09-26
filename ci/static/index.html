@@ -99,8 +99,8 @@
       </button>
       <ul class="Header-menu">
         <li class="Header-menuItem"><a href="#">Documents</a></li>
-        <li class="Header-menuItem"><a href="#">The Project</a></li>
-        <li class="Header-menuItem"><a href="#">Help</a></li>
+        <li class="Header-menuItem"><a href="https://www.openx.solar">The Project</a></li>
+        <li class="Header-menuItem"><a href="mailto:martin.wainstein@yale.edu">Help</a></li>
         <li class="Header-menuItem"><a href="#/">Blog</a></li>
       </ul>
     </nav>
@@ -108,42 +108,43 @@
 
   <main id="page" class="Site-content" tabindex="-1" style="outline: 0px;">
     <div class="container">
-      <h1>Downloads</h1>
+      <h1>Openx Downloads</h1>
       <p>
         After downloading a binary release suitable for your system,
-        please follow the <a href="https://golang.org/doc/install">installation instructions</a>.
+        please follow the <a href="https://github.com/YaleOpenLab/openx/blob/master/README.md">installation instructions</a>.
       </p>
       <p>
         If you are building from source,
-        follow the <a href="https://golang.org/doc/install/source">source installation instructions</a>.
+        follow the <a href="https://github.com/YaleOpenLab/openx/blob/master/README.md">source installation instructions</a>.
       </p>
-      <p>Openx GitHub Commit hash: <a id="oxsha" href="blah" target=_blank></a><br>
+      <p>
+        Last built on: <a id="lastbuilt" style="color: inherit ; text-decoration: none"></a><br>
+        Openx GitHub Commit hash: <a id="oxsha" href="blah" target=_blank></a><br>
         Opensolar / Teller GitHub Commit hash: <a id="ossha" href="blah" target=_blank></a><br>
-        Last built on: <a id="lastbuilt"></a>
       </p>
       <h3 id="featured">Featured downloads</h3>
-      <a class="download downloadBox" href="https://dl.google.com/go/go1.13.1.darwin-amd64.pkg">
+      <a class="download downloadBox" href="https://builds.openx.solar/openx-darwinamd64">
         <div class="platform">Apple macOS</div>
         <div class="reqs">macOS 10.11 or later, Intel 64-bit processor</div>
         <div>
-          <span class="filename">go1.13.1.darwin-amd64.pkg</span>
-          <span class="size">(115MB)</span>
+          <span class="filename">openx-macos.gz</span>
+          <span class="size" id="openx1s2"></span>
         </div>
       </a>
-      <a class="download downloadBox" href="https://dl.google.com/go/go1.13.1.linux-amd64.tar.gz">
+      <a class="download downloadBox" href="https://builds.openx.solar/openx-linuxamd64">
         <div class="platform">Linux</div>
         <div class="reqs">Linux 2.6.23 or later, Intel 64-bit processor</div>
         <div>
-          <span class="filename">go1.13.1.linux-amd64.tar.gz</span>
-          <span class="size">(114MB)</span>
+          <span class="filename">openx-linux.gz</span>
+          <span class="size" id="openx2s2"></span>
         </div>
       </a>
-      <a class="download downloadBox" href="https://dl.google.com/go/go1.13.1.src.tar.gz">
+      <a class="download downloadBox" href="https://builds.openx.solar/openx">
         <div class="platform">Source</div>
         <div class="reqs">Go 1.13 or later</div>
         <div>
-          <span class="filename">go1.13.1.src.tar.gz</span>
-          <span class="size">(21MB)</span>
+          <span class="filename">openx.gz</span>
+          <span class="size" id="openx6s2"></span>
         </div>
       </a>
       <div style="clear: both;"></div>
@@ -364,10 +365,10 @@
     <div class="Footer">
       <img class="Footer-gopher" src="footer-gopher.jpg" alt="The Go Gopher">
       <ul class="Footer-links">
-        <li class="Footer-link"><a href="https://golang.org/doc/copyright.html">Copyright</a></li>
-        <li class="Footer-link"><a href="http://golang.org/issues/new?title=x/website:" target="_blank" rel="noopener">Report a website issue</a></li>
+        <li class="Footer-link"><a href="https://github.com/YaleOpenLab/openx/blob/master/LICENSE">Copyright</a></li>
+        <li class="Footer-link"><a href="https://github.com/YaleOpenLab/openx/issues/new" target="_blank" rel="noopener">Report a website issue</a></li>
       </ul>
-      <a class="Footer-supportedBy" href="https://golang.org/dl/" target=_blank>Site courtesy Godoc</a>
+      <a class="Footer-supportedBy" href="https://golang.org/dl/" target=_blank>Site courtesy Golang</a>
     </div>
   </footer>
   <script>
@@ -397,6 +398,10 @@
         $("#openx4s").text(data.Openx.Sizes[3] + " MB");
         $("#openx5s").text(data.Openx.Sizes[4] + " MB");
         $("#openx6s").text(data.Openx.Sizes[5] + " MB");
+
+        $("#openx1s2").text(data.Openx.Sizes[0] + " MB");
+        $("#openx2s2").text(data.Openx.Sizes[1] + " MB");
+        $("#openx6s2").text(data.Openx.Sizes[5] + " MB");
 
 
         $("#opensolar1").text(data.Opensolar.Hashes[0]);
