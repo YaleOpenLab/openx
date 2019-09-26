@@ -17,3 +17,8 @@ ci/ci
 ci/secret.txt
 ci/lastbuilt.txt
 *.gz
+*-arm
+*-arm64
+*-darwinamd64
+*-linux386
+*-linuxamd64

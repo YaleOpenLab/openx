@@ -256,6 +256,7 @@ func StartServer(portx int, insecure bool) {
 	frontend()
 	lastbuilt()
 	shaEndpoint()
+	hashesEndpoint()
 
 	port, err := utils.ToString(portx)
 	if err != nil {
@@ -371,9 +372,9 @@ func updateShastruct() {
 }
 
 func updateShaHashes() {
-	var openxFileNames = []string{"openx-darwinamd64.gz", "openx-linuxamd64.gz", "openx-linux386.gz", "openx-arm64.gz", "openx-arm.gz"}
-	var opensolarFileNames = []string{"opensolar-darwinamd64.gz", "opensolar-linuxamd64.gz", "opensolar-linux386.gz", "opensolar-arm64.gz", "opensolar-arm.gz"}
-	var tellerFileNames = []string{"teller-darwinamd64.gz", "teller-linuxamd64.gz", "teller-linux386.gz", "teller-arm64.gz", "teller-arm.gz"}
+	var openxFileNames = []string{"openx-darwinamd64.gz", "openx-linuxamd64.gz", "openx-linux386.gz", "openx-arm64.gz", "openx-arm.gz", "openx.gz"}
+	var opensolarFileNames = []string{"opensolar-darwinamd64.gz", "opensolar-linuxamd64.gz", "opensolar-linux386.gz", "opensolar-arm64.gz", "opensolar-arm.gz", "opensolar.gz"}
+	var tellerFileNames = []string{"teller-darwinamd64.gz", "teller-linuxamd64.gz", "teller-linux386.gz", "teller-arm64.gz", "teller-arm.gz", "teller.gz"}
 
 	for _, file := range openxFileNames {
 		sha2Bytes, err := btcutils.Sha256File(file)
@@ -406,10 +407,10 @@ func main() {
 		log.Fatal(err)
 	}
 
+	readLastBuilt()
 	updateShaHashes()
 	readGhSecret()
 	readLastBuilt()
-	hashesEndpoint()
 
 	go func() {
 		for {
@@ -422,6 +423,8 @@ func main() {
 			}
 			log.Println("build built succesfully")
 			writeLastBuilt()
+			readLastBuilt()
+			updateShaHashes()
 			updateShastruct()
 		}
 	}()
