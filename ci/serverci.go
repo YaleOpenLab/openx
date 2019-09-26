@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"strings"
+	// / "strings"
 	"time"
 
 	erpc "github.com/Varunram/essentials/rpc"
@@ -220,32 +220,8 @@ func hashesEndpoint() {
 }
 
 
-// FileSystem custom file system handler
-type FileSystem struct {
-	fs http.FileSystem
-}
-
-// Open opens file
-func (fs FileSystem) Open(path string) (http.File, error) {
-	f, err := fs.fs.Open(path)
-	if err != nil {
-		return nil, err
-	}
-
-	s, err := f.Stat()
-	if s.IsDir() {
-		index := strings.TrimSuffix(path, "/") + "/index.html"
-		if _, err := fs.fs.Open(index); err != nil {
-			return nil, err
-		}
-	}
-
-	return f, nil
-}
-
 func frontend() {
-	fileServer := http.FileServer(FileSystem{http.Dir("static")})
-	http.Handle("/fe", http.StripPrefix(strings.TrimRight("/fe/", "/"), fileServer))
+	http.Handle("/fe/", http.StripPrefix("/fe/", http.FileServer(http.Dir("./static"))))
 }
 
 func StartServer(portx int, insecure bool) {
