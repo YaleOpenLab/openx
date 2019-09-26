@@ -22,10 +22,15 @@ var (
 	LastBuilt string
 	GithubSecret string
 	Sha Shastruct
-	OpenxHashes []string
-	OpensolarHashes []string
-	TellerHashes []string
+	OpenxHashes FileStats
+	OpensolarHashes FileStats
+	TellerHashes FileStats
 )
+
+type FileStats struct {
+	Hashes []string
+	Sizes []int64
+}
 
 func openx() {
 	http.HandleFunc("/openx-darwinamd64", func(w http.ResponseWriter, r *http.Request) {
@@ -224,9 +229,9 @@ func shaEndpoint() {
 }
 
 type HashesResponse struct {
-	Openx []string
-	Opensolar []string
-	Teller []string
+	Openx FileStats
+	Opensolar FileStats
+	Teller FileStats
 }
 
 func hashesEndpoint() {
@@ -383,24 +388,48 @@ func updateShaHashes() {
 		sha2Bytes, err := btcutils.Sha256File(file)
 		if err != nil {
 			log.Println(err)
+			continue
 		}
-		OpenxHashes = append(OpenxHashes, hex.EncodeToString(sha2Bytes))
+
+		OpenxHashes.Hashes = append(OpenxHashes.Hashes, hex.EncodeToString(sha2Bytes))
+		x, err := os.Stat(file)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		OpenxHashes.Sizes = append(OpenxHashes.Sizes, x.Size() / 1000000)
 	}
 
 	for _, file := range opensolarFileNames {
 		sha2Bytes, err := btcutils.Sha256File(file)
 		if err != nil {
 			log.Println(err)
+			continue
 		}
-		OpensolarHashes = append(OpensolarHashes, hex.EncodeToString(sha2Bytes))
+
+		OpensolarHashes.Hashes = append(OpensolarHashes.Hashes, hex.EncodeToString(sha2Bytes))
+		x, err := os.Stat(file)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		OpensolarHashes.Sizes = append(OpensolarHashes.Sizes, x.Size() / 1000000)
 	}
 
 	for _, file := range tellerFileNames {
 		sha2Bytes, err := btcutils.Sha256File(file)
 		if err != nil {
 			log.Println(err)
+			continue
 		}
-		TellerHashes = append(TellerHashes, hex.EncodeToString(sha2Bytes))
+
+		TellerHashes.Hashes = append(TellerHashes.Hashes, hex.EncodeToString(sha2Bytes))
+		x, err := os.Stat(file)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		TellerHashes.Sizes = append(TellerHashes.Sizes, x.Size() / 1000000)
 	}
 }
 

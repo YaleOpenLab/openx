@@ -171,7 +171,7 @@
                 <td>Source</td>
                 <td></td>
                 <td></td>
-                <td>21MB</td>
+                <td id="openx6s"></td>
                 <td><tt id="openx6"></tt></td>
               </tr>
               <tr class="highlight">
@@ -179,7 +179,7 @@
                 <td>Archive</td>
                 <td>macOS</td>
                 <td>x86-64</td>
-                <td>116MB</td>
+                <td id="openx1s"></td>
                 <td><tt id="openx1"></tt></td>
               </tr>
               <tr class="highlight">
@@ -187,7 +187,7 @@
                 <td>Archive</td>
                 <td>Linux</td>
                 <td>x86-64</td>
-                <td>116MB</td>
+                <td id="openx2s"></td>
                 <td><tt id="openx2"></tt></td>
               </tr>
               <tr>
@@ -195,7 +195,7 @@
                 <td>Archive</td>
                 <td>Linux</td>
                 <td>x86</td>
-                <td>115MB</td>
+                <td id="openx3s"></td>
                 <td><tt id="openx3"></tt></td>
               </tr>
               <tr class="highlight">
@@ -203,7 +203,7 @@
                 <td>Archive</td>
                 <td>Linux</td>
                 <td>ARMv8</td>
-                <td>97MB</td>
+                <td id="openx4s"></td>
                 <td><tt id="openx4"></tt></td>
               </tr>
               <tr>
@@ -211,7 +211,7 @@
                 <td>Archive</td>
                 <td>Linux</td>
                 <td>x86-64</td>
-                <td>114MB</td>
+                <td id="openx5s"></td>
                 <td><tt id="openx5"></tt></td>
               </tr>
             </tbody>
@@ -241,7 +241,7 @@
                 <td>Source</td>
                 <td></td>
                 <td></td>
-                <td>21MB</td>
+                <td id="opensolar6s"></td>
                 <td><tt id="opensolar6"></tt></td>
               </tr>
               <tr class="highlight">
@@ -249,7 +249,7 @@
                 <td>Archive</td>
                 <td>macOS</td>
                 <td>x86-64</td>
-                <td>116MB</td>
+                <td id="opensolar1s"></td>
                 <td><tt id="opensolar1"></tt></td>
               </tr>
               <tr class="highlight">
@@ -257,7 +257,7 @@
                 <td>Archive</td>
                 <td>Linux</td>
                 <td>x86-64</td>
-                <td>116MB</td>
+                <td id="opensolar2s"></td>
                 <td><tt id="opensolar2"></tt></td>
               </tr>
               <tr>
@@ -265,7 +265,7 @@
                 <td>Archive</td>
                 <td>Linux</td>
                 <td>x86</td>
-                <td>115MB</td>
+                <td id="opensolar3s"></td>
                 <td><tt id="opensolar3"></tt></td>
               </tr>
               <tr class="highlight">
@@ -273,7 +273,7 @@
                 <td>Archive</td>
                 <td>Linux</td>
                 <td>ARMv8</td>
-                <td>97MB</td>
+                <td id="opensolar4s"></td>
                 <td><tt id="opensolar4"></tt></td>
               </tr>
               <tr>
@@ -281,7 +281,7 @@
                 <td>Archive</td>
                 <td>Linux</td>
                 <td>x86-64</td>
-                <td>114MB</td>
+                <td id="opensolar5s"></td>
                 <td><tt id="opensolar5"></tt></td>
               </tr>
             </tbody>
@@ -311,7 +311,7 @@
                 <td>Source</td>
                 <td></td>
                 <td></td>
-                <td>21MB</td>
+                <td id="teller6s"></td>
                 <td><tt id="teller6"></tt></td>
               </tr>
               <tr class="highlight">
@@ -319,7 +319,7 @@
                 <td>Archive</td>
                 <td>macOS</td>
                 <td>x86-64</td>
-                <td>116MB</td>
+                <td id="teller1s"></td>
                 <td><tt id="teller1"></tt></td>
               </tr>
               <tr class="highlight">
@@ -327,7 +327,7 @@
                 <td>Archive</td>
                 <td>Linux</td>
                 <td>x86-64</td>
-                <td>116MB</td>
+                <td id="teller2s"></td>
                 <td><tt id="teller2"></tt></td>
               </tr>
               <tr>
@@ -335,7 +335,7 @@
                 <td>Archive</td>
                 <td>Linux</td>
                 <td>x86</td>
-                <td>115MB</td>
+                <td id="teller3s"></td>
                 <td><tt id="teller3"></tt></td>
               </tr>
               <tr class="highlight">
@@ -343,7 +343,7 @@
                 <td>Archive</td>
                 <td>Linux</td>
                 <td>ARMv8</td>
-                <td>97MB</td>
+                <td id="teller4s"></td>
                 <td><tt id="teller4"></tt></td>
               </tr>
               <tr>
@@ -351,7 +351,7 @@
                 <td>Archive</td>
                 <td>Linux</td>
                 <td>x86-64</td>
-                <td>114MB</td>
+                <td id="teller5s"></td>
                 <td><tt id="teller5"></tt></td>
               </tr>
             </tbody>
@@ -384,27 +384,50 @@
       });
 
       $.get("https://builds.openx.solar/hashes", function(data, status) {
-        $("#openx1").text(data.Openx[0]);
-        $("#openx2").text(data.Openx[1]);
-        $("#openx3").text(data.Openx[2]);
-        $("#openx4").text(data.Openx[3]);
-        $("#openx5").text(data.Openx[4]);
-        $("#openx6").text(data.Openx[5]);
+        $("#openx1").text(data.Openx.Hashes[0]);
+        $("#openx2").text(data.Openx.Hashes[1]);
+        $("#openx3").text(data.Openx.Hashes[2]);
+        $("#openx4").text(data.Openx.Hashes[3]);
+        $("#openx5").text(data.Openx.Hashes[4]);
+        $("#openx6").text(data.Openx.Hashes[5]);
+
+        $("#openx1s").text(data.Openx.Sizes[0] + " MB");
+        $("#openx2s").text(data.Openx.Sizes[1] + " MB");
+        $("#openx3s").text(data.Openx.Sizes[2] + " MB");
+        $("#openx4s").text(data.Openx.Sizes[3] + " MB");
+        $("#openx5s").text(data.Openx.Sizes[4] + " MB");
+        $("#openx6s").text(data.Openx.Sizes[5] + " MB");
 
 
-        $("#opensolar1").text(data.Opensolar[0]);
-        $("#opensolar2").text(data.Opensolar[1]);
-        $("#opensolar3").text(data.Opensolar[2]);
-        $("#opensolar4").text(data.Opensolar[3]);
-        $("#opensolar5").text(data.Opensolar[4]);
-        $("#opensolar6").text(data.Opensolar[5]);
+        $("#opensolar1").text(data.Opensolar.Hashes[0]);
+        $("#opensolar2").text(data.Opensolar.Hashes[1]);
+        $("#opensolar3").text(data.Opensolar.Hashes[2]);
+        $("#opensolar4").text(data.Opensolar.Hashes[3]);
+        $("#opensolar5").text(data.Opensolar.Hashes[4]);
+        $("#opensolar6").text(data.Opensolar.Hashes[5]);
 
-        $("#teller1").text(data.Teller[0]);
-        $("#teller2").text(data.Teller[1]);
-        $("#teller3").text(data.Teller[2]);
-        $("#teller4").text(data.Teller[3]);
-        $("#teller5").text(data.Teller[4]);
-        $("#teller6").text(data.Teller[5]);
+        $("#opensolar1s").text(data.Opensolar.Sizes[0] + " MB");
+        $("#opensolar2s").text(data.Opensolar.Sizes[1] + " MB");
+        $("#opensolar3s").text(data.Opensolar.Sizes[2] + " MB");
+        $("#opensolar4s").text(data.Opensolar.Sizes[3] + " MB");
+        $("#opensolar5s").text(data.Opensolar.Sizes[4] + " MB");
+        $("#opensolar6s").text(data.Opensolar.Sizes[5] + " MB");
+
+
+        $("#teller1").text(data.Teller.Hashes[0]);
+        $("#teller2").text(data.Teller.Hashes[1]);
+        $("#teller3").text(data.Teller.Hashes[2]);
+        $("#teller4").text(data.Teller.Hashes[3]);
+        $("#teller5").text(data.Teller.Hashes[4]);
+        $("#teller6").text(data.Teller.Hashes[5]);
+
+        $("#teller1s").text(data.Teller.Sizes[0] + " MB");
+        $("#teller2s").text(data.Teller.Sizes[1] + " MB");
+        $("#teller3s").text(data.Teller.Sizes[2] + " MB");
+        $("#teller4s").text(data.Teller.Sizes[3] + " MB");
+        $("#teller5s").text(data.Teller.Sizes[4] + " MB");
+        $("#teller6s").text(data.Teller.Sizes[5] + " MB");
+
       });
     });
   </script>
