@@ -85,3 +85,6 @@ cd $GOPATH/go/src/github.com/YaleOpenLab/opensolar/
 cp -r teller teller-temp
 tar -cvzf teller.gz teller-temp/
 mv teller.gz $GOPATH/go/src/github.com/YaleOpenLab/openx/ci
+
+cd $GOPATH/go/src/github.com/YaleOpenLab/
+rm -rf *-temp/
