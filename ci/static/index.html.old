@@ -1,0 +1,74 @@
+<html>
+
+<head>
+  <title>Openx Generator</title>
+  <style>
+    body {
+        background: white;
+      }
+      * {
+        font-family: Helvetica, sans-serif;
+        text-align: left;
+      }
+      input {
+        font-size: 16px !important;
+      }
+      #lastbuilt, #oxsha, #ossha {
+        display: inline !important;
+      }
+</style>
+</head>
+
+<body>
+  <h1>Openx builds</h1>
+  <h3>Last built on: <p id="lastbuilt"></p></h3>
+  <p>Openx SHA hash: <a id="oxsha" href="blah" target=_blank></a>
+    Opensolar / Teller SHA hash: <a id="ossha" href="blah" target=_blank></a>
+  </p>
+
+  <br>
+  <p>Openx</p>
+  <form action="https://builds.openx.solar/openx-darwinamd64" method="get" style="display:inline"><input type="submit" value="openx-darwinamd64" /></form>
+  <form action="https://builds.openx.solar/openx-linuxamd64" method="get" style="display:inline"><input type="submit" value="openx-linuxamd64" /></form>
+  <form action="https://builds.openx.solar/openx-linux386" method="get" style="display:inline"><input type="submit" value="openx-linux386" /></form>
+  <form action="https://builds.openx.solar/openx-arm64" method="get" style="display:inline"><input type="submit" value="openx-arm64" /></form>
+  <form action="https://builds.openx.solar/openx-arm" method="get" style="display:inline"><input type="submit" value="openx-arm" /></form>
+  <br>
+
+  <p>Opensolar</p>
+  <form action="https://builds.openx.solar/opensolar-darwinamd64" method="get" style="display:inline"><input type="submit" value="opensolar-darwinamd64" /></form>
+  <form action="https://builds.openx.solar/opensolar-linuxamd64" method="get" style="display:inline"><input type="submit" value="opensolar-linuxamd64" /></form>
+  <form action="https://builds.openx.solar/opensolar-linux386" method="get" style="display:inline"><input type="submit" value="opensolar-linux386" /></form>
+  <form action="https://builds.openx.solar/opensolar-arm64" method="get" style="display:inline"><input type="submit" value="opensolar-arm64" /></form>
+  <form action="https://builds.openx.solar/opensolar-arm" method="get" style="display:inline"><input type="submit" value="opensolar-arm" /></form>
+  <br>
+
+  <p>Teller</p>
+  <form action="https://builds.openx.solar/teller-darwinamd64" method="get" style="display:inline"><input type="submit" value="teller-darwinamd64" /></form>
+  <form action="https://builds.openx.solar/teller-linuxamd64" method="get" style="display:inline"><input type="submit" value="teller-linuxamd64" /></form>
+  <form action="https://builds.openx.solar/teller-linux386" method="get" style="display:inline"><input type="submit" value="teller-linux386" /></form>
+  <form action="https://builds.openx.solar/teller-arm64" method="get" style="display:inline"><input type="submit" value="teller-arm64" /></form>
+  <form action="https://builds.openx.solar/teller-arm" method="get" style="display:inline"><input type="submit" value="teller-arm" /></form>
+  <br>
+</body>
+
+<script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+<script>
+  $(document).ready(function() {
+    $.get("https://builds.openx.solar/lastbuilt", function(data, status) {
+      $('#lastbuilt').text(data);
+    });
+  });
+
+  $(document).ready(function() {
+    $.get("https://builds.openx.solar/sha", function(data, status) {
+      $('#oxsha').attr("href", "https://github.com/YaleOpenLab/openx/commit/" + data.OpenxSha);
+      $('#oxsha').text(data.OpenxSha);
+      $('#ossha').attr("href", "https://github.com/YaleOpenLab/opensolar/commit/" + data.OpensolarSha);
+      $('#ossha').text(data.OpensolarSha);
+    });
+  });
+
+</script>
+
+</html>

@@ -22,7 +22,7 @@ env GOOS=linux GOARCH=amd64 go build -o openx-linuxamd64
 env GOOS=linux GOARCH=386 go build -o openx-linux386
 env GOOS=linux GOARCH=arm64 go build -o openx-arm64
 env GOOS=linux GOARCH=arm go build -o openx-arm
-cp openx-linuxamd64 openx-linux386 openx-arm64 openx-arm openx-darwinamd64 ci/
+mv openx-linuxamd64 openx-linux386 openx-arm64 openx-arm openx-darwinamd64 ci/
 
 go get -v github.com/YaleOpenLab/opensolar
 cd $GOPATH/go/src/github.com/YaleOpenLab/opensolar
@@ -34,7 +34,7 @@ env GOOS=linux GOARCH=amd64 go build -o teller-linuxamd64
 env GOOS=linux GOARCH=386 go build -o teller-linux386
 env GOOS=linux GOARCH=arm64 go build -o teller-arm64
 env GOOS=linux GOARCH=arm go build -o teller-arm
-cp teller-* $GOPATH/go/src/github.com/YaleOpenLab/openx/ci/
+mv teller-* $GOPATH/go/src/github.com/YaleOpenLab/openx/ci/
 
 cd ..
 
@@ -43,7 +43,7 @@ env GOOS=linux GOARCH=amd64 go build -o opensolar-linuxamd64
 env GOOS=linux GOARCH=386 go build -o opensolar-linux386
 env GOOS=linux GOARCH=arm64 go build -o opensolar-arm64
 env GOOS=linux GOARCH=arm go build -o opensolar-arm
-cp opensolar-* $GOPATH/go/src/github.com/YaleOpenLab/openx/ci/
+mv opensolar-* $GOPATH/go/src/github.com/YaleOpenLab/openx/ci/
 
 cd $GOPATH/go/src/github.com/YaleOpenLab/openx/ci/
 
@@ -64,3 +64,27 @@ tar -cvzf teller-linuxamd64.gz teller-linuxamd64
 tar -cvzf teller-linux386.gz teller-linux386
 tar -cvzf teller-arm64.gz teller-arm64
 tar -cvzf teller-arm.gz teller-arm
+
+cd $GOPATH/go/src/github.com/YaleOpenLab/
+cp -r openx openx-temp
+cd openx-temp
+rm -rf .git/ ci/
+cd ..
+tar -cvzf openx.gz openx-temp/
+mv openx.gz $GOPATH/go/src/github.com/YaleOpenLab/openx/ci
+
+cd $GOPATH/go/src/github.com/YaleOpenLab/
+cp -r opensolar opensolar-temp
+cd opensolar-temp
+rm -rf .git/ ci/
+cd ..
+tar -cvzf opensolar.gz opensolar-temp/
+mv opensolar.gz $GOPATH/go/src/github.com/YaleOpenLab/openx/ci
+
+cd $GOPATH/go/src/github.com/YaleOpenLab/opensolar/
+cp -r teller teller-temp
+tar -cvzf teller.gz teller-temp/
+mv teller.gz $GOPATH/go/src/github.com/YaleOpenLab/openx/ci
+
+cd $GOPATH/go/src/github.com/YaleOpenLab/
+rm -rf *-temp/

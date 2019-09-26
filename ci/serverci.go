@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"github.com/pkg/errors"
 	"io/ioutil"
@@ -8,19 +9,28 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"strings"
+	// / "strings"
 	"time"
 
 	erpc "github.com/Varunram/essentials/rpc"
 	utils "github.com/Varunram/essentials/utils"
 	flags "github.com/jessevdk/go-flags"
+	btcutils "github.com/bithyve/research/utils"
 )
 
 var (
 	LastBuilt string
 	GithubSecret string
 	Sha Shastruct
+	OpenxHashes FileStats
+	OpensolarHashes FileStats
+	TellerHashes FileStats
 )
+
+type FileStats struct {
+	Hashes []string
+	Sizes []int64
+}
 
 func openx() {
 	http.HandleFunc("/openx-darwinamd64", func(w http.ResponseWriter, r *http.Request) {
@@ -67,6 +77,15 @@ func openx() {
 		}
 
 		http.ServeFile(w, r, "openx-arm.gz")
+	})
+	http.HandleFunc("/openx", func(w http.ResponseWriter, r *http.Request) {
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		}
+
+		http.ServeFile(w, r, "openx.gz")
 	})
 }
 
@@ -116,6 +135,15 @@ func opensolar() {
 
 		http.ServeFile(w, r, "opensolar-arm.gz")
 	})
+	http.HandleFunc("/opensolar", func(w http.ResponseWriter, r *http.Request) {
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		}
+
+		http.ServeFile(w, r, "opensolar.gz")
+	})
 }
 
 func teller() {
@@ -164,6 +192,15 @@ func teller() {
 
 		http.ServeFile(w, r, "teller-arm.gz")
 	})
+	http.HandleFunc("/teller", func(w http.ResponseWriter, r *http.Request) {
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		}
+
+		http.ServeFile(w, r, "teller.gz")
+	})
 }
 
 
@@ -191,32 +228,32 @@ func shaEndpoint() {
 	})
 }
 
-// FileSystem custom file system handler
-type FileSystem struct {
-	fs http.FileSystem
+type HashesResponse struct {
+	Openx FileStats
+	Opensolar FileStats
+	Teller FileStats
 }
 
-// Open opens file
-func (fs FileSystem) Open(path string) (http.File, error) {
-	f, err := fs.fs.Open(path)
-	if err != nil {
-		return nil, err
-	}
-
-	s, err := f.Stat()
-	if s.IsDir() {
-		index := strings.TrimSuffix(path, "/") + "/index.html"
-		if _, err := fs.fs.Open(index); err != nil {
-			return nil, err
+func hashesEndpoint() {
+	http.HandleFunc("/hashes", func(w http.ResponseWriter, r *http.Request) {
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusNotFound)
 		}
-	}
 
-	return f, nil
+		var x HashesResponse
+		x.Openx = OpenxHashes
+		x.Opensolar = OpensolarHashes
+		x.Teller = TellerHashes
+
+		erpc.MarshalSend(w, x)
+	})
 }
+
 
 func frontend() {
-	fileServer := http.FileServer(FileSystem{http.Dir("static")})
-	http.Handle("/fe", http.StripPrefix(strings.TrimRight("/fe/", "/"), fileServer))
+	http.Handle("/fe/", http.StripPrefix("/fe/", http.FileServer(http.Dir("./static"))))
 }
 
 func StartServer(portx int, insecure bool) {
@@ -227,6 +264,7 @@ func StartServer(portx int, insecure bool) {
 	frontend()
 	lastbuilt()
 	shaEndpoint()
+	hashesEndpoint()
 
 	port, err := utils.ToString(portx)
 	if err != nil {
@@ -341,12 +379,70 @@ func updateShastruct() {
 	log.Println(Sha)
 }
 
+func updateShaHashes() {
+	var openxFileNames = []string{"openx-darwinamd64.gz", "openx-linuxamd64.gz", "openx-linux386.gz", "openx-arm64.gz", "openx-arm.gz", "openx.gz"}
+	var opensolarFileNames = []string{"opensolar-darwinamd64.gz", "opensolar-linuxamd64.gz", "opensolar-linux386.gz", "opensolar-arm64.gz", "opensolar-arm.gz", "opensolar.gz"}
+	var tellerFileNames = []string{"teller-darwinamd64.gz", "teller-linuxamd64.gz", "teller-linux386.gz", "teller-arm64.gz", "teller-arm.gz", "teller.gz"}
+
+	for _, file := range openxFileNames {
+		sha2Bytes, err := btcutils.Sha256File(file)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+
+		OpenxHashes.Hashes = append(OpenxHashes.Hashes, hex.EncodeToString(sha2Bytes))
+		x, err := os.Stat(file)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		OpenxHashes.Sizes = append(OpenxHashes.Sizes, x.Size() / 1000000)
+	}
+
+	for _, file := range opensolarFileNames {
+		sha2Bytes, err := btcutils.Sha256File(file)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+
+		OpensolarHashes.Hashes = append(OpensolarHashes.Hashes, hex.EncodeToString(sha2Bytes))
+		x, err := os.Stat(file)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		OpensolarHashes.Sizes = append(OpensolarHashes.Sizes, x.Size() / 1000000)
+	}
+
+	for _, file := range tellerFileNames {
+		sha2Bytes, err := btcutils.Sha256File(file)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+
+		TellerHashes.Hashes = append(TellerHashes.Hashes, hex.EncodeToString(sha2Bytes))
+		x, err := os.Stat(file)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		TellerHashes.Sizes = append(TellerHashes.Sizes, x.Size() / 1000000)
+	}
+}
+
 func main() {
 	_, err := flags.ParseArgs(&opts, os.Args)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	// updateShaHashes()
+	// writeLastBuilt()
+	readLastBuilt()
+	updateShaHashes()
 	readGhSecret()
 	readLastBuilt()
 
@@ -361,6 +457,8 @@ func main() {
 			}
 			log.Println("build built succesfully")
 			writeLastBuilt()
+			readLastBuilt()
+			updateShaHashes()
 			updateShastruct()
 		}
 	}()
