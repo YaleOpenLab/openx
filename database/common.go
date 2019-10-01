@@ -1,7 +1,6 @@
 package database
 
 import (
-	// "log"
 	"encoding/json"
 	"github.com/pkg/errors"
 
@@ -24,6 +23,9 @@ func RetrieveUser(key int) (User, error) {
 	}
 
 	err = json.Unmarshal(x, &user)
+	if user.Index == 0 {
+		return user, errors.New("Error while retrieving user")
+	}
 	return user, err
 }
 

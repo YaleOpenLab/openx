@@ -343,7 +343,7 @@ func CheckUsernameCollision(uname string) (User, error) {
 // Authorize sets the Kyc flag on a user. Can only be called by Inspectors
 func (a *User) Authorize(userIndex int) error {
 	// we don't really mind who this user is since all we need to verify is his identity
-	if !a.Inspector {
+	if !a.Inspector && !a.Admin {
 		return errors.New("You don't have the required permissions to kyc a person")
 	}
 	user, err := RetrieveUser(userIndex)
