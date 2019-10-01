@@ -155,6 +155,7 @@ func pfValidateUser() {
 
 			user, err := database.ValidateAccessToken(name, token)
 			if err != nil {
+				log.Println(err)
 				erpc.ResponseHandler(w, erpc.StatusBadRequest)
 				return
 			}
@@ -193,6 +194,7 @@ func pfNewUser() {
 
 			user, err := database.NewUser(name, pwhash, seedpwd, realname)
 			if err != nil {
+				log.Println(err)
 				erpc.ResponseHandler(w, erpc.StatusBadRequest)
 				return
 			}

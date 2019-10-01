@@ -7,7 +7,7 @@ import (
 	"os"
 
 	consts "github.com/YaleOpenLab/openx/consts"
-	database "github.com/YaleOpenLab/openx/database"
+	// database "github.com/YaleOpenLab/openx/database"
 	loader "github.com/YaleOpenLab/openx/loader"
 	// ipfs "github.com/YaleOpenLab/openx/ipfs"
 	// opensolar "github.com/YaleOpenLab/opensolar/consts"
@@ -101,6 +101,7 @@ func main() {
 		os.Exit(1)
 	}
 
+	/*
 	user, err := database.RetrieveUser(1)
 	if err != nil {
 		log.Fatal(err)
@@ -110,6 +111,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	*/
 	// rpc.KillCode = "NUKE" // compile time nuclear code
 	// run this only when you need to monitor the tellers. Not required for local testing.
 	// go opensolar.MonitorTeller(1)
