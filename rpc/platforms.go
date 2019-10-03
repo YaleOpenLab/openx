@@ -8,6 +8,7 @@ import (
 	utils "github.com/Varunram/essentials/utils"
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
+	"github.com/pkg/errors"
 )
 
 // this file has routes that are to be exclusively used by external platforms in order to call
@@ -26,6 +27,15 @@ func setupPlatformRoutes() {
 	retrieveAllPlatformNames()
 }
 
+var PlatformRPC = map[int][]string{
+	0: []string{"/platform/getconsts"},                                             // GET
+	1: []string{"/platform/user/retrieve", "key"},                                  // GET
+	2: []string{"/platform/user/validate", "username", "token"},                    // GET
+	3: []string{"/platform/user/new", "username", "pwhash", "seedpwd", "realname"}, // GET
+	4: []string{"/platform/user/collision", "username"},                            // GET
+	5: []string{"/platforms/all"},                                                  // GET NOAUTH
+}
+
 // mainnetRPC is an RPC that reutrns 0 if openx is running on mainnet, 1 if running on testnet
 func mainnetRPC() {
 	http.HandleFunc("/mainnet", func(w http.ResponseWriter, r *http.Request) {
@@ -40,6 +50,31 @@ func mainnetRPC() {
 		}
 		return
 	})
+}
+
+func authPlatform(w http.ResponseWriter, r *http.Request) error {
+
+	if r.URL.Query()["code"] == nil {
+		erpc.ResponseHandler(w, erpc.StatusBadRequest)
+		return errors.New("required params code and name not found in request")
+	}
+
+	code := r.URL.Query()["code"][0]
+
+	platforms, err := database.RetrieveAllPlatforms()
+	if err != nil {
+		erpc.ResponseHandler(w, erpc.StatusBadRequest)
+		return err
+	}
+
+	for _, platform := range platforms {
+		if platform.Code == code {
+			return nil
+		}
+	}
+
+	erpc.ResponseHandler(w, erpc.StatusBadRequest)
+	return errors.New("could not authenticate platform, quitting")
 }
 
 // OpensolarConstReturn is a struct that can be used to export consts from openx
@@ -60,186 +95,174 @@ type OpensolarConstReturn struct {
 
 // pfGetConsts is an RPC that returns running constants to platforms which might need this information
 func pfGetConsts() {
-	http.HandleFunc("/platform/getconsts", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(PlatformRPC[0][0], func(w http.ResponseWriter, r *http.Request) {
 		err := erpc.CheckGet(w, r)
 		if err != nil {
 			log.Println(err)
 			return
 		}
 
-		if r.URL.Query()["code"] == nil {
-			log.Println("code missing")
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
-		}
-
-		code := r.URL.Query()["code"][0]
-
-		if code == "OPENSOLARTEST" {
-			log.Println("authenticated opensolar platform, sending consts")
-			var x OpensolarConstReturn
-			x.PlatformPublicKey = consts.PlatformPublicKey
-			x.PlatformSeed = consts.PlatformSeed
-			x.PlatformEmail = consts.PlatformEmail
-			x.PlatformEmailPass = consts.PlatformEmailPass
-			x.StablecoinCode = consts.StablecoinCode
-			x.StablecoinPublicKey = consts.StablecoinPublicKey
-			x.AnchorUSDCode = consts.AnchorUSDCode
-			x.AnchorUSDAddress = consts.AnchorUSDAddress
-			x.AnchorUSDTrustLimit = consts.AnchorUSDTrustLimit
-			x.AnchorAPI = consts.AnchorAPI
-			x.Mainnet = consts.Mainnet
-			x.DbDir = consts.DbDir
-			erpc.MarshalSend(w, x)
+		err = authPlatform(w, r)
+		if err != nil {
 			return
 		}
+
+		log.Println("authenticated opensolar platform, sending consts")
+		var x OpensolarConstReturn
+		x.PlatformPublicKey = consts.PlatformPublicKey
+		x.PlatformSeed = consts.PlatformSeed
+		x.PlatformEmail = consts.PlatformEmail
+		x.PlatformEmailPass = consts.PlatformEmailPass
+		x.StablecoinCode = consts.StablecoinCode
+		x.StablecoinPublicKey = consts.StablecoinPublicKey
+		x.AnchorUSDCode = consts.AnchorUSDCode
+		x.AnchorUSDAddress = consts.AnchorUSDAddress
+		x.AnchorUSDTrustLimit = consts.AnchorUSDTrustLimit
+		x.AnchorAPI = consts.AnchorAPI
+		x.Mainnet = consts.Mainnet
+		x.DbDir = consts.DbDir
+		erpc.MarshalSend(w, x)
+		return
 	})
 }
 
 // pfGetUser retrieves a user from openx's database and returns it to the requesting platform
 func pfGetUser() {
-	http.HandleFunc("/platform/user/retrieve", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(PlatformRPC[1][0], func(w http.ResponseWriter, r *http.Request) {
 		err := erpc.CheckGet(w, r)
 		if err != nil {
 			log.Println(err)
 			return
 		}
 
-		if r.URL.Query()["code"] == nil || r.URL.Query()["key"] == nil {
-			log.Println("code missing")
+		err = authPlatform(w, r)
+		if err != nil {
+			return
+		}
+
+		if r.URL.Query()["key"] == nil {
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
 		}
 
-		code := r.URL.Query()["code"][0]
-
-		if code == "OPENSOLARTEST" {
-			keyInt, err := utils.ToInt(r.URL.Query()["key"][0])
-			if err != nil {
-				erpc.ResponseHandler(w, erpc.StatusBadRequest)
-				return
-			}
-			user, err := database.RetrieveUser(keyInt)
-			if err != nil {
-				erpc.ResponseHandler(w, erpc.StatusBadRequest)
-				return
-			}
-			erpc.MarshalSend(w, user)
+		keyInt, err := utils.ToInt(r.URL.Query()["key"][0])
+		if err != nil {
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
 		}
+
+		user, err := database.RetrieveUser(keyInt)
+		if err != nil {
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+
+		erpc.MarshalSend(w, user)
 	})
 }
 
 // pfValidateUser validates a given user and returns the user struct
 func pfValidateUser() {
-	http.HandleFunc("/platform/user/validate", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(PlatformRPC[2][0], func(w http.ResponseWriter, r *http.Request) {
 		err := erpc.CheckGet(w, r)
 		if err != nil {
 			log.Println(err)
 			return
 		}
 
-		if r.URL.Query()["code"] == nil {
-			log.Println("code missing")
+		err = authPlatform(w, r)
+		if err != nil {
+			return
+		}
+
+		if r.URL.Query()["username"] == nil || r.URL.Query()["token"] == nil {
+			log.Println("token missing")
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 		}
 
-		code := r.URL.Query()["code"][0]
+		name := r.URL.Query()["username"][0]
+		token := r.URL.Query()["token"][0]
 
-		if code == "OPENSOLARTEST" {
-
-			if r.URL.Query()["username"] == nil || r.URL.Query()["token"] == nil {
-				log.Println("token missing")
-				erpc.ResponseHandler(w, erpc.StatusBadRequest)
-			}
-
-			name := r.URL.Query()["username"][0]
-			token := r.URL.Query()["token"][0]
-
-			user, err := database.ValidateAccessToken(name, token)
-			if err != nil {
-				log.Println(err)
-				erpc.ResponseHandler(w, erpc.StatusBadRequest)
-				return
-			}
-			erpc.MarshalSend(w, user)
+		user, err := database.ValidateAccessToken(name, token)
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
 		}
+
+		erpc.MarshalSend(w, user)
 	})
 }
 
 // pfNewUser creates a new user
 func pfNewUser() {
-	http.HandleFunc("/platform/user/new", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(PlatformRPC[3][0], func(w http.ResponseWriter, r *http.Request) {
 		err := erpc.CheckGet(w, r)
 		if err != nil {
 			log.Println(err)
 			return
 		}
 
-		if r.URL.Query()["code"] == nil {
+		err = authPlatform(w, r)
+		if err != nil {
+			return
+		}
+
+		if r.URL.Query()["username"] == nil || r.URL.Query()["pwhash"] == nil ||
+			r.URL.Query()["seedpwd"] == nil || r.URL.Query()["realname"] == nil {
 			log.Println("code missing")
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 		}
 
-		code := r.URL.Query()["code"][0]
-		if code == "OPENSOLARTEST" {
+		name := r.URL.Query()["username"][0]
+		pwhash := r.URL.Query()["pwhash"][0]
+		seedpwd := r.URL.Query()["seedpwd"][0]
+		realname := r.URL.Query()["realname"][0]
 
-			if r.URL.Query()["username"] == nil || r.URL.Query()["pwhash"] == nil || r.URL.Query()["seedpwd"] == nil ||
-				r.URL.Query()["realname"] == nil {
-				log.Println("code missing")
-				erpc.ResponseHandler(w, erpc.StatusBadRequest)
-			}
-
-			name := r.URL.Query()["username"][0]
-			pwhash := r.URL.Query()["pwhash"][0]
-			seedpwd := r.URL.Query()["seedpwd"][0]
-			realname := r.URL.Query()["realname"][0]
-
-			user, err := database.NewUser(name, pwhash, seedpwd, realname)
-			if err != nil {
-				log.Println(err)
-				erpc.ResponseHandler(w, erpc.StatusBadRequest)
-				return
-			}
-			erpc.MarshalSend(w, user)
+		user, err := database.NewUser(name, pwhash, seedpwd, realname)
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
 		}
+
+		erpc.MarshalSend(w, user)
 	})
 }
 
 // pfCollisionCheck checks for username collision
 func pfCollisionCheck() {
-	http.HandleFunc("/platform/user/collision", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(PlatformRPC[4][0], func(w http.ResponseWriter, r *http.Request) {
 		err := erpc.CheckGet(w, r)
 		if err != nil {
 			log.Println(err)
 			return
 		}
 
-		if r.URL.Query()["code"] == nil {
-			log.Println("code missing")
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+		err = authPlatform(w, r)
+		if err != nil {
+			return
 		}
 
-		code := r.URL.Query()["code"][0]
-
-		if code == "OPENSOLARTEST" {
-			if r.URL.Query()["username"] == nil {
-				erpc.ResponseHandler(w, erpc.StatusBadRequest)
-				return
-			}
-			name := r.URL.Query()["username"][0]
-			noCollision := []byte{0}
-			collision := []byte{1}
-			_, err := database.CheckUsernameCollision(name)
-			if err != nil {
-				w.Write(collision)
-			} else {
-				w.Write(noCollision)
-			}
+		if r.URL.Query()["username"] == nil {
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+		name := r.URL.Query()["username"][0]
+		noCollision := []byte{0}
+		collision := []byte{1}
+		_, err = database.CheckUsernameCollision(name)
+		if err != nil {
+			w.Write(collision)
+		} else {
+			w.Write(noCollision)
 		}
 	})
 }
 
 // retrieveAllPlatformNames retrieves all platforms from the database
 func retrieveAllPlatformNames() {
-	http.HandleFunc("/platforms/all", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(PlatformRPC[5][0], func(w http.ResponseWriter, r *http.Request) {
 		err := erpc.CheckGet(w, r)
 		if err != nil {
 			log.Println(err)

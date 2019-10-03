@@ -38,6 +38,7 @@ func validateAdmin(w http.ResponseWriter, r *http.Request, options ...string) bo
 
 	prepUser, err := userValidateHelper(w, r, []string{})
 	if err != nil {
+		log.Println(err)
 		return false
 	}
 	if !prepUser.Admin {
@@ -113,6 +114,7 @@ func newPlatform() {
 	http.HandleFunc("/admin/platform/new", func(w http.ResponseWriter, r *http.Request) {
 		// need to pass the pwhash param here
 		if !validateAdmin(w, r, "name", "code") {
+			log.Println("Admin validation error")
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
 		}

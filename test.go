@@ -7,7 +7,7 @@ import (
 	"os"
 
 	consts "github.com/YaleOpenLab/openx/consts"
-	// database "github.com/YaleOpenLab/openx/database"
+	database "github.com/YaleOpenLab/openx/database"
 	loader "github.com/YaleOpenLab/openx/loader"
 	// ipfs "github.com/YaleOpenLab/openx/ipfs"
 	// opensolar "github.com/YaleOpenLab/opensolar/consts"
@@ -16,7 +16,7 @@ import (
 	// oracle "github.com/YaleOpenLab/openx/oracle"
 	// algorand "github.com/YaleOpenLab/openx/chains/algorand"
 	// stablecoin "github.com/YaleOpenLab/openx/chains/stablecoin"
-	// utils "github.com/Varunram/essentials/utils"
+	utils "github.com/Varunram/essentials/utils"
 	// scan "github.com/YaleOpenLab/openx/scan"
 	// wallet "github.com/YaleOpenLab/openx/wallet"
 	// xlm "github.com/YaleOpenLab/openx/xlm"
@@ -99,6 +99,19 @@ func main() {
 	if opts.Rescue {
 		RescueMode()
 		os.Exit(1)
+	}
+
+	var admin database.User
+	admin.Index = 1
+	admin.Username = "admin"
+	admin.Pwhash = utils.SHA3hash("password")
+	admin.AccessToken = "pmkjMEnyeUpdTyhdHElkBExEKeLIlYft"
+	admin.AccessTokenTimeout = utils.Unix() + 1000000
+	log.Println(admin.Username, admin.Pwhash)
+	admin.Admin = true
+	err = admin.Save()
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	/*
