@@ -115,15 +115,15 @@ func main() {
 	}
 
 	/*
-	user, err := database.RetrieveUser(1)
-	if err != nil {
-		log.Fatal(err)
-	}
-	user.Admin = true
-	err = user.Save()
-	if err != nil {
-		log.Fatal(err)
-	}
+		user, err := database.RetrieveUser(1)
+		if err != nil {
+			log.Fatal(err)
+		}
+		user.Admin = true
+		err = user.Save()
+		if err != nil {
+			log.Fatal(err)
+		}
 	*/
 	// rpc.KillCode = "NUKE" // compile time nuclear code
 	// run this only when you need to monitor the tellers. Not required for local testing.

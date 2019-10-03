@@ -5,18 +5,20 @@ import (
 	"github.com/pkg/errors"
 
 	edb "github.com/Varunram/essentials/database"
+	utils "github.com/Varunram/essentials/utils"
 	consts "github.com/YaleOpenLab/openx/consts"
 )
 
 // Platform is a struct which holds all platform related info
 type Platform struct {
-	Index int
-	Name  string
-	Code  string
+	Index   int
+	Name    string
+	Code    string
+	Timeout int64
 }
 
 // NewPlatform creates a new platform and stores it in the database
-func NewPlatform(name string, code string) error {
+func NewPlatform(name string, code string, timeout bool) error {
 	index, err := RetrieveAllPfLim()
 	if err != nil {
 		return errors.Wrap(err, "could not retrieve all keys from the database")
@@ -26,7 +28,8 @@ func NewPlatform(name string, code string) error {
 	x.Index = index + 1
 	x.Name = name
 	x.Code = code
-
+	x.Timeout = utils.Unix() + 2600000 // 10 months
+	// timeout is set to true by default
 	return x.Save()
 }
 

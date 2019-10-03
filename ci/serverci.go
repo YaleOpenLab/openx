@@ -14,22 +14,22 @@ import (
 
 	erpc "github.com/Varunram/essentials/rpc"
 	utils "github.com/Varunram/essentials/utils"
-	flags "github.com/jessevdk/go-flags"
 	btcutils "github.com/bithyve/research/utils"
+	flags "github.com/jessevdk/go-flags"
 )
 
 var (
-	LastBuilt string
-	GithubSecret string
-	Sha Shastruct
-	OpenxHashes FileStats
+	LastBuilt       string
+	GithubSecret    string
+	Sha             Shastruct
+	OpenxHashes     FileStats
 	OpensolarHashes FileStats
-	TellerHashes FileStats
+	TellerHashes    FileStats
 )
 
 type FileStats struct {
 	Hashes []string
-	Sizes []int64
+	Sizes  []int64
 }
 
 func openx() {
@@ -203,7 +203,6 @@ func teller() {
 	})
 }
 
-
 func lastbuilt() {
 	http.HandleFunc("/lastbuilt", func(w http.ResponseWriter, r *http.Request) {
 		err := erpc.CheckGet(w, r)
@@ -229,9 +228,9 @@ func shaEndpoint() {
 }
 
 type HashesResponse struct {
-	Openx FileStats
+	Openx     FileStats
 	Opensolar FileStats
-	Teller FileStats
+	Teller    FileStats
 }
 
 func hashesEndpoint() {
@@ -250,7 +249,6 @@ func hashesEndpoint() {
 		erpc.MarshalSend(w, x)
 	})
 }
-
 
 func frontend() {
 	http.Handle("/fe/", http.StripPrefix("/fe/", http.FileServer(http.Dir("./static"))))
@@ -345,7 +343,7 @@ type GithubSha struct {
 }
 
 type Shastruct struct {
-	OpenxSha string
+	OpenxSha     string
 	OpensolarSha string
 }
 
@@ -397,7 +395,7 @@ func updateShaHashes() {
 			log.Println(err)
 			continue
 		}
-		OpenxHashes.Sizes = append(OpenxHashes.Sizes, x.Size() / 1000000)
+		OpenxHashes.Sizes = append(OpenxHashes.Sizes, x.Size()/1000000)
 	}
 
 	for _, file := range opensolarFileNames {
@@ -413,7 +411,7 @@ func updateShaHashes() {
 			log.Println(err)
 			continue
 		}
-		OpensolarHashes.Sizes = append(OpensolarHashes.Sizes, x.Size() / 1000000)
+		OpensolarHashes.Sizes = append(OpensolarHashes.Sizes, x.Size()/1000000)
 	}
 
 	for _, file := range tellerFileNames {
@@ -429,7 +427,7 @@ func updateShaHashes() {
 			log.Println(err)
 			continue
 		}
-		TellerHashes.Sizes = append(TellerHashes.Sizes, x.Size() / 1000000)
+		TellerHashes.Sizes = append(TellerHashes.Sizes, x.Size()/1000000)
 	}
 }
 
