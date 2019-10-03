@@ -113,7 +113,7 @@ func genNuclearCode() {
 func newPlatform() {
 	http.HandleFunc("/admin/platform/new", func(w http.ResponseWriter, r *http.Request) {
 		// need to pass the pwhash param here
-		if !validateAdmin(w, r, "name", "code") {
+		if !validateAdmin(w, r, "name", "code", "timeout") {
 			log.Println("Admin validation error")
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return
@@ -121,10 +121,17 @@ func newPlatform() {
 
 		name := r.URL.Query()["name"][0]
 		code := r.URL.Query()["code"][0]
+		timeout := r.URL.Query()["timeout"][0] // if specified, timeout is false
 
-		log.Println("Creating new platform code: ", code, " for: ", name)
+		var timeoutBool bool
 
-		err := database.NewPlatform(name, code)
+		if timeout != "false" {
+			timeoutBool = true
+		}
+
+		log.Println("Creating new platform code: ", code, " for: ", name, " with timeout: ", timeoutBool)
+
+		err := database.NewPlatform(name, code, timeoutBool)
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 		}
@@ -202,19 +209,28 @@ func addNewPlatform() {
 
 		name := r.FormValue("name")
 		code := r.FormValue("code")
+		timeout := r.FormValue("timeout")
 
 		if name == "" || code == "" {
 			log.Println("code or desired name empty")
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 		}
 
-		err = database.NewPlatform(name, code)
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
-			return
+		if timeout == "false" {
+			err = database.NewPlatform(name, code, false)
+			if err != nil {
+				log.Println(err)
+				erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+				return
+			}
+		} else {
+			err = database.NewPlatform(name, code, true)
+			if err != nil {
+				log.Println(err)
+				erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+				return
+			}
 		}
-
 		erpc.ResponseHandler(w, erpc.StatusOK)
 	})
 }
