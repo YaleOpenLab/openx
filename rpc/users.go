@@ -123,7 +123,7 @@ func checkReqdParams(w http.ResponseWriter, r *http.Request, options []string) e
 
 	if len(r.URL.Query()["token"][0]) != consts.AccessTokenLength {
 		erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-		return errors.New("pwhash length not 128, quitting")
+		return errors.New("token length doesn't match, quitting")
 	}
 
 	return nil
@@ -137,6 +137,7 @@ func userValidateHelper(w http.ResponseWriter, r *http.Request, options []string
 	// need to pass the pwhash param here
 	err = checkReqdParams(w, r, options)
 	if err != nil {
+		log.Println(err)
 		return prepUser, errors.New("url query can't be empty")
 	}
 
