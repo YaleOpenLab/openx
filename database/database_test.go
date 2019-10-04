@@ -77,6 +77,26 @@ func TestDb(t *testing.T) {
 		t.Fatalf("Not able to generate keys, quitting!")
 	}
 
+	_, err = ValidateSeedpwd(user.Username, user.Pwhash, "blah")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = ValidateSeedpwd("shouldfail", user.Pwhash, "blah")
+	if err == nil {
+		t.Fatalf("can't catch wrong username")
+	}
+
+	_, err = ValidateSeedpwd(user.Username, user.Pwhash, "shouldfail")
+	if err == nil {
+		t.Fatalf("can't catch wrong seedpwd")
+	}
+
+	err = user.GenKeys("algorand", "algorand")
+	if err == nil {
+		t.Fatalf("able to generate algorand keys even when daemon is not running")
+	}
+
 	err = xlm.GetXLM(user.StellarWallet.PublicKey)
 	if err != nil {
 		t.Fatal(err)
@@ -185,6 +205,14 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	err = user.MoveFundsFromSecondaryWallet(10, "shouldfail")
+	if err == nil {
+		t.Fatalf("decryption succeeds with invalid seedpwd for secondary account")
+	}
+	err = user.MoveFundsFromSecondaryWallet(100000, "shouldfail")
+	if err == nil {
+		t.Fatalf("can transfer more amount than possessed")
+	}
 	err = user.MoveFundsFromSecondaryWallet(-1, "blah")
 	if err == nil {
 		t.Fatalf("not able to catch invalid amount error")
@@ -201,9 +229,107 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	token, err := user.GenAccessToken()
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = ValidateSeedpwdAuthToken(user.Username, token, "blah")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = ValidateSeedpwdAuthToken("fakeusername", token, "blah")
+	if err == nil {
+		t.Fatalf("not able to detect fake username")
+	}
+
+	_, err = ValidateSeedpwdAuthToken(user.Username, "fakeaccesstoken", "blah")
+	if err == nil {
+		t.Fatalf("not able to detect fake access token")
+	}
+
+	_, err = ValidateSeedpwdAuthToken(user.Username, token, "fakeseedpwd")
+	if err == nil {
+		t.Fatalf("not able to detect fake seedpwd")
+	}
+
+	err = user.AddtoMailbox("test", "test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var temp []byte
+	err = user.ImportSeed(temp, "", "")
+	if err == nil {
+		t.Fatalf("able to decrypt empty byte array")
+	}
+	err = user.ImportSeed(user.StellarWallet.EncryptedSeed, user.StellarWallet.PublicKey, "blah")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = user.Authenticate2FA("dummypassword")
+	if err == nil {
+		t.Fatalf("able to authenticate empty 2fa password")
+	}
+	_, err = user.Generate2FA()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = user.GiveFeedback(556, 5)
+	if err == nil {
+		t.Fatalf("able to give feedback to a non existent user")
+	}
+	err = user.GiveFeedback(user.Index, 10)
+	if err == nil {
+		t.Fatalf("able to give more feedback than 5")
+	}
+
+	err = user.GiveFeedback(user.Index, 5)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = user.AddEmail("ghost@ghosts.com")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = CheckUsernameCollision(user.Username)
+	if err == nil {
+		t.Fatalf("can't catch username collision")
+	}
+	user.Admin = true
+	err = user.Save()
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = RetrieveAllAdmins()
+	if err != nil {
+		t.Fatal(err)
+	}
 	err = DeleteKeyFromBucket(user.Index, UserBucket)
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	// end of user related tests
+
+	err = NewPlatform("platform", "CODE", false)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = RetrievePlatform(1) // GUESS?
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = RetrieveAllPlatforms()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = RetrieveAllPfLim()
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	os.Remove(consts.DbDir + "/openx.db")
 }
