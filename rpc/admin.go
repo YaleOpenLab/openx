@@ -23,37 +23,26 @@ func adminHandlers() {
 	retrieveAllPlatforms()
 	listAllAdmins()
 	addNewPlatform()
+	sendNewMessage()
 }
 
 // KillCode is a code that can immediately shut down the server in case of hacks / crises
 var KillCode string
 
 // validateAdmin validates whether a given user is an admin and returns a bool
-func validateAdmin(w http.ResponseWriter, r *http.Request, options ...string) bool {
-	err := erpc.CheckGet(w, r)
+func validateAdmin(w http.ResponseWriter, r *http.Request, options ...string) (database.User, bool) {
+	prepUser, err := userValidateHelper(w, r, options)
 	if err != nil {
 		log.Println(err)
-		return false
+		return prepUser, false
 	}
 
-	prepUser, err := userValidateHelper(w, r, []string{})
-	if err != nil {
-		log.Println(err)
-		return false
-	}
 	if !prepUser.Admin {
-		log.Println("person who made the request not admin, quitting")
-		return false
+		erpc.ResponseHandler(w, erpc.StatusUnauthorized)
+		return prepUser, false
 	}
 
-	for _, option := range options {
-		if r.URL.Query()[option] == nil {
-			log.Println("required param: ", option, " missing")
-			return false
-		}
-	}
-
-	return true
+	return prepUser, true
 }
 
 // killServer instantly kills the server. Recovery possible only with server access
@@ -61,15 +50,12 @@ func killServer() {
 	http.HandleFunc("/admin/kill", func(w http.ResponseWriter, r *http.Request) {
 		log.Println("kill command received")
 		// need to pass the pwhash param here
-		if !validateAdmin(w, r, "nuke", "username") {
-			// admin account not accessible
-			if r.URL.Query()["nuke"][0] == KillCode {
-				log.Println("nuclear code activated, killing server")
-				os.Exit(1)
-			}
+		_, adminBool := validateAdmin(w, r, "nuke", "username")
+		if !adminBool {
+			return
 		}
 
-		if r.URL.Query()["username"][0] == "martin" {
+		if r.FormValue("username") == "martin" {
 			// only certain admins can access this endpoint, can be compiled at runtime
 			log.Println("Activating kill switch")
 			os.Exit(1)
@@ -82,8 +68,8 @@ func killServer() {
 func freezeServer() {
 	http.HandleFunc("/admin/freeze", func(w http.ResponseWriter, r *http.Request) {
 		// need to pass the pwhash param here
-		if !validateAdmin(w, r) {
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
+		_, adminBool := validateAdmin(w, r)
+		if !adminBool {
 			return
 		}
 
@@ -97,16 +83,19 @@ func freezeServer() {
 func genNuclearCode() {
 	http.HandleFunc("/admin/gennuke", func(w http.ResponseWriter, r *http.Request) {
 		// need to pass the pwhash param here
-		if !validateAdmin(w, r, "username") {
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
+		_, adminBool := validateAdmin(w, r, "username")
+		if !adminBool {
 			return
 		}
 
-		if r.URL.Query()["username"][0] == "martin" {
+		if r.FormValue("username") == "martin" {
 			// only authorized users, can change at compile time
 			log.Println("generating new nuclear code")
 			KillCode = utils.GetRandomString(64)
 			w.Write([]byte(KillCode))
+		} else {
+			erpc.MarshalSend(w, erpc.StatusUnauthorized)
+			return
 		}
 	})
 }
@@ -115,15 +104,14 @@ func genNuclearCode() {
 func newPlatform() {
 	http.HandleFunc("/admin/platform/new", func(w http.ResponseWriter, r *http.Request) {
 		// need to pass the pwhash param here
-		if !validateAdmin(w, r, "name", "code", "timeout") {
-			log.Println("Admin validation error")
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
+		_, adminBool := validateAdmin(w, r, "name", "code", "timeout")
+		if !adminBool {
 			return
 		}
 
-		name := r.URL.Query()["name"][0]
-		code := r.URL.Query()["code"][0]
-		timeout := r.URL.Query()["timeout"][0] // if specified, timeout is false
+		name := r.FormValue("name")
+		code := r.FormValue("code")
+		timeout := r.FormValue("timeout") // if specified, timeout is false
 
 		var timeoutBool bool
 
@@ -144,8 +132,8 @@ func newPlatform() {
 // retrieveAllPlatforms retrieves all platforms from the database
 func retrieveAllPlatforms() {
 	http.HandleFunc("/admin/platform/all", func(w http.ResponseWriter, r *http.Request) {
-		if !validateAdmin(w, r) {
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
+		_, adminBool := validateAdmin(w, r)
+		if !adminBool {
 			return
 		}
 
@@ -167,9 +155,6 @@ func listAllAdmins() {
 			log.Println(err)
 			return
 		}
-		if err != nil {
-			return
-		}
 
 		admins, err := database.RetrieveAllAdmins()
 		if err != nil {
@@ -183,32 +168,12 @@ func listAllAdmins() {
 
 func addNewPlatform() {
 	http.HandleFunc("/admin/add/platform", func(w http.ResponseWriter, r *http.Request) {
-		err := erpc.CheckPost(w, r)
-		if err != nil {
-			log.Println("ERROR!!")
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+		_, adminBool := validateAdmin(w, r, "name", "code", "timeout")
+		if !adminBool {
 			return
 		}
 
-		var dummy []string
-		user, err := userValidateHelper(w, r, dummy)
-		if err != nil {
-			return
-		}
-
-		if !user.Admin {
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-			return
-		}
-
-		err = r.ParseForm()
-		if err != nil {
-			log.Println("PF err: ", err)
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
-			return
-		}
-
+		var err error
 		name := r.FormValue("name")
 		code := r.FormValue("code")
 		timeout := r.FormValue("timeout")
@@ -233,6 +198,47 @@ func addNewPlatform() {
 				return
 			}
 		}
+		erpc.ResponseHandler(w, erpc.StatusOK)
+	})
+}
+
+func sendNewMessage() {
+	http.HandleFunc("/admin/sendmessage", func(w http.ResponseWriter, r *http.Request) {
+		_, adminBool := validateAdmin(w, r, "subject", "message", "recipient")
+		if !adminBool {
+			return
+		}
+
+		subject := r.FormValue("subject")
+		message := r.FormValue("message")
+		recipient := r.FormValue("recipient")
+
+		if len(subject) == 0 {
+			log.Println("length of subject is zero, not sending message")
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+
+		if len(message) == 0 {
+			log.Println("length of message is zero, not sending message")
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+
+		user, err := database.CheckUsernameCollision(recipient)
+		if err == nil { // ie if there is no user
+			log.Println("there is no user with the given username")
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+
+		err = user.AddtoMailbox(subject, message)
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+
 		erpc.ResponseHandler(w, erpc.StatusOK)
 	})
 }

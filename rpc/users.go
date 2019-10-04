@@ -107,25 +107,50 @@ const (
 
 func checkReqdParams(w http.ResponseWriter, r *http.Request, options []string) error {
 
-	if r.URL.Query() == nil {
-		erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-		return errors.New("url query can't be empty")
-	}
-
-	options = append(options, "username", "token") // default for all endpoints
-
-	for _, option := range options {
-		if r.URL.Query()[option] == nil {
+	method := r.Method
+	if method == "GET" {
+		if r.URL.Query() == nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-			return errors.New("required param: " + option + " not specified, quitting")
+			return errors.New("url query can't be empty")
+		}
+
+		options = append(options, "username", "token") // default for all endpoints
+
+		for _, option := range options {
+			if r.URL.Query()[option] == nil {
+				erpc.ResponseHandler(w, erpc.StatusUnauthorized)
+				return errors.New("required param: " + option + " not specified, quitting")
+			}
+		}
+
+		if len(r.URL.Query()["token"][0]) != consts.AccessTokenLength {
+			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
+			return errors.New("token length not 32, quitting")
+		}
+	} else if method == "POST" {
+		err := r.ParseForm()
+		if err != nil {
+			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
+			return err
+		}
+
+		if r.FormValue("username") == "" || r.FormValue("token") == "" {
+			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
+			return errors.New("required params username or token missing")
+		}
+
+		if len(r.FormValue("token")) != 32 {
+			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
+			return errors.New("token length not 32, quitting")
+		}
+
+		for _, option := range options {
+			if r.FormValue(option) == "" {
+				erpc.ResponseHandler(w, erpc.StatusUnauthorized)
+				return errors.New("required param: " + option + " not specified, quitting")
+			}
 		}
 	}
-
-	if len(r.URL.Query()["token"][0]) != consts.AccessTokenLength {
-		erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-		return errors.New("token length doesn't match, quitting")
-	}
-
 	return nil
 }
 
@@ -141,14 +166,22 @@ func userValidateHelper(w http.ResponseWriter, r *http.Request, options []string
 		return prepUser, errors.New("url query can't be empty")
 	}
 
-	if r.URL.Query()["seedpwd"] != nil {
-		// check seed pwhash before decryption
-		prepUser, err = database.ValidateSeedpwdAuthToken(r.URL.Query()["username"][0], r.URL.Query()["token"][0], r.URL.Query()["seedpwd"][0])
-	} else {
-		// no seedpwhash, normal call
-		prepUser, err = database.ValidateAccessToken(r.URL.Query()["username"][0], r.URL.Query()["token"][0])
+	method := r.Method
+	if method == "GET" {
+		if r.URL.Query()["seedpwd"] != nil {
+			// check seed pwhash before decryption
+			prepUser, err = database.ValidateSeedpwdAuthToken(r.URL.Query()["username"][0], r.URL.Query()["token"][0], r.URL.Query()["seedpwd"][0])
+		} else {
+			// no seedpwhash, normal call
+			prepUser, err = database.ValidateAccessToken(r.URL.Query()["username"][0], r.URL.Query()["token"][0])
+		}
+	} else if method == "POST" {
+		if r.FormValue("seedpwd") != "" {
+			prepUser, err = database.ValidateSeedpwdAuthToken(r.FormValue("username"), r.FormValue("token"), r.FormValue("seedpwd"))
+		} else {
+			prepUser, err = database.ValidateAccessToken(r.FormValue("username"), r.FormValue("token"))
+		}
 	}
-
 	// catch the error from the relevant error call
 	if err != nil {
 		erpc.ResponseHandler(w, erpc.StatusUnauthorized)

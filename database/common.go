@@ -117,6 +117,11 @@ func ValidatePwhash(name string, pwhash string) (User, error) {
 // ValidateAccessToken validates a username / accessToken combination
 func ValidateAccessToken(name string, accessToken string) (User, error) {
 	var dummy User
+
+	if len(accessToken) > consts.AccessTokenLength {
+		return dummy, errors.New("access token lengths don't match")
+	}
+
 	users, err := RetrieveAllUsers()
 	if err != nil {
 		return dummy, errors.Wrap(err, "error while retrieving all users from database")
