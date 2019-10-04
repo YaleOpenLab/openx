@@ -201,6 +201,39 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	_, err = user.GenAccessToken()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = user.AddtoMailbox("test", "test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var temp []byte
+	err = user.ImportSeed(temp, "", "")
+	if err == nil {
+		t.Fatalf("able to decrypt empty byte array")
+	}
+	err = user.ImportSeed(user.StellarWallet.EncryptedSeed, user.StellarWallet.PublicKey, "blah")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = user.Authenticate2FA("dummypassword")
+	if err == nil {
+		t.Fatalf("able to authenticate empty 2fa password")
+	}
+	_, err = user.Generate2FA()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = user.GiveFeedback(556, 5)
+	if err == nil {
+		t.Fatalf("able to give feedback to a non existent user")
+	}
+	err = user.GiveFeedback(user.Index, 5)
+	if err != nil {
+		t.Fatal(err)
+	}
 	err = DeleteKeyFromBucket(user.Index, UserBucket)
 	if err != nil {
 		t.Fatal(err)
