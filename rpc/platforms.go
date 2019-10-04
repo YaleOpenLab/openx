@@ -41,8 +41,8 @@ func mainnetRPC() {
 	http.HandleFunc("/mainnet", func(w http.ResponseWriter, r *http.Request) {
 		// set a single byte response for mainnet / testnet
 		// mainnet is 0, testnet is 1
-		mainnet := []byte{0}
-		testnet := []byte{1}
+		mainnet := []byte{1}
+		testnet := []byte{0}
 		if consts.Mainnet {
 			w.Write(mainnet)
 		} else {
@@ -68,6 +68,7 @@ func authPlatform(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	for _, platform := range platforms {
+		log.Println(platform.Code == code, utils.Unix(), platform.Timeout)
 		if platform.Code == code && utils.Unix() < platform.Timeout {
 			return nil
 		}
@@ -96,6 +97,7 @@ type OpensolarConstReturn struct {
 // pfGetConsts is an RPC that returns running constants to platforms which might need this information
 func pfGetConsts() {
 	http.HandleFunc(PlatformRPC[0][0], func(w http.ResponseWriter, r *http.Request) {
+		log.Println("external platform requesting consts")
 		err := erpc.CheckGet(w, r)
 		if err != nil {
 			log.Println(err)
@@ -104,6 +106,7 @@ func pfGetConsts() {
 
 		err = authPlatform(w, r)
 		if err != nil {
+			log.Println(err)
 			return
 		}
 
@@ -120,6 +123,7 @@ func pfGetConsts() {
 		x.AnchorUSDTrustLimit = consts.AnchorUSDTrustLimit
 		x.AnchorAPI = consts.AnchorAPI
 		x.Mainnet = consts.Mainnet
+
 		x.DbDir = consts.DbDir
 		erpc.MarshalSend(w, x)
 		return

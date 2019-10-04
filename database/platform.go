@@ -55,7 +55,7 @@ func RetrieveAllPlatforms() ([]Platform, error) {
 	var arr []Platform
 	x, err := edb.RetrieveAllKeys(consts.DbDir+consts.DbName, PlatformBucket)
 	if err != nil {
-		return arr, errors.Wrap(err, "error while retrieving all users")
+		return arr, errors.Wrap(err, "error while retrieving all platforms")
 	}
 	for _, value := range x {
 		var temp Platform

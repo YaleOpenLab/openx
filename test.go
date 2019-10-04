@@ -93,7 +93,18 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		// opensolar.SetTnConsts()
+		var admin database.User
+		admin.Index = 1
+		admin.Username = "admin"
+		admin.Pwhash = utils.SHA3hash("password")
+		admin.AccessToken = "pmkjMEnyeUpdTyhdHElkBExEKeLIlYft"
+		admin.AccessTokenTimeout = utils.Unix() + 1000000
+		log.Println(admin.Username, admin.Pwhash)
+		admin.Admin = true
+		err = admin.Save()
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	if opts.Rescue {
@@ -101,19 +112,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	var admin database.User
-	admin.Index = 1
-	admin.Username = "admin"
-	admin.Pwhash = utils.SHA3hash("password")
-	admin.AccessToken = "pmkjMEnyeUpdTyhdHElkBExEKeLIlYft"
-	admin.AccessTokenTimeout = utils.Unix() + 1000000
-	log.Println(admin.Username, admin.Pwhash)
-	admin.Admin = true
-	err = admin.Save()
+	users, err := database.RetrieveAllUsers()
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	log.Println(len(users))
 	/*
 		user, err := database.RetrieveUser(1)
 		if err != nil {
