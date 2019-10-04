@@ -42,11 +42,13 @@ func validateAdmin(w http.ResponseWriter, r *http.Request, options ...string) bo
 		return false
 	}
 	if !prepUser.Admin {
+		log.Println("person who made the request not admin, quitting")
 		return false
 	}
 
 	for _, option := range options {
 		if r.URL.Query()[option] == nil {
+			log.Println("required param: ", option, " missing")
 			return false
 		}
 	}
