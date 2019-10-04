@@ -229,10 +229,30 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = user.GenAccessToken()
+	token, err := user.GenAccessToken()
 	if err != nil {
 		t.Fatal(err)
 	}
+	_, err = ValidateSeedpwdAuthToken(user.Username, token, "blah")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = ValidateSeedpwdAuthToken("fakeusername", token, "blah")
+	if err == nil {
+		t.Fatalf("not able to detect fake username")
+	}
+
+	_, err = ValidateSeedpwdAuthToken(user.Username, "fakeaccesstoken", "blah")
+	if err == nil {
+		t.Fatalf("not able to detect fake access token")
+	}
+
+	_, err = ValidateSeedpwdAuthToken(user.Username, token, "fakeseedpwd")
+	if err == nil {
+		t.Fatalf("not able to detect fake seedpwd")
+	}
+
 	err = user.AddtoMailbox("test", "test")
 	if err != nil {
 		t.Fatal(err)
@@ -279,5 +299,28 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	// end of user related tests
+
+	err = NewPlatform("platform", "CODE", false)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = RetrievePlatform(1) // GUESS?
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = RetrieveAllPlatforms()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = RetrieveAllPfLim()
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	os.Remove(consts.DbDir + "/openx.db")
 }
