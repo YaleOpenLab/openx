@@ -25,41 +25,42 @@ import (
 
 // UserRPC is a collection of all user RPC endpoints and their required params
 var UserRPC = map[int][]string{
-	0:  []string{"/token"},
-	1:  []string{"/user/validate"},
-	2:  []string{"/user/balances"},
-	3:  []string{"/user/balance/xlm"},
-	4:  []string{"/user/balance/asset", "asset"},
-	5:  []string{"/ipfs/hash", "string"},
-	6:  []string{"/user/kyc", "userIndex"},
-	7:  []string{"/user/sendxlm", "destination", "amount", "seedpwd"},
-	8:  []string{"/user/notkycview"},
-	9:  []string{"/user/kycview"},
-	10: []string{"/user/askxlm"},
-	11: []string{"/user/trustasset", "assetCode", "assetIssuer", "limit", "seedpwd"},
-	12: []string{"/upload"},
-	13: []string{"/platformemail"},
+	0:  []string{"/token"},                                                                         // POST
+	1:  []string{"/user/validate", "GET"},                                                          // GET
+	2:  []string{"/user/balances", "GET"},                                                          // GET
+	3:  []string{"/user/balance/xlm", "GET"},                                                       // GET
+	4:  []string{"/user/balance/asset", "GET", "asset"},                                            // GET
+	5:  []string{"/ipfs/hash", "GET", "string"},                                                    // GET
+	6:  []string{"/user/kyc", "GET", "userIndex"},                                                  // GET
+	7:  []string{"/user/sendxlm", "GET", "destination", "amount", "seedpwd"},                       // GET
+	8:  []string{"/user/notkycview", "GET"},                                                        // GET
+	9:  []string{"/user/kycview", "GET"},                                                           // GET
+	10: []string{"/user/askxlm", "GET"},                                                            // GET
+	11: []string{"/user/trustasset", "GET", "assetCode", "assetIssuer", "limit", "seedpwd"},        // GET
+	12: []string{"/upload", "POST"},                                                                // POST
+	13: []string{"/platformemail", "GET"},                                                          // GET
+	16: []string{"/tellerping", "GET"},                                                             // GET
+	17: []string{"/user/increasetrustlimit", "GET", "trust", "seedpwd"},                            // GET
+	19: []string{"/user/sendrecovery", "GET", "email1", "email2", "email3"},                        // GET
+	20: []string{"/user/seedrecovery", "GET", "secret1", "secret2"},                                // GET
+	21: []string{"/user/newsecrets", "GET", "seedpwd", "email1", "email2", "email3"},               // GET
+	22: []string{"/user/resetpwd", "GET", "email"},                                                 // GET
+	23: []string{"/user/pwdreset", "GET", "email", "verificationCode"},                             // GET
+	24: []string{"/user/sweep", "GET", "seedpwd", "destination"},                                   // GET
+	25: []string{"/user/sweepasset", "GET", "seedpwd", "destination", "assetName", "issuerPubkey"}, // GET
+	26: []string{"/user/verifykyc", "GET", "selfie"},                                               // GET
+	27: []string{"/user/giverating", "GET", "feedback", "userIndex"},                               // GET
+	28: []string{"/user/2fa/generate", "GET"},                                                      // GET
+	29: []string{"/user/2fa/authenticate", "GET", "password"},                                      // GET
+	31: []string{"/user/reputation", "GET", "reputation"},                                          // GET
+	32: []string{"/user/addseed", "GET", "encryptedseed", "seedpwd", "pubkey"},                     // GET
+	33: []string{"/user/latestblockhash", "GET"},                                                   // GET
+
+	30: []string{"/user/anchorusd/kyc", "GET", "name", "bdaymonth", "bdayday", "bdayyear", "taxcountry", // GET
+		"taxid", "addrstreet", "addrcity", "addrpostal", "addrregion", "addrcountry", "addrphone", "primaryphone", "gender"},
 	// 14: []string{"/tellershutdown", "projIndex", "deviceId", "tx1", "tx2"},
 	// 15: []string{"/tellerpayback", "deviceId", "projIndex"},
-	16: []string{"/tellerping"},
-	17: []string{"/user/increasetrustlimit", "trust", "seedpwd"},
 	// 18: []string{"/utils/addhash", "projIndex", "choice", "choicestr"},
-	19: []string{"/user/sendrecovery", "email1", "email2", "email3"},
-	20: []string{"/user/seedrecovery", "secret1", "secret2"},
-	21: []string{"/user/newsecrets", "seedpwd", "email1", "email2", "email3"},
-	22: []string{"/user/resetpwd"},
-	23: []string{"/user/pwdreset"},
-	24: []string{"/user/sweep", "seedpwd", "destination"},
-	25: []string{"/user/sweepasset", "seedpwd", "destination", "assetName", "issuerPubkey"},
-	26: []string{"/user/verifykyc", "selfie"},
-	27: []string{"/user/giverating", "feedback", "userIndex"},
-	28: []string{"/user/2fa/generate"},
-	29: []string{"/user/2fa/authenticate", "password"},
-	30: []string{"/user/anchorusd/kyc", "name", "bdaymonth", "bdayday", "bdayyear", "taxcountry",
-		"taxid", "addrstreet", "addrcity", "addrpostal", "addrregion", "addrcountry", "addrphone", "primaryphone", "gender"},
-	31: []string{"/user/reputation", "reputation"},
-	32: []string{"/user/addseed", "encryptedseed", "seedpwd", "pubkey"},
-	33: []string{"/user/latestblockhash"},
 }
 
 // setupUserRpcs sets up user related RPCs
@@ -105,10 +106,14 @@ const (
 	TellerUrl = "https://localhost"
 )
 
-func checkReqdParams(w http.ResponseWriter, r *http.Request, options []string) error {
-
-	method := r.Method
+func checkReqdParams(w http.ResponseWriter, r *http.Request, options []string, method string) error {
 	if method == "GET" {
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+
 		if r.URL.Query() == nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return errors.New("url query can't be empty")
@@ -128,7 +133,13 @@ func checkReqdParams(w http.ResponseWriter, r *http.Request, options []string) e
 			return errors.New("token length not 32, quitting")
 		}
 	} else if method == "POST" {
-		err := r.ParseForm()
+		err := erpc.CheckPost(w, r)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+
+		err = r.ParseForm()
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
 			return err
@@ -150,23 +161,24 @@ func checkReqdParams(w http.ResponseWriter, r *http.Request, options []string) e
 				return errors.New("required param: " + option + " not specified, quitting")
 			}
 		}
+	} else {
+		return errors.New("invalid method (not GET/POST)")
 	}
 	return nil
 }
 
 // userValidateHelper is a helper that validates the username, pwhash and if passed, seedpwd along with other
 // params that are required by each endpoint
-func userValidateHelper(w http.ResponseWriter, r *http.Request, options []string) (database.User, error) {
+func userValidateHelper(w http.ResponseWriter, r *http.Request, options []string, method string) (database.User, error) {
 	var prepUser database.User
 	var err error
 	// need to pass the pwhash param here
-	err = checkReqdParams(w, r, options)
+	err = checkReqdParams(w, r, options, method)
 	if err != nil {
 		log.Println(err)
 		return prepUser, errors.New("url query can't be empty")
 	}
 
-	method := r.Method
 	if method == "GET" {
 		if r.URL.Query()["seedpwd"] != nil {
 			// check seed pwhash before decryption
@@ -181,6 +193,8 @@ func userValidateHelper(w http.ResponseWriter, r *http.Request, options []string
 		} else {
 			prepUser, err = database.ValidateAccessToken(r.FormValue("username"), r.FormValue("token"))
 		}
+	} else {
+		return prepUser, errors.New("invalid method (not GET/POST)")
 	}
 	// catch the error from the relevant error call
 	if err != nil {
@@ -198,7 +212,6 @@ type GenAccessTokenReturn struct {
 
 func genAccessToken() {
 	http.HandleFunc(UserRPC[0][0], func(w http.ResponseWriter, r *http.Request) {
-		erpc.CheckPost(w, r)
 		err := r.ParseForm()
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
@@ -232,14 +245,8 @@ func genAccessToken() {
 // validateUser validates a user and returns whether the user is an investor or recipient on the opensolar platform
 func validateUser() {
 	http.HandleFunc(UserRPC[1][0], func(w http.ResponseWriter, r *http.Request) {
-		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
 		// need to pass the pwhash param here
-		prepUser, err := userValidateHelper(w, r, UserRPC[1][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[1][2:], UserRPC[1][1])
 		if err != nil {
 			log.Println(err)
 			erpc.MarshalSend(w, erpc.StatusBadRequest)
@@ -253,13 +260,7 @@ func validateUser() {
 // getBalances returns a list of all balances (assets and XLM) held by the user
 func getBalances() {
 	http.HandleFunc(UserRPC[2][0], func(w http.ResponseWriter, r *http.Request) {
-		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		prepUser, err := userValidateHelper(w, r, UserRPC[2][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[2][2:], UserRPC[2][1])
 		if err != nil {
 			return
 		}
@@ -278,13 +279,7 @@ func getBalances() {
 // getXLMBalance gets the XLM balance of the user's primary XLM account
 func getXLMBalance() {
 	http.HandleFunc(UserRPC[3][0], func(w http.ResponseWriter, r *http.Request) {
-		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		prepUser, err := userValidateHelper(w, r, UserRPC[3][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[3][2:], UserRPC[3][1])
 		if err != nil {
 			return
 		}
@@ -303,13 +298,7 @@ func getXLMBalance() {
 // getAssetBalance gets the balance of a specific asset on Stellar
 func getAssetBalance() {
 	http.HandleFunc(UserRPC[4][0], func(w http.ResponseWriter, r *http.Request) {
-		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		prepUser, err := userValidateHelper(w, r, UserRPC[4][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[4][2:], UserRPC[4][1])
 		if err != nil {
 			return
 		}
@@ -329,13 +318,7 @@ func getAssetBalance() {
 // getIpfsHash returns the ipfs hash of the passed string
 func getIpfsHash() {
 	http.HandleFunc(UserRPC[5][0], func(w http.ResponseWriter, r *http.Request) {
-		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		_, err = userValidateHelper(w, r, UserRPC[5][1:])
+		_, err := userValidateHelper(w, r, UserRPC[5][2:], UserRPC[5][1])
 		if err != nil {
 			return
 		}
@@ -361,13 +344,7 @@ func getIpfsHash() {
 // authKyc authenticates a user for KYC services
 func authKyc() {
 	http.HandleFunc(UserRPC[6][0], func(w http.ResponseWriter, r *http.Request) {
-		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		prepUser, err := userValidateHelper(w, r, UserRPC[6][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[6][2:], UserRPC[6][1])
 		if err != nil {
 			return
 		}
@@ -390,13 +367,7 @@ func authKyc() {
 // sendXLM sends a given amount of XLM to the destination address specified.
 func sendXLM() {
 	http.HandleFunc(UserRPC[7][0], func(w http.ResponseWriter, r *http.Request) {
-		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		prepUser, err := userValidateHelper(w, r, UserRPC[7][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[7][2:], UserRPC[7][1])
 		if err != nil {
 			return
 		}
@@ -435,13 +406,7 @@ func sendXLM() {
 // called only by KYC Inspectors
 func notKycView() {
 	http.HandleFunc(UserRPC[8][0], func(w http.ResponseWriter, r *http.Request) {
-		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		prepUser, err := userValidateHelper(w, r, UserRPC[8][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[8][2:], UserRPC[8][1])
 		if err != nil {
 			log.Println("did not validate user", err)
 			return
@@ -466,13 +431,7 @@ func notKycView() {
 // only by KYC Inspectors
 func kycView() {
 	http.HandleFunc(UserRPC[9][0], func(w http.ResponseWriter, r *http.Request) {
-		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		prepUser, err := userValidateHelper(w, r, UserRPC[9][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[9][2:], UserRPC[9][1])
 		if err != nil {
 			return
 		}
@@ -495,19 +454,13 @@ func kycView() {
 // askForCoins asks for coins from the Stellar testnet faucet Available only on Stellar testnet
 func askForCoins() {
 	http.HandleFunc(UserRPC[10][0], func(w http.ResponseWriter, r *http.Request) {
-		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
 		if consts.Mainnet {
 			log.Println("Openx is in mainnet mode, can't ask for coins")
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
-		prepUser, err := userValidateHelper(w, r, UserRPC[10][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[10][2:], UserRPC[10][1])
 		if err != nil {
 			return
 		}
@@ -527,13 +480,7 @@ func askForCoins() {
 func trustAsset() {
 	http.HandleFunc(UserRPC[11][0], func(w http.ResponseWriter, r *http.Request) {
 		// since this is testnet, give caller coins from the testnet faucet
-		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		prepUser, err := userValidateHelper(w, r, UserRPC[11][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[11][2:], UserRPC[11][1])
 		if err != nil {
 			return
 		}
@@ -568,9 +515,7 @@ func trustAsset() {
 // uploadFile uploads a file to ipfs and returns the ipfs hash of the uploaded file. This is a POST request
 func uploadFile() {
 	http.HandleFunc(UserRPC[12][0], func(w http.ResponseWriter, r *http.Request) {
-		erpc.CheckPost(w, r)
-
-		_, err := userValidateHelper(w, r, UserRPC[12][1:])
+		_, err := userValidateHelper(w, r, UserRPC[12][2:], UserRPC[12][1])
 		if err != nil {
 			return
 		}
@@ -635,13 +580,7 @@ type PlatformEmailResponse struct {
 // platformEmail returns the platform's email address
 func platformEmail() {
 	http.HandleFunc(UserRPC[13][0], func(w http.ResponseWriter, r *http.Request) {
-		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		_, err = userValidateHelper(w, r, UserRPC[13][1:])
+		_, err := userValidateHelper(w, r, UserRPC[13][2:], UserRPC[13][1])
 		if err != nil {
 			return
 		}
@@ -655,13 +594,7 @@ func platformEmail() {
 // tellerPing pings the teller to check if its up
 func tellerPing() {
 	http.HandleFunc(UserRPC[16][0], func(w http.ResponseWriter, r *http.Request) {
-		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		_, err = userValidateHelper(w, r, UserRPC[16][1:])
+		_, err := userValidateHelper(w, r, UserRPC[16][2:], UserRPC[16][1])
 		if err != nil {
 			return
 		}
@@ -713,13 +646,7 @@ func tellerPing() {
 // increaseTrustLimit increases the trust limit a user has towards a specific asset on stellar
 func increaseTrustLimit() {
 	http.HandleFunc(UserRPC[17][0], func(w http.ResponseWriter, r *http.Request) {
-		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		prepUser, err := userValidateHelper(w, r, UserRPC[17][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[17][2:], UserRPC[17][1])
 		if err != nil {
 			return
 		}
@@ -747,13 +674,7 @@ func increaseTrustLimit() {
 // anyway using the username and password, so possessing the secrets does not require seed authentication
 func sendSecrets() {
 	http.HandleFunc(UserRPC[19][0], func(w http.ResponseWriter, r *http.Request) {
-		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		user, err := userValidateHelper(w, r, UserRPC[19][1:])
+		user, err := userValidateHelper(w, r, UserRPC[19][2:], UserRPC[19][1])
 		if err != nil {
 			return
 		}
@@ -788,13 +709,7 @@ type SeedResponse struct {
 // mergeSecrets takes in two shares in a 2 of 3 Shamir Secret Sharing Scheme and reconstructs the seed
 func mergeSecrets() {
 	http.HandleFunc(UserRPC[20][0], func(w http.ResponseWriter, r *http.Request) {
-		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		_, err = userValidateHelper(w, r, UserRPC[20][1:])
+		_, err := userValidateHelper(w, r, UserRPC[20][2:], UserRPC[20][1])
 		if err != nil {
 			return
 		}
@@ -820,13 +735,7 @@ func mergeSecrets() {
 // generateNewSecrets generates a new set of secrets for the given function
 func generateNewSecrets() {
 	http.HandleFunc(UserRPC[21][0], func(w http.ResponseWriter, r *http.Request) {
-		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		user, err := userValidateHelper(w, r, UserRPC[21][1:])
+		user, err := userValidateHelper(w, r, UserRPC[21][2:], UserRPC[21][1])
 		if err != nil {
 			return
 		}
@@ -867,20 +776,11 @@ func generateNewSecrets() {
 // generateResetPwdCode generates a password reset code
 func generateResetPwdCode() {
 	http.HandleFunc(UserRPC[22][0], func(w http.ResponseWriter, r *http.Request) {
-		err := erpc.CheckGet(w, r)
+		_, err := userValidateHelper(w, r, UserRPC[22][2:], UserRPC[22][1])
 		if err != nil {
-			log.Println(err)
 			return
 		}
 
-		// the notion here si that the user must have his seedpwd in order to reset the password.
-		// we retrieve the user using his email id and lookup his encrypted seed. If the
-		// seed can be unlocked using hte seedpwd, we send a pwd reset email. One of two passwords
-		// must be remembered
-		if r.URL.Query()["email"] == nil || r.URL.Query()["seedpwd"] == nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
-			return
-		}
 		email := r.URL.Query()["email"][0]
 
 		rUser, err := database.SearchWithEmailId(email)
@@ -919,15 +819,8 @@ func generateResetPwdCode() {
 // resetPassword is a reset password route that can be called by the user in case they forget their password
 func resetPassword() {
 	http.HandleFunc(UserRPC[23][0], func(w http.ResponseWriter, r *http.Request) {
-		err := erpc.CheckGet(w, r)
+		_, err := userValidateHelper(w, r, UserRPC[23][2:], UserRPC[23][1])
 		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		if r.URL.Query()["email"] == nil || r.URL.Query()["seedpwd"] == nil || r.URL.Query()["verificationCode"] == nil ||
-			r.URL.Query()["pwhash"] == nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
@@ -973,13 +866,7 @@ func resetPassword() {
 // of issuer publickeys
 func sweepFunds() {
 	http.HandleFunc(UserRPC[24][0], func(w http.ResponseWriter, r *http.Request) {
-		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		prepUser, err := userValidateHelper(w, r, UserRPC[24][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[24][2:], UserRPC[24][1])
 		if err != nil {
 			return
 		}
@@ -1043,13 +930,7 @@ func sweepFunds() {
 // assets since we require the issuer pubkey(s)
 func sweepAsset() {
 	http.HandleFunc(UserRPC[25][0], func(w http.ResponseWriter, r *http.Request) {
-		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		prepUser, err := userValidateHelper(w, r, UserRPC[25][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[25][2:], UserRPC[25][1])
 		if err != nil {
 			return
 		}
@@ -1117,14 +998,8 @@ type KycResponse struct {
 // validateKYC verifies whether a given user has passed kyc
 func validateKYC() {
 	http.HandleFunc(UserRPC[26][0], func(w http.ResponseWriter, r *http.Request) {
-		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
 		// we first need to check the user params here
-		prepUser, err := userValidateHelper(w, r, UserRPC[26][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[26][2:], UserRPC[26][1])
 		if err != nil {
 			return
 		}
@@ -1199,13 +1074,7 @@ func validateKYC() {
 // giveStarRating gives a star rating towards another person
 func giveStarRating() {
 	http.HandleFunc(UserRPC[27][0], func(w http.ResponseWriter, r *http.Request) {
-		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		prepUser, err := userValidateHelper(w, r, UserRPC[27][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[27][2:], UserRPC[27][1])
 		if err != nil {
 			return
 		}
@@ -1249,13 +1118,7 @@ type TwoFAResponse struct {
 // new2fa generates a new 2fa code
 func new2fa() {
 	http.HandleFunc(UserRPC[28][0], func(w http.ResponseWriter, r *http.Request) {
-		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		prepUser, err := userValidateHelper(w, r, UserRPC[28][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[28][2:], UserRPC[28][1])
 		if err != nil {
 			return
 		}
@@ -1297,13 +1160,7 @@ func new2fa() {
 // auth2fa authenticates the passed 2fa code
 func auth2fa() {
 	http.HandleFunc(UserRPC[29][0], func(w http.ResponseWriter, r *http.Request) {
-		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		prepUser, err := userValidateHelper(w, r, UserRPC[29][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[29][2:], UserRPC[29][1])
 		if err != nil {
 			return
 		}
@@ -1326,13 +1183,7 @@ func auth2fa() {
 // addAnchorKYCInfo adds anchorKYC info that the user passes to our platform.
 func addAnchorKYCInfo() {
 	http.HandleFunc(UserRPC[30][0], func(w http.ResponseWriter, r *http.Request) {
-		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		prepUser, err := userValidateHelper(w, r, UserRPC[30][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[30][2:], UserRPC[30][1])
 		if err != nil {
 			return
 		}
@@ -1365,7 +1216,7 @@ func addAnchorKYCInfo() {
 // on completion of a contract or on evaluation of feedback proposed by other entities on the system
 func changeReputation() {
 	http.HandleFunc(UserRPC[31][0], func(w http.ResponseWriter, r *http.Request) {
-		user, err := userValidateHelper(w, r, UserRPC[31][1:])
+		user, err := userValidateHelper(w, r, UserRPC[31][2:], UserRPC[31][1])
 		if err != nil {
 			return
 		}
@@ -1411,13 +1262,7 @@ func ValidateSeedPwd(w http.ResponseWriter, r *http.Request, encryptedSeed []byt
 // importSeed adds a user provided encrypted hex string to the openx platform. one can create their own keys and then import them onto openx
 func importSeed() {
 	http.HandleFunc(UserRPC[32][0], func(w http.ResponseWriter, r *http.Request) {
-		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		prepUser, err := userValidateHelper(w, r, UserRPC[32][1:])
+		prepUser, err := userValidateHelper(w, r, UserRPC[32][2:], UserRPC[32][1])
 		if err != nil {
 			return
 		}
@@ -1444,13 +1289,7 @@ func importSeed() {
 // getLatestBlockHash gets the latest Stellar blockchain hash from horizon
 func getLatestBlockHash() {
 	http.HandleFunc(UserRPC[33][0], func(w http.ResponseWriter, r *http.Request) {
-		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		_, err = userValidateHelper(w, r, UserRPC[33][1:])
+		_, err := userValidateHelper(w, r, UserRPC[33][2:], UserRPC[33][1])
 		if err != nil {
 			return
 		}

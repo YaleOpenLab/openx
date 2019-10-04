@@ -145,12 +145,7 @@ func PostAndSendCA(w http.ResponseWriter, r *http.Request, body string, payload 
 // searchComplyAdvantage searches for a particular entity on ComplyAdvantage's platform
 func searchComplyAdvantage() {
 	http.HandleFunc(CARPC[1][0], func(w http.ResponseWriter, r *http.Request) {
-		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-		_, err = userValidateHelper(w, r, CARPC[1][1:])
+		_, err := userValidateHelper(w, r, CARPC[1][1:], "GET")
 		if err != nil {
 			return
 		}
@@ -193,13 +188,7 @@ type caAllUserResponse struct {
 // getAllCAUsers gets a list of all users searched for using ComplyAdvantage
 func getAllCAUsers() {
 	http.HandleFunc(CARPC[2][0], func(w http.ResponseWriter, r *http.Request) {
-		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		_, err = userValidateHelper(w, r, CARPC[2][1:])
+		_, err := userValidateHelper(w, r, CARPC[2][1:], "GET")
 		if err != nil {
 			return
 		}

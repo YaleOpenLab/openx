@@ -13,8 +13,8 @@ import (
 
 // StablecoinRPC is a collection of all stablecoin RPC endpoints and their required params
 var StablecoinRPC = map[int][]string{
-	1: []string{"/stablecoin/get", "seedpwd", "amount"},
-	2: []string{"/anchor/get"},
+	1: []string{"/stablecoin/get", "GET", "seedpwd", "amount"}, // GET
+	2: []string{"/anchor/get", "GET"},                          // GET
 }
 
 // setupStableCoinRPCs sets up the endpoints that would be required to interact with
@@ -38,7 +38,7 @@ func getTestStableCoin() {
 			return
 		}
 
-		user, err := userValidateHelper(w, r, StablecoinRPC[1][1:])
+		user, err := userValidateHelper(w, r, StablecoinRPC[1][2:], StablecoinRPC[2][1])
 		if err != nil {
 			return
 		}
@@ -83,7 +83,7 @@ func getAnchorUSD() {
 			return
 		}
 
-		user, err := userValidateHelper(w, r, StablecoinRPC[2][1:])
+		user, err := userValidateHelper(w, r, StablecoinRPC[2][2:], StablecoinRPC[2][1])
 		if err != nil {
 			return
 		}

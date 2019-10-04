@@ -14,6 +14,18 @@ import (
 // admin contains a list of all the functions that will hopefully never be used in practice
 // but if needed are incredibly powerful
 
+// AdminRPC is the list of all admin RPC endpoints
+var AdminRPC = map[int][]string{
+	1: {"/admin/kill", "POST", "nuke", "username"},                       // POST
+	2: {"/admin/freeze", "GET"},                                          // GET
+	3: {"/admin/gennuke", "POST", "username"},                            // POST
+	4: {"/admin/platform/new", "POST", "name", "code", "timeout"},        // POST
+	5: {"/admin/platform/all", "GET"},                                    // GET
+	6: {"/admin/list"},                                                   // GET
+	7: {"/admin/add/platform", "POST", "name", "code", "timeout"},        // POST
+	8: {"/admin/sendmessage", "POST", "subject", "message", "recipient"}, // POST
+}
+
 // adminHandlers are a list of all the admin handlers defined by openx
 func adminHandlers() {
 	killServer()
@@ -30,8 +42,8 @@ func adminHandlers() {
 var KillCode string
 
 // validateAdmin validates whether a given user is an admin and returns a bool
-func validateAdmin(w http.ResponseWriter, r *http.Request, options ...string) (database.User, bool) {
-	prepUser, err := userValidateHelper(w, r, options)
+func validateAdmin(w http.ResponseWriter, r *http.Request, options []string, method string) (database.User, bool) {
+	prepUser, err := userValidateHelper(w, r, options, method)
 	if err != nil {
 		log.Println(err)
 		return prepUser, false
@@ -47,10 +59,10 @@ func validateAdmin(w http.ResponseWriter, r *http.Request, options ...string) (d
 
 // killServer instantly kills the server. Recovery possible only with server access
 func killServer() {
-	http.HandleFunc("/admin/kill", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(AdminRPC[1][0], func(w http.ResponseWriter, r *http.Request) {
 		log.Println("kill command received")
 		// need to pass the pwhash param here
-		_, adminBool := validateAdmin(w, r, "nuke", "username")
+		_, adminBool := validateAdmin(w, r, AdminRPC[1][2:], AdminRPC[1][1])
 		if !adminBool {
 			return
 		}
@@ -66,9 +78,9 @@ func killServer() {
 // freezeServer freezes the server to make all transactions void. The easiest way to do that
 // is to set the Mainnet const to false.
 func freezeServer() {
-	http.HandleFunc("/admin/freeze", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(AdminRPC[2][0], func(w http.ResponseWriter, r *http.Request) {
 		// need to pass the pwhash param here
-		_, adminBool := validateAdmin(w, r)
+		_, adminBool := validateAdmin(w, r, []string{}, AdminRPC[2][1])
 		if !adminBool {
 			return
 		}
@@ -81,9 +93,9 @@ func freezeServer() {
 // genNuclearCode generates a nuclear code capable of instantly killing the platform. Can only
 // be called by certain admins
 func genNuclearCode() {
-	http.HandleFunc("/admin/gennuke", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(AdminRPC[3][0], func(w http.ResponseWriter, r *http.Request) {
 		// need to pass the pwhash param here
-		_, adminBool := validateAdmin(w, r, "username")
+		_, adminBool := validateAdmin(w, r, AdminRPC[3][2:], AdminRPC[3][1])
 		if !adminBool {
 			return
 		}
@@ -102,9 +114,9 @@ func genNuclearCode() {
 
 // newPlatform creates a new platform code
 func newPlatform() {
-	http.HandleFunc("/admin/platform/new", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(AdminRPC[4][0], func(w http.ResponseWriter, r *http.Request) {
 		// need to pass the pwhash param here
-		_, adminBool := validateAdmin(w, r, "name", "code", "timeout")
+		_, adminBool := validateAdmin(w, r, AdminRPC[4][2:], AdminRPC[4][1])
 		if !adminBool {
 			return
 		}
@@ -131,8 +143,8 @@ func newPlatform() {
 
 // retrieveAllPlatforms retrieves all platforms from the database
 func retrieveAllPlatforms() {
-	http.HandleFunc("/admin/platform/all", func(w http.ResponseWriter, r *http.Request) {
-		_, adminBool := validateAdmin(w, r)
+	http.HandleFunc(AdminRPC[5][0], func(w http.ResponseWriter, r *http.Request) {
+		_, adminBool := validateAdmin(w, r, []string{}, AdminRPC[5][1])
 		if !adminBool {
 			return
 		}
@@ -149,7 +161,7 @@ func retrieveAllPlatforms() {
 
 // listAllAdmins lists all the admin users of openx so users can contact them in case they face any problem
 func listAllAdmins() {
-	http.HandleFunc("/admin/list", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(AdminRPC[6][0], func(w http.ResponseWriter, r *http.Request) {
 		err := erpc.CheckGet(w, r)
 		if err != nil {
 			log.Println(err)
@@ -167,8 +179,8 @@ func listAllAdmins() {
 }
 
 func addNewPlatform() {
-	http.HandleFunc("/admin/add/platform", func(w http.ResponseWriter, r *http.Request) {
-		_, adminBool := validateAdmin(w, r, "name", "code", "timeout")
+	http.HandleFunc(AdminRPC[7][0], func(w http.ResponseWriter, r *http.Request) {
+		_, adminBool := validateAdmin(w, r, AdminRPC[7][2:], AdminRPC[7][1])
 		if !adminBool {
 			return
 		}
@@ -203,8 +215,8 @@ func addNewPlatform() {
 }
 
 func sendNewMessage() {
-	http.HandleFunc("/admin/sendmessage", func(w http.ResponseWriter, r *http.Request) {
-		_, adminBool := validateAdmin(w, r, "subject", "message", "recipient")
+	http.HandleFunc(AdminRPC[8][0], func(w http.ResponseWriter, r *http.Request) {
+		_, adminBool := validateAdmin(w, r, AdminRPC[8][2:], AdminRPC[8][1])
 		if !adminBool {
 			return
 		}
