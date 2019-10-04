@@ -477,10 +477,6 @@ func (a *User) SweepSecondaryWallet(seedpwd string) error {
 func (a *User) AddEmail(email string) error {
 	a.Email = email
 	a.Notification = true
-	err := a.Save()
-	if err != nil {
-		return errors.Wrap(err, "error while saving investor")
-	}
 	return a.Save()
 }
 
