@@ -208,6 +208,7 @@ func validateUser() {
 		// need to pass the pwhash param here
 		prepUser, err := userValidateHelper(w, r, UserRPC[1][1:])
 		if err != nil {
+			log.Println(err)
 			erpc.MarshalSend(w, erpc.StatusBadRequest)
 			return
 		}
