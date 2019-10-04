@@ -87,6 +87,13 @@ type User struct {
 	AccessToken string
 	// AccessTokenTimeout is the unix time at which the accessToken was generated
 	AccessTokenTimeout int64
+	// Mailbox is a mailbox where admins can send you messages or updated on your invested / interested projects
+	Mailbox []MailboxHelper
+}
+
+type MailboxHelper struct {
+	Subject string // the subject can be used to send push notifications
+	Message string // the message
 }
 
 // KycStruct contains the parameters required by ComplyAdvantage
@@ -594,4 +601,12 @@ func (a *User) GenAccessToken() (string, error) {
 		return "", errors.Wrap(err, "could not save user to database")
 	}
 	return a.AccessToken, nil
+}
+
+func (a *User) AddtoMailbox(subject string, message string) error {
+	var x MailboxHelper
+	x.Subject = subject
+	x.Message = message
+	a.Mailbox = append(a.Mailbox, x)
+	return a.Save()
 }

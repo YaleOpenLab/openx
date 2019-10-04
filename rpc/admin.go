@@ -14,6 +14,18 @@ import (
 // admin contains a list of all the functions that will hopefully never be used in practice
 // but if needed are incredibly powerful
 
+// AdminRPC is the list of all admin RPC endpoints
+var AdminRPC = map[int][]string{
+	1: {"/admin/kill", "POST", "nuke", "username"},                       // POST
+	2: {"/admin/freeze", "GET"},                                          // GET
+	3: {"/admin/gennuke", "POST", "username"},                            // POST
+	4: {"/admin/platform/new", "POST", "name", "code", "timeout"},        // POST
+	5: {"/admin/platform/all", "GET"},                                    // GET
+	6: {"/admin/list"},                                                   // GET
+	7: {"/admin/add/platform", "POST", "name", "code", "timeout"},        // POST
+	8: {"/admin/sendmessage", "POST", "subject", "message", "recipient"}, // POST
+}
+
 // adminHandlers are a list of all the admin handlers defined by openx
 func adminHandlers() {
 	killServer()
@@ -23,53 +35,39 @@ func adminHandlers() {
 	retrieveAllPlatforms()
 	listAllAdmins()
 	addNewPlatform()
+	sendNewMessage()
 }
 
 // KillCode is a code that can immediately shut down the server in case of hacks / crises
 var KillCode string
 
 // validateAdmin validates whether a given user is an admin and returns a bool
-func validateAdmin(w http.ResponseWriter, r *http.Request, options ...string) bool {
-	err := erpc.CheckGet(w, r)
+func validateAdmin(w http.ResponseWriter, r *http.Request, options []string, method string) (database.User, bool) {
+	prepUser, err := userValidateHelper(w, r, options, method)
 	if err != nil {
 		log.Println(err)
-		return false
+		return prepUser, false
 	}
 
-	prepUser, err := userValidateHelper(w, r, []string{})
-	if err != nil {
-		log.Println(err)
-		return false
-	}
 	if !prepUser.Admin {
-		log.Println("person who made the request not admin, quitting")
-		return false
+		erpc.ResponseHandler(w, erpc.StatusUnauthorized)
+		return prepUser, false
 	}
 
-	for _, option := range options {
-		if r.URL.Query()[option] == nil {
-			log.Println("required param: ", option, " missing")
-			return false
-		}
-	}
-
-	return true
+	return prepUser, true
 }
 
 // killServer instantly kills the server. Recovery possible only with server access
 func killServer() {
-	http.HandleFunc("/admin/kill", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(AdminRPC[1][0], func(w http.ResponseWriter, r *http.Request) {
 		log.Println("kill command received")
 		// need to pass the pwhash param here
-		if !validateAdmin(w, r, "nuke", "username") {
-			// admin account not accessible
-			if r.URL.Query()["nuke"][0] == KillCode {
-				log.Println("nuclear code activated, killing server")
-				os.Exit(1)
-			}
+		_, adminBool := validateAdmin(w, r, AdminRPC[1][2:], AdminRPC[1][1])
+		if !adminBool {
+			return
 		}
 
-		if r.URL.Query()["username"][0] == "martin" {
+		if r.FormValue("username") == "martin" {
 			// only certain admins can access this endpoint, can be compiled at runtime
 			log.Println("Activating kill switch")
 			os.Exit(1)
@@ -80,10 +78,10 @@ func killServer() {
 // freezeServer freezes the server to make all transactions void. The easiest way to do that
 // is to set the Mainnet const to false.
 func freezeServer() {
-	http.HandleFunc("/admin/freeze", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(AdminRPC[2][0], func(w http.ResponseWriter, r *http.Request) {
 		// need to pass the pwhash param here
-		if !validateAdmin(w, r) {
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
+		_, adminBool := validateAdmin(w, r, []string{}, AdminRPC[2][1])
+		if !adminBool {
 			return
 		}
 
@@ -95,35 +93,37 @@ func freezeServer() {
 // genNuclearCode generates a nuclear code capable of instantly killing the platform. Can only
 // be called by certain admins
 func genNuclearCode() {
-	http.HandleFunc("/admin/gennuke", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(AdminRPC[3][0], func(w http.ResponseWriter, r *http.Request) {
 		// need to pass the pwhash param here
-		if !validateAdmin(w, r, "username") {
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
+		_, adminBool := validateAdmin(w, r, AdminRPC[3][2:], AdminRPC[3][1])
+		if !adminBool {
 			return
 		}
 
-		if r.URL.Query()["username"][0] == "martin" {
+		if r.FormValue("username") == "martin" {
 			// only authorized users, can change at compile time
 			log.Println("generating new nuclear code")
 			KillCode = utils.GetRandomString(64)
 			w.Write([]byte(KillCode))
+		} else {
+			erpc.MarshalSend(w, erpc.StatusUnauthorized)
+			return
 		}
 	})
 }
 
 // newPlatform creates a new platform code
 func newPlatform() {
-	http.HandleFunc("/admin/platform/new", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(AdminRPC[4][0], func(w http.ResponseWriter, r *http.Request) {
 		// need to pass the pwhash param here
-		if !validateAdmin(w, r, "name", "code", "timeout") {
-			log.Println("Admin validation error")
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
+		_, adminBool := validateAdmin(w, r, AdminRPC[4][2:], AdminRPC[4][1])
+		if !adminBool {
 			return
 		}
 
-		name := r.URL.Query()["name"][0]
-		code := r.URL.Query()["code"][0]
-		timeout := r.URL.Query()["timeout"][0] // if specified, timeout is false
+		name := r.FormValue("name")
+		code := r.FormValue("code")
+		timeout := r.FormValue("timeout") // if specified, timeout is false
 
 		var timeoutBool bool
 
@@ -143,9 +143,9 @@ func newPlatform() {
 
 // retrieveAllPlatforms retrieves all platforms from the database
 func retrieveAllPlatforms() {
-	http.HandleFunc("/admin/platform/all", func(w http.ResponseWriter, r *http.Request) {
-		if !validateAdmin(w, r) {
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
+	http.HandleFunc(AdminRPC[5][0], func(w http.ResponseWriter, r *http.Request) {
+		_, adminBool := validateAdmin(w, r, []string{}, AdminRPC[5][1])
+		if !adminBool {
 			return
 		}
 
@@ -161,13 +161,10 @@ func retrieveAllPlatforms() {
 
 // listAllAdmins lists all the admin users of openx so users can contact them in case they face any problem
 func listAllAdmins() {
-	http.HandleFunc("/admin/list", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(AdminRPC[6][0], func(w http.ResponseWriter, r *http.Request) {
 		err := erpc.CheckGet(w, r)
 		if err != nil {
 			log.Println(err)
-			return
-		}
-		if err != nil {
 			return
 		}
 
@@ -182,33 +179,13 @@ func listAllAdmins() {
 }
 
 func addNewPlatform() {
-	http.HandleFunc("/admin/add/platform", func(w http.ResponseWriter, r *http.Request) {
-		err := erpc.CheckPost(w, r)
-		if err != nil {
-			log.Println("ERROR!!")
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+	http.HandleFunc(AdminRPC[7][0], func(w http.ResponseWriter, r *http.Request) {
+		_, adminBool := validateAdmin(w, r, AdminRPC[7][2:], AdminRPC[7][1])
+		if !adminBool {
 			return
 		}
 
-		var dummy []string
-		user, err := userValidateHelper(w, r, dummy)
-		if err != nil {
-			return
-		}
-
-		if !user.Admin {
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-			return
-		}
-
-		err = r.ParseForm()
-		if err != nil {
-			log.Println("PF err: ", err)
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
-			return
-		}
-
+		var err error
 		name := r.FormValue("name")
 		code := r.FormValue("code")
 		timeout := r.FormValue("timeout")
@@ -233,6 +210,47 @@ func addNewPlatform() {
 				return
 			}
 		}
+		erpc.ResponseHandler(w, erpc.StatusOK)
+	})
+}
+
+func sendNewMessage() {
+	http.HandleFunc(AdminRPC[8][0], func(w http.ResponseWriter, r *http.Request) {
+		_, adminBool := validateAdmin(w, r, AdminRPC[8][2:], AdminRPC[8][1])
+		if !adminBool {
+			return
+		}
+
+		subject := r.FormValue("subject")
+		message := r.FormValue("message")
+		recipient := r.FormValue("recipient")
+
+		if len(subject) == 0 {
+			log.Println("length of subject is zero, not sending message")
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+
+		if len(message) == 0 {
+			log.Println("length of message is zero, not sending message")
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+
+		user, err := database.CheckUsernameCollision(recipient)
+		if err == nil { // ie if there is no user
+			log.Println("there is no user with the given username")
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+
+		err = user.AddtoMailbox(subject, message)
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+
 		erpc.ResponseHandler(w, erpc.StatusOK)
 	})
 }
