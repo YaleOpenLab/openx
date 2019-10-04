@@ -295,6 +295,15 @@ func TestDb(t *testing.T) {
 	if err == nil {
 		t.Fatalf("can't catch username collision")
 	}
+	user.Admin = true
+	err = user.Save()
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = RetrieveAllAdmins()
+	if err != nil {
+		t.Fatal(err)
+	}
 	err = DeleteKeyFromBucket(user.Index, UserBucket)
 	if err != nil {
 		t.Fatal(err)
