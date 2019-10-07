@@ -145,4 +145,5 @@ func TestAPIs(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Shouldn't work, invalid tx hash")
 	}
+	SetConsts(10, true)
 }
