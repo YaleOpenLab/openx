@@ -16,6 +16,7 @@ var txhash = "7532311a4816a4d61eccb6087704880108b57e27628299e0129267f197d3c5f1"
 var txHashNumber = 48046
 
 func TestApi(t *testing.T) {
+	SetConsts(10, true)
 	SetConsts(10, false)
 	// test out stuff here
 	hash, err := GetBlockHash(blockNumber)
@@ -145,5 +146,4 @@ func TestAPIs(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Shouldn't work, invalid tx hash")
 	}
-	SetConsts(10, true)
 }
