@@ -19,7 +19,7 @@ import (
 	utils "github.com/Varunram/essentials/utils"
 	// scan "github.com/YaleOpenLab/openx/scan"
 	// wallet "github.com/YaleOpenLab/openx/wallet"
-	// xlm "github.com/YaleOpenLab/openx/xlm"
+	// xlm "github.com/YaleOpenLab/openx/chains/xlm"
 	// assets "github.com/YaleOpenLab/openx/assets"
 	flags "github.com/jessevdk/go-flags"
 	"github.com/spf13/viper"
@@ -105,6 +105,11 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+		err = admin.GenKeys("x")
+		if err != nil {
+			log.Fatal(err)
+		}
+		// xlm.GetXLM(admin.StellarWallet.PublicKey)
 	}
 
 	if opts.Rescue {
