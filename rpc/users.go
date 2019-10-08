@@ -30,7 +30,7 @@ var UserRPC = map[int][]string{
 	2:  []string{"/user/balances", "GET"},                                                          // GET
 	3:  []string{"/user/balance/xlm", "GET"},                                                       // GET
 	4:  []string{"/user/balance/asset", "GET", "asset"},                                            // GET
-	5:  []string{"/ipfs/hash", "GET", "string"},                                                    // GET
+	5:  []string{"/ipfs/getdata", "GET", "hash"},                                                   // GET
 	6:  []string{"/user/kyc", "GET", "userIndex"},                                                  // GET
 	7:  []string{"/user/sendxlm", "GET", "destination", "amount", "seedpwd"},                       // GET
 	8:  []string{"/user/notkycview", "GET"},                                                        // GET
@@ -55,6 +55,7 @@ var UserRPC = map[int][]string{
 	31: []string{"/user/reputation", "GET", "reputation"},                                          // GET
 	32: []string{"/user/addseed", "GET", "encryptedseed", "seedpwd", "pubkey"},                     // GET
 	33: []string{"/user/latestblockhash", "GET"},                                                   // GET
+	34: []string{"/ipfs/putdata", "POST", "data"},                                                  // POST
 
 	30: []string{"/user/anchorusd/kyc", "GET", "name", "bdaymonth", "bdayday", "bdayyear", "taxcountry", // GET
 		"taxid", "addrstreet", "addrcity", "addrpostal", "addrregion", "addrcountry", "addrphone", "primaryphone", "gender"},
@@ -69,7 +70,8 @@ func setupUserRpcs() {
 	getBalances()
 	getXLMBalance()
 	getAssetBalance()
-	getIpfsHash()
+	getIpfsData()
+	putIpfsData()
 	authKyc()
 	sendXLM()
 	notKycView()
@@ -315,24 +317,44 @@ func getAssetBalance() {
 	})
 }
 
-// getIpfsHash returns the ipfs hash of the passed string
-func getIpfsHash() {
+// putIpfsData gets data from ipfs
+func getIpfsData() {
 	http.HandleFunc(UserRPC[5][0], func(w http.ResponseWriter, r *http.Request) {
 		_, err := userValidateHelper(w, r, UserRPC[5][2:], UserRPC[5][1])
 		if err != nil {
 			return
 		}
 
-		hashString := r.URL.Query()["string"][0]
-		hash, err := ipfs.IpfsAddString(hashString)
+		hashString := r.URL.Query()["hash"][0]
+		data, err := ipfs.IpfsGetString(hashString)
+		if err != nil {
+			log.Println("could not retrieve string from ipfs", err)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+			return
+		}
+
+		erpc.MarshalSend(w, data)
+	})
+}
+
+// putIpfsData stores data in ipfs
+func putIpfsData() {
+	http.HandleFunc(UserRPC[34][0], func(w http.ResponseWriter, r *http.Request) {
+		_, err := userValidateHelper(w, r, UserRPC[34][2:], UserRPC[34][1])
+		if err != nil {
+			return
+		}
+
+		data := []byte(r.FormValue("data"))
+		hash, err := ipfs.IpfsAddBytes([]byte(data))
 		if err != nil {
 			log.Println("did not add string to ipfs", err)
 			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
 
-		hashCheck, err := ipfs.IpfsGetString(hash)
-		if err != nil || hashCheck != hashString {
+		_, err = ipfs.IpfsAddBytes(data)
+		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
@@ -340,6 +362,7 @@ func getIpfsHash() {
 		erpc.MarshalSend(w, hash)
 	})
 }
+
 
 // authKyc authenticates a user for KYC services
 func authKyc() {
