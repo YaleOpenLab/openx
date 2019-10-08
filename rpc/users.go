@@ -44,8 +44,8 @@ var UserRPC = map[int][]string{
 	19: []string{"/user/sendrecovery", "GET", "email1", "email2", "email3"},                        // GET
 	20: []string{"/user/seedrecovery", "GET", "secret1", "secret2"},                                // GET
 	21: []string{"/user/newsecrets", "GET", "seedpwd", "email1", "email2", "email3"},               // GET
-	22: []string{"/user/resetpwd", "GET", "email"},                                                 // GET
-	23: []string{"/user/pwdreset", "GET", "email", "verificationCode"},                             // GET
+	22: []string{"/user/resetpwd", "GET", "seedpwd", "email"},                                      // GET
+	23: []string{"/user/pwdreset", "GET", "pwhash", "email", "verificationCode"},                             // GET
 	24: []string{"/user/sweep", "GET", "seedpwd", "destination"},                                   // GET
 	25: []string{"/user/sweepasset", "GET", "seedpwd", "destination", "assetName", "issuerPubkey"}, // GET
 	26: []string{"/user/verifykyc", "GET", "selfie"},                                               // GET
@@ -362,7 +362,6 @@ func putIpfsData() {
 		erpc.MarshalSend(w, hash)
 	})
 }
-
 
 // authKyc authenticates a user for KYC services
 func authKyc() {

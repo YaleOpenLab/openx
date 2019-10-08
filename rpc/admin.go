@@ -16,13 +16,12 @@ import (
 
 // AdminRPC is the list of all admin RPC endpoints
 var AdminRPC = map[int][]string{
-	1: {"/admin/kill", "POST", "nuke", "username"},                       // POST
+	1: {"/admin/kill", "POST", "nuke"},                                   // POST
 	2: {"/admin/freeze", "GET"},                                          // GET
-	3: {"/admin/gennuke", "POST", "username"},                            // POST
-	4: {"/admin/platform/new", "POST", "name", "code", "timeout"},        // POST
+	3: {"/admin/gennuke", "POST"},                                        // POST
 	5: {"/admin/platform/all", "GET"},                                    // GET
 	6: {"/admin/list"},                                                   // GET
-	7: {"/admin/add/platform", "POST", "name", "code", "timeout"},        // POST
+	7: {"/admin/platform/new", "POST", "name", "code", "timeout"},        // POST
 	8: {"/admin/sendmessage", "POST", "subject", "message", "recipient"}, // POST
 }
 
@@ -31,7 +30,6 @@ func adminHandlers() {
 	killServer()
 	freezeServer()
 	genNuclearCode()
-	newPlatform()
 	retrieveAllPlatforms()
 	listAllAdmins()
 	addNewPlatform()
@@ -109,35 +107,6 @@ func genNuclearCode() {
 			erpc.MarshalSend(w, erpc.StatusUnauthorized)
 			return
 		}
-	})
-}
-
-// newPlatform creates a new platform code
-func newPlatform() {
-	http.HandleFunc(AdminRPC[4][0], func(w http.ResponseWriter, r *http.Request) {
-		// need to pass the pwhash param here
-		_, adminBool := validateAdmin(w, r, AdminRPC[4][2:], AdminRPC[4][1])
-		if !adminBool {
-			return
-		}
-
-		name := r.FormValue("name")
-		code := r.FormValue("code")
-		timeout := r.FormValue("timeout") // if specified, timeout is false
-
-		var timeoutBool bool
-
-		if timeout != "false" {
-			timeoutBool = true
-		}
-
-		log.Println("Creating new platform code: ", code, " for: ", name, " with timeout: ", timeoutBool)
-
-		err := database.NewPlatform(name, code, timeoutBool)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
-		}
-		return
 	})
 }
 
