@@ -11,9 +11,6 @@ kycapikey: topsecret
 
 # testnet params
 # rename this to config.yaml before starting
-platformemail: platform@openx.com
-password: topsecretpassword
-kycapikey: topsecret
 algodAddress: fillthis
 algodToken: fillthis
 kmdAddress: fillthis

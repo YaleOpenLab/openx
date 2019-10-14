@@ -191,6 +191,51 @@ func Tx2of2(pubkey1 string, destination string, signer1 string, signer2 string, 
 	return err
 }
 
+// Tx2of2Asset constructs a non XLM tx where the source account pubkey1 is the 2of2 account, we need 2 signers for this tx
+func Tx2of2Asset(pubkey1 string, destination string, signer1 string, signer2 string, amountx float64, asset string, memo string) error {
+	sourceAccount, err := xlm.ReturnSourceAccountPubkey(pubkey1)
+	if err != nil {
+		return errors.Wrap(err, "could not load account details, quitting")
+	}
+
+	amount, err := utils.ToString(amountx)
+	if err != nil {
+		return errors.Wrap(err, "could not convert to float, quitting")
+	}
+
+	op := build.Payment{
+		Destination: destination,
+		Amount:      amount,
+		Asset:       build.CreditAsset{asset, destination},
+	}
+
+	tx := build.Transaction{
+		SourceAccount: &sourceAccount,
+		Operations:    []build.Operation{&op},
+		Timebounds:    build.NewInfiniteTimeout(),
+		Network:       xlm.Passphrase,
+		Memo:          build.Memo(build.MemoText(memo)),
+	}
+
+	_, kp1, err := xlm.ReturnSourceAccount(signer1)
+	if err != nil {
+		return err
+	}
+
+	_, kp2, err := xlm.ReturnSourceAccount(signer2)
+	if err != nil {
+		return err
+	}
+
+	txe, err := tx.BuildSignEncode(kp1.(*keypair.Full), kp2.(*keypair.Full))
+	if err != nil {
+		return errors.Wrap(err, "second party couldn't sign tx")
+	}
+
+	_, _, err = SendTx(txe)
+	return err
+}
+
 // AuthImmutable2of2 sets the auth immutable flag on a multisig account
 func AuthImmutable2of2(pubkey1 string, signer1 string, signer2 string) error {
 	sourceAccount, err := xlm.ReturnSourceAccountPubkey(pubkey1)
