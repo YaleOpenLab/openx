@@ -1,0 +1,87 @@
+<html>
+
+<head>
+  <title>Openx JSON Generator</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.css" integrity="sha256-WAgYcAck1C1/zEl5sBl5cfyhxtLgKGdpI3oKyJffVRI=" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <link rel="stylesheet" href="./gen.css">
+</head>
+
+<body>
+  <h1>Welcome to openx json generator</h1>
+  <div class="main">
+    <button type="button" class="btn btn-primary button" onclick=genJson()>Generate Json</button>
+    <form action="" id="mainform">
+      <input type="text" class="form-control key" id="fieldkey1" placeholder="Enter key">
+      <input type="text" class="form-control val" id="fieldval1" placeholder="Enter data">
+    </form>
+    <button type="button" class="btn btn-secondary button" onclick=genFields()>Add new field</button>
+  </div>
+</body>
+<script>
+  function genFields() {
+    var main = document.getElementById("mainform");
+    var key = document.createElement("input");
+    key.classList.add("key");
+    key.classList.add("form-control");
+    newId = main.childElementCount / 2 + 1;
+    key.placeholder = "Enter Key";
+    key.id = "fieldkey" + newId;
+    main.append(key);
+
+    var val = document.createElement("input");
+    val.classList.add("val");
+    val.classList.add("form-control");
+    val.placeholder = "Enter Value";
+    val.id = "fieldval" + newId;
+    main.append(val);
+  }
+
+  function camelize(str) {
+    return str.replace(/(?:^\w|[A-Z]|\b\w|\s+)/g, function(match, index) {
+      if (+match === 0) return ""; // or if (/\s+/.test(match)) for white spaces
+      return index == 0 ? match.toLowerCase() : match.toUpperCase();
+    });
+  }
+
+  function download(filename, text) {
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/json;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('download', filename);
+
+    element.style.display = 'none';
+    document.body.appendChild(element);
+
+    element.click();
+    document.body.removeChild(element);
+  }
+
+  function genJson() {
+    var main = document.getElementById("mainform");
+    var elems = main.childElementCount;
+    var jsonBody = "";
+    for (i = 1; i <= elems / 2; i++) {
+      key = document.getElementById("fieldkey" + i).value;
+      val = document.getElementById("fieldval" + i).value;
+
+      key = key.trim();
+      val = val.trim();
+
+      key = camelize(key);
+
+      if (i == 1) {
+        jsonBody += "{";
+      }
+      jsonBody = jsonBody +"\"" + key + "\"" + ":" + "\"" + val + "\"";
+      if (i == elems / 2) {
+        jsonBody += "}";
+      } else {
+        jsonBody += ",";
+      }
+      console.log(jsonBody);
+      download('test.json', jsonBody);
+    }
+  }
+</script>
+
+</html>
