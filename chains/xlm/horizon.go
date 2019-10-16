@@ -120,11 +120,13 @@ func GetNativeBalance(publicKey string) (float64, error) {
 	var err error
 	b, err := GetAccountData(publicKey)
 	if err != nil {
+		log.Println(err)
 		return balance, errors.New("Account does not exist yet, get funds!")
 	}
 	var x protocols.Account
 	err = json.Unmarshal(b, &x)
 	if err != nil {
+		log.Println(err)
 		return balance, errors.Wrap(err, "could not unmarshal data")
 	}
 	for _, balance := range x.Balances {
@@ -133,6 +135,7 @@ func GetNativeBalance(publicKey string) (float64, error) {
 		}
 	}
 
+	log.Println("Native balance not found")
 	return balance, errors.New("Native balance not found")
 }
 
@@ -142,11 +145,13 @@ func GetAssetBalance(publicKey string, assetName string) (float64, error) {
 	var err error
 	b, err := GetAccountData(publicKey)
 	if err != nil {
+		log.Println(err)
 		return balance, errors.Wrap(err, "could not get account data")
 	}
 	var x protocols.Account
 	err = json.Unmarshal(b, &x)
 	if err != nil {
+		log.Println(err)
 		return balance, errors.Wrap(err, "could not unmarshal data")
 	}
 	for _, balance := range x.Balances {
@@ -154,6 +159,8 @@ func GetAssetBalance(publicKey string, assetName string) (float64, error) {
 			return utils.ToFloat(balance.Balance)
 		}
 	}
+
+	log.Println("Asset balance not found")
 	return balance, errors.New("Asset balance not found")
 }
 
@@ -183,6 +190,7 @@ func GetAllBalances(publicKey string) ([]protocols.Balance, error) {
 
 	account, err := ReturnSourceAccountPubkey(publicKey)
 	if err != nil {
+		log.Println(err)
 		return nil, errors.Wrap(err, "could not load account")
 	}
 	return account.Balances, nil
