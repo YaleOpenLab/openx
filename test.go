@@ -14,12 +14,12 @@ import (
 	rpc "github.com/YaleOpenLab/openx/rpc"
 	// scan "github.com/YaleOpenLab/openx/scan"
 	// oracle "github.com/YaleOpenLab/openx/oracle"
-	// algorand "github.com/YaleOpenLab/openx/chains/algorand"
-	// stablecoin "github.com/YaleOpenLab/openx/chains/stablecoin"
+	// algorand "github.com/Varunram/essentials/algorand"
+	// stablecoin "github.com/Varunram/essentials/xlm/stablecoin"
 	utils "github.com/Varunram/essentials/utils"
 	// scan "github.com/YaleOpenLab/openx/scan"
 	// wallet "github.com/YaleOpenLab/openx/wallet"
-	// xlm "github.com/YaleOpenLab/openx/chains/xlm"
+	// xlm "github.com/Varunram/essentials/xlm"
 	// assets "github.com/YaleOpenLab/openx/assets"
 	flags "github.com/jessevdk/go-flags"
 	"github.com/spf13/viper"
@@ -117,11 +117,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	users, err := database.RetrieveAllUsers()
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println(len(users))
 	/*
 		user, err := database.RetrieveUser(1)
 		if err != nil {

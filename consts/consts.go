@@ -5,9 +5,9 @@ import (
 
 	email "github.com/Varunram/essentials/email"
 	ipfs "github.com/Varunram/essentials/ipfs"
-	algorand "github.com/YaleOpenLab/openx/chains/algorand"
-	stablecoin "github.com/YaleOpenLab/openx/chains/stablecoin"
-	xlm "github.com/YaleOpenLab/openx/chains/xlm"
+	xlm "github.com/Varunram/essentials/xlm"
+	algorand "github.com/Varunram/essentials/algorand"
+	stablecoin "github.com/Varunram/essentials/xlm/stablecoin"
 )
 
 // the consts package contains constants that are specific to openx. These constants
@@ -102,7 +102,6 @@ var AccessTokenLength = 32
 // call this before starting their platform.
 func SetConsts(mainnet bool) {
 	if !mainnet {
-
 		HomeDir += "/testnet"
 		DbDir = HomeDir + "/database/"
 		PlatformSeedFile = HomeDir + "/platformseed.hex"
@@ -126,15 +125,6 @@ func SetConsts(mainnet bool) {
 		algorand.SetConsts(AlgodAddress, AlgodToken, KmdAddress, KmdToken)
 
 		RefillAmount = 10
-		xlm.SetConsts(RefillAmount, Mainnet)
-
-		stablecoin.SetConsts(StablecoinCode, StablecoinPublicKey, StablecoinSeed, StableCoinSeedFile, StablecoinTrustLimit,
-			AnchorUSDCode, AnchorUSDAddress, AnchorUSDTrustLimit, Mainnet)
-
-		email.SetConsts(PlatformEmail, PlatformEmailPass)
-
-		IpfsFileLength = 10
-		ipfs.SetConsts(IpfsFileLength)
 	} else {
 		// init mainnet params
 		HomeDir += "/mainnet"
@@ -153,15 +143,13 @@ func SetConsts(mainnet bool) {
 		AnchorUSDTrustLimit = 10000 // conservative limit of USD 10000 set for investments on mainnet. Can be increased or decreased as necessary
 		AnchorAPI = "https://api.anchorusd.com/"
 
-		stablecoin.SetConsts(StablecoinCode, StablecoinPublicKey, StablecoinSeed, StableCoinSeedFile, StablecoinTrustLimit,
-			AnchorUSDCode, AnchorUSDAddress, AnchorUSDTrustLimit, Mainnet)
-
 		RefillAmount = 0
-		xlm.SetConsts(RefillAmount, Mainnet)
-
-		email.SetConsts(PlatformEmail, PlatformEmailPass)
-
-		IpfsFileLength = 10
-		ipfs.SetConsts(IpfsFileLength)
 	}
+
+	xlm.SetConsts(RefillAmount, Mainnet)
+	email.SetConsts(PlatformEmail, PlatformEmailPass)
+	IpfsFileLength = 10
+	ipfs.SetConsts(IpfsFileLength)
+	stablecoin.SetConsts(StablecoinCode, StablecoinPublicKey, StablecoinSeed, StableCoinSeedFile, StablecoinTrustLimit,
+		AnchorUSDCode, AnchorUSDAddress, AnchorUSDTrustLimit, Mainnet)
 }

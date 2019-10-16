@@ -7,8 +7,8 @@ import (
 
 	"github.com/spf13/viper"
 
-	algorand "github.com/YaleOpenLab/openx/chains/algorand"
-	stablecoin "github.com/YaleOpenLab/openx/chains/stablecoin"
+	algorand "github.com/Varunram/essentials/algorand"
+	stablecoin "github.com/Varunram/essentials/xlm/stablecoin"
 	// utils "github.com/Varunram/essentials/utils"
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"

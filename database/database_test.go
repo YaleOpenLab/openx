@@ -9,8 +9,8 @@ import (
 	"time"
 
 	utils "github.com/Varunram/essentials/utils"
-	xlm "github.com/YaleOpenLab/openx/chains/xlm"
-	assets "github.com/YaleOpenLab/openx/chains/xlm/assets"
+	xlm "github.com/Varunram/essentials/xlm"
+	assets "github.com/Varunram/essentials/xlm/assets"
 	consts "github.com/YaleOpenLab/openx/consts"
 	build "github.com/stellar/go/txnbuild"
 )

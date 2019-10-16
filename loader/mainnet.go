@@ -8,9 +8,9 @@ import (
 	"github.com/spf13/viper"
 
 	// utils "github.com/Varunram/essentials/utils"
-	// xlm "github.com/YaleOpenLab/openx/chains/xlm"
-	xlm "github.com/YaleOpenLab/openx/chains/xlm"
-	assets "github.com/YaleOpenLab/openx/chains/xlm/assets"
+	// xlm "github.com/Varunram/essentials/xlm"
+	xlm "github.com/Varunram/essentials/xlm"
+	assets "github.com/Varunram/essentials/xlm/assets"
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
 	openx "github.com/YaleOpenLab/openx/platforms"

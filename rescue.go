@@ -6,9 +6,9 @@ import (
 	"strings"
 
 	scan "github.com/Varunram/essentials/scan"
-	xlm "github.com/YaleOpenLab/openx/chains/xlm"
-	assets "github.com/YaleOpenLab/openx/chains/xlm/assets"
-	multisig "github.com/YaleOpenLab/openx/chains/xlm/multisig"
+	xlm "github.com/Varunram/essentials/xlm"
+	assets "github.com/Varunram/essentials/xlm/assets"
+	multisig "github.com/Varunram/essentials/xlm/multisig"
 	consts "github.com/YaleOpenLab/openx/consts"
 )
 

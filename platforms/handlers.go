@@ -5,9 +5,9 @@ import (
 	"os"
 
 	scan "github.com/Varunram/essentials/scan"
-	xlm "github.com/YaleOpenLab/openx/chains/xlm"
-	assets "github.com/YaleOpenLab/openx/chains/xlm/assets"
-	wallet "github.com/YaleOpenLab/openx/chains/xlm/wallet"
+	xlm "github.com/Varunram/essentials/xlm"
+	assets "github.com/Varunram/essentials/xlm/assets"
+	wallet "github.com/Varunram/essentials/xlm/wallet"
 	consts "github.com/YaleOpenLab/openx/consts"
 	"github.com/pkg/errors"
 )

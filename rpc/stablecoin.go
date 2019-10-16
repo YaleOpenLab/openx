@@ -6,8 +6,8 @@ import (
 
 	erpc "github.com/Varunram/essentials/rpc"
 	utils "github.com/Varunram/essentials/utils"
-	stablecoin "github.com/YaleOpenLab/openx/chains/stablecoin"
-	wallet "github.com/YaleOpenLab/openx/chains/xlm/wallet"
+	wallet "github.com/Varunram/essentials/xlm/wallet"
+	stablecoin "github.com/Varunram/essentials/xlm/stablecoin"
 	consts "github.com/YaleOpenLab/openx/consts"
 )
 
