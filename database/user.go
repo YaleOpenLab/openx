@@ -89,6 +89,8 @@ type User struct {
 	AccessTokenTimeout int64
 	// Mailbox is a mailbox where admins can send you messages or updated on your invested / interested projects
 	Mailbox []MailboxHelper
+	// Legal is a bool which is set when the user accepts the terms and conditions
+	Legal bool
 }
 
 type MailboxHelper struct {
