@@ -54,6 +54,7 @@ var UserRPC = map[int][]string{
 	32: []string{"/user/addseed", "GET", "encryptedseed", "seedpwd", "pubkey"},                     // GET
 	33: []string{"/user/latestblockhash", "GET"},                                                   // GET
 	34: []string{"/ipfs/putdata", "POST", "data"},                                                  // POST
+	35: []string{"/user/tc", "POST"}, // POST
 
 	30: []string{"/user/anchorusd/kyc", "GET", "name", "bdaymonth", "bdayday", "bdayyear", "taxcountry", // GET
 		"taxid", "addrstreet", "addrcity", "addrpostal", "addrregion", "addrcountry", "addrphone", "primaryphone", "gender"},
@@ -99,6 +100,7 @@ func setupUserRpcs() {
 	importSeed()
 	genAccessToken()
 	getLatestBlockHash()
+	acceptTc()
 }
 
 const (
@@ -1273,5 +1275,30 @@ func getLatestBlockHash() {
 		}
 
 		erpc.MarshalSend(w, hash)
+	})
+}
+
+// acceptTc accepts the terms and conditions associated with openx
+func acceptTc() {
+	http.HandleFunc(UserRPC[33][0], func(w http.ResponseWriter, r *http.Request) {
+		user, err := userValidateHelper(w, r, UserRPC[33][2:], UserRPC[33][1])
+		if err != nil {
+			return
+		}
+
+		if user.Legal {
+			erpc.ResponseHandler(w, erpc.StatusOK)
+			return
+		}
+
+		user.Legal = true
+		err = user.Save()
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+			return
+		}
+
+		erpc.ResponseHandler(w, erpc.StatusOK)
 	})
 }
