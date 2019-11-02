@@ -3,11 +3,12 @@ package rpc
 import (
 	"encoding/hex"
 	"encoding/json"
-	"github.com/pkg/errors"
 	"io/ioutil"
 	"log"
 	"math"
 	"net/http"
+
+	"github.com/pkg/errors"
 
 	ipfs "github.com/Varunram/essentials/ipfs"
 	erpc "github.com/Varunram/essentials/rpc"
@@ -54,7 +55,7 @@ var UserRPC = map[int][]string{
 	32: []string{"/user/addseed", "GET", "encryptedseed", "seedpwd", "pubkey"},                     // GET
 	33: []string{"/user/latestblockhash", "GET"},                                                   // GET
 	34: []string{"/ipfs/putdata", "POST", "data"},                                                  // POST
-	35: []string{"/user/tc", "POST"}, // POST
+	35: []string{"/user/tc", "POST"},                                                               // POST
 
 	30: []string{"/user/anchorusd/kyc", "GET", "name", "bdaymonth", "bdayday", "bdayyear", "taxcountry", // GET
 		"taxid", "addrstreet", "addrcity", "addrpostal", "addrregion", "addrcountry", "addrphone", "primaryphone", "gender"},
@@ -1280,8 +1281,8 @@ func getLatestBlockHash() {
 
 // acceptTc accepts the terms and conditions associated with openx
 func acceptTc() {
-	http.HandleFunc(UserRPC[33][0], func(w http.ResponseWriter, r *http.Request) {
-		user, err := userValidateHelper(w, r, UserRPC[33][2:], UserRPC[33][1])
+	http.HandleFunc(UserRPC[35][0], func(w http.ResponseWriter, r *http.Request) {
+		user, err := userValidateHelper(w, r, UserRPC[35][2:], UserRPC[35][1])
 		if err != nil {
 			return
 		}

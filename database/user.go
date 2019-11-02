@@ -6,13 +6,13 @@ import (
 	"log"
 
 	aes "github.com/Varunram/essentials/aes"
+	algorand "github.com/Varunram/essentials/algorand"
+	ethereum "github.com/Varunram/essentials/eth"
 	googauth "github.com/Varunram/essentials/googauth"
 	utils "github.com/Varunram/essentials/utils"
 	xlm "github.com/Varunram/essentials/xlm"
 	assets "github.com/Varunram/essentials/xlm/assets"
 	wallet "github.com/Varunram/essentials/xlm/wallet"
-	algorand "github.com/Varunram/essentials/algorand"
-	ethereum "github.com/Varunram/essentials/eth"
 	consts "github.com/YaleOpenLab/openx/consts"
 	recovery "github.com/bithyve/research/sss"
 )

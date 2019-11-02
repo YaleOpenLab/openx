@@ -3,10 +3,10 @@ package consts
 import (
 	"os"
 
+	algorand "github.com/Varunram/essentials/algorand"
 	email "github.com/Varunram/essentials/email"
 	ipfs "github.com/Varunram/essentials/ipfs"
 	xlm "github.com/Varunram/essentials/xlm"
-	algorand "github.com/Varunram/essentials/algorand"
 	stablecoin "github.com/Varunram/essentials/xlm/stablecoin"
 )
 
