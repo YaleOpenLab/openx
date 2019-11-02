@@ -30,7 +30,7 @@ import (
 
 var opts struct {
 	Insecure  bool `short:"i" description:"Start the API using http. Not recommended"`
-	Port      int  `short:"p" description:"The port on which the server runs on" default:"8080"`
+	Port      int  `short:"p" description:"The port on which the server runs on" default:"0"`
 	Simulate  bool `short:"t" description:"Simulate the test database with demo values (last updated: April 2019)"`
 	Mainnet   bool `short:"m" description:"Switch mainnet mode on"`
 	Trustline bool `short:"x" description:"create trustlines from platform seed to anchorUSD"`
@@ -44,21 +44,31 @@ func ParseConfFile() (bool, int, error) {
 
 	var port int
 	var insecure bool
+	var err error
+
+	_, err = flags.ParseArgs(&opts, os.Args)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	viper.SetConfigType("yaml")
 	viper.SetConfigName("config")
 	viper.AddConfigPath(".")
-	err := viper.ReadInConfig()
+	err = viper.ReadInConfig()
 	if err != nil {
 		log.Println("error while reading platform email from config file")
 		return insecure, port, err
 	}
 
-	if viper.IsSet("port") {
+	if opts.Port != 0 {
+		port = opts.Port
+	} else if viper.IsSet("port") {
 		port = viper.GetInt("port")
 	}
 
-	if viper.IsSet("insecure") {
+	if opts.Insecure {
+		InsecureSet = true
+	} else if viper.IsSet("insecure") {
 		insecure = viper.GetBool("insecure")
 		InsecureSet = insecure
 	}
@@ -73,9 +83,7 @@ func ParseConfFile() (bool, int, error) {
 func main() {
 	var err error
 
-	insecure, port, _ := ParseConfFile()
-
-	_, err = flags.ParseArgs(&opts, os.Args)
+	insecure, port, err := ParseConfFile()
 	if err != nil {
 		log.Fatal(err)
 	}
