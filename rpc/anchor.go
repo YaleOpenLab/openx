@@ -18,6 +18,8 @@ var AnchorRPC = map[int][]string{
 	2: []string{"/user/anchorusd/deposit/kyc", "GET"},     // GET
 	3: []string{"/user/anchorusd/withdraw/intent", "GET"}, // GET
 	4: []string{"/user/anchorusd/withdraw/kyc", "GET"},    // GET
+	5: []string{"/user/anchorusd/kycinfo", "GET"},         // GET
+	6: []string{"/user/anchorusd/kyc/register", "POST"},   // POST
 }
 
 // When a user wants to procure or deal with AnchorUSD, there are a couple things that they need to do:
@@ -216,5 +218,101 @@ func kycWithdraw() {
 		payload := strings.NewReader(data.Encode())
 		PostAndSend(w, r, body, payload)
 		// after this, the workflow will be handled by Anchor's KYC and withdrawal system
+	})
+}
+
+type kycReturn struct {
+	AccountId string `json:"account_id"`
+	KycStatus string `json:"kyc_status`
+}
+
+// getKycStatus gets the status of a user's verification in AnchorUSD
+func getKycStatus() {
+	http.HandleFunc(AnchorRPC[5][0], func(w http.ResponseWriter, r *http.Request) {
+		prepUser, err := userValidateHelper(w, r, AnchorRPC[5][2:], AnchorRPC[5][1])
+		if err != nil {
+			return
+		}
+
+		body := consts.AnchorAPI + "api/accounts/" + prepUser.AnchorKYC.AccountId + "/kyc"
+
+		data, err := erpc.GetRequest(body)
+		if err != nil {
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+			return
+		}
+
+		var ret kycReturn
+		err = json.Unmarshal(data, &ret)
+		if err != nil {
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+			return
+		}
+
+		switch ret.KycStatus {
+		case "passed":
+			erpc.ResponseHandler(w, erpc.StatusOK)
+		default:
+			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
+		}
+
+	})
+}
+
+type kycR struct {
+	URL       string `json:"url"`
+	AccountId string `json:"account_id"`
+}
+
+// kycRegister is used to register for KYC on AnchorUSD's platform
+func kycRegister() {
+	http.HandleFunc(AnchorRPC[6][0], func(w http.ResponseWriter, r *http.Request) {
+		prepUser, err := userValidateHelper(w, r, AnchorRPC[6][2:], AnchorRPC[6][1])
+		if err != nil {
+			return
+		}
+
+		body := consts.AnchorAPI + "api/register"
+		data := url.Values{}
+		data.Set("identifier", prepUser.AnchorKYC.DepositIdentifier)
+		data.Set("name", prepUser.AnchorKYC.Name)
+		data.Set("birthday[month]", prepUser.AnchorKYC.Birthday.Month)
+		data.Set("birthday[day]", prepUser.AnchorKYC.Birthday.Day)
+		data.Set("birthday[year]", prepUser.AnchorKYC.Birthday.Year)
+		data.Set("tax-country", prepUser.AnchorKYC.Tax.Country)
+		data.Set("tax-id-number", prepUser.AnchorKYC.Tax.Id)
+		data.Set("address[street-1]", prepUser.AnchorKYC.Address.Street)
+		data.Set("address[city]", prepUser.AnchorKYC.Address.City)
+		data.Set("address[postal-code]", prepUser.AnchorKYC.Address.Postal)
+		data.Set("address[region]", prepUser.AnchorKYC.Address.Region)
+		data.Set("address[country]", prepUser.AnchorKYC.Address.Country)
+		data.Set("primary-phone-number", prepUser.AnchorKYC.PrimaryPhone)
+		data.Set("gender", prepUser.AnchorKYC.Gender)
+
+		payload := strings.NewReader(data.Encode())
+		retdata, err := erpc.PostRequest(body, payload)
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+			return
+		}
+
+		var ret kycR
+		err = json.Unmarshal(retdata, &ret)
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+			return
+		}
+
+		prepUser.AnchorKYC.AccountId = ret.AccountId
+		err = prepUser.Save()
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+			return
+		}
+
+		erpc.MarshalSend(w, ret)
 	})
 }
