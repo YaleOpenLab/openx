@@ -68,7 +68,7 @@ func authPlatform(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	for _, platform := range platforms {
-		log.Println(platform.Code == code, utils.Unix(), platform.Timeout)
+		log.Println(platform.Code, platform.Name, platform.Code == code, utils.Unix(), platform.Timeout)
 		if platform.Code == code && utils.Unix() < platform.Timeout {
 			return nil
 		}

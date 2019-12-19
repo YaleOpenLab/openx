@@ -130,6 +130,7 @@ type AnchorKYCHelper struct {
 	Gender             string
 	DepositIdentifier  string
 	WithdrawIdentifier string
+	AccountId          string
 }
 
 // StellWallet hold the Stellar Publickey and Encrypted Seed
