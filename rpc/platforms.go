@@ -215,7 +215,7 @@ func pfNewUser() {
 		}
 
 		if r.URL.Query()["username"] == nil || r.URL.Query()["pwhash"] == nil ||
-			r.URL.Query()["seedpwd"] == nil || r.URL.Query()["realname"] == nil {
+			r.URL.Query()["seedpwd"] == nil || r.URL.Query()["email"] == nil {
 			log.Println("code missing")
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 		}
@@ -223,9 +223,9 @@ func pfNewUser() {
 		name := r.URL.Query()["username"][0]
 		pwhash := r.URL.Query()["pwhash"][0]
 		seedpwd := r.URL.Query()["seedpwd"][0]
-		realname := r.URL.Query()["realname"][0]
+		email := r.URL.Query()["email"][0]
 
-		user, err := database.NewUser(name, pwhash, seedpwd, realname)
+		user, err := database.NewUser(name, pwhash, seedpwd, email)
 		if err != nil {
 			log.Println(err)
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)

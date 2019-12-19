@@ -141,7 +141,7 @@ type StellWallet struct {
 }
 
 // NewUser creates a new user, stores it in the openx database and returns a user struct
-func NewUser(uname string, pwhash string, seedpwd string, Name string) (User, error) {
+func NewUser(uname string, pwhash string, seedpwd string, email string) (User, error) {
 	var a User
 
 	lim, err := RetrieveAllUsersLim()
@@ -155,7 +155,7 @@ func NewUser(uname string, pwhash string, seedpwd string, Name string) (User, er
 		return a, errors.Wrap(err, "Error while generating public and private keys")
 	}
 
-	a.Name = Name
+	a.Email = email
 	a.Username = uname
 
 	_, err = CheckUsernameCollision(uname)
