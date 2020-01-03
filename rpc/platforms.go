@@ -227,7 +227,7 @@ func pfNewUser() {
 
 		user, err := database.NewUser(name, pwhash, seedpwd, email)
 		if err != nil {
-			log.Println(err)
+			log.Println("error while creating a new user: ", err)
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
