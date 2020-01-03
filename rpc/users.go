@@ -56,6 +56,7 @@ var UserRPC = map[int][]string{
 	33: []string{"/user/latestblockhash", "GET"},                                                   // GET
 	34: []string{"/ipfs/putdata", "POST", "data"},                                                  // POST
 	35: []string{"/user/tc", "POST"},                                                               // POST
+	36: []string{"/user/progress", "POST", "progress"},                                             // POST
 
 	30: []string{"/user/anchorusd/kyc", "GET", "name", "bdaymonth", "bdayday", "bdayyear", "taxcountry", // GET
 		"taxid", "addrstreet", "addrcity", "addrpostal", "addrregion", "addrcountry", "addrphone", "primaryphone", "gender"},
@@ -102,6 +103,7 @@ func setupUserRpcs() {
 	genAccessToken()
 	getLatestBlockHash()
 	acceptTc()
+	updateProgress()
 }
 
 const (
@@ -1298,6 +1300,38 @@ func acceptTc() {
 			log.Println(err)
 			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
+		}
+
+		erpc.ResponseHandler(w, erpc.StatusOK)
+	})
+}
+
+// updateProgress updates the profile progress bar on the frontend
+func updateProgress() {
+	http.HandleFunc(UserRPC[36][0], func(w http.ResponseWriter, r *http.Request) {
+		user, err := userValidateHelper(w, r, UserRPC[36][2:], UserRPC[36][1])
+		if err != nil {
+			return
+		}
+
+		progressx := r.FormValue("progress")
+		progress, err := utils.ToFloat(progressx)
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		}
+
+		if progress > 100 || progress < 0 {
+			log.Println("progress can't be greater than 100 or 0, quitting")
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+
+		user.ProfileProgress = progress
+		err = user.Save()
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 		}
 
 		erpc.ResponseHandler(w, erpc.StatusOK)

@@ -2,8 +2,9 @@ package database
 
 import (
 	"encoding/base32"
-	"github.com/pkg/errors"
 	"log"
+
+	"github.com/pkg/errors"
 
 	aes "github.com/Varunram/essentials/aes"
 	algorand "github.com/Varunram/essentials/algorand"
@@ -91,6 +92,8 @@ type User struct {
 	Mailbox []MailboxHelper
 	// Legal is a bool which is set when the user accepts the terms and conditions
 	Legal bool
+	// ProfileProgress is a float which denotes user profile completeness on the frontend
+	ProfileProgress float64
 }
 
 type MailboxHelper struct {
