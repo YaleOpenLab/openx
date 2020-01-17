@@ -114,6 +114,7 @@ func intentDeposit() {
 		}
 
 		prepUser.AnchorKYC.DepositIdentifier = x.Identifier
+		prepUser.AnchorKYC.Url = x.Url
 		err = prepUser.Save()
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
@@ -175,6 +176,7 @@ func intentWithdraw() {
 		}
 
 		prepUser.AnchorKYC.WithdrawIdentifier = x.Identifier
+		prepUser.AnchorKYC.Url = x.Url
 		err = prepUser.Save()
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusInternalServerError)

@@ -133,6 +133,7 @@ type AnchorKYCHelper struct {
 	Gender             string
 	DepositIdentifier  string
 	WithdrawIdentifier string
+	Url                string
 	AccountId          string
 }
 
