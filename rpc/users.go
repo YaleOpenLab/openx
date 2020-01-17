@@ -10,6 +10,7 @@ import (
 
 	"github.com/pkg/errors"
 
+	aes "github.com/Varunram/essentials/aes"
 	ipfs "github.com/Varunram/essentials/ipfs"
 	erpc "github.com/Varunram/essentials/rpc"
 	utils "github.com/Varunram/essentials/utils"
@@ -57,6 +58,7 @@ var UserRPC = map[int][]string{
 	34: []string{"/ipfs/putdata", "POST", "data"},                                                  // POST
 	35: []string{"/user/tc", "POST"},                                                               // POST
 	36: []string{"/user/progress", "POST", "progress"},                                             // POST
+	37: []string{"/user/update", "POST"},                                                           // POST
 
 	30: []string{"/user/anchorusd/kyc", "GET", "name", "bdaymonth", "bdayday", "bdayyear", "taxcountry", // GET
 		"taxid", "addrstreet", "addrcity", "addrpostal", "addrregion", "addrcountry", "addrphone", "primaryphone", "gender"},
@@ -104,6 +106,7 @@ func setupUserRpcs() {
 	getLatestBlockHash()
 	acceptTc()
 	updateProgress()
+	updateUser()
 }
 
 const (
@@ -312,6 +315,7 @@ func getAssetBalance() {
 
 		balance, err := xlm.GetAssetBalance(pubkey, asset)
 		if err != nil {
+			log.Println(err)
 			erpc.ResponseHandler(w, erpc.StatusNotFound)
 			return
 		}
@@ -1335,5 +1339,83 @@ func updateProgress() {
 		}
 
 		erpc.ResponseHandler(w, erpc.StatusOK)
+	})
+}
+
+// updateUser updates credentials of the user
+func updateUser() {
+	http.HandleFunc(UserRPC[37][0], func(w http.ResponseWriter, r *http.Request) {
+		user, err := userValidateHelper(w, r, UserRPC[37][2:], UserRPC[37][1])
+		if err != nil {
+			return
+		}
+
+		if r.FormValue("name") != "" {
+			user.Name = r.FormValue("name")
+		}
+		if r.FormValue("city") != "" {
+			user.City = r.FormValue("city")
+		}
+		if r.FormValue("pwhash") != "" {
+			if len(r.FormValue("pwhash")) != 128 {
+				log.Println("length of pwhash not 128")
+				erpc.ResponseHandler(w, erpc.StatusBadRequest)
+				return
+			}
+			user.Pwhash = r.FormValue("pwhash")
+		}
+		if r.FormValue("zipcode") != "" {
+			user.ZipCode = r.FormValue("zipcode")
+		}
+		if r.FormValue("country") != "" {
+			user.Country = r.FormValue("country")
+		}
+		if r.FormValue("recoveryphone") != "" {
+			user.RecoveryPhone = r.FormValue("recoveryphone")
+		}
+		if r.FormValue("address") != "" {
+			user.Address = r.FormValue("address")
+		}
+		if r.FormValue("description") != "" {
+			user.Description = r.FormValue("description")
+		}
+		if r.FormValue("email") != "" {
+			user.Email = r.FormValue("email")
+		}
+		if r.FormValue("seedpwd") != "" {
+			if r.FormValue("oldseedpwd") == "" {
+				erpc.ResponseHandler(w, erpc.StatusBadRequest)
+				return
+			}
+			oldseedpwd := r.FormValue("oldseedpwd")
+			seedpwd := r.FormValue("seedpwd")
+			seed, err := wallet.DecryptSeed(user.StellarWallet.EncryptedSeed, oldseedpwd)
+			if err != nil {
+				erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+				return
+			}
+			user.StellarWallet.EncryptedSeed, err = aes.Encrypt([]byte(seed), seedpwd)
+			if err != nil {
+				erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+				return
+			}
+		}
+
+		if r.FormValue("notification") != "" {
+			if r.FormValue("notification") != "true" {
+				user.Notification = false
+			} else {
+				user.Notification = true
+			}
+		}
+
+		err = user.Save()
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+			return
+		}
+
+		erpc.MarshalSend(w, user)
 	})
 }
