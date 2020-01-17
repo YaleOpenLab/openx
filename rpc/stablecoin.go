@@ -59,6 +59,7 @@ func getTestStableCoin() {
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
+
 		err = stablecoin.Exchange(receiverPubkey, receiverSeed, amount)
 		if err != nil {
 			log.Println("did not exchange for xlm", err)
