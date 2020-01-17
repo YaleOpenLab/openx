@@ -43,7 +43,8 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if user1.Name != "User1" {
+	if user1.Username != "user1" {
+		log.Println(user1.Name)
 		t.Fatalf("Usernames don't match. quitting!")
 	}
 

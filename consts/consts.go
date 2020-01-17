@@ -107,7 +107,7 @@ func SetConsts(mainnet bool) {
 		PlatformSeedFile = HomeDir + "/platformseed.hex"
 
 		StablecoinCode = "STABLEUSD"                                                     // this is constant across different pubkeys
-		StablecoinPublicKey = "GDUNL6KJKSCBEFTVRXDN7ZPLCYXUDZUTJRZ4IUHD7DQ5YHGO6EPPYBTZ" // set this after running this the first time. replace for tests to run properly
+		StablecoinPublicKey = "GCBFI5SB3KOOTV4GMGWRPCBI4OKCDFA2C7IRCWWXLDTV7MKPTSMVB6DX" // set this after running this the first time. replace for tests to run properly
 		StablecoinSeed = "SDGD3L3KVINB5OICLAQRQLGTNDDWRBELTQZG6FHFYCEZRQPWKEOQOWR6"      // set this after running this the first time. replace for tests to run properly
 		StableCoinSeedFile = DbDir + "/stablecoinseed.hex"
 		StablecoinTrustLimit = 1000000000
