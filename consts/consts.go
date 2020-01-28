@@ -4,7 +4,6 @@ import (
 	"os"
 
 	algorand "github.com/Varunram/essentials/algorand"
-	email "github.com/Varunram/essentials/email"
 	ipfs "github.com/Varunram/essentials/ipfs"
 	xlm "github.com/Varunram/essentials/xlm"
 	stablecoin "github.com/Varunram/essentials/xlm/stablecoin"
@@ -107,8 +106,8 @@ func SetConsts(mainnet bool) {
 		PlatformSeedFile = HomeDir + "/platformseed.hex"
 
 		StablecoinCode = "STABLEUSD"                                                     // this is constant across different pubkeys
-		StablecoinPublicKey = "GCBFI5SB3KOOTV4GMGWRPCBI4OKCDFA2C7IRCWWXLDTV7MKPTSMVB6DX" // set this after running this the first time. replace for tests to run properly
-		StablecoinSeed = "SDGD3L3KVINB5OICLAQRQLGTNDDWRBELTQZG6FHFYCEZRQPWKEOQOWR6"      // set this after running this the first time. replace for tests to run properly
+		StablecoinPublicKey = "GBESYUIFJ2NKNSLXCDWJJ7YYXD7OTCPWDM57YK6R3U76YEVYS5F5HI37" // set this after running this the first time. replace for tests to run properly
+		StablecoinSeed = "SCQET25QJSJU7WU56O2FQBJOXOC37WWUBDDCUMPL53AUII72JOV5JMS2"      // set this after running this the first time. replace for tests to run properly
 		StableCoinSeedFile = DbDir + "/stablecoinseed.hex"
 		StablecoinTrustLimit = 1000000000
 		// testnet anchor params
@@ -147,7 +146,6 @@ func SetConsts(mainnet bool) {
 	}
 
 	xlm.SetConsts(RefillAmount, Mainnet)
-	email.SetConsts(PlatformEmail, PlatformEmailPass)
 	IpfsFileLength = 10
 	ipfs.SetConsts(IpfsFileLength)
 	stablecoin.SetConsts(StablecoinCode, StablecoinPublicKey, StablecoinSeed, StableCoinSeedFile, StablecoinTrustLimit,

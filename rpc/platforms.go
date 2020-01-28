@@ -60,6 +60,7 @@ func authPlatform(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	code := r.URL.Query()["code"][0]
+	log.Println("Platform's code: ", code)
 
 	platforms, err := database.RetrieveAllPlatforms()
 	if err != nil {
@@ -97,7 +98,6 @@ type OpensolarConstReturn struct {
 // pfGetConsts is an RPC that returns running constants to platforms which might need this information
 func pfGetConsts() {
 	http.HandleFunc(PlatformRPC[0][0], func(w http.ResponseWriter, r *http.Request) {
-		log.Println("external platform requesting consts")
 		err := erpc.CheckGet(w, r)
 		if err != nil {
 			log.Println(err)
@@ -211,6 +211,7 @@ func pfNewUser() {
 
 		err = authPlatform(w, r)
 		if err != nil {
+			log.Println(err)
 			return
 		}
 
