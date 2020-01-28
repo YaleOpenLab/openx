@@ -4,6 +4,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/Varunram/essentials/email"
+
 	erpc "github.com/Varunram/essentials/rpc"
 	utils "github.com/Varunram/essentials/utils"
 	consts "github.com/YaleOpenLab/openx/consts"
@@ -25,6 +27,7 @@ func setupPlatformRoutes() {
 	pfNewUser()
 	pfCollisionCheck()
 	retrieveAllPlatformNames()
+	pfSendEmail()
 }
 
 var PlatformRPC = map[int][]string{
@@ -34,6 +37,7 @@ var PlatformRPC = map[int][]string{
 	3: []string{"/platform/user/new", "username", "pwhash", "seedpwd", "email"}, // GET
 	4: []string{"/platform/user/collision", "username"},                         // GET
 	5: []string{"/platforms/all"},                                               // GET NOAUTH
+	6: []string{"/platform/email", "body", "to"},                                // POST
 }
 
 // mainnetRPC is an RPC that reutrns 0 if openx is running on mainnet, 1 if running on testnet
@@ -53,13 +57,30 @@ func mainnetRPC() {
 }
 
 func authPlatform(w http.ResponseWriter, r *http.Request) error {
+	var code string
+	if r.Method == "GET" {
+		if r.URL.Query()["code"] == nil {
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return errors.New("required params code and name not found in request")
+		}
 
-	if r.URL.Query()["code"] == nil {
-		erpc.ResponseHandler(w, erpc.StatusBadRequest)
-		return errors.New("required params code and name not found in request")
+		code = r.URL.Query()["code"][0]
+	} else if r.Method == "POST" {
+		log.Println("platform post call")
+		err := r.ParseForm()
+		if err != nil {
+			log.Println(r.URL, r.Form)
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return errors.New("required params code and name not found in request")
+		}
+
+		code = r.FormValue("code")
+		if code == "" {
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return errors.New("required param code not found in request")
+		}
 	}
 
-	code := r.URL.Query()["code"][0]
 	log.Println("Platform's code: ", code)
 
 	platforms, err := database.RetrieveAllPlatforms()
@@ -290,5 +311,42 @@ func retrieveAllPlatformNames() {
 		}
 
 		erpc.MarshalSend(w, platformNames)
+	})
+}
+
+// pfSendEmail sends an email on behalf of another platform from the openx platform
+func pfSendEmail() {
+	http.HandleFunc(PlatformRPC[6][0], func(w http.ResponseWriter, r *http.Request) {
+		log.Println("external platform requests email from openx")
+		err := erpc.CheckPost(w, r)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		err = authPlatform(w, r)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		log.Println("AUTHENTICATED PLATFORM")
+		if r.FormValue("body") == "" || r.FormValue("to") == "" {
+			log.Println("reqd param body or code not found")
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+
+		body := r.FormValue("body")
+		to := r.FormValue("to")
+
+		err = email.SendMail(body, to)
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+			return
+		}
+
+		erpc.ResponseHandler(w, erpc.StatusOK)
 	})
 }
