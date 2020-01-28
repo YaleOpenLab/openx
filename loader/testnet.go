@@ -2,8 +2,11 @@ package loader
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
 	"log"
+
+	"github.com/Varunram/essentials/email"
+
+	"github.com/pkg/errors"
 
 	"github.com/spf13/viper"
 
@@ -79,6 +82,7 @@ func Testnet() error {
 		consts.KYCAPIKey = viper.GetString("kycapikey")
 	}
 
+	email.SetConsts(consts.PlatformEmail, consts.PlatformEmailPass)
 	fmt.Printf("PLATFORM SEED IS: %s\n PLATFORM PUBLIC KEY IS: %s\n", consts.PlatformSeed, consts.PlatformPublicKey)
 	fmt.Printf("STABLECOIN PUBLICKEY IS: %s\nSTABLECOIN SEED is: %s\n\n", consts.StablecoinPublicKey, consts.StablecoinSeed)
 	return nil

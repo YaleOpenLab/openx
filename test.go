@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	// "github.com/pkg/errors"
 	"log"
 	"os"
@@ -82,7 +83,6 @@ func ParseConfFile() (bool, int, error) {
 
 func main() {
 	var err error
-
 	insecure, port, err := ParseConfFile()
 	if err != nil {
 		log.Fatal(err)
