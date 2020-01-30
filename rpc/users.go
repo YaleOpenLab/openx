@@ -196,7 +196,7 @@ func userValidateHelper(w http.ResponseWriter, r *http.Request, options []string
 			prepUser, err = database.ValidateAccessToken(r.URL.Query()["username"][0], r.URL.Query()["token"][0])
 		}
 	} else if method == "POST" {
-		if r.FormValue("seedpwd") != "" {
+		if r.FormValue("seedpwd") != "" && r.FormValue("oldseedpwd") != "" {
 			prepUser, err = database.ValidateSeedpwdAuthToken(r.FormValue("username"), r.FormValue("token"), r.FormValue("seedpwd"))
 		} else {
 			prepUser, err = database.ValidateAccessToken(r.FormValue("username"), r.FormValue("token"))

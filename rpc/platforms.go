@@ -186,7 +186,7 @@ func pfGetUser() {
 	})
 }
 
-// pfValidateUser validates a given user and returns the user struct
+// pfValidateUser takes in a username and token and returns the user struct
 func pfValidateUser() {
 	http.HandleFunc(PlatformRPC[2][0], func(w http.ResponseWriter, r *http.Request) {
 		log.Println("external platform requests validation")
