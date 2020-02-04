@@ -293,12 +293,7 @@ func getXLMBalance() {
 		}
 
 		pubkey := prepUser.StellarWallet.PublicKey
-		balance, err := xlm.GetNativeBalance(pubkey)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusNotFound)
-			return
-		}
-
+		balance := xlm.GetNativeBalance(pubkey)
 		erpc.MarshalSend(w, balance)
 	})
 }
@@ -314,13 +309,7 @@ func getAssetBalance() {
 		asset := r.URL.Query()["asset"][0]
 		pubkey := prepUser.StellarWallet.PublicKey
 
-		balance, err := xlm.GetAssetBalance(pubkey, asset)
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusNotFound)
-			return
-		}
-
+		balance := xlm.GetAssetBalance(pubkey, asset)
 		erpc.MarshalSend(w, balance)
 	})
 }
@@ -882,12 +871,7 @@ func sweepFunds() {
 		}
 
 		// validated the user, so now proceed to sweep funds
-		xlmBalance, err := xlm.GetNativeBalance(prepUser.StellarWallet.PublicKey)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
-			return
-		}
-
+		xlmBalance := xlm.GetNativeBalance(prepUser.StellarWallet.PublicKey)
 		xlmBalanceF, err := utils.ToFloat(xlmBalance)
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
@@ -940,12 +924,7 @@ func sweepAsset() {
 		}
 
 		// validated the user, so now proceed to sweep funds
-		assetBalance, err := xlm.GetAssetBalance(prepUser.StellarWallet.PublicKey, assetName)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
-			return
-		}
-
+		assetBalance := xlm.GetAssetBalance(prepUser.StellarWallet.PublicKey, assetName)
 		assetBalanceF, err := utils.ToFloat(assetBalance)
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusInternalServerError)

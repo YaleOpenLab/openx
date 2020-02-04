@@ -39,10 +39,7 @@ func InitializePlatform() error {
 				// ie we're on mainnet and the account doesn't have enough funds to start
 				return errors.New("please refill the platform with xlm to be able to start openx. Min balance: 0.5XLM")
 			}
-			balance, err := xlm.GetNativeBalance(consts.PlatformPublicKey)
-			if err != nil {
-				return errors.Wrap(err, "could not get native balance")
-			}
+			balance := xlm.GetNativeBalance(consts.PlatformPublicKey)
 			if balance < 1.5 { // 0.5 min + 0.5x2 trustlines
 				return errors.New("balance insufficient to run platform")
 			}
@@ -136,10 +133,7 @@ func RefillPlatform(publicKey string) error {
 		return errors.New("no provision to refill on mainnet") // refilling platform has to be done manually in the case of mainnet
 	}
 
-	balance, err := xlm.GetNativeBalance(publicKey)
-	if err != nil {
-		return err
-	}
+	balance := xlm.GetNativeBalance(publicKey)
 
 	log.Println("Platform's balance is: ", balance)
 	if balance < 21 {

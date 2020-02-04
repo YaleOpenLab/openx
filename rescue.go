@@ -78,12 +78,7 @@ func RescueMode() {
 				break
 			}
 
-			amount, err := xlm.GetNativeBalance(pubkey)
-			if err != nil {
-				log.Println("could not get xlm balance of secondary account")
-				break
-			}
-
+			amount := xlm.GetNativeBalance(pubkey)
 			log.Println("SWEEP AMOUNT IS: ", amount)
 			// send the tx over
 			_, _, err = xlm.SendXLM(address, amount-5, seed, "rescue mode sweep")
@@ -106,11 +101,7 @@ func RescueMode() {
 				log.Println("!!!" + strings.ToUpper(err.Error()) + "!!!")
 				break
 			}
-			amount, err := xlm.GetNativeBalance(source)
-			if err != nil {
-				log.Println("could not get xlm balance of secondary account")
-				break
-			}
+			amount := xlm.GetNativeBalance(source)
 			log.Println("Enter sweep address")
 			destination, err := scan.ScanString()
 			if err != nil {
@@ -145,11 +136,7 @@ func RescueMode() {
 			}
 			log.Println("AMOUNT IS: ", amount)
 
-			balance, err := xlm.GetAssetBalance(pubkey, consts.AnchorUSDCode)
-			if err != nil {
-				log.Println("could not get xlm balance of secondary account")
-				break
-			}
+			balance := xlm.GetAssetBalance(pubkey, consts.AnchorUSDCode)
 			log.Println("Available balance: ", balance)
 			if balance < amount {
 				log.Println("insufficient balance")

@@ -439,11 +439,7 @@ func (a *User) MoveFundsFromSecondaryWallet(amount float64, seedpwd string) erro
 		return errors.Wrap(err, "could not unlock secondary seed, quitting")
 	}
 
-	secFunds, err := xlm.GetNativeBalance(a.SecondaryWallet.PublicKey)
-	if err != nil {
-		return errors.Wrap(err, "could not get xlm balance of secondary account")
-	}
-
+	secFunds := xlm.GetNativeBalance(a.SecondaryWallet.PublicKey)
 	if amount > secFunds {
 		return errors.New("amount to be transferred is greater than the funds available in the secondary account, quitting")
 	}
@@ -466,11 +462,7 @@ func (a *User) SweepSecondaryWallet(seedpwd string) error {
 		return errors.Wrap(err, "could not unlock primary seed, quitting")
 	}
 
-	secFunds, err := xlm.GetNativeBalance(a.SecondaryWallet.PublicKey)
-	if err != nil {
-		return errors.Wrap(err, "could not get xlm balance of secondary account")
-	}
-
+	secFunds := xlm.GetNativeBalance(a.SecondaryWallet.PublicKey)
 	_, txhash, err := xlm.SendXLM(a.StellarWallet.PublicKey, secFunds-5, secSeed, "fund transfer to secondary")
 	if err != nil {
 		return errors.Wrap(err, "error while transferring funds to secondary account, quitting")
