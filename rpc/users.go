@@ -232,6 +232,12 @@ func genAccessToken() {
 		username := r.FormValue("username")
 		pwhash := r.FormValue("pwhash")
 
+		if username == "" || pwhash == "" {
+			log.Println("required params username or pwhash not found, quitting")
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			return
+		}
+
 		log.Println("username: ", username, " requesting a new access token")
 		user, err := database.ValidatePwhash(username, pwhash)
 		if err != nil {
@@ -872,21 +878,16 @@ func sweepFunds() {
 
 		// validated the user, so now proceed to sweep funds
 		xlmBalance := xlm.GetNativeBalance(prepUser.StellarWallet.PublicKey)
-		xlmBalanceF, err := utils.ToFloat(xlmBalance)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
-			return
-		}
-
+		log.Println(xlmBalance)
 		// reduce 0.05 xlm and then sweep funds
-		if xlmBalanceF < 5 {
+		if xlmBalance < 5 {
 			log.Println("xlm balance for user too small to sweep funds, quitting!")
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
-		xlmBalanceF -= 5
+		xlmBalance -= 5
 		// now we have the xlm balance, shift funds to the other account as requested by the user.
-		sweepAmt := math.Round(xlmBalanceF)
+		sweepAmt := math.Round(xlmBalance)
 		_, txhash, err := xlm.SendXLM(transferAddress, sweepAmt, seed, "sweep funds")
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
