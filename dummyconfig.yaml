@@ -4,9 +4,8 @@ insecure: true
 mainnet: false
 
 # mainnet params
-email: myemail@domain.extension
 platformemail: platform@openx.com
-password: topsecretpassword
+platformpass: topsecretpassword
 kycapikey: topsecret
 
 # testnet params

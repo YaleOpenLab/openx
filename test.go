@@ -10,6 +10,7 @@ import (
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
 	loader "github.com/YaleOpenLab/openx/loader"
+
 	// ipfs "github.com/YaleOpenLab/openx/ipfs"
 	// opensolar "github.com/YaleOpenLab/opensolar/consts"
 	rpc "github.com/YaleOpenLab/openx/rpc"
@@ -108,7 +109,6 @@ func main() {
 		admin.Pwhash = utils.SHA3hash("password")
 		admin.AccessToken = "pmkjMEnyeUpdTyhdHElkBExEKeLIlYft"
 		admin.AccessTokenTimeout = utils.Unix() + 1000000
-		log.Println(admin.Username, admin.Pwhash)
 		admin.Admin = true
 		err = admin.Save()
 		if err != nil {
@@ -118,10 +118,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = xlm.GetXLM(admin.StellarWallet.PublicKey)
-		if err != nil {
-			log.Fatal(err)
-		}
+		go xlm.GetXLM(admin.StellarWallet.PublicKey)
 	}
 
 	if opts.Rescue {
@@ -129,22 +126,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	/*
-		user, err := database.RetrieveUser(1)
-		if err != nil {
-			log.Fatal(err)
-		}
-		user.Admin = true
-		err = user.Save()
-		if err != nil {
-			log.Fatal(err)
-		}
-	*/
 	// rpc.KillCode = "NUKE" // compile time nuclear code
 	// run this only when you need to monitor the tellers. Not required for local testing.
 	// go opensolar.MonitorTeller(1)
 	fmt.Println(`
-		██████╗ ██████╗ ███████╗███╗   ██╗██╗  ██╗
+	  ██████╗  ██████╗███████╗ ███╗   ██╗██╗  ██╗
 	 ██╔═══██╗██╔══██╗██╔════╝████╗  ██║╚██╗██╔╝
 	 ██║   ██║██████╔╝█████╗  ██╔██╗ ██║ ╚███╔╝
 	 ██║   ██║██╔═══╝ ██╔══╝  ██║╚██╗██║ ██╔██╗

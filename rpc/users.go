@@ -320,7 +320,7 @@ func getAssetBalance() {
 	})
 }
 
-// putIpfsData gets data from ipfs
+// getIpfsData gets data from ipfs
 func getIpfsData() {
 	http.HandleFunc(UserRPC[5][0], func(w http.ResponseWriter, r *http.Request) {
 		_, err := userValidateHelper(w, r, UserRPC[5][2:], UserRPC[5][1])

@@ -12,6 +12,7 @@ import (
 
 	algorand "github.com/Varunram/essentials/algorand"
 	stablecoin "github.com/Varunram/essentials/xlm/stablecoin"
+
 	// utils "github.com/Varunram/essentials/utils"
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
@@ -74,7 +75,7 @@ func Testnet() error {
 	if !viper.IsSet("platformpass") {
 		log.Println("platform email password not set")
 	} else {
-		consts.PlatformEmailPass = viper.GetString("password")
+		consts.PlatformEmailPass = viper.GetString("platformpass")
 	}
 	if !viper.IsSet("kycapikey") {
 		log.Println("kyc api key not set, kyc will be disabled")
