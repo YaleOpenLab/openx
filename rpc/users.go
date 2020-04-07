@@ -1406,7 +1406,8 @@ func updateUser() {
 // downloadTeller downloads the teller data file
 func downloadTeller() {
 	http.HandleFunc(UserRPC[38][0], func(w http.ResponseWriter, r *http.Request) {
-		_, err := userValidateHelper(w, r, UserRPC[38][2:], UserRPC[38][1])
+		//_, err := userValidateHelper(w, r, UserRPC[38][2:], UserRPC[38][1])
+		err := erpc.CheckGet(w, r)
 		if err != nil {
 			return
 		}
