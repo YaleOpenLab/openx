@@ -59,6 +59,7 @@ var UserRPC = map[int][]string{
 	35: []string{"/user/tc", "POST"},                                                               // POST
 	36: []string{"/user/progress", "POST", "progress"},                                             // POST
 	37: []string{"/user/update", "POST"},                                                           // POST
+	38: []string{"/user/tellerfile", "GET"},                                                        // GET
 
 	30: []string{"/user/anchorusd/kyc", "GET", "name", "bdaymonth", "bdayday", "bdayyear", "taxcountry", // GET
 		"taxid", "addrstreet", "addrcity", "addrpostal", "addrregion", "addrcountry", "addrphone", "primaryphone", "gender"},
@@ -107,6 +108,7 @@ func setupUserRpcs() {
 	acceptTc()
 	updateProgress()
 	updateUser()
+	downloadTeller()
 }
 
 const (
@@ -1398,5 +1400,17 @@ func updateUser() {
 		}
 
 		erpc.MarshalSend(w, user)
+	})
+}
+
+// downloadTeller downloads the teller data file
+func downloadTeller() {
+	http.HandleFunc(UserRPC[38][0], func(w http.ResponseWriter, r *http.Request) {
+		_, err := userValidateHelper(w, r, UserRPC[38][2:], UserRPC[38][1])
+		if err != nil {
+			return
+		}
+
+		http.ServeFile(w, r, "screenlog.0")
 	})
 }

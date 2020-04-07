@@ -8,7 +8,6 @@ import (
 
 	aes "github.com/Varunram/essentials/aes"
 	algorand "github.com/Varunram/essentials/algorand"
-	ethereum "github.com/Varunram/essentials/eth"
 	googauth "github.com/Varunram/essentials/googauth"
 	utils "github.com/Varunram/essentials/utils"
 	xlm "github.com/Varunram/essentials/xlm"
@@ -70,8 +69,6 @@ type User struct {
 	PwdResetCode string
 	// SecondaryWallet is a secondary wallet where people can store their funds in
 	SecondaryWallet StellWallet
-	// EthereumWallet is an ethereum wallet where users' RECs and other ETH based assets are stored in
-	EthereumWallet ethereum.EthereumWallet
 	// PendingDocuments is a list of pending documents which a user must upload before progressing on to the next stage
 	PendingDocuments map[string]string
 	// KYC contains KYC information required by ComplyAdvantage
@@ -314,8 +311,6 @@ func (a *User) GenKeys(seedpwd string, options ...string) error {
 		a.RecoveryShares = append(a.RecoveryShares, tmp...)
 	}
 
-	// the secondary account is Ethereum by definition since we need to store Swytch RECs
-	// which are based off Ethereum
 	secSeed, secPubkey, err := xlm.GetKeyPair()
 	if err != nil {
 		return errors.Wrap(err, "could not generate secondary keypair")
@@ -325,11 +320,6 @@ func (a *User) GenKeys(seedpwd string, options ...string) error {
 	a.SecondaryWallet.EncryptedSeed, err = aes.Encrypt([]byte(secSeed), seedpwd)
 	if err != nil {
 		return errors.Wrap(err, "error while encrypting seed")
-	}
-
-	a.EthereumWallet, err = ethereum.GenEthWallet()
-	if err != nil {
-		return errors.Wrap(err, "error while generating ethereum wallet, quitting")
 	}
 
 	err = a.Save()
