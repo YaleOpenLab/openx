@@ -23,6 +23,7 @@ var AdminRPC = map[int][]string{
 	6: {"/admin/list"},                                                   // GET
 	7: {"/admin/platform/new", "POST", "name", "code", "timeout"},        // POST
 	8: {"/admin/sendmessage", "POST", "subject", "message", "recipient"}, // POST
+	9: {"/admin/getallusers", "GET"},                                     // GET
 }
 
 // adminHandlers are a list of all the admin handlers defined by openx
@@ -34,6 +35,7 @@ func adminHandlers() {
 	listAllAdmins()
 	addNewPlatform()
 	sendNewMessage()
+	getallUsersAdmin()
 }
 
 // KillCode is a code that can immediately shut down the server in case of hacks / crises
@@ -221,5 +223,30 @@ func sendNewMessage() {
 		}
 
 		erpc.ResponseHandler(w, erpc.StatusOK)
+	})
+}
+
+type getUsersAdmin struct {
+	Length int
+}
+
+func getallUsersAdmin() {
+	http.HandleFunc(AdminRPC[9][0], func(w http.ResponseWriter, r *http.Request) {
+		_, adminBool := validateAdmin(w, r, AdminRPC[9][2:], AdminRPC[9][1])
+		if !adminBool {
+			return
+		}
+
+		users, err := database.RetrieveAllUsers()
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+			return
+		}
+
+		var x getUsersAdmin
+		x.Length = len(users)
+
+		erpc.MarshalSend(w, x)
 	})
 }

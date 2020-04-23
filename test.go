@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	// "github.com/pkg/errors"
+
 	"log"
 	"os"
 
@@ -24,6 +25,7 @@ import (
 	xlm "github.com/Varunram/essentials/xlm"
 	// assets "github.com/Varunram/essentials/xlm/assets"
 	// assets "github.com/YaleOpenLab/openx/assets"
+
 	flags "github.com/jessevdk/go-flags"
 	"github.com/spf13/viper"
 )
@@ -107,7 +109,7 @@ func main() {
 		admin.Index = 1
 		admin.Username = "admin"
 		admin.Pwhash = utils.SHA3hash("password")
-		admin.AccessToken = "	"
+		admin.AccessToken = "pmkjMEnyeUpdTyhdHElkBExEKeLIlYft"
 		admin.AccessTokenTimeout = utils.Unix() + 1000000
 		admin.Admin = true
 		err = admin.Save()
