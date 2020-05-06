@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	xlm "github.com/YaleOpenLab/openx/xlm"
+	xlm "github.com/Varunram/essentials/xlm"
 )
 
 func TestAnchorEndpoints(t *testing.T) {
