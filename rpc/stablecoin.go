@@ -28,7 +28,7 @@ func setupStableCoinRPCs() {
 func getTestStableCoin() {
 	http.HandleFunc(StablecoinRPC[1][0], func(w http.ResponseWriter, r *http.Request) {
 		if consts.Mainnet {
-			log.Println("test stablecoin not available on testnet")
+			log.Println("test stablecoin not available on mainnet")
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
@@ -38,7 +38,7 @@ func getTestStableCoin() {
 			return
 		}
 
-		user, err := userValidateHelper(w, r, StablecoinRPC[1][2:], StablecoinRPC[2][1])
+		user, err := userValidateHelper(w, r, StablecoinRPC[1][2:], StablecoinRPC[1][1])
 		if err != nil {
 			return
 		}
@@ -63,9 +63,9 @@ func getTestStableCoin() {
 		err = stablecoin.Exchange(receiverPubkey, receiverSeed, amount)
 		if err != nil {
 			log.Println("did not exchange for xlm", err)
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
+
 		erpc.ResponseHandler(w, erpc.StatusOK)
 	})
 }
