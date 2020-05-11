@@ -22,7 +22,7 @@ func InitializePlatform() error {
 	if _, err := os.Stat(consts.PlatformSeedFile); !os.IsNotExist(err) {
 		// home dir exists, ask for password
 		log.Println("ENTER YOUR PASSWORD TO DECRYPT THE PLATFORM SEED FILE")
-		password, err := scan.ScanRawPassword()
+		password, err := scan.RawPassword()
 		if err != nil {
 			return errors.Wrap(err, "couldn't scan raw password")
 		}
@@ -48,14 +48,14 @@ func InitializePlatform() error {
 	}
 	// the home directory doesn't exist, two cases: seed doesn't exist or user has deleted it
 	log.Println("DO YOU HAVE YOUR RAW PLATFORM SEED? IF SO, ENTER SEED. ELSE ENTER N")
-	seed, err = scan.ScanString()
+	seed, err = scan.String()
 	if err != nil {
 		return errors.Wrap(err, "couldn't scan raw string")
 	}
 	if seed == "N" || seed == "n" {
 		// no seed, no file, create new keypair
 		log.Println("Enter a password to encrypt your master seed. Please store this in a very safe place. This prompt will not ask to confirm your password")
-		password, err := scan.ScanRawPassword()
+		password, err := scan.RawPassword()
 		if err != nil {
 			return err
 		}
@@ -74,7 +74,7 @@ func InitializePlatform() error {
 	} else {
 		// no file but user remembers seed, retrieve pukbey
 		log.Println("ENTER A PASSWORD TO ENCRYPT YOUR SEED")
-		password, err := scan.ScanRawPassword()
+		password, err := scan.RawPassword()
 		if err != nil {
 			return err
 		}

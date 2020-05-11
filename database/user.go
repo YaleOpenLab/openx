@@ -46,7 +46,7 @@ type User struct {
 	// StellarWallet contains a publickey and encrypted seed that can be used to interact with the Stellar blockchain
 	StellarWallet StellWallet
 	// AlgorandWallet contains a publickey and privatekey pair which can be used to interact with the Algorand blockchain
-	AlgorandWallet algorand.AlgorandWallet
+	AlgorandWallet algorand.Wallet
 	// Username denoteds the username of the user to log on to openx
 	Username string
 	// Pwhash is the 512 byte SHA-3 hash of the user's password

@@ -331,7 +331,7 @@ func getIpfsData() {
 		}
 
 		hashString := r.URL.Query()["hash"][0]
-		data, err := ipfs.IpfsGetString(hashString)
+		data, err := ipfs.GetString(hashString)
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
@@ -350,13 +350,13 @@ func putIpfsData() {
 		}
 
 		data := []byte(r.FormValue("data"))
-		hash, err := ipfs.IpfsAddBytes([]byte(data))
+		hash, err := ipfs.AddBytes([]byte(data))
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
 		}
 
-		_, err = ipfs.IpfsAddBytes(data)
+		_, err = ipfs.AddBytes(data)
 		if err != nil {
 			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
 			return
@@ -582,7 +582,7 @@ func uploadFile() {
 			return
 		}
 
-		hashString, err := ipfs.IpfsAddBytes(data)
+		hashString, err := ipfs.AddBytes(data)
 		if err != nil {
 			log.Println("did not hash data to ipfs", err)
 			erpc.ResponseHandler(w, erpc.StatusInternalServerError)

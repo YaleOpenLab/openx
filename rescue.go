@@ -37,20 +37,20 @@ func RescueMode() {
 		log.Println("3. View platform balances")
 		log.Println("4. Sweep XLM from project escrow")
 		log.Println("5. Send USD to another address")
-		choice, err := scan.ScanInt()
+		choice, err := scan.Int()
 		if err != nil {
 			log.Fatal(err)
 		}
 		switch choice {
 		case 1:
 			log.Println("Enter address")
-			address, err := scan.ScanString()
+			address, err := scan.String()
 			if err != nil {
 				log.Println("!!!" + strings.ToUpper(err.Error()) + "!!!")
 				break
 			}
 			log.Println("Enter amount")
-			amount, err := scan.ScanFloat()
+			amount, err := scan.Float()
 			if err != nil {
 				log.Println("!!!" + strings.ToUpper(err.Error()) + "!!!")
 				break
@@ -72,7 +72,7 @@ func RescueMode() {
 
 		case 2:
 			log.Println("Enter sweep address")
-			address, err := scan.ScanString()
+			address, err := scan.String()
 			if err != nil {
 				log.Println("!!!" + strings.ToUpper(err.Error()) + "!!!")
 				break
@@ -96,20 +96,20 @@ func RescueMode() {
 			log.Println(balances)
 		case 4:
 			log.Println("Enter escrow address")
-			source, err := scan.ScanString()
+			source, err := scan.String()
 			if err != nil {
 				log.Println("!!!" + strings.ToUpper(err.Error()) + "!!!")
 				break
 			}
 			amount := xlm.GetNativeBalance(source)
 			log.Println("Enter sweep address")
-			destination, err := scan.ScanString()
+			destination, err := scan.String()
 			if err != nil {
 				log.Println("!!!" + strings.ToUpper(err.Error()) + "!!!")
 				break
 			}
 			log.Println("Enter other signer's seed")
-			otherSeed, err := scan.ScanString()
+			otherSeed, err := scan.String()
 			if err != nil {
 				log.Println("!!!" + strings.ToUpper(err.Error()) + "!!!")
 				break
@@ -122,14 +122,14 @@ func RescueMode() {
 		case 5:
 			log.Println("Trustline must already exiust for specified seed")
 			log.Println("Enter address")
-			address, err := scan.ScanString()
+			address, err := scan.String()
 			if err != nil {
 				log.Println("!!!" + strings.ToUpper(err.Error()) + "!!!")
 				break
 			}
 
 			log.Println("Enter amount")
-			amount, err := scan.ScanFloat()
+			amount, err := scan.Float()
 			if err != nil {
 				log.Println("!!!" + strings.ToUpper(err.Error()) + "!!!")
 				break
