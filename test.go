@@ -41,8 +41,6 @@ var opts struct {
 	Rescue    bool `short:"r" description:"start rescue mode"`
 }
 
-var InsecureSet bool
-
 // ParseConfFile parses stuff from the config file provided
 func ParseConfFile() (bool, int, error) {
 
@@ -70,11 +68,8 @@ func ParseConfFile() (bool, int, error) {
 		port = viper.GetInt("port")
 	}
 
-	if opts.Insecure {
-		InsecureSet = true
-	} else if viper.IsSet("insecure") {
+	if viper.IsSet("insecure") {
 		insecure = viper.GetBool("insecure")
-		InsecureSet = insecure
 	}
 
 	if viper.IsSet("mainnet") {

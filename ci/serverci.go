@@ -3,12 +3,14 @@ package main
 import (
 	"encoding/hex"
 	"encoding/json"
-	"github.com/pkg/errors"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"os/exec"
+
+	"github.com/pkg/errors"
+
 	// / "strings"
 	"time"
 
@@ -19,14 +21,21 @@ import (
 )
 
 var (
-	LastBuilt       string
-	GithubSecret    string
-	Sha             Shastruct
-	OpenxHashes     FileStats
+	// LastBuilt is the time when the ci last built binaries
+	LastBuilt string
+	// GithubSecret is the secret required for pulling from GitHub Repositories
+	GithubSecret string
+	// Sha stores the SHA hashes of openx and opensolar
+	Sha Shastruct
+	// OpenxHashes contains all the openx related SHA hashes
+	OpenxHashes FileStats
+	// OpensolarHashes contains all the opensoalr related SHA hashes
 	OpensolarHashes FileStats
-	TellerHashes    FileStats
+	// TellerHashes contains all the opensolar teller related hashes
+	TellerHashes FileStats
 )
 
+// FileStats is a helper struct to store hashes and binary sizes
 type FileStats struct {
 	Hashes []string
 	Sizes  []int64
@@ -227,6 +236,7 @@ func shaEndpoint() {
 	})
 }
 
+// HashesResponse returns the hash repsonses in an API call
 type HashesResponse struct {
 	Openx     FileStats
 	Opensolar FileStats
@@ -254,6 +264,7 @@ func frontend() {
 	http.Handle("/fe/", http.StripPrefix("/fe/", http.FileServer(http.Dir("./static"))))
 }
 
+// StartServer starts the CI server
 func StartServer(portx int, insecure bool) {
 	erpc.SetupBasicHandlers()
 	openx()
@@ -338,10 +349,12 @@ func GetRequest(url string) ([]byte, error) {
 	return ioutil.ReadAll(res.Body)
 }
 
+// GithubSha is a wrapper for the SHA hash of something
 type GithubSha struct {
 	Sha string `json:"sha"`
 }
 
+// Shastruct contains the opensolar and openx sha hashes
 type Shastruct struct {
 	OpenxSha     string
 	OpensolarSha string

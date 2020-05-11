@@ -12,6 +12,7 @@ import (
 	consts "github.com/YaleOpenLab/openx/consts"
 )
 
+// CARPC contains a list of all ComplyAdvantage related RPCs
 var CARPC = map[int][]string{
 	1: []string{"/user/ca/search", "name", "birthyear"},
 	2: []string{"/admin/ca/users/all"},

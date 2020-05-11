@@ -93,6 +93,7 @@ type User struct {
 	ProfileProgress float64
 }
 
+// MailboxHelper is a helper struct that can be used to send admin notifications to users
 type MailboxHelper struct {
 	Subject string // the subject can be used to send push notifications
 	Message string // the message
@@ -577,6 +578,7 @@ func (a *User) ImportSeed(encryptedSeed []byte, pubkey string, seedpwd string) e
 	return a.Save()
 }
 
+// GenAccessToken generates a new access token for the user
 func (a *User) GenAccessToken() (string, error) {
 	a.AccessToken = utils.GetRandomString(consts.AccessTokenLength)
 	a.AccessTokenTimeout = utils.Unix()
@@ -588,6 +590,7 @@ func (a *User) GenAccessToken() (string, error) {
 	return a.AccessToken, nil
 }
 
+// AddtoMailbox adds a message to a user's mailbox
 func (a *User) AddtoMailbox(subject string, message string) error {
 	var x MailboxHelper
 	x.Subject = subject

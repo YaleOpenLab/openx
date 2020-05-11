@@ -30,6 +30,7 @@ func setupPlatformRoutes() {
 	pfSendEmail()
 }
 
+// PlatformRPC is a map that stores all handlers related to the platform
 var PlatformRPC = map[int][]string{
 	0: []string{"/platform/getconsts"},                                          // GET
 	1: []string{"/platform/user/retrieve", "key"},                               // GET
