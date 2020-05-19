@@ -15,18 +15,20 @@ RUN adduser \
 WORKDIR $GOPATH/src/github.com/YaleOpenLab/openx
 COPY . .
 RUN go get -d -v
-RUN GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /go/bin/openx
+RUN GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o openx
 RUN ["cp", "dummyconfig.yaml", "config.yaml"]
-RUN ["mv", "config.yaml", "/go/bin/"]
-
+RUN ["mv", "config.yaml", "/"]
+RUN ["mv", "openx", "/"]
+WORKDIR /
+RUN ["ls"]
 # Step 2: build a smaller image
-FROM scratch
+FROM alpine:3.11
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /etc/group /etc/group
-COPY --from=builder /go/bin/config.yaml /go/bin/config.yaml
-COPY --from=builder /go/bin/openx /go/bin/openx
-USER appuser:appuser
-EXPOSE 8080
-WORKDIR /go/bin
-ENTRYPOINT ["/go/bin/openx"]
+WORKDIR /
+COPY --from=builder /config.yaml .
+COPY --from=builder /openx .
+# EXPOSE 8080
+RUN ["ls"]
+ENTRYPOINT ["/openx"]
