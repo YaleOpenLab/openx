@@ -4,32 +4,59 @@
 [![Codecov](https://codecov.io/gh/YaleOpenLab/openx/branch/master/graph/badge.svg)](https://codecov.io/gh/YaleOpenLab/openx)
 [![Go Report Card](https://goreportcard.com/badge/github.com/YaleOpenLab/openx)](https://goreportcard.com/report/github.com/YaleOpenLab/openx)
 
-This repo contains a WIP implementation of the openx idea. Broadly, the openx model seeks to implement the paradigm of investing and developing projects without hassles and enabling smart ownership with the help of semi trust-less entities on the blockchain. The openx model can be thought more generally as a platform of platforms and houses multiple platforms within it (in `platforms/`).  The goal is to have a common interface between all parties that relate to a project: investors, investees (i.e. beneficiaries or receivers of the investment) and the family of developers (that include all service providers). Depending upon the country of project origin, investors may be required to complete KYC to be able to invest in assets. The openx model can be adapted to any blockchain model and we're currently piloting the [opensolar](https://github.com/YaleOpenLab/opensolar) idea in Stellar.
+Openx is a project hosted at the MIT Media Lab Digital Currency Initiative and the Yale Open Innonvation Lab. The openx model seeks to implement the paradigm of investing in and developing projects without hassles, and enabling smart ownership with the help of the blockchain. Openx can be thought of as a platform of platforms and houses multiple platforms within it.
+
+The goal of openx is to have a common interface between all parties that relate to a project: Investors, Recipients, Developers, an dOriginators. A running pilot of openx is at [opensolar](https://github.com/YaleOpenLab/opensolar)
 
 ## Related Repositories
 
-Like Go, openx is built on the idea of modularity and reusability of packages.
+[Openx](https://github.com/YaleOpenLab/openx)  
+[Opensolar](https://github.com/YaleOpenLab/opensolar)  
+[Opensolar Frontend](https://github.com/YaleOpenLab/openx-frontend)  
+[API Docs](https://github.com/YaleOpenLab/openx-apidocs)  
+[Wiki](https://github.com/YaleOpenLab/openxdocs)  
+[Create-openx-app](https://github.com/YaleOpenLab/create-openx-app)  
+[Openx-CLI](https://github.com/Varunram/openx-cli)
 
-This repo contains the architecture handlers necessary for building you own platform  :
-- [essentials](https://github.com/Varunram/essentials) contains the code necessary for commonly used packages, crypto and database handlers  
-- [openx-cli](https://github.com/Varunram/openx-cli) contains CLI clients that can interface with openx  
-- [opensolar](https://github.com/YaleOpenLab/opensolar) contains an implementation of the openx idea targeted at solar infrastructure  
+## Related Websites
+
+[Demo](www.openx.solar)  
+[Openx API](api.openx.solar)  
+[Opensolar API](api2.openx.solar)  
+[API docs](apidocs.openx.solar)  
+[Wiki](api.openx.solar)  
+[Builds](builds.openx.solar)  
+[MQTT broker](mqtt.openx.solar)  
+[Pilot Dashboard](dashboard.openx.solar)
 
 ## Getting Started
 
+### Download
+
+Openx builds are available at [builds.openx.solar](builds.openx.solar)
+
 ### Installing from PPA
 
-Openx is available on PPA [here](https://launchpad.net/~varunram/+archive/ubuntu/openx)
+Openx is available on PPA [here](https://launchpad.net/~varunram/+archive/ubuntu/openx). Warning: The PPA might not be up to date.
 
-### Building from source
+## Building from source
 
-In order to be able to run this, you need to have the latest version of go installed. [Here](https://tecadmin.net/install-go-on-ubuntu/) is a quick tutorial on how to get go installed on a Linux / macOS machine. Older versions of go (more than two versions old according to [the golang wiki](https://github.com/golang/go/wiki/MinorReleases)) may have unpatched vulnerabilities and as a result, we will not be backporting openx to older versions of go.
+Requirements:
 
-Once you have go installed, you need to `go get` the packages in this repo. Before that, you might need to install the `stellar/go` package separately since it uses a separate dependency manager (`dep`). If this is the case, get the `stellar/go` package and then run `dep ensure -v` inside `$HOME/stellar/go`.
+1. Go 1.11 and above
+2. Standard build tools depending on architecture (build-essential for linux, brew and xcode dev tools for mac)
 
-Once you're done with `stellar/go`, clone the repo using `git clone https://github.com/YaleOpenLab/openx.git` and install dependencies using `go get -v ./...`
+IMPORTANT: Inline with the Golang dev team, we will not be supporting versions of go that are more than two releases old. If you have a version of Go that is older than 1.11, please upgrade to the latest version of Go before continuing.
 
-Now you should be ready to compile openx using `go build`. Create a config file similar to `dummyconfig.yaml` and ensure you have necessary permissions to write to `$HOME`. Then you should be able to start openx using `./openx`
+```
+go get -v github.com/YaleOpenLab/openx
+cd $GOPATH/src/github.com/YaleOpenLab/openx/
+go mod download
+go mod verify
+go build
+```
+
+Make sure you have the necessary permissions to write to `$HOME`. Start openx using `./openx`
 
 ## Installing IPFS
 
@@ -39,7 +66,9 @@ You need to keep your peer key (`ipfs.key` usually) in a safe place for future r
 
 ## Running tests
 
-Running tests is simple with `go test` but the tests have flags since some require running other daemons in the background (`ipfs`). There are two kinds of flags right now - `travis` and `all`. If you need the coverage stats as well, you need to install `cover` as well. `go get golang.org/x/tools/cmd/cover` if you don't have the package. Running `go test --tags="travis" -coverprofile=test.txt ./...` should run all the tests and provide coverage data on each specific package.
+Running tests is simple with `go test` but tests have flags since some require running daemons in the background (eg. `ipfs`). There are two kinds of flags - `travis` and `all`.
+
+If you need coverage stats as well, you need to install `cover` as well. `go get golang.org/x/tools/cmd/cover` if you don't have the package. Running `go test --tags="travis" -coverprofile=test.txt ./...` should run all the tests and provide coverage data on each specific package.
 
 ## Contributing
 
