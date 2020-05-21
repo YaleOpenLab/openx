@@ -35,7 +35,7 @@ The goal of openx is to have a common interface between all parties that relate 
 
 Openx builds are available at [builds.openx.solar](builds.openx.solar)
 
-Docker image available [Docker Hub](https://hub.docker.com/repository/docker/varunramg/openx)
+Docker image available at [Docker Hub](https://hub.docker.com/repository/docker/varunramg/openx)
 
 ### Installing from PPA
 
