@@ -590,6 +590,13 @@ func (a *User) GenAccessToken() (string, error) {
 	return a.AccessToken, nil
 }
 
+// AllLogout invalidates the user access token
+func (a *User) AllLogout() error {
+	a.AccessToken = utils.GetRandomString(consts.AccessTokenLength)
+	a.AccessTokenTimeout = utils.Unix()
+	return a.Save()
+}
+
 // AddtoMailbox adds a message to a user's mailbox
 func (a *User) AddtoMailbox(subject string, message string) error {
 	var x MailboxHelper

@@ -2,7 +2,7 @@ FROM golang:alpine AS builder
 RUN apk update && apk add --no-cache git ca-certificates && update-ca-certificates
 WORKDIR $GOPATH/src/github.com/YaleOpenLab/openx
 COPY . .
-RUN go mod download -x
+RUN go mod download
 RUN go mod verify
 RUN GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o openx
 RUN ["cp", "dummyconfig.yaml", "config.yaml"]

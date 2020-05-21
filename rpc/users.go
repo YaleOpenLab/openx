@@ -2,7 +2,6 @@ package rpc
 
 import (
 	"encoding/hex"
-	"encoding/json"
 	"io/ioutil"
 	"log"
 	"math"
@@ -39,7 +38,6 @@ var UserRPC = map[int][]string{
 	11: []string{"/user/trustasset", "GET", "assetCode", "assetIssuer", "limit", "seedpwd"},        // GET
 	12: []string{"/upload", "POST"},                                                                // POST
 	13: []string{"/platformemail", "GET"},                                                          // GET
-	16: []string{"/tellerping", "GET"},                                                             // GET
 	17: []string{"/user/increasetrustlimit", "GET", "trust", "seedpwd"},                            // GET
 	19: []string{"/user/sendrecovery", "GET", "email1", "email2", "email3"},                        // GET
 	20: []string{"/user/seedrecovery", "GET", "secret1", "secret2"},                                // GET
@@ -60,11 +58,13 @@ var UserRPC = map[int][]string{
 	36: []string{"/user/progress", "POST", "progress"},                                             // POST
 	37: []string{"/user/update", "POST"},                                                           // POST
 	38: []string{"/user/tellerfile", "GET"},                                                        // GET
+	39: []string{"/user/logout", "POST"},                                                           // POST
 
 	30: []string{"/user/anchorusd/kyc", "GET", "name", "bdaymonth", "bdayday", "bdayyear", "taxcountry", // GET
 		"taxid", "addrstreet", "addrcity", "addrpostal", "addrregion", "addrcountry", "addrphone", "primaryphone", "gender"},
 	// 14: []string{"/tellershutdown", "projIndex", "deviceId", "tx1", "tx2"},
 	// 15: []string{"/tellerpayback", "deviceId", "projIndex"},
+	// 16: []string{"/tellerping", "GET", "index"},
 	// 18: []string{"/utils/addhash", "projIndex", "choice", "choicestr"},
 }
 
@@ -84,11 +84,7 @@ func setupUserRpcs() {
 	trustAsset()
 	uploadFile()
 	platformEmail()
-	// sendTellerShutdownEmail()
-	// sendTellerFailedPaybackEmail()
-	tellerPing()
 	increaseTrustLimit()
-	// addContractHash()
 	sendSecrets()
 	mergeSecrets()
 	generateNewSecrets()
@@ -109,6 +105,12 @@ func setupUserRpcs() {
 	updateProgress()
 	updateUser()
 	downloadTeller()
+	logout()
+
+	// sendTellerShutdownEmail()
+	// sendTellerFailedPaybackEmail()
+	// tellerPing()
+	// addContractHash()
 }
 
 const (
@@ -607,32 +609,6 @@ func platformEmail() {
 
 		var x PlatformEmailResponse
 		x.Email = consts.PlatformEmail
-		erpc.MarshalSend(w, x)
-	})
-}
-
-// tellerPing pings the teller to check if its up
-func tellerPing() {
-	http.HandleFunc(UserRPC[16][0], func(w http.ResponseWriter, r *http.Request) {
-		_, err := userValidateHelper(w, r, UserRPC[16][2:], UserRPC[16][1])
-		if err != nil {
-			return
-		}
-
-		data, err := erpc.GetRequest(TellerUrl + "/ping")
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
-			return
-		}
-
-		var x erpc.StatusResponse
-
-		err = json.Unmarshal(data, &x)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
-			return
-		}
-
 		erpc.MarshalSend(w, x)
 	})
 }
@@ -1413,5 +1389,25 @@ func downloadTeller() {
 		}
 
 		http.ServeFile(w, r, "screenlog.0")
+	})
+}
+
+// logout logs out from all devices
+func logout() {
+	http.HandleFunc(UserRPC[39][0], func(w http.ResponseWriter, r *http.Request) {
+		//_, err := userValidateHelper(w, r, UserRPC[38][2:], UserRPC[38][1])
+		user, err := userValidateHelper(w, r, UserRPC[39][2:], UserRPC[39][1])
+		if err != nil {
+			return
+		}
+
+		err = user.AllLogout() // generate a new token to invalidate the old one
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+			return
+		}
+
+		erpc.ResponseHandler(w, erpc.StatusOK)
 	})
 }
