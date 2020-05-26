@@ -91,6 +91,14 @@ type User struct {
 	Legal bool
 	// ProfileProgress is a float which denotes user profile completeness on the frontend
 	ProfileProgress float64
+	// Verified marks a person as verified
+	Verified bool
+	// VerifyReq requests verification
+	VerifyReq bool
+	// VerifiedBy stores the index of the admin who verified the user
+	VerifiedBy int
+	// VerifiedTime stores when the user was verified
+	VerifiedTime string
 }
 
 // MailboxHelper is a helper struct that can be used to send admin notifications to users
@@ -603,5 +611,17 @@ func (a *User) AddtoMailbox(subject string, message string) error {
 	x.Subject = subject
 	x.Message = message
 	a.Mailbox = append(a.Mailbox, x)
+	return a.Save()
+}
+
+// VerReq requests account verification
+func (a *User) VerReq() error {
+	a.VerifyReq = true
+	return a.Save()
+}
+
+// UnverReq un-requests account verification
+func (a *User) UnverReq() error {
+	a.VerifyReq = false
 	return a.Save()
 }

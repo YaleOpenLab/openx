@@ -16,14 +16,16 @@ import (
 
 // AdminRPC is the list of all admin RPC endpoints
 var AdminRPC = map[int][]string{
-	1: {"/admin/kill", "POST", "nuke"},                                   // POST
-	2: {"/admin/freeze", "GET"},                                          // GET
-	3: {"/admin/gennuke", "POST"},                                        // POST
-	5: {"/admin/platform/all", "GET"},                                    // GET
-	6: {"/admin/list"},                                                   // GET
-	7: {"/admin/platform/new", "POST", "name", "code", "timeout"},        // POST
-	8: {"/admin/sendmessage", "POST", "subject", "message", "recipient"}, // POST
-	9: {"/admin/getallusers", "GET"},                                     // GET
+	1:  {"/admin/kill", "POST", "nuke"},                                   // POST
+	2:  {"/admin/freeze", "GET"},                                          // GET
+	3:  {"/admin/gennuke", "POST"},                                        // POST
+	5:  {"/admin/platform/all", "GET"},                                    // GET
+	6:  {"/admin/list"},                                                   // GET
+	7:  {"/admin/platform/new", "POST", "name", "code", "timeout"},        // POST
+	8:  {"/admin/sendmessage", "POST", "subject", "message", "recipient"}, // POST
+	9:  {"/admin/getallusers", "GET"},                                     // GET
+	10: {"/admin/userverify", "POST", "index"},                            // POST
+	11: {"/admin/userunverify", "POST", "index"},                          // POST
 }
 
 // adminHandlers are a list of all the admin handlers defined by openx
@@ -36,6 +38,8 @@ func adminHandlers() {
 	addNewPlatform()
 	sendNewMessage()
 	getallUsersAdmin()
+	verifyUser()
+	unverifyUser()
 }
 
 // KillCode is a code that can immediately shut down the server in case of hacks / crises
@@ -248,5 +252,81 @@ func getallUsersAdmin() {
 		x.Length = len(users)
 
 		erpc.MarshalSend(w, x)
+	})
+}
+
+func verifyUser() {
+	http.HandleFunc(AdminRPC[10][0], func(w http.ResponseWriter, r *http.Request) {
+		admin, adminBool := validateAdmin(w, r, AdminRPC[10][2:], AdminRPC[10][1])
+		if !adminBool {
+			return
+		}
+
+		indexS := r.FormValue("index")
+
+		index, err := utils.ToInt(indexS)
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+			return
+		}
+
+		user, err := database.RetrieveUser(index)
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+			return
+		}
+
+		user.Verified = true
+		user.VerifiedBy = admin.Index
+		user.VerifiedTime = utils.Timestamp()
+
+		err = user.Save()
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+			return
+		}
+
+		erpc.ResponseHandler(w, erpc.StatusOK)
+	})
+}
+
+func unverifyUser() {
+	http.HandleFunc(AdminRPC[11][0], func(w http.ResponseWriter, r *http.Request) {
+		admin, adminBool := validateAdmin(w, r, AdminRPC[11][2:], AdminRPC[11][1])
+		if !adminBool {
+			return
+		}
+
+		indexS := r.FormValue("index")
+
+		index, err := utils.ToInt(indexS)
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+			return
+		}
+
+		user, err := database.RetrieveUser(index)
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+			return
+		}
+
+		user.Verified = false
+		user.VerifiedBy = admin.Index
+		user.VerifiedTime = utils.Timestamp()
+
+		err = user.Save()
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+			return
+		}
+
+		erpc.ResponseHandler(w, erpc.StatusOK)
 	})
 }
