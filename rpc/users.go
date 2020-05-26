@@ -59,6 +59,8 @@ var UserRPC = map[int][]string{
 	37: []string{"/user/update", "POST"},                                                           // POST
 	38: []string{"/user/tellerfile", "GET"},                                                        // GET
 	39: []string{"/user/logout", "POST"},                                                           // POST
+	40: []string{"/user/verify", "POST"},                                                           // POST
+	41: []string{"/user/unverify", "POST"},                                                         // POST
 
 	30: []string{"/user/anchorusd/kyc", "GET", "name", "bdaymonth", "bdayday", "bdayyear", "taxcountry", // GET
 		"taxid", "addrstreet", "addrcity", "addrpostal", "addrregion", "addrcountry", "addrphone", "primaryphone", "gender"},
@@ -106,6 +108,8 @@ func setupUserRpcs() {
 	updateUser()
 	downloadTeller()
 	logout()
+	verify()
+	unverify()
 
 	// sendTellerShutdownEmail()
 	// sendTellerFailedPaybackEmail()
@@ -1402,6 +1406,46 @@ func logout() {
 		}
 
 		err = user.AllLogout() // generate a new token to invalidate the old one
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+			return
+		}
+
+		erpc.ResponseHandler(w, erpc.StatusOK)
+	})
+}
+
+// verify marks a user as verified
+func verify() {
+	http.HandleFunc(UserRPC[40][0], func(w http.ResponseWriter, r *http.Request) {
+		//_, err := userValidateHelper(w, r, UserRPC[38][2:], UserRPC[38][1])
+		user, err := userValidateHelper(w, r, UserRPC[40][2:], UserRPC[40][1])
+		if err != nil {
+			return
+		}
+
+		err = user.VerReq()
+		if err != nil {
+			log.Println(err)
+			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+			return
+		}
+
+		erpc.ResponseHandler(w, erpc.StatusOK)
+	})
+}
+
+// unverify marks a user as verified
+func unverify() {
+	http.HandleFunc(UserRPC[41][0], func(w http.ResponseWriter, r *http.Request) {
+		//_, err := userValidateHelper(w, r, UserRPC[38][2:], UserRPC[38][1])
+		user, err := userValidateHelper(w, r, UserRPC[41][2:], UserRPC[41][1])
+		if err != nil {
+			return
+		}
+
+		err = user.UnverReq()
 		if err != nil {
 			log.Println(err)
 			erpc.ResponseHandler(w, erpc.StatusInternalServerError)

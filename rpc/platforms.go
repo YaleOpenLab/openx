@@ -239,7 +239,7 @@ func pfNewUser() {
 
 		if r.URL.Query()["username"] == nil || r.URL.Query()["pwhash"] == nil ||
 			r.URL.Query()["seedpwd"] == nil || r.URL.Query()["email"] == nil {
-			log.Println("code missing")
+			log.Println("required params missing")
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 		}
 
