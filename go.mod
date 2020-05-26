@@ -3,7 +3,7 @@ module github.com/YaleOpenLab/openx
 go 1.13
 
 require (
-	github.com/Varunram/essentials v0.0.0-20200519142747-e1f5f5a44c33
+	github.com/Varunram/essentials v0.0.0-20200526130423-1a2f39ff6984
 	github.com/algorand/go-algorand-sdk v1.3.0 // indirect
 	github.com/bithyve/research v0.0.0-20191102090848-d238806b60bf
 	github.com/boltdb/bolt v1.3.1
