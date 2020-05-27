@@ -157,8 +157,7 @@ func checkReqdParams(w http.ResponseWriter, r *http.Request, options []string, m
 		}
 
 		err = r.ParseForm()
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusUnauthorized)
+		if erpc.Err(w, err, erpc.StatusUnauthorized) {
 			return err
 		}
 
@@ -214,9 +213,7 @@ func userValidateHelper(w http.ResponseWriter, r *http.Request, options []string
 		return prepUser, errors.New("invalid method (not GET/POST)")
 	}
 	// catch the error from the relevant error call
-	if err != nil {
-		erpc.ResponseHandler(w, erpc.StatusUnauthorized)
-		log.Println("error while validating user: ", err)
+	if erpc.Err(w, err, erpc.StatusUnauthorized, "error while validating user") {
 		return prepUser, err
 	}
 
@@ -232,8 +229,7 @@ type GenAccessTokenReturn struct {
 func genAccessToken() {
 	http.HandleFunc(UserRPC[0][0], func(w http.ResponseWriter, r *http.Request) {
 		err := r.ParseForm()
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+		if erpc.Err(w, err, erpc.StatusBadRequest) {
 			return
 		}
 
@@ -285,8 +281,7 @@ func getBalances() {
 
 		pubkey := prepUser.StellarWallet.PublicKey
 		balances, err := xlm.GetAllBalances(pubkey)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		if erpc.Err(w, err, erpc.StatusNotFound) {
 			return
 		}
 
@@ -374,8 +369,7 @@ func authKyc() {
 		}
 
 		uInput, err := utils.ToInt(r.URL.Query()["userIndex"][0])
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+		if erpc.Err(w, err, erpc.StatusBadRequest) {
 			return
 		}
 
@@ -399,14 +393,12 @@ func sendXLM() {
 		seedpwd := r.URL.Query()["seedpwd"][0]
 
 		amount, err := utils.ToFloat(r.URL.Query()["amount"][0])
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+		if erpc.Err(w, err, erpc.StatusBadRequest) {
 			return
 		}
 
 		seed, err := wallet.DecryptSeed(prepUser.StellarWallet.EncryptedSeed, seedpwd)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+		if erpc.Err(w, err, erpc.StatusBadRequest) {
 			return
 		}
 
@@ -416,8 +408,7 @@ func sendXLM() {
 		}
 
 		_, txhash, err := xlm.SendXLM(destination, amount, seed, memo)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+		if erpc.Err(w, err, erpc.StatusBadRequest) {
 			return
 		}
 
@@ -506,15 +497,13 @@ func trustAsset() {
 		assetCode := r.URL.Query()["assetCode"][0]
 		assetIssuer := r.URL.Query()["assetIssuer"][0]
 		limit, err := utils.ToFloat(r.URL.Query()["limit"][0])
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+		if erpc.Err(w, err, erpc.StatusBadRequest) {
 			return
 		}
 
 		seedpwd := r.URL.Query()["seedpwd"][0]
 		seed, err := wallet.DecryptSeed(prepUser.StellarWallet.EncryptedSeed, seedpwd)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+		if erpc.Err(w, err, erpc.StatusBadRequest) {
 			return
 		}
 
@@ -536,8 +525,7 @@ func uploadFile() {
 		}
 
 		file, fileHeader, err := r.FormFile("file")
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+		if erpc.Err(w, err, erpc.StatusBadRequest) {
 			return
 		}
 
@@ -570,16 +558,12 @@ func uploadFile() {
 
 		// file type is supported, store in ipfs
 		data, err := ioutil.ReadAll(file)
-		if err != nil {
-			log.Println("did not read returned data", err)
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError, "did not read returned data") {
 			return
 		}
 
 		hashString, err := ipfs.AddBytes(data)
-		if err != nil {
-			log.Println("did not hash data to ipfs", err)
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError, "did not hash data to ipfs") {
 			return
 		}
 		erpc.MarshalSend(w, hashString)
@@ -617,8 +601,7 @@ func increaseTrustLimit() {
 
 		// now the user is validated, we need to call the db function to increase the trust limit
 		trust, err := utils.ToFloat(r.URL.Query()["trust"][0])
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+		if erpc.Err(w, err, erpc.StatusBadRequest) {
 			return
 		}
 
@@ -681,9 +664,7 @@ func mergeSecrets() {
 		shares = append(shares, secret1, secret2)
 		// now we have 2 out of the 3 secrets needed to reconstruct. Reconstruct the seed.
 		secret, err := recovery.Combine(shares)
-		if err != nil {
-			log.Println("couldn't combine shares: ", err)
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError, "couldn't combine shares") {
 			return
 		}
 
@@ -707,8 +688,7 @@ func generateNewSecrets() {
 		email3 := r.URL.Query()["email3"][0]
 
 		seed, err := wallet.DecryptSeed(user.StellarWallet.EncryptedSeed, seedpwd)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+		if erpc.Err(w, err, erpc.StatusBadRequest) {
 			return
 		}
 		// user has validated his seed and identity. Generate new shares and send them out
@@ -742,8 +722,7 @@ func generateResetPwdCode() {
 		}
 
 		_, err = ValidateSeedPwd(w, r, rUser.StellarWallet.EncryptedSeed, rUser.StellarWallet.PublicKey)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+		if erpc.Err(w, err, erpc.StatusBadRequest) {
 			return
 		}
 		// now we can verify that this is rellay the user. Now we need to cgenerate a verification code
@@ -784,8 +763,7 @@ func resetPassword() {
 		}
 
 		_, err = ValidateSeedPwd(w, r, rUser.StellarWallet.EncryptedSeed, rUser.StellarWallet.PublicKey)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+		if erpc.Err(w, err, erpc.StatusBadRequest) {
 			return
 		}
 
@@ -799,8 +777,7 @@ func resetPassword() {
 		rUser.Pwhash = pwhash
 		rUser.PwdResetCode = "INVALID" // invalidate the pwd reset code to avoid replay attacks
 		err = rUser.Save()
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+		if erpc.Err(w, err, erpc.StatusBadRequest) {
 			return
 		}
 
@@ -826,14 +803,12 @@ func sweepFunds() {
 		}
 
 		seedpwd, err := ValidateSeedPwd(w, r, prepUser.StellarWallet.EncryptedSeed, prepUser.StellarWallet.PublicKey)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+		if erpc.Err(w, err, erpc.StatusBadRequest) {
 			return
 		}
 
 		seed, err := wallet.DecryptSeed(prepUser.StellarWallet.EncryptedSeed, seedpwd)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+		if erpc.Err(w, err, erpc.StatusBadRequest) {
 			return
 		}
 
@@ -873,14 +848,12 @@ func sweepAsset() {
 		issuerPubkey := r.URL.Query()["issuerPubkey"][0]
 
 		seedpwd, err := ValidateSeedPwd(w, r, prepUser.StellarWallet.EncryptedSeed, prepUser.StellarWallet.PublicKey)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+		if erpc.Err(w, err, erpc.StatusBadRequest) {
 			return
 		}
 
 		seed, err := wallet.DecryptSeed(prepUser.StellarWallet.EncryptedSeed, seedpwd)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+		if erpc.Err(w, err, erpc.StatusBadRequest) {
 			return
 		}
 
@@ -1002,8 +975,7 @@ func giveStarRating() {
 		uIndex := r.URL.Query()["userIndex"][0]
 
 		feedback, err := utils.ToInt(feedbackStr)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+		if erpc.Err(w, err, erpc.StatusBadRequest) {
 			return
 		}
 
@@ -1014,8 +986,7 @@ func giveStarRating() {
 		}
 
 		userIndex, err := utils.ToInt(uIndex)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+		if erpc.Err(w, err, erpc.StatusBadRequest) {
 			return
 		}
 
@@ -1119,8 +1090,8 @@ func addAnchorKYCInfo() {
 		prepUser.AnchorKYC.Gender = r.URL.Query()["gender"][0]
 
 		err = prepUser.Save()
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
+			return
 		}
 
 		erpc.ResponseHandler(w, erpc.StatusOK)
@@ -1137,8 +1108,7 @@ func changeReputation() {
 		}
 
 		reputation, err := utils.ToFloat(r.URL.Query()["reputation"][0])
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+		if erpc.Err(w, err, erpc.StatusBadRequest) {
 			return
 		}
 
@@ -1185,14 +1155,12 @@ func importSeed() {
 		seedpwd := r.URL.Query()["seedpwd"][0]
 
 		encryptedSeed, err := hex.DecodeString(encryptedSeedHex)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+		if erpc.Err(w, err, erpc.StatusBadRequest) {
 			return
 		}
 
 		err = prepUser.ImportSeed(encryptedSeed, pubkey, seedpwd)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+		if erpc.Err(w, err, erpc.StatusBadRequest) {
 			return
 		}
 
@@ -1250,9 +1218,8 @@ func updateProgress() {
 
 		progressx := r.FormValue("progress")
 		progress, err := utils.ToFloat(progressx)
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
+			return
 		}
 
 		if progress > 100 || progress < 0 {
@@ -1263,9 +1230,8 @@ func updateProgress() {
 
 		user.ProfileProgress = progress
 		err = user.Save()
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
+			return
 		}
 
 		erpc.ResponseHandler(w, erpc.StatusOK)

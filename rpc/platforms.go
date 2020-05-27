@@ -69,9 +69,7 @@ func authPlatform(w http.ResponseWriter, r *http.Request) error {
 	} else if r.Method == "POST" {
 		log.Println("platform post call")
 		err := r.ParseForm()
-		if err != nil {
-			log.Println(r.URL, r.Form)
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+		if erpc.Err(w, err, erpc.StatusBadRequest) {
 			return errors.New("required params code and name not found in request")
 		}
 
@@ -85,8 +83,7 @@ func authPlatform(w http.ResponseWriter, r *http.Request) error {
 	log.Println("Platform's code: ", code)
 
 	platforms, err := database.RetrieveAllPlatforms()
-	if err != nil {
-		erpc.ResponseHandler(w, erpc.StatusBadRequest)
+	if erpc.Err(w, err, erpc.StatusBadRequest) {
 		return err
 	}
 
@@ -172,14 +169,12 @@ func pfGetUser() {
 		}
 
 		keyInt, err := utils.ToInt(r.URL.Query()["key"][0])
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+		if erpc.Err(w, err, erpc.StatusBadRequest) {
 			return
 		}
 
 		user, err := database.RetrieveUser(keyInt)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+		if erpc.Err(w, err, erpc.StatusBadRequest) {
 			return
 		}
 
@@ -212,9 +207,7 @@ func pfValidateUser() {
 		token := r.URL.Query()["token"][0]
 
 		user, err := database.ValidateAccessToken(name, token)
-		if err != nil {
-			log.Println("error while validating user: ", err)
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+		if erpc.Err(w, err, erpc.StatusBadRequest, "error while validating user") {
 			return
 		}
 
@@ -249,9 +242,7 @@ func pfNewUser() {
 		email := r.URL.Query()["email"][0]
 
 		user, err := database.NewUser(name, pwhash, seedpwd, email)
-		if err != nil {
-			log.Println("error while creating a new user: ", err)
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+		if erpc.Err(w, err, erpc.StatusBadRequest, "error while creating a new user") {
 			return
 		}
 
