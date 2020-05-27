@@ -125,8 +125,7 @@ func retrieveAllPlatforms() {
 		}
 
 		pfs, err := database.RetrieveAllPlatforms()
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
@@ -144,9 +143,8 @@ func listAllAdmins() {
 		}
 
 		admins, err := database.RetrieveAllAdmins()
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
+			return
 		}
 
 		erpc.MarshalSend(w, admins)
@@ -172,16 +170,12 @@ func addNewPlatform() {
 
 		if timeout == "false" {
 			err = database.NewPlatform(name, code, false)
-			if err != nil {
-				log.Println(err)
-				erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+			if erpc.Err(w, err, erpc.StatusInternalServerError) {
 				return
 			}
 		} else {
 			err = database.NewPlatform(name, code, true)
-			if err != nil {
-				log.Println(err)
-				erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+			if erpc.Err(w, err, erpc.StatusInternalServerError) {
 				return
 			}
 		}
@@ -220,9 +214,7 @@ func sendNewMessage() {
 		}
 
 		err = user.AddtoMailbox(subject, message)
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+		if erpc.Err(w, err, erpc.StatusBadRequest) {
 			return
 		}
 
@@ -242,9 +234,7 @@ func getallUsersAdmin() {
 		}
 
 		users, err := database.RetrieveAllUsers()
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
@@ -265,16 +255,12 @@ func verifyUser() {
 		indexS := r.FormValue("index")
 
 		index, err := utils.ToInt(indexS)
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
 		user, err := database.RetrieveUser(index)
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
@@ -283,9 +269,7 @@ func verifyUser() {
 		user.VerifiedTime = utils.Timestamp()
 
 		err = user.Save()
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
@@ -303,16 +287,12 @@ func unverifyUser() {
 		indexS := r.FormValue("index")
 
 		index, err := utils.ToInt(indexS)
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
 		user, err := database.RetrieveUser(index)
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
@@ -321,9 +301,7 @@ func unverifyUser() {
 		user.VerifiedTime = utils.Timestamp()
 
 		err = user.Save()
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
