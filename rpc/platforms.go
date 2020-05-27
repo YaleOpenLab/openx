@@ -299,9 +299,7 @@ func retrieveAllPlatformNames() {
 		}
 
 		platforms, err := database.RetrieveAllPlatforms()
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
@@ -342,9 +340,7 @@ func pfSendEmail() {
 		to := r.FormValue("to")
 
 		err = email.SendMail(body, to)
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 

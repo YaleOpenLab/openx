@@ -48,15 +48,12 @@ func getTestStableCoin() {
 			return
 		}
 		amount, err := utils.ToFloat(r.URL.Query()["amount"][0])
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+		if erpc.Err(w, err, erpc.StatusBadRequest) {
 			return
 		}
 
 		receiverPubkey, err := wallet.ReturnPubkey(receiverSeed)
-		if err != nil {
-			log.Println("did not return pubkey", err)
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+		if erpc.Err(w, err, erpc.StatusBadRequest, "did not return pubkey") {
 			return
 		}
 
@@ -117,23 +114,17 @@ func getAnchorUSD() {
 			}
 
 			seed, err := wallet.DecryptSeed(user.StellarWallet.EncryptedSeed, r.URL.Query()["seedpwd"][0])
-			if err != nil {
-				log.Println(err)
-				erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			if erpc.Err(w, err, erpc.StatusBadRequest) {
 				return
 			}
 
 			amount, err := utils.ToFloat(r.URL.Query()["amount"][0]) // amount that the person wants to get. This must be in USD
-			if err != nil {
-				log.Println(err)
-				erpc.ResponseHandler(w, erpc.StatusBadRequest)
+			if erpc.Err(w, err, erpc.StatusBadRequest) {
 				return
 			}
 
 			txhash, err := stablecoin.GetAnchorUSD(seed, amount)
-			if err != nil {
-				log.Println("error in fetching stablecoin, quitting")
-				erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+			if erpc.Err(w, err, erpc.StatusInternalServerError, "error in fetching stablecoin, quitting") {
 				return
 			}
 

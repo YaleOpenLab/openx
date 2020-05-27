@@ -44,54 +44,48 @@ type FileStats struct {
 func openx() {
 	http.HandleFunc("/openx-darwinamd64", func(w http.ResponseWriter, r *http.Request) {
 		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		if erpc.Err(w, err, erpc.StatusNotFound) {
+			return
 		}
 
 		http.ServeFile(w, r, "openx-darwinamd64.gz")
 	})
 	http.HandleFunc("/openx-linuxamd64", func(w http.ResponseWriter, r *http.Request) {
 		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		if erpc.Err(w, err, erpc.StatusNotFound) {
+			return
 		}
 
 		http.ServeFile(w, r, "openx-linuxamd64.gz")
 	})
 	http.HandleFunc("/openx-linux386", func(w http.ResponseWriter, r *http.Request) {
 		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		if erpc.Err(w, err, erpc.StatusNotFound) {
+			return
 		}
 
 		http.ServeFile(w, r, "openx-linux386.gz")
 	})
 	http.HandleFunc("/openx-arm64", func(w http.ResponseWriter, r *http.Request) {
 		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		if erpc.Err(w, err, erpc.StatusNotFound) {
+			return
 		}
 
 		http.ServeFile(w, r, "openx-arm64.gz")
 	})
 	http.HandleFunc("/openx-arm", func(w http.ResponseWriter, r *http.Request) {
 		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		if erpc.Err(w, err, erpc.StatusNotFound) {
+			return
 		}
 
 		http.ServeFile(w, r, "openx-arm.gz")
 	})
 	http.HandleFunc("/openx", func(w http.ResponseWriter, r *http.Request) {
 		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		if erpc.Err(w, err, erpc.StatusNotFound) {
+			return
 		}
 
 		http.ServeFile(w, r, "openx.gz")
@@ -101,54 +95,48 @@ func openx() {
 func opensolar() {
 	http.HandleFunc("/opensolar-darwinamd64", func(w http.ResponseWriter, r *http.Request) {
 		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		if erpc.Err(w, err, erpc.StatusNotFound) {
+			return
 		}
 
 		http.ServeFile(w, r, "opensolar-darwinamd64.gz")
 	})
 	http.HandleFunc("/opensolar-linuxamd64", func(w http.ResponseWriter, r *http.Request) {
 		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		if erpc.Err(w, err, erpc.StatusNotFound) {
+			return
 		}
 
 		http.ServeFile(w, r, "opensolar-linuxamd64.gz")
 	})
 	http.HandleFunc("/opensolar-linux386", func(w http.ResponseWriter, r *http.Request) {
 		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		if erpc.Err(w, err, erpc.StatusNotFound) {
+			return
 		}
 
 		http.ServeFile(w, r, "opensolar-linux386.gz")
 	})
 	http.HandleFunc("/opensolar-arm64", func(w http.ResponseWriter, r *http.Request) {
 		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		if erpc.Err(w, err, erpc.StatusNotFound) {
+			return
 		}
 
 		http.ServeFile(w, r, "opensolar-arm64.gz")
 	})
 	http.HandleFunc("/opensolar-arm", func(w http.ResponseWriter, r *http.Request) {
 		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		if erpc.Err(w, err, erpc.StatusNotFound) {
+			return
 		}
 
 		http.ServeFile(w, r, "opensolar-arm.gz")
 	})
 	http.HandleFunc("/opensolar", func(w http.ResponseWriter, r *http.Request) {
 		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		if erpc.Err(w, err, erpc.StatusNotFound) {
+			return
 		}
 
 		http.ServeFile(w, r, "opensolar.gz")
@@ -158,54 +146,48 @@ func opensolar() {
 func teller() {
 	http.HandleFunc("/teller-darwinamd64", func(w http.ResponseWriter, r *http.Request) {
 		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		if erpc.Err(w, err, erpc.StatusNotFound) {
+			return
 		}
 
 		http.ServeFile(w, r, "teller-darwinamd64.gz")
 	})
 	http.HandleFunc("/teller-linuxamd64", func(w http.ResponseWriter, r *http.Request) {
 		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		if erpc.Err(w, err, erpc.StatusNotFound) {
+			return
 		}
 
 		http.ServeFile(w, r, "teller-linuxamd64.gz")
 	})
 	http.HandleFunc("/teller-linux386", func(w http.ResponseWriter, r *http.Request) {
 		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		if erpc.Err(w, err, erpc.StatusNotFound) {
+			return
 		}
 
 		http.ServeFile(w, r, "teller-linux386.gz")
 	})
 	http.HandleFunc("/teller-arm64", func(w http.ResponseWriter, r *http.Request) {
 		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		if erpc.Err(w, err, erpc.StatusNotFound) {
+			return
 		}
 
 		http.ServeFile(w, r, "teller-arm64.gz")
 	})
 	http.HandleFunc("/teller-arm", func(w http.ResponseWriter, r *http.Request) {
 		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		if erpc.Err(w, err, erpc.StatusNotFound) {
+			return
 		}
 
 		http.ServeFile(w, r, "teller-arm.gz")
 	})
 	http.HandleFunc("/teller", func(w http.ResponseWriter, r *http.Request) {
 		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		if erpc.Err(w, err, erpc.StatusNotFound) {
+			return
 		}
 
 		http.ServeFile(w, r, "teller.gz")
@@ -215,9 +197,8 @@ func teller() {
 func lastbuilt() {
 	http.HandleFunc("/lastbuilt", func(w http.ResponseWriter, r *http.Request) {
 		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		if erpc.Err(w, err, erpc.StatusNotFound) {
+			return
 		}
 
 		erpc.MarshalSend(w, LastBuilt)
@@ -227,9 +208,8 @@ func lastbuilt() {
 func shaEndpoint() {
 	http.HandleFunc("/sha", func(w http.ResponseWriter, r *http.Request) {
 		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		if erpc.Err(w, err, erpc.StatusNotFound) {
+			return
 		}
 
 		erpc.MarshalSend(w, Sha)
@@ -246,9 +226,8 @@ type HashesResponse struct {
 func hashesEndpoint() {
 	http.HandleFunc("/hashes", func(w http.ResponseWriter, r *http.Request) {
 		err := erpc.CheckGet(w, r)
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusNotFound)
+		if erpc.Err(w, err, erpc.StatusNotFound) {
+			return
 		}
 
 		var x HashesResponse

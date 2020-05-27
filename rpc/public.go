@@ -53,9 +53,7 @@ func getTopReputationPublic() {
 		}
 
 		allUsers, err := database.TopReputationUsers()
-		if err != nil {
-			log.Println("did not retrive all top reputation users", err)
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError, "did not retrive all top reputation users") {
 			return
 		}
 		sUsers := sanitizeAllUsers(allUsers)
@@ -79,16 +77,12 @@ func getUserInfo() {
 		}
 
 		index, err := utils.ToInt(r.URL.Query()["index"][0])
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+		if erpc.Err(w, err, erpc.StatusBadRequest) {
 			return
 		}
 
 		user, err := database.RetrieveUser(index)
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 

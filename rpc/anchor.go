@@ -81,16 +81,12 @@ func GetAndReturnIdentifier(w http.ResponseWriter, r *http.Request, body string)
 // PostAndSend is a handler that POSTs data and returns the response
 func PostAndSend(w http.ResponseWriter, r *http.Request, body string, payload io.Reader) {
 	data, err := erpc.PostRequest(body, payload)
-	if err != nil {
-		log.Println("did not receive success response", err)
-		erpc.ResponseHandler(w, erpc.StatusBadRequest)
+	if erpc.Err(w, err, erpc.StatusBadRequest, "did not receive success response") {
 		return
 	}
 	var x kycDepositResponse
 	err = json.Unmarshal(data, &x)
-	if err != nil {
-		log.Println("did not unmarshal json", err)
-		erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+	if erpc.Err(w, err, erpc.StatusInternalServerError, "did not unmarshal json") {
 		return
 	}
 	erpc.MarshalSend(w, x)
@@ -108,16 +104,14 @@ func intentDeposit() {
 		body := consts.AnchorAPI + "transfer/deposit?account=" + prepUser.StellarWallet.PublicKey +
 			"&asset_code=USD&email_address=" + prepUser.Email
 		x, err := GetAndReturnIdentifier(w, r, body) // we could return the identifier and save it if we have to. But the user has to click through anyawy and we could call the other endpoint from the frontend, so would need to discuss before we do that here
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
 		prepUser.AnchorKYC.DepositIdentifier = x.Identifier
 		prepUser.AnchorKYC.Url = x.Url
 		err = prepUser.Save()
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
@@ -170,16 +164,14 @@ func intentWithdraw() {
 			"&email_address=" + prepUser.Email
 
 		x, err := GetAndReturnIdentifier(w, r, body) // we could return the identifier and save it if we have to. But the user has to click through anyawy and we could call the other endpoint from the frontend, so would need to discuss before we do that here
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
 		prepUser.AnchorKYC.WithdrawIdentifier = x.Identifier
 		prepUser.AnchorKYC.Url = x.Url
 		err = prepUser.Save()
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
@@ -239,15 +231,13 @@ func getKycStatus() {
 		body := consts.AnchorAPI + "api/accounts/" + prepUser.AnchorKYC.AccountId + "/kyc"
 
 		data, err := erpc.GetRequest(body)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
 		var ret kycReturn
 		err = json.Unmarshal(data, &ret)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
@@ -293,25 +283,19 @@ func kycRegister() {
 
 		payload := strings.NewReader(data.Encode())
 		retdata, err := erpc.PostRequest(body, payload)
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
 		var ret kycR
 		err = json.Unmarshal(retdata, &ret)
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
 		prepUser.AnchorKYC.AccountId = ret.AccountId
 		err = prepUser.Save()
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 

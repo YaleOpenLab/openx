@@ -3,7 +3,7 @@ module github.com/YaleOpenLab/openx
 go 1.13
 
 require (
-	github.com/Varunram/essentials v0.0.0-20200526130423-1a2f39ff6984
+	github.com/Varunram/essentials v1.0.1
 	github.com/algorand/go-algorand-sdk v1.3.0 // indirect
 	github.com/bithyve/research v0.0.0-20191102090848-d238806b60bf
 	github.com/boltdb/bolt v1.3.1
@@ -11,6 +11,7 @@ require (
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-chi/chi v4.1.1+incompatible // indirect
 	github.com/go-errors/errors v1.0.2 // indirect
+	github.com/ipfs/go-cid v0.0.6 // indirect
 	github.com/ipfs/go-ipfs-api v0.0.3 // indirect
 	github.com/ipfs/go-ipfs-files v0.0.8 // indirect
 	github.com/jessevdk/go-flags v1.4.0
@@ -28,7 +29,7 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.7.0
-	github.com/stellar/go v0.0.0-20200522225735-c19111f1f904
+	github.com/stellar/go v0.0.0-20200527155254-4b6180abef10
 	github.com/stellar/go-xdr v0.0.0-20200331223602-71a1e6d555f2 // indirect
 	github.com/stretchr/objx v0.2.0 // indirect
 	golang.org/x/sys v0.0.0-20200523222454-059865788121 // indirect

@@ -127,17 +127,13 @@ func PostRequestCA(body string, payload io.Reader) ([]byte, error) {
 // PostAndSendCA is a handler that POSTs data and returns the response
 func PostAndSendCA(w http.ResponseWriter, r *http.Request, body string, payload io.Reader) {
 	data, err := PostRequestCA(body, payload)
-	if err != nil {
-		log.Println("did not receive success response", err)
-		erpc.ResponseHandler(w, erpc.StatusBadRequest)
+	if erpc.Err(w, err, erpc.StatusBadRequest, "did not receive success response") {
 		return
 	}
 	log.Println(string(data))
 	var x kycDepositResponse
 	err = json.Unmarshal(data, &x)
-	if err != nil {
-		log.Println("did not unmarshal json", err)
-		erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+	if erpc.Err(w, err, erpc.StatusInternalServerError, "did not unmarshal json") {
 		return
 	}
 	erpc.MarshalSend(w, x)
@@ -196,15 +192,13 @@ func getAllCAUsers() {
 
 		body := "https://api.complyadvantage.com/users?api_key=" + consts.KYCAPIKey
 		data, err := erpc.GetRequest(body)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
 		var x caAllUserResponse
 		err = json.Unmarshal(data, &x)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 		erpc.MarshalSend(w, x)

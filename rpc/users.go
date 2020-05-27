@@ -248,16 +248,12 @@ func genAccessToken() {
 
 		log.Println("username: ", username, " requesting a new access token")
 		user, err := database.ValidatePwhash(username, pwhash)
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
 		token, err := user.GenAccessToken()
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
@@ -338,8 +334,7 @@ func getIpfsData() {
 
 		hashString := r.URL.Query()["hash"][0]
 		data, err := ipfs.GetString(hashString)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
@@ -357,14 +352,12 @@ func putIpfsData() {
 
 		data := []byte(r.FormValue("data"))
 		hash, err := ipfs.AddBytes([]byte(data))
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
 		_, err = ipfs.AddBytes(data)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
@@ -387,8 +380,7 @@ func authKyc() {
 		}
 
 		err = prepUser.Authorize(uInput)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 		erpc.ResponseHandler(w, erpc.StatusOK)
@@ -448,8 +440,7 @@ func notKycView() {
 		}
 
 		users, err := database.RetrieveAllUsersWithoutKyc()
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
@@ -472,8 +463,7 @@ func kycView() {
 		}
 
 		users, err := database.RetrieveAllUsersWithKyc()
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
@@ -496,8 +486,7 @@ func askForCoins() {
 		}
 
 		err = xlm.GetXLM(prepUser.StellarWallet.PublicKey)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
@@ -530,8 +519,7 @@ func trustAsset() {
 		}
 
 		txhash, err := assets.TrustAsset(assetCode, assetIssuer, limit, seed)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
@@ -635,9 +623,7 @@ func increaseTrustLimit() {
 		}
 
 		err = prepUser.IncreaseTrustLimit(seedpwd, trust)
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
@@ -663,8 +649,7 @@ func sendSecrets() {
 
 		err = notif.SendSecretsEmail(user.Email, email1, email2, email3, user.RecoveryShares[0],
 			user.RecoveryShares[1], user.RecoveryShares[2])
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
@@ -728,14 +713,12 @@ func generateNewSecrets() {
 		}
 		// user has validated his seed and identity. Generate new shares and send them out
 		shares, err := recovery.Create(2, 3, seed)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
 		err = notif.SendSecretsEmail(user.Email, email1, email2, email3, shares[0], shares[1], shares[2])
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
@@ -754,8 +737,7 @@ func generateResetPwdCode() {
 		email := r.URL.Query()["email"][0]
 
 		rUser, err := database.SearchWithEmailId(email)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
@@ -770,15 +752,13 @@ func generateResetPwdCode() {
 		log.Println("VERIFICATION CODE: ", verificationCode)
 		rUser.PwdResetCode = verificationCode
 		err = rUser.Save()
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
 		// now send this verification code to the email we have in the database
 		err = notif.SendPasswordResetEmail(rUser.Email, verificationCode)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
@@ -799,8 +779,7 @@ func resetPassword() {
 		pwhash := r.URL.Query()["pwhash"][0]
 
 		rUser, err := database.SearchWithEmailId(email)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
@@ -871,8 +850,7 @@ func sweepFunds() {
 		// now we have the xlm balance, shift funds to the other account as requested by the user.
 		sweepAmt := math.Round(xlmBalance)
 		_, txhash, err := xlm.SendXLM(transferAddress, sweepAmt, seed, "sweep funds")
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
@@ -909,8 +887,7 @@ func sweepAsset() {
 		// validated the user, so now proceed to sweep funds
 		assetBalance := xlm.GetAssetBalance(prepUser.StellarWallet.PublicKey, assetName)
 		assetBalanceF, err := utils.ToFloat(assetBalance)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
@@ -924,8 +901,7 @@ func sweepAsset() {
 		assetBalanceF -= 5
 		sweepAmt := math.Round(assetBalanceF)
 		_, txhash, err := assets.SendAsset(assetName, issuerPubkey, destination, sweepAmt, seed, "sweeping funds")
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
@@ -1007,8 +983,7 @@ func validateKYC() {
 		}
 
 		err = prepUser.Save()
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 		erpc.MarshalSend(w, response)
@@ -1045,8 +1020,7 @@ func giveStarRating() {
 		}
 
 		err = prepUser.GiveFeedback(userIndex, feedback)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
@@ -1076,8 +1050,7 @@ func new2fa() {
 
 			password := r.URL.Query()["password"][0]
 			result, err := prepUser.Authenticate2FA(password)
-			if err != nil {
-				erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+			if erpc.Err(w, err, erpc.StatusInternalServerError) {
 				return
 			}
 
@@ -1089,8 +1062,7 @@ func new2fa() {
 		}
 
 		otpString, err := prepUser.Generate2FA()
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
@@ -1111,8 +1083,7 @@ func auth2fa() {
 
 		password := r.URL.Query()["password"][0]
 		result, err := prepUser.Authenticate2FA(password)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
@@ -1172,8 +1143,7 @@ func changeReputation() {
 		}
 
 		err = user.ChangeReputation(reputation)
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 		erpc.ResponseHandler(w, erpc.StatusOK)
@@ -1239,8 +1209,7 @@ func getLatestBlockHash() {
 		}
 
 		hash, err := xlm.GetLatestBlockHash()
-		if err != nil {
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
@@ -1263,9 +1232,7 @@ func acceptTc() {
 
 		user.Legal = true
 		err = user.Save()
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
@@ -1353,13 +1320,11 @@ func updateUser() {
 			oldseedpwd := r.FormValue("oldseedpwd")
 			seedpwd := r.FormValue("seedpwd")
 			seed, err := wallet.DecryptSeed(user.StellarWallet.EncryptedSeed, oldseedpwd)
-			if err != nil {
-				erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+			if erpc.Err(w, err, erpc.StatusInternalServerError) {
 				return
 			}
 			user.StellarWallet.EncryptedSeed, err = aes.Encrypt([]byte(seed), seedpwd)
-			if err != nil {
-				erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+			if erpc.Err(w, err, erpc.StatusInternalServerError) {
 				return
 			}
 		}
@@ -1373,9 +1338,7 @@ func updateUser() {
 		}
 
 		err = user.Save()
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
@@ -1406,9 +1369,7 @@ func logout() {
 		}
 
 		err = user.AllLogout() // generate a new token to invalidate the old one
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
@@ -1426,9 +1387,7 @@ func verify() {
 		}
 
 		err = user.VerReq()
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
@@ -1446,9 +1405,7 @@ func unverify() {
 		}
 
 		err = user.UnverReq()
-		if err != nil {
-			log.Println(err)
-			erpc.ResponseHandler(w, erpc.StatusInternalServerError)
+		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
 
