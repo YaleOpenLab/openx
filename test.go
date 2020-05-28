@@ -104,8 +104,8 @@ func main() {
 		admin.Index = 1
 		admin.Username = "admin"
 		admin.Pwhash = utils.SHA3hash("password")
-		admin.AccessToken = "pmkjMEnyeUpdTyhdHElkBExEKeLIlYft"
-		admin.AccessTokenTimeout = utils.Unix() + 1000000
+		admin.AccessToken = make(map[string]int64)
+		admin.AccessToken["pmkjMEnyeUpdTyhdHElkBExEKeLIlYft"] = utils.Unix() + 10000000000
 		admin.Admin = true
 		admin.Conf = true
 		err = admin.Save()
