@@ -3,7 +3,7 @@ module github.com/YaleOpenLab/openx
 go 1.13
 
 require (
-	github.com/Varunram/essentials v1.0.3
+	github.com/Varunram/essentials v1.0.4
 	github.com/bithyve/research v0.0.0-20191102090848-d238806b60bf
 	github.com/boltdb/bolt v1.3.1
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
@@ -25,8 +25,8 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.7.0
-	github.com/stellar/go v0.0.0-20200527155254-4b6180abef10
+	github.com/stellar/go v0.0.0-20200528062442-f08b35a3f034
 	github.com/stellar/go-xdr v0.0.0-20200331223602-71a1e6d555f2 // indirect
 	github.com/stretchr/objx v0.2.0 // indirect
-	gopkg.in/ini.v1 v1.56.0 // indirect
+	gopkg.in/ini.v1 v1.57.0 // indirect
 )

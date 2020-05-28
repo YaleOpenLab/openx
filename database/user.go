@@ -83,9 +83,7 @@ type User struct {
 	// AnchorKYC contains KYC information required by AnchorUSD
 	AnchorKYC AnchorKYCHelper
 	// AccessToken is the access token that will be used for authenticating RPC requests made to the server
-	AccessToken string
-	// AccessTokenTimeout is the unix time at which the accessToken was generated
-	AccessTokenTimeout int64
+	AccessToken map[string]int64
 	// Mailbox is a mailbox where admins can send you messages or updated on your invested / interested projects
 	Mailbox []MailboxHelper
 	// Legal is a bool which is set when the user accepts the terms and conditions
@@ -594,20 +592,45 @@ func (a *User) ImportSeed(encryptedSeed []byte, pubkey string, seedpwd string) e
 
 // GenAccessToken generates a new access token for the user
 func (a *User) GenAccessToken() (string, error) {
-	a.AccessToken = utils.GetRandomString(consts.AccessTokenLength)
-	a.AccessTokenTimeout = utils.Unix()
+	timeNow := utils.Unix()
+	if len(a.AccessToken) == 0 {
+		a.AccessToken = make(map[string]int64)
+	} else {
+		// delete expired tokens
+		for token, timeout := range a.AccessToken {
+			if timeNow-timeout >= consts.AccessTokenLife {
+				delete(a.AccessToken, token)
+			}
+		}
+
+		if len(a.AccessToken) == 5 { // all 5 tokens are valid, delete oldest token
+			min := int64(0)
+			minToken := ""
+			for token, timeout := range a.AccessToken {
+				if timeout > min {
+					min = timeout
+					minToken = token
+				}
+			}
+			delete(a.AccessToken, minToken) // delete the oldest token
+		}
+	}
+
+	token := utils.GetRandomString(consts.AccessTokenLength)
+	a.AccessToken[token] = timeNow
 
 	err := a.Save()
 	if err != nil {
 		return "", errors.Wrap(err, "could not save user to database")
 	}
-	return a.AccessToken, nil
+	return token, nil
 }
 
 // AllLogout invalidates the user access token
 func (a *User) AllLogout() error {
-	a.AccessToken = utils.GetRandomString(consts.AccessTokenLength)
-	a.AccessTokenTimeout = utils.Unix()
+	for token := range a.AccessToken {
+		delete(a.AccessToken, token)
+	}
 	return a.Save()
 }
 

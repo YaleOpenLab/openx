@@ -151,10 +151,18 @@ func ValidateAccessToken(name string, accessToken string) (User, error) {
 		if !user.Conf {
 			continue
 		}
-		if user.Username == name && user.AccessToken == accessToken &&
-			utils.Unix()-user.AccessTokenTimeout < consts.AccessTokenLife {
-			return user, nil
+		if user.Username == name {
+			dummy = user
+			break
 		}
 	}
+
+	timeNow := utils.Unix()
+	for storedToken, timeout := range dummy.AccessToken {
+		if storedToken == accessToken && timeNow-timeout < consts.AccessTokenLife {
+			return dummy, nil
+		}
+	}
+
 	return dummy, errors.New("could not find user with requested credentials")
 }
