@@ -2,6 +2,7 @@ package database
 
 import (
 	"encoding/json"
+
 	"github.com/pkg/errors"
 
 	edb "github.com/Varunram/essentials/database"
@@ -107,6 +108,25 @@ func ValidatePwhash(name string, pwhash string) (User, error) {
 	}
 
 	for _, user := range users {
+		if !user.Conf {
+			continue
+		}
+		if user.Username == name && user.Pwhash == pwhash {
+			return user, nil
+		}
+	}
+	return dummy, errors.New("could not find user with requested credentials")
+}
+
+// ValidatePwhashReg validates a username / pwhash combination during registration
+func ValidatePwhashReg(name string, pwhash string) (User, error) {
+	var dummy User
+	users, err := RetrieveAllUsers()
+	if err != nil {
+		return dummy, errors.Wrap(err, "error while retrieving all users from database")
+	}
+
+	for _, user := range users {
 		if user.Username == name && user.Pwhash == pwhash {
 			return user, nil
 		}
@@ -128,6 +148,9 @@ func ValidateAccessToken(name string, accessToken string) (User, error) {
 	}
 
 	for _, user := range users {
+		if !user.Conf {
+			continue
+		}
 		if user.Username == name && user.AccessToken == accessToken &&
 			utils.Unix()-user.AccessTokenTimeout < consts.AccessTokenLife {
 			return user, nil

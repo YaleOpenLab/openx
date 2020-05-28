@@ -3,7 +3,7 @@ module github.com/YaleOpenLab/openx
 go 1.13
 
 require (
-	github.com/Varunram/essentials v1.0.2
+	github.com/Varunram/essentials v1.0.3
 	github.com/bithyve/research v0.0.0-20191102090848-d238806b60bf
 	github.com/boltdb/bolt v1.3.1
 	github.com/fsnotify/fsnotify v1.4.9 // indirect

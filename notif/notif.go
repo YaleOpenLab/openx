@@ -42,3 +42,12 @@ func SendPasswordResetEmail(to string, vCode string) error {
 
 	return email.SendMail(body, to)
 }
+
+// SendUserConfEmail sends a registration confirmation email to the email address of the user
+func SendUserConfEmail(to string, code string) error {
+	body := "Greetings from the opensolar platform! \n\nWe're writing to let you know that you requested a new account recently\n\n" +
+		"Please input this code into the confirmation dialogue displayed on your screen to confirm your registration on openx\n\n" +
+		"CONFIRMATION CODE: " + code + "\n\n\n" + footerString
+
+	return email.SendMail(body, to)
+}
