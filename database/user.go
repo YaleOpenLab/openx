@@ -3,6 +3,7 @@ package database
 import (
 	"encoding/base32"
 	"log"
+	"strings"
 
 	"github.com/pkg/errors"
 
@@ -99,6 +100,10 @@ type User struct {
 	VerifiedBy int
 	// VerifiedTime stores when the user was verified
 	VerifiedTime string
+	// ConfToken is the confirmation token sent to users to confirm their registration on openx
+	ConfToken string
+	// Conf is a bool that is set to true when users confirm their tokens
+	Conf bool
 }
 
 // MailboxHelper is a helper struct that can be used to send admin notifications to users
@@ -177,6 +182,7 @@ func NewUser(uname string, pwhash string, seedpwd string, email string) (User, e
 	a.FirstSignedUp = utils.Timestamp()
 	a.Kyc = false
 	a.Notification = false
+	a.ConfToken = strings.ToUpper(utils.GetRandomString(8))
 	err = a.Save()
 	return a, err
 }

@@ -244,7 +244,7 @@ func genAccessToken() {
 
 		log.Println("username: ", username, " requesting a new access token")
 		user, err := database.ValidatePwhash(username, pwhash)
-		if erpc.Err(w, err, erpc.StatusInternalServerError) {
+		if erpc.Err(w, err, erpc.StatusUnauthorized) {
 			return
 		}
 

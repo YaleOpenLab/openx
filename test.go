@@ -107,6 +107,7 @@ func main() {
 		admin.AccessToken = "pmkjMEnyeUpdTyhdHElkBExEKeLIlYft"
 		admin.AccessTokenTimeout = utils.Unix() + 1000000
 		admin.Admin = true
+		admin.Conf = true
 		err = admin.Save()
 		if err != nil {
 			log.Fatal(err)

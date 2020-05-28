@@ -4,6 +4,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/YaleOpenLab/openx/notif"
+
 	"github.com/Varunram/essentials/email"
 
 	erpc "github.com/Varunram/essentials/rpc"
@@ -28,6 +30,7 @@ func setupPlatformRoutes() {
 	pfCollisionCheck()
 	retrieveAllPlatformNames()
 	pfSendEmail()
+	pfConfirmUser()
 }
 
 // PlatformRPC is a map that stores all handlers related to the platform
@@ -39,6 +42,7 @@ var PlatformRPC = map[int][]string{
 	4: []string{"/platform/user/collision", "username"},                         // GET
 	5: []string{"/platforms/all"},                                               // GET NOAUTH
 	6: []string{"/platform/email", "body", "to"},                                // POST
+	7: []string{"/platform/user/confirm", "username", "pwhash", "code"},         // GET
 }
 
 // mainnetRPC is an RPC that reutrns 0 if openx is running on mainnet, 1 if running on testnet
@@ -246,6 +250,11 @@ func pfNewUser() {
 			return
 		}
 
+		err = notif.SendUserConfEmail(email, user.ConfToken)
+		if erpc.Err(w, err, erpc.StatusInternalServerError, "could not send user conf token") {
+			return
+		}
+
 		erpc.MarshalSend(w, user)
 	})
 }
@@ -336,5 +345,50 @@ func pfSendEmail() {
 		}
 
 		erpc.ResponseHandler(w, erpc.StatusOK)
+	})
+}
+
+// pfConfirmUser confirms a user's registration on an openx platform
+func pfConfirmUser() {
+	http.HandleFunc(PlatformRPC[7][0], func(w http.ResponseWriter, r *http.Request) {
+		log.Println("external platform requests validation")
+		err := erpc.CheckGet(w, r)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		err = authPlatform(w, r)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		if r.URL.Query()["username"] == nil || r.URL.Query()["pwhash"] == nil || r.URL.Query()["code"] == nil {
+			log.Println("username / pwhash missing")
+			erpc.ResponseHandler(w, erpc.StatusBadRequest)
+		}
+
+		name := r.URL.Query()["username"][0]
+		pwhash := r.URL.Query()["pwhash"][0]
+		confcode := r.URL.Query()["confcode"][0]
+
+		user, err := database.ValidatePwhashReg(name, pwhash)
+		if erpc.Err(w, err, erpc.StatusBadRequest, "error while validating user") {
+			return
+		}
+
+		if confcode != user.ConfToken {
+			log.Println("provided code does not match with required code")
+		}
+
+		user.Conf = true
+		user.ConfToken = ""
+		err = user.Save()
+		if erpc.Err(w, err, erpc.StatusInternalServerError, "could not save user") {
+			return
+		}
+
+		erpc.MarshalSend(w, user)
 	})
 }
