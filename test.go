@@ -11,6 +11,8 @@ import (
 	consts "github.com/YaleOpenLab/openx/consts"
 	database "github.com/YaleOpenLab/openx/database"
 	loader "github.com/YaleOpenLab/openx/loader"
+	"github.com/jessevdk/go-flags"
+	"github.com/pkg/errors"
 
 	// ipfs "github.com/YaleOpenLab/openx/ipfs"
 	// opensolar "github.com/YaleOpenLab/opensolar/consts"
@@ -26,7 +28,6 @@ import (
 	// assets "github.com/Varunram/essentials/xlm/assets"
 	// assets "github.com/YaleOpenLab/openx/assets"
 
-	flags "github.com/jessevdk/go-flags"
 	"github.com/spf13/viper"
 )
 
@@ -39,6 +40,7 @@ var opts struct {
 	Mainnet   bool `short:"m" description:"Switch mainnet mode on"`
 	Trustline bool `short:"x" description:"create trustlines from platform seed to anchorUSD"`
 	Rescue    bool `short:"r" description:"start rescue mode"`
+	EnvRead   bool `short:"e" description:"read values from env files"`
 }
 
 // ParseConfFile parses stuff from the config file provided
@@ -47,11 +49,6 @@ func ParseConfFile() (bool, int, error) {
 	var port int
 	var insecure bool
 	var err error
-
-	_, err = flags.ParseArgs(&opts, os.Args)
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	viper.SetConfigType("yaml")
 	viper.SetConfigName("config")
@@ -79,11 +76,43 @@ func ParseConfFile() (bool, int, error) {
 	return insecure, port, nil
 }
 
+func parseEnvVars() (bool, int, error) {
+	log.Println("reading")
+	viper.AutomaticEnv()
+	portS := viper.GetString("OPENX_PORT")
+	port, err := utils.ToInt(portS)
+	if err != nil {
+		return false, 8080, errors.Wrap(err, "invalid value for port")
+	}
+
+	insecure := viper.GetBool("OPENX_INSECURE")
+	consts.Mainnet = viper.GetBool("OPENX_MAINNET")
+
+	return insecure, port, nil
+}
+
 func main() {
 	var err error
-	insecure, port, err := ParseConfFile()
+	var insecure bool
+	var port int
+
+	_, err = flags.ParseArgs(&opts, os.Args)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	if opts.EnvRead {
+		insecure, port, err = parseEnvVars()
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Println("reading insecure, port from env vars: ", insecure, port)
+	} else {
+		log.Println("2")
+		insecure, port, err = ParseConfFile()
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	if consts.Mainnet {
