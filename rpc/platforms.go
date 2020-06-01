@@ -35,14 +35,14 @@ func setupPlatformRoutes() {
 
 // PlatformRPC is a map that stores all handlers related to the platform
 var PlatformRPC = map[int][]string{
-	0: []string{"/platform/getconsts"},                                          // GET
-	1: []string{"/platform/user/retrieve", "key"},                               // GET
-	2: []string{"/platform/user/validate", "username", "token"},                 // GET
-	3: []string{"/platform/user/new", "username", "pwhash", "seedpwd", "email"}, // GET
-	4: []string{"/platform/user/collision", "username"},                         // GET
-	5: []string{"/platforms/all"},                                               // GET NOAUTH
-	6: []string{"/platform/email", "body", "to"},                                // POST
-	7: []string{"/platform/user/confirm", "username", "pwhash", "code"},         // GET
+	0: {"/platform/getconsts"},                                          // GET
+	1: {"/platform/user/retrieve", "key"},                               // GET
+	2: {"/platform/user/validate", "username", "token"},                 // GET
+	3: {"/platform/user/new", "username", "pwhash", "seedpwd", "email"}, // GET
+	4: {"/platform/user/collision", "username"},                         // GET
+	5: {"/platforms/all"},                                               // GET NOAUTH
+	6: {"/platform/email", "body", "to"},                                // POST
+	7: {"/platform/user/confirm", "username", "pwhash", "code"},         // GET
 }
 
 // mainnetRPC is an RPC that reutrns 0 if openx is running on mainnet, 1 if running on testnet

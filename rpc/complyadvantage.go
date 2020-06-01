@@ -14,8 +14,8 @@ import (
 
 // CARPC contains a list of all ComplyAdvantage related RPCs
 var CARPC = map[int][]string{
-	1: []string{"/user/ca/search", "name", "birthyear"},
-	2: []string{"/admin/ca/users/all"},
+	1: {"/user/ca/search", "name", "birthyear"},
+	2: {"/admin/ca/users/all"},
 }
 
 // setupCAHandlers sets up rpc handlers that are involved with integrating ComplyAdvantage into openx

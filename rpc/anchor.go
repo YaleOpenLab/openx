@@ -14,12 +14,12 @@ import (
 
 // AnchorRPC is a collection of all Anchor RPC endpoints and their required params
 var AnchorRPC = map[int][]string{
-	1: []string{"/user/anchorusd/deposit/intent", "GET"},  // GET
-	2: []string{"/user/anchorusd/deposit/kyc", "GET"},     // GET
-	3: []string{"/user/anchorusd/withdraw/intent", "GET"}, // GET
-	4: []string{"/user/anchorusd/withdraw/kyc", "GET"},    // GET
-	5: []string{"/user/anchorusd/kycinfo", "GET"},         // GET
-	6: []string{"/user/anchorusd/kyc/register", "POST"},   // POST
+	1: {"/user/anchorusd/deposit/intent", "GET"},  // GET
+	2: {"/user/anchorusd/deposit/kyc", "GET"},     // GET
+	3: {"/user/anchorusd/withdraw/intent", "GET"}, // GET
+	4: {"/user/anchorusd/withdraw/kyc", "GET"},    // GET
+	5: {"/user/anchorusd/kycinfo", "GET"},         // GET
+	6: {"/user/anchorusd/kyc/register", "POST"},   // POST
 }
 
 // When a user wants to procure or deal with AnchorUSD, there are a couple things that they need to do:

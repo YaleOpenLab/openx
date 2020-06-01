@@ -24,50 +24,46 @@ import (
 
 // UserRPC is a collection of all user RPC endpoints and their required params
 var UserRPC = map[int][]string{
-	0:  []string{"/token"},                                                                         // POST
-	1:  []string{"/user/validate", "GET"},                                                          // GET
-	2:  []string{"/user/balances", "GET"},                                                          // GET
-	3:  []string{"/user/balance/xlm", "GET"},                                                       // GET
-	4:  []string{"/user/balance/asset", "GET", "asset"},                                            // GET
-	5:  []string{"/ipfs/getdata", "GET", "hash"},                                                   // GET
-	6:  []string{"/user/kyc", "GET", "userIndex"},                                                  // GET
-	7:  []string{"/user/sendxlm", "GET", "destination", "amount", "seedpwd"},                       // GET
-	8:  []string{"/user/notkycview", "GET"},                                                        // GET
-	9:  []string{"/user/kycview", "GET"},                                                           // GET
-	10: []string{"/user/askxlm", "GET"},                                                            // GET
-	11: []string{"/user/trustasset", "GET", "assetCode", "assetIssuer", "limit", "seedpwd"},        // GET
-	12: []string{"/upload", "POST"},                                                                // POST
-	13: []string{"/platformemail", "GET"},                                                          // GET
-	17: []string{"/user/increasetrustlimit", "GET", "trust", "seedpwd"},                            // GET
-	19: []string{"/user/sendrecovery", "GET", "email1", "email2", "email3"},                        // GET
-	20: []string{"/user/seedrecovery", "GET", "secret1", "secret2"},                                // GET
-	21: []string{"/user/newsecrets", "GET", "seedpwd", "email1", "email2", "email3"},               // GET
-	22: []string{"/user/resetpwd", "GET", "seedpwd", "email"},                                      // GET
-	23: []string{"/user/pwdreset", "GET", "pwhash", "email", "verificationCode"},                   // GET
-	24: []string{"/user/sweep", "GET", "seedpwd", "destination"},                                   // GET
-	25: []string{"/user/sweepasset", "GET", "seedpwd", "destination", "assetName", "issuerPubkey"}, // GET
-	26: []string{"/user/verifykyc", "GET", "selfie"},                                               // GET
-	27: []string{"/user/giverating", "GET", "feedback", "userIndex"},                               // GET
-	28: []string{"/user/2fa/generate", "GET"},                                                      // GET
-	29: []string{"/user/2fa/authenticate", "GET", "password"},                                      // GET
-	31: []string{"/user/reputation", "GET", "reputation"},                                          // GET
-	32: []string{"/user/addseed", "GET", "encryptedseed", "seedpwd", "pubkey"},                     // GET
-	33: []string{"/user/latestblockhash", "GET"},                                                   // GET
-	34: []string{"/ipfs/putdata", "POST", "data"},                                                  // POST
-	35: []string{"/user/tc", "POST"},                                                               // POST
-	36: []string{"/user/progress", "POST", "progress"},                                             // POST
-	37: []string{"/user/update", "POST"},                                                           // POST
-	38: []string{"/user/tellerfile", "GET"},                                                        // GET
-	39: []string{"/user/logout", "POST"},                                                           // POST
-	40: []string{"/user/verify", "POST"},                                                           // POST
-	41: []string{"/user/unverify", "POST"},                                                         // POST
+	0:  {"/token"},                                                                         // POST
+	1:  {"/user/validate", "GET"},                                                          // GET
+	2:  {"/user/balances", "GET"},                                                          // GET
+	3:  {"/user/balance/xlm", "GET"},                                                       // GET
+	4:  {"/user/balance/asset", "GET", "asset"},                                            // GET
+	5:  {"/ipfs/getdata", "GET", "hash"},                                                   // GET
+	6:  {"/user/kyc", "GET", "userIndex"},                                                  // GET
+	7:  {"/user/sendxlm", "GET", "destination", "amount", "seedpwd"},                       // GET
+	8:  {"/user/notkycview", "GET"},                                                        // GET
+	9:  {"/user/kycview", "GET"},                                                           // GET
+	10: {"/user/askxlm", "GET"},                                                            // GET
+	11: {"/user/trustasset", "GET", "assetCode", "assetIssuer", "limit", "seedpwd"},        // GET
+	12: {"/upload", "POST"},                                                                // POST
+	13: {"/platformemail", "GET"},                                                          // GET
+	17: {"/user/increasetrustlimit", "GET", "trust", "seedpwd"},                            // GET
+	19: {"/user/sendrecovery", "GET", "email1", "email2", "email3"},                        // GET
+	20: {"/user/seedrecovery", "GET", "secret1", "secret2"},                                // GET
+	21: {"/user/newsecrets", "GET", "seedpwd", "email1", "email2", "email3"},               // GET
+	22: {"/user/resetpwd", "GET", "seedpwd", "email"},                                      // GET
+	23: {"/user/pwdreset", "GET", "pwhash", "email", "verificationCode"},                   // GET
+	24: {"/user/sweep", "GET", "seedpwd", "destination"},                                   // GET
+	25: {"/user/sweepasset", "GET", "seedpwd", "destination", "assetName", "issuerPubkey"}, // GET
+	26: {"/user/verifykyc", "GET", "selfie"},                                               // GET
+	27: {"/user/giverating", "GET", "feedback", "userIndex"},                               // GET
+	28: {"/user/2fa/generate", "GET"},                                                      // GET
+	29: {"/user/2fa/authenticate", "GET", "password"},                                      // GET
+	31: {"/user/reputation", "GET", "reputation"},                                          // GET
+	32: {"/user/addseed", "GET", "encryptedseed", "seedpwd", "pubkey"},                     // GET
+	33: {"/user/latestblockhash", "GET"},                                                   // GET
+	34: {"/ipfs/putdata", "POST", "data"},                                                  // POST
+	35: {"/user/tc", "POST"},                                                               // POST
+	36: {"/user/progress", "POST", "progress"},                                             // POST
+	37: {"/user/update", "POST"},                                                           // POST
+	38: {"/user/tellerfile", "GET"},                                                        // GET
+	39: {"/user/logout", "POST"},                                                           // POST
+	40: {"/user/verify", "POST"},                                                           // POST
+	41: {"/user/unverify", "POST"},                                                         // POST
 
-	30: []string{"/user/anchorusd/kyc", "GET", "name", "bdaymonth", "bdayday", "bdayyear", "taxcountry", // GET
+	30: {"/user/anchorusd/kyc", "GET", "name", "bdaymonth", "bdayday", "bdayyear", "taxcountry", // GET
 		"taxid", "addrstreet", "addrcity", "addrpostal", "addrregion", "addrcountry", "addrphone", "primaryphone", "gender"},
-	// 14: []string{"/tellershutdown", "projIndex", "deviceId", "tx1", "tx2"},
-	// 15: []string{"/tellerpayback", "deviceId", "projIndex"},
-	// 16: []string{"/tellerping", "GET", "index"},
-	// 18: []string{"/utils/addhash", "projIndex", "choice", "choicestr"},
 }
 
 // setupUserRpcs sets up user related RPCs

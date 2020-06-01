@@ -13,8 +13,8 @@ import (
 
 // StablecoinRPC is a collection of all stablecoin RPC endpoints and their required params
 var StablecoinRPC = map[int][]string{
-	1: []string{"/stablecoin/get", "GET", "seedpwd", "amount"}, // GET
-	2: []string{"/anchor/get", "GET"},                          // GET
+	1: {"/stablecoin/get", "GET", "seedpwd", "amount"}, // GET
+	2: {"/anchor/get", "GET"},                          // GET
 }
 
 // setupStableCoinRPCs sets up the endpoints that would be required to interact with

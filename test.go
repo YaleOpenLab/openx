@@ -12,7 +12,6 @@ import (
 	database "github.com/YaleOpenLab/openx/database"
 	loader "github.com/YaleOpenLab/openx/loader"
 	"github.com/jessevdk/go-flags"
-	"github.com/pkg/errors"
 
 	// ipfs "github.com/YaleOpenLab/openx/ipfs"
 	// opensolar "github.com/YaleOpenLab/opensolar/consts"
@@ -79,12 +78,7 @@ func ParseConfFile() (bool, int, error) {
 func parseEnvVars() (bool, int, error) {
 	log.Println("reading")
 	viper.AutomaticEnv()
-	portS := viper.GetString("OPENX_PORT")
-	port, err := utils.ToInt(portS)
-	if err != nil {
-		return false, 8080, errors.Wrap(err, "invalid value for port")
-	}
-
+	port := viper.GetInt("OPENX_PORT")
 	insecure := viper.GetBool("OPENX_INSECURE")
 	consts.Mainnet = viper.GetBool("OPENX_MAINNET")
 
