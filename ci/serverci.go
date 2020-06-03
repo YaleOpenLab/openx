@@ -445,7 +445,7 @@ func main() {
 				log.Println(err)
 				continue
 			}
-			log.Println("build built succesfully")
+			log.Println("build built successfully")
 			writeLastBuilt()
 			readLastBuilt()
 			updateShaHashes()

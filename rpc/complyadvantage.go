@@ -30,7 +30,7 @@ type CAResponse struct {
 	Status  string `json:"string"`
 	Content struct {
 		Data struct {
-			Id         int64  `json:"id"`
+			ID         int64  `json:"id"`
 			Ref        string `json:"ref"`
 			Searcherid int64  `json:"searcher_id"`
 			Assigneeid int64  `json:"assignee_id"`
@@ -72,12 +72,12 @@ type CAResponse struct {
 						Tag    string `json:"tag"`
 						Value  string `json:"value"`
 					} `json:"fields"`
-					Id    string
+					ID    string
 					Media []struct {
 						Date    string `json:"date"`
 						Snippet string `json:"snippet"`
 						Title   string `json:"title"`
-						Url     string `json:"url"`
+						URL     string `json:"url"`
 					} `json:"media"`
 					Name    string   `json:"name"`
 					Sources []string `json:"sources"`
@@ -172,7 +172,7 @@ type caAllUserResponse struct {
 	Status  string `json:"status"`
 	Content struct {
 		Data []struct {
-			Id        int    `json:"id"`
+			ID        int    `json:"id"`
 			Email     string `json:"email"`
 			Name      string `json:"name"`
 			Phone     string `json:"phone"`

@@ -50,7 +50,7 @@ func setupAnchorHandlers() {
 // AnchorIntentResponse defines the intent response struct for AnchorUSD
 type AnchorIntentResponse struct {
 	Type       string `json:"type"`
-	Url        string `json:"url"`
+	URL        string `json:"url"`
 	Identifier string `json:"identifier"`
 }
 
@@ -58,7 +58,7 @@ type AnchorIntentResponse struct {
 type kycDepositResponse struct {
 	Error  string
 	Result string
-	Url    string
+	URL    string
 }
 
 // GetAndReturnIdentifier is a handler that makes a get request and returns json data
@@ -109,7 +109,7 @@ func intentDeposit() {
 		}
 
 		prepUser.AnchorKYC.DepositIdentifier = x.Identifier
-		prepUser.AnchorKYC.Url = x.Url
+		prepUser.AnchorKYC.URL = x.URL
 		err = prepUser.Save()
 		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
@@ -135,7 +135,7 @@ func kycDeposit() {
 		data.Set("birthday[day]", prepUser.AnchorKYC.Birthday.Day)
 		data.Set("birthday[year]", prepUser.AnchorKYC.Birthday.Year)
 		data.Set("tax-country", prepUser.AnchorKYC.Tax.Country)
-		data.Set("tax-id-number", prepUser.AnchorKYC.Tax.Id)
+		data.Set("tax-id-number", prepUser.AnchorKYC.Tax.ID)
 		data.Set("address[street-1]", prepUser.AnchorKYC.Address.Street)
 		data.Set("address[city]", prepUser.AnchorKYC.Address.City)
 		data.Set("address[postal-code]", prepUser.AnchorKYC.Address.Postal)
@@ -169,7 +169,7 @@ func intentWithdraw() {
 		}
 
 		prepUser.AnchorKYC.WithdrawIdentifier = x.Identifier
-		prepUser.AnchorKYC.Url = x.Url
+		prepUser.AnchorKYC.URL = x.URL
 		err = prepUser.Save()
 		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
@@ -197,7 +197,7 @@ func kycWithdraw() {
 			data.Set("birthday[day]", prepUser.AnchorKYC.Birthday.Day)
 			data.Set("birthday[year]", prepUser.AnchorKYC.Birthday.Year)
 			data.Set("tax-country", prepUser.AnchorKYC.Tax.Country)
-			data.Set("tax-id-number", prepUser.AnchorKYC.Tax.Id)
+			data.Set("tax-id-number", prepUser.AnchorKYC.Tax.ID)
 			data.Set("address[street-1]", prepUser.AnchorKYC.Address.Street)
 			data.Set("address[city]", prepUser.AnchorKYC.Address.City)
 			data.Set("address[postal-code]", prepUser.AnchorKYC.Address.Postal)
@@ -216,7 +216,7 @@ func kycWithdraw() {
 }
 
 type kycReturn struct {
-	AccountId string `json:"account_id"`
+	AccountID string `json:"account_id"`
 	KycStatus string `json:"kyc_status`
 }
 
@@ -228,7 +228,7 @@ func getKycStatus() {
 			return
 		}
 
-		body := consts.AnchorAPI + "api/accounts/" + prepUser.AnchorKYC.AccountId + "/kyc"
+		body := consts.AnchorAPI + "api/accounts/" + prepUser.AnchorKYC.AccountID + "/kyc"
 
 		data, err := erpc.GetRequest(body)
 		if erpc.Err(w, err, erpc.StatusInternalServerError) {
@@ -253,7 +253,7 @@ func getKycStatus() {
 
 type kycR struct {
 	URL       string `json:"url"`
-	AccountId string `json:"account_id"`
+	AccountID string `json:"account_id"`
 }
 
 // kycRegister is used to register for KYC on AnchorUSD's platform
@@ -272,7 +272,7 @@ func kycRegister() {
 		data.Set("birthday[day]", prepUser.AnchorKYC.Birthday.Day)
 		data.Set("birthday[year]", prepUser.AnchorKYC.Birthday.Year)
 		data.Set("tax-country", prepUser.AnchorKYC.Tax.Country)
-		data.Set("tax-id-number", prepUser.AnchorKYC.Tax.Id)
+		data.Set("tax-id-number", prepUser.AnchorKYC.Tax.ID)
 		data.Set("address[street-1]", prepUser.AnchorKYC.Address.Street)
 		data.Set("address[city]", prepUser.AnchorKYC.Address.City)
 		data.Set("address[postal-code]", prepUser.AnchorKYC.Address.Postal)
@@ -293,7 +293,7 @@ func kycRegister() {
 			return
 		}
 
-		prepUser.AnchorKYC.AccountId = ret.AccountId
+		prepUser.AnchorKYC.AccountID = ret.AccountID
 		err = prepUser.Save()
 		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return

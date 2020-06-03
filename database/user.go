@@ -128,7 +128,7 @@ type AnchorKYCHelper struct {
 	}
 	Tax struct {
 		Country string
-		Id      string
+		ID      string
 	}
 	Address struct {
 		Street  string
@@ -142,8 +142,8 @@ type AnchorKYCHelper struct {
 	Gender             string
 	DepositIdentifier  string
 	WithdrawIdentifier string
-	Url                string
-	AccountId          string
+	URL                string
+	AccountID          string
 }
 
 // StellWallet hold the Stellar Publickey and Encrypted Seed
@@ -417,8 +417,8 @@ func (a *User) IncreaseTrustLimit(seedpwd string, trust float64) error {
 	return nil
 }
 
-// SearchWithEmailId searches for a user given their email id
-func SearchWithEmailId(email string) (User, error) {
+// SearchWithEmailID searches for a user given their email id
+func SearchWithEmailID(email string) (User, error) {
 	var dummy User
 	users, err := RetrieveAllUsers()
 	if err != nil {
