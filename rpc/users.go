@@ -113,11 +113,6 @@ func setupUserRpcs() {
 	// addContractHash()
 }
 
-const (
-	// TellerUrl defines the teller URL to check. In future, would be an array
-	TellerUrl = "https://localhost"
-)
-
 func checkReqdParams(w http.ResponseWriter, r *http.Request, options []string, method string) error {
 	if method == "GET" {
 		err := erpc.CheckGet(w, r)
@@ -712,7 +707,7 @@ func generateResetPwdCode() {
 
 		email := r.URL.Query()["email"][0]
 
-		rUser, err := database.SearchWithEmailId(email)
+		rUser, err := database.SearchWithEmailID(email)
 		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
@@ -753,7 +748,7 @@ func resetPassword() {
 		vCode := r.URL.Query()["verificationCode"][0]
 		pwhash := r.URL.Query()["pwhash"][0]
 
-		rUser, err := database.SearchWithEmailId(email)
+		rUser, err := database.SearchWithEmailID(email)
 		if erpc.Err(w, err, erpc.StatusInternalServerError) {
 			return
 		}
@@ -894,7 +889,7 @@ func validateKYC() {
 			return
 		}
 
-		var isId bool
+		var isID bool
 		var idType string
 		var id string
 		var verif bool
@@ -902,35 +897,35 @@ func validateKYC() {
 		prepUser.KYC.PersonalPhoto = r.URL.Query()["selfie"][0]
 
 		if r.URL.Query()["passport"] != nil {
-			isId = true
+			isID = true
 			idType = "passport"
 			id = r.URL.Query()["passport"][0]
 			prepUser.KYC.PassportPhoto = id
 		}
 
 		if r.URL.Query()["dlicense"] != nil {
-			isId = true
+			isID = true
 			idType = "dlicense"
 			id = r.URL.Query()["dlicense"][0]
 			prepUser.KYC.DriversLicense = id
 		}
 
 		if r.URL.Query()["idcard"] != nil {
-			isId = true
+			isID = true
 			idType = "idcard"
 			id = r.URL.Query()["idcard"][0]
 			prepUser.KYC.IDCardPhoto = id
 		}
 
-		if !isId {
+		if !isID {
 			erpc.ResponseHandler(w, erpc.StatusBadRequest)
 			return
 		}
 
 		var response KycResponse
 		var apikey = consts.KYCAPIKey
-		apiUrl := "https://api.complyadvantage.com"
-		body := apiUrl + "/" + apikey
+		apiURL := "https://api.complyadvantage.com"
+		body := apiURL + "/" + apikey
 
 		switch idType {
 		case "passport":
@@ -1075,7 +1070,7 @@ func addAnchorKYCInfo() {
 		prepUser.AnchorKYC.Birthday.Day = r.URL.Query()["bdayday"][0]
 		prepUser.AnchorKYC.Birthday.Year = r.URL.Query()["bdayyear"][0]
 		prepUser.AnchorKYC.Tax.Country = r.URL.Query()["taxcountry"][0]
-		prepUser.AnchorKYC.Tax.Id = r.URL.Query()["taxid"][0]
+		prepUser.AnchorKYC.Tax.ID = r.URL.Query()["taxid"][0]
 		prepUser.AnchorKYC.Address.Street = r.URL.Query()["addrstreet"][0]
 		prepUser.AnchorKYC.Address.City = r.URL.Query()["addrcity"][0]
 		prepUser.AnchorKYC.Address.Postal = r.URL.Query()["addrpostal"][0]

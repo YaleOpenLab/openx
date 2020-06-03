@@ -198,7 +198,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	testuser, _ := SearchWithEmailId("blahx@blah.com")
+	testuser, _ := SearchWithEmailID("blahx@blah.com")
 	if testuser.Index != 0 {
 		t.Fatalf("user with invalid email exists")
 	}
