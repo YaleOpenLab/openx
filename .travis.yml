@@ -5,6 +5,7 @@ language: go
 go:
   - 1.13.x
 script:
-  - go test --tags="travis" -race -coverprofile=coverage.txt -covermode=atomic ./...
-after_success:
-- bash <(curl -s https://codecov.io/bash)
+  # - go test --tags="travis" -race -coverprofile=coverage.txt -covermode=atomic ./...
+  - go build -v ./...
+# after_success:
+# - bash <(curl -s https://codecov.io/bash)
