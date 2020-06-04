@@ -138,8 +138,8 @@ func ValidatePwhashReg(name string, pwhash string) (User, error) {
 func ValidateAccessToken(name string, accessToken string) (User, error) {
 	var dummy User
 
-	if len(accessToken) > consts.AccessTokenLength {
-		return dummy, errors.New("access token lengths don't match")
+	if len(accessToken) > consts.AccessTokenLength || len(accessToken) < consts.AccessTokenLength {
+		return dummy, errors.New("incorrect token length")
 	}
 
 	users, err := RetrieveAllUsers()

@@ -157,6 +157,11 @@ type StellWallet struct {
 func NewUser(uname string, pwhash string, seedpwd string, email string) (User, error) {
 	var a User
 
+	_, err := CheckUsernameCollision(uname)
+	if err != nil {
+		return a, errors.Wrap(err, "username collision: "+uname+", quitting")
+	}
+
 	lim, err := RetrieveAllUsersLim()
 	if err != nil {
 		return a, errors.Wrap(err, "Error while retrieving all users from database")
@@ -170,17 +175,12 @@ func NewUser(uname string, pwhash string, seedpwd string, email string) (User, e
 
 	a.Email = email
 	a.Username = uname
-
-	_, err = CheckUsernameCollision(uname)
-	if err != nil {
-		return a, errors.Wrap(err, "username collision")
-	}
-
 	a.Pwhash = pwhash
 	a.FirstSignedUp = utils.Timestamp()
 	a.Kyc = false
 	a.Notification = false
 	a.ConfToken = strings.ToUpper(utils.GetRandomString(8))
+	log.Println("saving: ", uname, pwhash, seedpwd, email)
 	err = a.Save()
 	return a, err
 }
@@ -236,7 +236,6 @@ func ValidateSeedpwd(name string, pwhash string, seedpwd string) (User, error) {
 		return user, errors.Wrap(err, "could not decrypt seed")
 	}
 	if pubkey != user.StellarWallet.PublicKey {
-		log.Println(pubkey, user.StellarWallet.PublicKey)
 		return user, errors.New("pubkeys don't match, quitting")
 	}
 	return user, nil
@@ -257,7 +256,6 @@ func ValidateSeedpwdAuthToken(name string, token string, seedpwd string) (User, 
 		return user, errors.Wrap(err, "could not decrypt seed")
 	}
 	if pubkey != user.StellarWallet.PublicKey {
-		log.Println(pubkey, user.StellarWallet.PublicKey)
 		return user, errors.New("pubkeys don't match, quitting")
 	}
 	return user, nil
@@ -271,33 +269,35 @@ func (a *User) GenKeys(seedpwd string, options ...string) error {
 		}
 		chain := options[0]
 		switch chain {
-		case "algorand":
-			log.Println("Generating Algorand wallet")
+		/*
+			case "algorand":
+				log.Println("Generating Algorand wallet")
 
-			var err error
-			password := seedpwd
+				var err error
+				password := seedpwd
 
-			a.AlgorandWallet, err = algorand.GenNewWallet("algowl", password)
-			if err != nil {
-				return errors.Wrap(err, "couldn't create new wallet id, quitting")
-			}
+				a.AlgorandWallet, err = algorand.GenNewWallet("algowl", password)
+				if err != nil {
+					return errors.Wrap(err, "couldn't create new wallet id, quitting")
+				}
 
-			err = a.Save()
-			if err != nil {
-				return err
-			}
+				err = a.Save()
+				if err != nil {
+					return err
+				}
 
-			backupPhrase, err := algorand.GenerateBackup(a.AlgorandWallet.WalletName, password)
-			if err != nil {
-				return err
-			}
+				backupPhrase, err := algorand.GenerateBackup(a.AlgorandWallet.WalletName, password)
+				if err != nil {
+					return err
+				}
 
-			tmp, err := recovery.Create(2, 3, backupPhrase)
-			if err != nil {
-				return errors.Wrap(err, "error while storing recovery shares")
-			}
+				tmp, err := recovery.Create(2, 3, backupPhrase)
+				if err != nil {
+					return errors.Wrap(err, "error while storing recovery shares")
+				}
 
-			a.RecoveryShares = append(a.RecoveryShares, tmp...)
+				a.RecoveryShares = append(a.RecoveryShares, tmp...)
+		*/
 		default:
 			log.Println("Chain not supported, please feel free to add support in aanew Pull Request")
 			return errors.New("chain not supported, returning")
@@ -403,13 +403,11 @@ func (a *User) IncreaseTrustLimit(seedpwd string, trust float64) error {
 	if !consts.Mainnet {
 		_, err = assets.TrustAsset(consts.StablecoinCode, consts.StablecoinPublicKey, trust+consts.StablecoinTrustLimit, seed)
 		if err != nil {
-			log.Println("PARAMS: ", consts.StablecoinCode, consts.StablecoinPublicKey, trust+consts.StablecoinTrustLimit, seed)
 			return errors.Wrap(err, "couldn't trust asset, quitting!")
 		}
 	} else {
 		_, err = assets.TrustAsset(consts.AnchorUSDCode, consts.AnchorUSDAddress, trust+consts.AnchorUSDTrustLimit, seed)
 		if err != nil {
-			log.Println("PARAMS: ", consts.AnchorUSDCode, consts.AnchorUSDAddress, trust+consts.AnchorUSDTrustLimit, seed)
 			return errors.Wrap(err, "couldn't trust asset, quitting!")
 		}
 	}
@@ -484,17 +482,17 @@ func (a *User) AddEmail(email string) error {
 
 // SetBan sets the Banned flag on a particular user
 func (a *User) SetBan(userIndex int) error {
+	user, err := RetrieveUser(userIndex)
+	if err != nil {
+		return errors.Wrap(err, "couldn't  find user to ban, quitting")
+	}
+
 	if !a.Admin {
 		return errors.New("user not authorized to ban a user")
 	}
 
 	if a.Index == userIndex {
 		return errors.New("can't ban yourself, quitting")
-	}
-
-	user, err := RetrieveUser(userIndex)
-	if err != nil {
-		return errors.Wrap(err, "couldn't  find user to ban, quitting")
 	}
 
 	if user.Banned {
