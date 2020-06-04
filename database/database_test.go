@@ -5,8 +5,8 @@ package database
 import (
 	"log"
 	"os"
+	"sync"
 	"testing"
-	"time"
 
 	"github.com/Varunram/essentials/utils"
 	xlm "github.com/Varunram/essentials/xlm"
@@ -22,6 +22,49 @@ func TestDb(t *testing.T) {
 	os.Remove("blahopenx.db")
 	consts.DbDir = "blah" // set to a false db so that we can test errors arising from OpenDB()
 	xlm.SetConsts(10, false)
+
+	PlatformBucket = []byte("FakePlatforms")
+	UserBucket = []byte("FakeUsers")
+	err = NewPlatform("platform", "CODE", false)
+	if err == nil {
+		t.Fatalf("not able to catch wrong platform bucket name")
+	}
+	_, err = RetrievePlatform(1) // GUESS?
+	if err == nil {
+		t.Fatalf("not able to catch wrong platform bucket name")
+	}
+	_, err = RetrieveAllUsers()
+	if err == nil {
+		t.Fatalf("not able to catch wrong user bucket name")
+	}
+	_, err = TopReputationUsers()
+	if err == nil {
+		t.Fatalf("not able to catch wrong user bucket name")
+	}
+	_, err = RetrieveAllAdmins()
+	if err == nil {
+		t.Fatalf("not able to catch wrong user bucket name")
+	}
+	_, err = ValidatePwhash("fakename", "fakepwhash")
+	if err == nil {
+		t.Fatalf("not able to catch wrong user bucket name")
+	}
+	_, err = ValidatePwhashReg("username", "pwhash")
+	if err == nil {
+		t.Fatalf("not able to catch wrong user bucket name")
+	}
+	_, err = ValidateAccessToken("fakeusername", "fakeaccessToken")
+	if err == nil {
+		t.Fatalf("failed access token length check")
+	}
+	_, err = ValidateAccessToken("fakeusername", utils.GetRandomString((32)))
+	if err == nil {
+		t.Fatalf("not able to catch wrong user bucket name")
+	}
+
+	PlatformBucket = []byte("Platforms")
+	UserBucket = []byte("Users")
+
 	consts.StablecoinPublicKey = "GAVEVWKMXVQ2WSCBTR7M5UKRVFFWIA52VP7ISDKZSEJKQS2VYG4D6C6P"
 	consts.PlatformPublicKey = "GAJJMQAP5KG7GVCOVY2NUUJCVFX72GXZKMUQUCWUGN55EKFS3MXFAMEZ"
 	CreateHomeDir()         // create home directory if it doesn't exist yet
@@ -42,14 +85,33 @@ func TestDb(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	_, err = ValidatePwhashReg(username, userpwhash)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = ValidatePwhashReg("fakeusername", userpwhash)
+	if err == nil {
+		t.Fatalf("unable to catch fake username in validatepwhashreg")
+	}
+
+	accessToken, err := user.GenAccessToken()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = ValidateAccessToken(username, accessToken)
+	if err == nil {
+		t.Fatalf("can validate access token without user being confirmed")
+	}
+
 	_, err = CheckUsernameCollision(user.Username)
 	if err == nil {
 		t.Fatalf("can't catch username collision")
 	}
 
 	user.Conf = true
-
-	accessToken, err := user.GenAccessToken()
+	err = user.Save()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -59,14 +121,9 @@ func TestDb(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if user.Username != username {
-		t.Fatalf("Usernames don't match. quitting!")
-	}
-
 	_, err = ValidateAccessToken(username, accessToken)
 	if err != nil {
-		log.Println(err)
-		t.Fatalf("couldn't validate access token")
+		t.Fatal(err)
 	}
 
 	_, err = ValidateAccessToken(username, "faketoken")
@@ -178,35 +235,6 @@ func TestDb(t *testing.T) {
 		t.Fatalf("not able to detect fake seedpwd")
 	}
 
-	err = xlm.GetXLM(user.SecondaryWallet.PublicKey)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	err = xlm.GetXLM(user.StellarWallet.PublicKey)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	time.Sleep(5 * time.Second)
-	err = user.IncreaseTrustLimit(seedpwd, 10)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	pkSeed, pk, err := xlm.GetKeyPair()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	assetCode := "assetcode"
-	_ = build.CreditAsset{Code: assetCode, Issuer: pkSeed} // this account doesn't exist yet, so this should fail
-
-	_, err = assets.TrustAsset(assetCode, pk, -1, seedpwd)
-	if err == nil {
-		t.Fatalf("can trust invalid asset")
-	}
-
 	_, err = RetrieveAllUsersWithoutKyc()
 	if err != nil {
 		t.Fatal(err)
@@ -282,30 +310,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = user.MoveFundsFromSecondaryWallet(10, seedpwd)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = user.MoveFundsFromSecondaryWallet(10, "shouldfail")
-	if err == nil {
-		t.Fatalf("decryption succeeds with invalid seedpwd for secondary account")
-	}
-	err = user.MoveFundsFromSecondaryWallet(100000, "shouldfail")
-	if err == nil {
-		t.Fatalf("can transfer more amount than possessed")
-	}
-	err = user.MoveFundsFromSecondaryWallet(-1, seedpwd)
-	if err == nil {
-		t.Fatalf("not able to catch invalid amount error")
-	}
-	err = user.SweepSecondaryWallet(seedpwd)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = user.SweepSecondaryWallet("invalidseedpwd")
-	if err == nil {
-		t.Fatalf("no able to catch invalid seedpwd")
-	}
+
 	_, err = TopReputationUsers()
 	if err != nil {
 		t.Fatal(err)
@@ -372,6 +377,88 @@ func TestDb(t *testing.T) {
 	_, err = RetrieveAllPfLim()
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+	go func(wg *sync.WaitGroup) {
+		defer wg.Done()
+		err = xlm.GetXLM(user.StellarWallet.PublicKey)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}(&wg)
+
+	wg.Add(1)
+	go func(wg *sync.WaitGroup) {
+		defer wg.Done()
+		err = xlm.GetXLM(user.SecondaryWallet.PublicKey)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}(&wg)
+
+	wg.Wait()
+
+	var wg2 sync.WaitGroup
+
+	wg2.Add(1)
+	go func(wg *sync.WaitGroup) {
+		defer wg.Done()
+		err = user.IncreaseTrustLimit(seedpwd, 10)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}(&wg2)
+
+	wg2.Add(1)
+	go func(wg *sync.WaitGroup) {
+		defer wg.Done()
+		err = user.MoveFundsFromSecondaryWallet(10, seedpwd)
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = user.SweepSecondaryWallet(seedpwd)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}(&wg2)
+
+	wg2.Add(1)
+	go func(wg *sync.WaitGroup) {
+		defer wg.Done()
+		pkSeed, pk, err := xlm.GetKeyPair()
+		if err != nil {
+			log.Fatal(err)
+		}
+		assetCode := "assetcode"
+		_ = build.CreditAsset{Code: assetCode, Issuer: pkSeed} // this account doesn't exist yet, so this should fail
+
+		_, err = assets.TrustAsset(assetCode, pk, -1, seedpwd)
+		if err == nil {
+			log.Fatalf("can trust invalid asset")
+		}
+	}(&wg2)
+
+	wg2.Wait()
+
+	err = user.MoveFundsFromSecondaryWallet(10, "shouldfail")
+	if err == nil {
+		t.Fatalf("decryption succeeds with invalid seedpwd for secondary account")
+	}
+	err = user.MoveFundsFromSecondaryWallet(100000, "shouldfail")
+	if err == nil {
+		t.Fatalf("can transfer more amount than possessed")
+	}
+	err = user.MoveFundsFromSecondaryWallet(-1, seedpwd)
+	if err == nil {
+		t.Fatalf("not able to catch invalid amount error")
+	}
+
+	err = user.SweepSecondaryWallet("invalidseedpwd")
+	if err == nil {
+		t.Fatalf("no able to catch invalid seedpwd")
 	}
 
 	os.Remove(consts.DbDir + "/openx.db")
